@@ -1,0 +1,782 @@
+---
+title: "Monte Carlo Integration: Comprehensive Examples and Theory"
+author: "PHYS5513 - Computational Physics"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 8, fig.height = 6)
+library(ggplot2)
+library(dplyr)
+library(pracma)
+set.seed(42)
+```
+
+# Introduction to Monte Carlo Integration
+
+Monte Carlo integration is a powerful numerical technique that uses random sampling to estimate definite integrals. It's particularly useful for:
+
+1. **High-dimensional integrals** where traditional methods become impractical
+2. **Complex domains** with irregular boundaries
+3. **Functions that are expensive to evaluate** but random sampling is feasible
+4. **Integrals where the integrand has singularities** or discontinuities
+
+## Basic Theory
+
+The fundamental idea is based on the **Law of Large Numbers**. For a function $f(x)$ defined on domain $D$ with volume $V(D)$, the integral:
+
+$$I = \int_D f(x) dx$$
+
+can be approximated as:
+
+$$I \approx V(D) \cdot \frac{1}{N} \sum_{i=1}^N f(x_i)$$
+
+where $x_i$ are $N$ random points uniformly distributed in $D$.
+
+The **standard error** decreases as $\frac{1}{\sqrt{N}}$, regardless of dimension!
+
+---
+
+# Example 1: Basic 1D Integration
+
+Let's start with a simple example: $\int_0^1 x^2 dx = \frac{1}{3}$
+
+```{r}
+# Basic Monte Carlo integrator for 1D
+monte_carlo_1d <- function(f, a, b, n) {
+  # Generate n random points in [a,b]
+  x <- runif(n, a, b)
+  # Evaluate function at these points
+  y <- f(x)
+  # Estimate integral
+  integral_estimate <- (b - a) * mean(y)
+  # Calculate standard error
+  variance <- var(y)
+  standard_error <- (b - a) * sqrt(variance / n)
+  
+  return(list(
+    estimate = integral_estimate,
+    standard_error = standard_error,
+    confidence_interval = integral_estimate + c(-1.96, 1.96) * standard_error
+  ))
+}
+
+# Test with f(x) = x^2
+f <- function(x) x^2
+result <- monte_carlo_1d(f, 0, 1, 10000)
+
+cat("Monte Carlo estimate:", result$estimate, "\n")
+cat("Exact value:", 1/3, "\n")
+cat("Error:", abs(result$estimate - 1/3), "\n")
+cat("95% CI:", result$confidence_interval, "\n")
+```
+
+## Convergence Analysis
+
+Let's see how the estimate improves with sample size:
+
+```{r}
+# Study convergence
+sample_sizes <- 10^seq(1, 5, by = 0.1)
+estimates <- sapply(sample_sizes, function(n) {
+  monte_carlo_1d(f, 0, 1, n)$estimate
+})
+
+# Plot convergence
+plot(sample_sizes, estimates, log = "x", type = "l", 
+     xlab = "Sample Size", ylab = "Estimate",
+     main = "Monte Carlo Convergence for ∫₀¹ x² dx")
+abline(h = 1/3, col = "red", lty = 2)
+legend("topright", c("MC Estimate", "Exact Value"), 
+       col = c("black", "red"), lty = c(1, 2))
+```
+
+---
+
+# Example 2: Estimating π using Monte Carlo
+
+A classic example: estimate π by sampling points in a unit square and counting how many fall inside a quarter circle.
+
+```{r}
+estimate_pi <- function(n) {
+  # Generate random points in [0,1] × [0,1]
+  x <- runif(n)
+  y <- runif(n)
+  
+  # Count points inside quarter circle (x² + y² ≤ 1)
+  inside_circle <- (x^2 + y^2) <= 1
+  
+  # π/4 = (area of quarter circle) / (area of unit square)
+  pi_estimate <- 4 * mean(inside_circle)
+  
+  # Standard error calculation
+  p <- mean(inside_circle)
+  se <- 4 * sqrt(p * (1 - p) / n)
+  
+  return(list(
+    estimate = pi_estimate,
+    standard_error = se,
+    confidence_interval = pi_estimate + c(-1.96, 1.96) * se
+  ))
+}
+
+# Estimate π
+pi_result <- estimate_pi(100000)
+cat("Monte Carlo estimate of π:", pi_result$estimate, "\n")
+cat("Exact value of π:", pi, "\n")
+cat("Error:", abs(pi_result$estimate - pi), "\n")
+cat("95% CI:", pi_result$confidence_interval, "\n")
+```
+
+## Visualization of π estimation
+
+```{r}
+# Visualize the method
+n_viz <- 1000
+x <- runif(n_viz)
+y <- runif(n_viz)
+inside <- (x^2 + y^2) <= 1
+
+plot(x, y, col = ifelse(inside, "red", "blue"), pch = 16, cex = 0.5,
+     main = "Monte Carlo Estimation of π", xlab = "x", ylab = "y")
+theta <- seq(0, pi/2, length.out = 100)
+lines(cos(theta), sin(theta), lwd = 2)
+legend("topright", c("Inside circle", "Outside circle"), 
+       col = c("red", "blue"), pch = 16)
+```
+
+---
+
+# Example 3: Multidimensional Integration
+
+Let's compute a 3D integral: $\int_0^1 \int_0^1 \int_0^1 (x + y + z)^2 dx\,dy\,dz$
+
+Exact answer: $\int_0^1 \int_0^1 \int_0^1 (x + y + z)^2 dx\,dy\,dz = \frac{9}{4}$
+
+```{r}
+# 3D Monte Carlo integration
+monte_carlo_3d <- function(f, n, bounds = list(c(0,1), c(0,1), c(0,1))) {
+  # Extract bounds
+  x_bounds <- bounds[[1]]
+  y_bounds <- bounds[[2]]
+  z_bounds <- bounds[[3]]
+  
+  # Calculate volume
+  volume <- (x_bounds[2] - x_bounds[1]) * 
+            (y_bounds[2] - y_bounds[1]) * 
+            (z_bounds[2] - z_bounds[1])
+  
+  # Generate random points
+  x <- runif(n, x_bounds[1], x_bounds[2])
+  y <- runif(n, y_bounds[1], y_bounds[2])
+  z <- runif(n, z_bounds[1], z_bounds[2])
+  
+  # Evaluate function
+  values <- f(x, y, z)
+  
+  # Calculate estimate and error
+  estimate <- volume * mean(values)
+  se <- volume * sqrt(var(values) / n)
+  
+  return(list(
+    estimate = estimate,
+    standard_error = se,
+    confidence_interval = estimate + c(-1.96, 1.96) * se
+  ))
+}
+
+# Define the function
+f_3d <- function(x, y, z) (x + y + z)^2
+
+# Compute the integral
+result_3d <- monte_carlo_3d(f_3d, 100000)
+
+cat("3D Monte Carlo estimate:", result_3d$estimate, "\n")
+cat("Exact value:", 9/4, "\n")
+cat("Error:", abs(result_3d$estimate - 9/4), "\n")
+cat("95% CI:", result_3d$confidence_interval, "\n")
+```
+
+---
+
+# Example 4: Integration over Complex Domains
+
+Monte Carlo really shines for complex domains. Let's integrate over a sphere.
+
+```{r}
+# Integration over unit sphere: ∫∫∫_sphere f(x,y,z) dV
+# where f(x,y,z) = x² + y² + z²
+
+integrate_over_sphere <- function(f, n, radius = 1) {
+  # Generate random points in cube [-r, r]³
+  x <- runif(n, -radius, radius)
+  y <- runif(n, -radius, radius)
+  z <- runif(n, -radius, radius)
+  
+  # Keep only points inside sphere
+  inside_sphere <- (x^2 + y^2 + z^2) <= radius^2
+  
+  # Volume of cube
+  cube_volume <- (2 * radius)^3
+  
+  # Evaluate function only at points inside sphere
+  if (sum(inside_sphere) == 0) {
+    return(list(estimate = 0, standard_error = 0))
+  }
+  
+  values <- f(x[inside_sphere], y[inside_sphere], z[inside_sphere])
+  
+  # Estimate integral
+  # (Volume of sphere / Volume of cube) * (Average of function values) * Volume of cube
+  sphere_volume <- (4/3) * pi * radius^3
+  estimate <- sphere_volume * mean(values)
+  
+  # Standard error
+  se <- sphere_volume * sqrt(var(values) / sum(inside_sphere))
+  
+  return(list(
+    estimate = estimate,
+    standard_error = se,
+    points_inside = sum(inside_sphere),
+    efficiency = sum(inside_sphere) / n
+  ))
+}
+
+# Function to integrate: f(x,y,z) = x² + y² + z²
+f_sphere <- function(x, y, z) x^2 + y^2 + z^2
+
+# Perform integration
+sphere_result <- integrate_over_sphere(f_sphere, 500000, radius = 1)
+
+# Exact answer for ∫∫∫_sphere (x² + y² + z²) dV over unit sphere
+# Using spherical coordinates: ∫₀²π ∫₀π ∫₀¹ r² · r² sin(θ) dr dθ dφ = 4π/5
+exact_sphere <- 4 * pi / 5
+
+cat("Sphere integration estimate:", sphere_result$estimate, "\n")
+cat("Exact value:", exact_sphere, "\n")
+cat("Error:", abs(sphere_result$estimate - exact_sphere), "\n")
+cat("Efficiency (fraction of points inside sphere):", sphere_result$efficiency, "\n")
+```
+
+---
+
+# Example 5: Importance Sampling
+
+Sometimes we can reduce variance by sampling from a better distribution.
+
+```{r}
+# Standard Monte Carlo vs Importance Sampling
+# Integrate ∫₀¹ e^x dx = e - 1 ≈ 1.718
+
+# Standard Monte Carlo
+standard_mc <- function(n) {
+  x <- runif(n, 0, 1)
+  values <- exp(x)
+  estimate <- mean(values)
+  se <- sqrt(var(values) / n)
+  return(list(estimate = estimate, standard_error = se))
+}
+
+# Importance Sampling using exponential distribution
+# f(x) = e^x, g(x) = λe^(-λx) on [0,1]
+# We want ∫₀¹ e^x dx ≈ (1/n) Σ f(xᵢ)/g(xᵢ) where xᵢ ~ g(x)
+
+importance_sampling_mc <- function(n, lambda = 2) {
+  # Generate samples from exponential distribution on [0,1]
+  # We need to be careful with truncation
+  u <- runif(n)
+  x <- -log(1 - u * (1 - exp(-lambda))) / lambda  # Inverse CDF method
+  
+  # Calculate weights: f(x) / g(x)
+  # f(x) = e^x (our function)
+  # g(x) = λe^(-λx) / (1 - e^(-λ)) (normalized exponential on [0,1])
+  normalization <- 1 - exp(-lambda)
+  weights <- exp(x) / (lambda * exp(-lambda * x) / normalization)
+  
+  estimate <- mean(weights) * normalization
+  se <- sqrt(var(weights) * normalization^2 / n)
+  
+  return(list(estimate = estimate, standard_error = se))
+}
+
+# Compare methods
+n_samples <- 10000
+exact_value <- exp(1) - 1
+
+# Standard MC
+std_result <- standard_mc(n_samples)
+cat("Standard Monte Carlo:\n")
+cat("  Estimate:", std_result$estimate, "\n")
+cat("  Standard Error:", std_result$standard_error, "\n")
+
+# Importance Sampling
+imp_result <- importance_sampling_mc(n_samples)
+cat("\nImportance Sampling:\n")
+cat("  Estimate:", imp_result$estimate, "\n")
+cat("  Standard Error:", imp_result$standard_error, "\n")
+
+cat("\nExact value:", exact_value, "\n")
+cat("Standard MC error:", abs(std_result$estimate - exact_value), "\n")
+cat("Importance sampling error:", abs(imp_result$estimate - exact_value), "\n")
+```
+
+---
+
+# Example 6: Stratified Sampling
+
+Reduce variance by dividing domain into strata and sampling from each.
+
+```{r}
+# Stratified sampling for ∫₀¹ x² dx
+stratified_mc <- function(n, n_strata = 10) {
+  strata_size <- n %/% n_strata
+  remainder <- n %% n_strata
+  
+  estimates <- numeric(n_strata)
+  variances <- numeric(n_strata)
+  
+  for (i in 1:n_strata) {
+    # Define stratum bounds
+    a <- (i - 1) / n_strata
+    b <- i / n_strata
+    
+    # Sample size for this stratum
+    n_i <- strata_size + (if (i <= remainder) 1 else 0)
+    
+    # Generate samples in this stratum
+    x <- runif(n_i, a, b)
+    y <- x^2  # f(x) = x²
+    
+    # Estimate for this stratum
+    estimates[i] <- (b - a) * mean(y)
+    variances[i] <- (b - a)^2 * var(y) / n_i
+  }
+  
+  # Combine estimates
+  total_estimate <- sum(estimates)
+  total_variance <- sum(variances)
+  
+  return(list(
+    estimate = total_estimate,
+    standard_error = sqrt(total_variance),
+    strata_estimates = estimates
+  ))
+}
+
+# Compare standard vs stratified sampling
+n_samples <- 10000
+
+# Standard sampling
+std_f2_result <- monte_carlo_1d(function(x) x^2, 0, 1, n_samples)
+
+# Stratified sampling
+strat_result <- stratified_mc(n_samples, n_strata = 20)
+
+cat("Standard Monte Carlo:\n")
+cat("  Estimate:", std_f2_result$estimate, "\n")
+cat("  Standard Error:", std_f2_result$standard_error, "\n")
+
+cat("\nStratified Sampling:\n")
+cat("  Estimate:", strat_result$estimate, "\n")
+cat("  Standard Error:", strat_result$standard_error, "\n")
+
+cat("\nVariance Reduction Factor:", 
+    (std_f2_result$standard_error / strat_result$standard_error)^2, "\n")
+```
+
+---
+
+# Example 7: Monte Carlo for Oscillatory Functions
+
+Monte Carlo can handle oscillatory integrands, though they may require special techniques.
+
+```{r}
+# Integrate ∫₀¹⁰ sin(50x) dx = -cos(500)/50 + 1/50
+oscillatory_mc <- function(n) {
+  x <- runif(n, 0, 10)
+  y <- sin(50 * x)
+  
+  estimate <- 10 * mean(y)  # Domain width = 10
+  se <- 10 * sqrt(var(y) / n)
+  
+  return(list(estimate = estimate, standard_error = se))
+}
+
+# True value
+exact_oscillatory <- (-cos(500) + 1) / 50
+
+# Monte Carlo estimate
+osc_result <- oscillatory_mc(1000000)  # Need more samples for oscillatory functions
+
+cat("Oscillatory function integration:\n")
+cat("  MC Estimate:", osc_result$estimate, "\n")
+cat("  Exact value:", exact_oscillatory, "\n")
+cat("  Error:", abs(osc_result$estimate - exact_oscillatory), "\n")
+cat("  Standard Error:", osc_result$standard_error, "\n")
+```
+
+---
+
+# Example 8: Gravitational Binding Energy of Two Cubes
+
+A sophisticated physics application: calculate the gravitational binding energy between two solid cubes with exponential density profiles.
+
+## Problem Setup
+
+Consider two cubes with side length $L$, separated by distance $d$ (center to center). Each cube has an exponential density profile:
+
+$$\rho(r) = \rho_0 e^{-r/r_0}$$
+
+where $r$ is the distance from the cube's center, $\rho_0$ is the central density, and $r_0$ is the scale length.
+
+The gravitational potential energy between the cubes is:
+
+$$U = -G \int_{V_1} \int_{V_2} \frac{\rho_1(\vec{r_1}) \rho_2(\vec{r_2})}{|\vec{r_1} - \vec{r_2}|} d^3r_1 d^3r_2$$
+
+This 6-dimensional integral is perfect for Monte Carlo methods!
+
+```{r}
+# Physical constants (in SI units, but we'll work in scaled units)
+# G = 6.67430e-11  # m³ kg⁻¹ s⁻²
+
+# Parameters for our cubes
+cube_params <- list(
+  L = 1.0,           # Side length (scaled units)
+  rho0 = 1.0,        # Central density (scaled units)  
+  r0 = 0.3,          # Scale length (fraction of cube size)
+  separation = 2.5   # Center-to-center distance
+)
+
+# Exponential density function
+density_profile <- function(r, rho0, r0) {
+  rho0 * exp(-r / r0)
+}
+
+# Calculate distance from cube center
+distance_from_center <- function(x, y, z, center) {
+  sqrt((x - center[1])^2 + (y - center[2])^2 + (z - center[3])^2)
+}
+
+# Monte Carlo calculation of binding energy
+calculate_binding_energy <- function(params, n_samples = 1e5, G = 1.0) {
+  L <- params$L
+  rho0 <- params$rho0
+  r0 <- params$r0
+  sep <- params$separation
+  
+  # Define cube centers
+  center1 <- c(-sep/2, 0, 0)
+  center2 <- c(+sep/2, 0, 0)
+  
+  # Define cube boundaries
+  bounds1 <- list(
+    x = center1[1] + c(-L/2, L/2),
+    y = center1[2] + c(-L/2, L/2),
+    z = center1[3] + c(-L/2, L/2)
+  )
+  
+  bounds2 <- list(
+    x = center2[1] + c(-L/2, L/2),
+    y = center2[2] + c(-L/2, L/2),
+    z = center2[3] + c(-L/2, L/2)
+  )
+  
+  # Volume of each cube
+  volume = L^3
+  
+  # Monte Carlo sampling
+  cat("Sampling", n_samples, "point pairs...\n")
+  
+  # Generate random points in cube 1
+  x1 <- runif(n_samples, bounds1$x[1], bounds1$x[2])
+  y1 <- runif(n_samples, bounds1$y[1], bounds1$y[2])
+  z1 <- runif(n_samples, bounds1$z[1], bounds1$z[2])
+  
+  # Generate random points in cube 2
+  x2 <- runif(n_samples, bounds2$x[1], bounds2$x[2])
+  y2 <- runif(n_samples, bounds2$y[1], bounds2$y[2])
+  z2 <- runif(n_samples, bounds2$z[1], bounds2$z[2])
+  
+  # Calculate distances from centers
+  r1 <- distance_from_center(x1, y1, z1, center1)
+  r2 <- distance_from_center(x2, y2, z2, center2)
+  
+  # Calculate densities
+  rho1 <- density_profile(r1, rho0, r0)
+  rho2 <- density_profile(r2, rho0, r0)
+  
+  # Calculate separations between point pairs
+  separations <- sqrt((x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
+  
+  # Avoid division by zero (shouldn't happen with continuous distributions)
+  separations[separations < 1e-10] <- 1e-10
+  
+  # Calculate integrand values
+  integrand_values <- rho1 * rho2 / separations
+  
+  # Monte Carlo estimate
+  integral_estimate <- volume^2 * mean(integrand_values)
+  binding_energy <- -G * integral_estimate
+  
+  # Error estimation
+  variance_integrand <- var(integrand_values)
+  standard_error <- volume^2 * sqrt(variance_integrand / n_samples)
+  energy_error <- G * standard_error
+  
+  # Store some statistics for analysis
+  stats <- list(
+    mean_rho1 = mean(rho1),
+    mean_rho2 = mean(rho2),
+    mean_separation = mean(separations),
+    min_separation = min(separations),
+    max_separation = max(separations)
+  )
+  
+  return(list(
+    binding_energy = binding_energy,
+    energy_error = energy_error,
+    confidence_interval = binding_energy + c(-1.96, 1.96) * energy_error,
+    integral_estimate = integral_estimate,
+    stats = stats,
+    n_samples = n_samples
+  ))
+}
+
+# Calculate binding energy
+set.seed(123)  # For reproducibility
+result <- calculate_binding_energy(cube_params, n_samples = 2e5)
+
+cat("\n=== Gravitational Binding Energy Results ===\n")
+cat("Binding Energy:", sprintf("%.6f", result$binding_energy), "± %.6f\n", result$energy_error)
+cat("95% Confidence Interval: [%.6f, %.6f]\n", 
+    result$confidence_interval[1], result$confidence_interval[2])
+cat("Relative Error:", sprintf("%.2f%%", 100 * result$energy_error / abs(result$binding_energy)), "\n")
+
+cat("\n=== Physical Insights ===\n")
+cat("Mean density in cube 1:", sprintf("%.4f", result$stats$mean_rho1), "\n")
+cat("Mean density in cube 2:", sprintf("%.4f", result$stats$mean_rho2), "\n")
+cat("Mean separation between points:", sprintf("%.4f", result$stats$mean_separation), "\n")
+cat("Min/Max separations:", sprintf("%.4f / %.4f", result$stats$min_separation, result$stats$max_separation), "\n")
+```
+
+## Convergence Study and Parameter Sensitivity
+
+```{r}
+# Study how binding energy depends on separation distance
+separations <- seq(1.5, 5.0, by = 0.3)
+binding_energies <- numeric(length(separations))
+binding_errors <- numeric(length(separations))
+
+cat("Computing binding energy vs separation...\n")
+for (i in seq_along(separations)) {
+  params_temp <- cube_params
+  params_temp$separation <- separations[i]
+  
+  result_temp <- calculate_binding_energy(params_temp, n_samples = 1e5)
+  binding_energies[i] <- result_temp$binding_energy
+  binding_errors[i] <- result_temp$energy_error
+  
+  cat("Separation:", separations[i], "Energy:", sprintf("%.6f", binding_energies[i]), "\n")
+}
+
+# Plot results
+plot(separations, -binding_energies, type = "b", pch = 16,
+     xlab = "Separation Distance", ylab = "-Binding Energy",
+     main = "Gravitational Binding Energy vs Separation",
+     ylim = range(-binding_energies + c(-1, 1) * max(binding_errors)))
+
+# Add error bars
+arrows(separations, -binding_energies - binding_errors,
+       separations, -binding_energies + binding_errors,
+       angle = 90, code = 3, length = 0.05)
+
+# Theoretical expectation: should scale roughly as 1/r for large separations
+# Add a fitted curve
+fit_range <- separations >= 3.0
+if (sum(fit_range) >= 3) {
+  fit <- lm(log(-binding_energies[fit_range]) ~ log(separations[fit_range]))
+  cat("Power law fit for large separations: E ∝ r^", sprintf("%.2f", coef(fit)[2]), "\n")
+  
+  # Plot theoretical curve
+  sep_theory <- seq(min(separations), max(separations), length.out = 100)
+  energy_theory <- exp(coef(fit)[1]) * sep_theory^coef(fit)[2]
+  lines(sep_theory, energy_theory, col = "red", lty = 2)
+  legend("topright", c("Monte Carlo", "Power law fit"), 
+         col = c("black", "red"), lty = c(1, 2), pch = c(16, NA))
+}
+```
+
+## Density Profile Visualization
+
+```{r}
+# Visualize the density profiles
+r_range <- seq(0, 1.5, length.out = 100)
+rho_values <- density_profile(r_range, cube_params$rho0, cube_params$r0)
+
+plot(r_range, rho_values, type = "l", lwd = 2,
+     xlab = "Distance from Center", ylab = "Density",
+     main = "Exponential Density Profile")
+abline(v = cube_params$L/2 * sqrt(3), col = "red", lty = 2)  # Cube corner distance
+legend("topright", c("ρ(r) = ρ₀ exp(-r/r₀)", "Cube corner"), 
+       col = c("black", "red"), lty = c(1, 2))
+
+# Add text annotations
+text(0.2, 0.8 * cube_params$rho0, 
+     paste("r₀ =", cube_params$r0), adj = 0)
+text(0.2, 0.6 * cube_params$rho0, 
+     paste("ρ₀ =", cube_params$rho0), adj = 0)
+```
+
+## Monte Carlo Efficiency Analysis
+
+```{r}
+# Study convergence with sample size
+sample_sizes <- c(1e3, 5e3, 1e4, 5e4, 1e5, 2e5, 5e5)
+convergence_results <- data.frame(
+  n = sample_sizes,
+  energy = numeric(length(sample_sizes)),
+  error = numeric(length(sample_sizes)),
+  time = numeric(length(sample_sizes))
+)
+
+cat("Convergence study...\n")
+for (i in seq_along(sample_sizes)) {
+  start_time <- proc.time()
+  result_conv <- calculate_binding_energy(cube_params, n_samples = sample_sizes[i])
+  elapsed_time <- (proc.time() - start_time)[3]
+  
+  convergence_results$energy[i] <- result_conv$binding_energy
+  convergence_results$error[i] <- result_conv$energy_error
+  convergence_results$time[i] <- elapsed_time
+  
+  cat("N =", sample_sizes[i], "Energy =", sprintf("%.6f", result_conv$binding_energy), 
+      "Error =", sprintf("%.6f", result_conv$energy_error), 
+      "Time =", sprintf("%.2f s", elapsed_time), "\n")
+}
+
+# Plot convergence
+par(mfrow = c(1, 2))
+
+# Energy convergence
+plot(convergence_results$n, convergence_results$energy, log = "x", type = "b", pch = 16,
+     xlab = "Sample Size", ylab = "Binding Energy",
+     main = "Energy Convergence")
+
+# Error scaling
+plot(convergence_results$n, convergence_results$error, log = "xy", type = "b", pch = 16,
+     xlab = "Sample Size", ylab = "Standard Error",
+     main = "Error Scaling")
+# Theoretical 1/√N line
+n_theory <- 10^seq(3, 6, by = 0.1)
+error_theory <- convergence_results$error[1] * sqrt(convergence_results$n[1] / n_theory)
+lines(n_theory, error_theory, col = "red", lty = 2)
+legend("topright", c("Observed", "1/√N theory"), col = c("black", "red"), lty = c(1, 2))
+
+par(mfrow = c(1, 1))
+```
+
+## Physical Interpretation
+
+This example demonstrates several important concepts:
+
+1. **6D Integration**: The binding energy integral is 6-dimensional (3D for each cube), making traditional quadrature methods impractical.
+
+2. **Complex Geometry**: Integration over cube volumes with exponential density profiles requires careful handling of boundaries.
+
+3. **Singular Integrand**: The 1/r term can become large when points are close, requiring careful numerical treatment.
+
+4. **Physical Scaling**: The binding energy should scale approximately as 1/separation for large distances, which we can verify.
+
+5. **Convergence Properties**: Even complex physics problems follow the same O(N^(-1/2)) error scaling as simple Monte Carlo integrals.
+
+This type of calculation is fundamental in:
+- **Astrophysics**: Galaxy merger simulations
+- **Cosmology**: Dark matter halo interactions  
+- **Geophysics**: Gravitational interactions between irregular bodies
+- **Computational Physics**: N-body problem approximations
+
+---
+
+# Practical Guidelines
+
+## When to Use Monte Carlo Integration
+
+✅ **Good for:**
+- High-dimensional integrals (d > 3-4)
+- Complex integration domains
+- When the integrand is expensive to evaluate
+- When you only need moderate accuracy
+- Stochastic problems where randomness is natural
+
+❌ **Not ideal for:**
+- Low-dimensional smooth integrands (use quadrature instead)
+- When high precision is required
+- Oscillatory functions (without special techniques)
+- When the integrand has singularities
+
+## Tips for Better Results
+
+1. **Use variance reduction techniques:**
+   - Importance sampling
+   - Stratified sampling
+   - Control variates
+   - Antithetic variates
+
+2. **Check convergence:**
+   - Monitor running averages
+   - Use multiple independent runs
+   - Plot estimates vs sample size
+
+3. **Handle numerical issues:**
+   - Watch for overflow/underflow
+   - Use appropriate data types
+   - Consider logarithmic scaling for very large/small values
+
+```{r}
+# Example: Monitoring convergence
+monitor_convergence <- function(f, a, b, max_n = 100000, check_points = 50) {
+  n_values <- floor(seq(1000, max_n, length.out = check_points))
+  estimates <- numeric(length(n_values))
+  
+  for (i in seq_along(n_values)) {
+    result <- monte_carlo_1d(f, a, b, n_values[i])
+    estimates[i] <- result$estimate
+  }
+  
+  plot(n_values, estimates, type = "l", 
+       xlab = "Sample Size", ylab = "Estimate",
+       main = "Monte Carlo Convergence Monitoring")
+  
+  return(data.frame(n = n_values, estimate = estimates))
+}
+
+# Monitor convergence for x² integral
+convergence_data <- monitor_convergence(function(x) x^2, 0, 1)
+```
+
+---
+
+# Summary
+
+Monte Carlo integration is a versatile and powerful technique that:
+
+- **Scales well** with dimension
+- **Handles complex domains** naturally  
+- **Provides error estimates** automatically
+- **Can be improved** with variance reduction techniques
+
+The key insight is trading deterministic accuracy for probabilistic convergence, which often makes previously intractable problems solvable.
+
+For your computational physics work, Monte Carlo methods are essential for:
+- Statistical mechanics calculations
+- Quantum Monte Carlo simulations  
+- Bayesian parameter estimation
+- Complex astrophysical modeling
+
+The error decreases as $O(N^{-1/2})$ regardless of dimension - this is both the strength and limitation of Monte Carlo methods.

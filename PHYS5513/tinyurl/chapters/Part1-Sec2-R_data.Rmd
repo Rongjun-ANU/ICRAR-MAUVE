@@ -1,0 +1,750 @@
+---
+title: "Part 1 Section 2: R Data IO"
+author: "Aaron Robotham"
+output:
+  pdf_document
+  #slidy_presentation:
+classoption: a4paper
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load libraries needed for this chapter:
+
+```{r message=FALSE, warning=FALSE}
+library(magicaxis, quietly=TRUE)
+library(data.table, quietly=TRUE)
+library(Rcpp, quietly=TRUE)
+library(microbenchmark, quietly=TRUE)
+library(arrow, quietly=TRUE)
+library(dplyr, quietly=TRUE)
+library(fst, quietly=TRUE)
+library(hdf5r, quietly=TRUE)
+library(RSQLite, quietly=TRUE)
+library(duckdb, quietly=TRUE)
+```
+
+There are many useful formats for data storing and loading in **R**. Here we will cover the most useful ones, and discuss how you can create your own IO interface.
+
+## Data Formats
+
+Simply put, IO and data formats refer to how data you want to analyse is stored on disk. There are two main paradigms: human readable and binary. Human readable means you can open up the file in a text editor and read the contents (with perhaps some difficulty). Binary format means the data is in something closer to raw machine code- you can still open it up in a text editor, but it will look very weird.
+
+The mains pros and cons are that a human readable format is highly cross platform and language- if you can read it, it should be easy to write some software in your language of choice to read it too (although for most popular formats such routines will probably already exist). Binary formats are usually more compact and faster to read and write.
+
+Within binary formats there are also two paradigms: open standards (e.g. **HDF5**, covered later) and propriety ones (e.g. Excel). There are few good reasons to use proprietary formats unless you have no choice. Even within open standards you might find there are limited libraries available in your language of choice, so just because they are open does not make them trivially cross platform and language (in the way that human readable formats always are).
+
+### Big Data = Big Confusion
+
+You will see a lot of mentions online of terms like **Spark**, **Arrow**, **Hadoop**, **HDFS**, **Parquet** and **SQL**, and it all gets a bit confusing. Here is a brief round-up.
+
+  * **Hadoop** is a **Java** based distributed on-disk file system format that primarily uses a file format called **HDFS**. It allows for the efficient access of large scale data stored across multiple computing clusters.
+  * **Spark** is a distributed in-memory file system format that allows for efficient analysis of data.
+  * **Parquet** is a columnar (column major, discussed later) on-disk file format popular in the world of big data.
+  * **Arrow** is a columnar (column major, discussed later) in-memory file format popular in the world of big data.
+  * **SQL** is a non-distributed data base system language It allows for the efficient access of large scale data stored on a single computing clusters.
+  
+As you can see, few of these popular paradigms / formats directly compete. For that reason they tend to be used in complement to each other. In particular it is common to see **Hadoop** combined with **Spark**. **R** (like most other modern high level languages) has support for all of these formats and paradigms, making it in principle easy to use **R** to control big data processing operations (similar to **Python**, which is also popular in this regard). Since they will not be discussed more in this course, for **Hadoop** check out the **RHadoop** package, and for **Spark** see **sparklyr**.
+
+Perhaps the biggest recent confusion has come from **Arrow**, since it has recently become able to write on-disk too much like **Parquet**. Both are supported by the open source **Apache** foundation, so there is a bit of confusion as to when you should use which. The advice is that **Parquet** is considered archival grade (if you save the file now you will be able to read it in 10 years) whereas **Arrow** is ephemeral and will change with time in order to maintain the speed of its in-memory format (which is the priority, not longterm file storage). **Parquet** files are also able to be compressed, so tend to be much smaller and therefore useful when data is being processed across physically separated computing clusters.
+
+----
+
+## In RAM Memory Format
+
+It is important to realise how **R** holds data in memory, especially matrices and tables. The two ways you can do this with column major and row major data, where a contiguous stream of data in RAM is treated as first filling with columns or rows before incrementing. This is obvious if we create a matrix in **R** with both strategies:
+
+```{r}
+matrix(1:9,3, byrow=TRUE) # row major filling
+matrix(1:9,3, byrow=FALSE) # column major filling
+matrix(1:9,3) # default in R (column major)
+```
+
+Why does this matter? Data access becomes appreciably faster if you subset or sum with the cut in the same direction as the major ordering, e.g.:
+ 
+```{r}
+bigmatrix = matrix(1:1e6, 1000)
+microbenchmark(
+  bigmatrix[50:60,],
+  bigmatrix[,50:60],
+  rowSums(bigmatrix),
+  colSums(bigmatrix)
+)
+```
+
+Since **R** uses a column major format it will usually be faster to subset by columns, so this might influence how you organise your data if it is clear you want to do a lot of data summing and subsetting operations. For note, **C** and **Python** (via **numpy**) uses row major and **Fortran**, **MATLAB** and **Julia** use column major for their respective standard matrix interfaces. There are pros and cons to both, but for categorical data analysis (where columns often have different types of data in them), column major is largely preferred these days. For this reason most of the popular on disk database solutions use variants of a column major format.
+
+**R** has a very light weight method for creating matrices and higher dimensional arrays. They are always a stream of numbers in RAM, but with an attribute that tells **R** you can use special methods to access numbers. I.e.:
+
+```{r}
+tempmat = matrix(1:64,8)
+tempmat
+tempmat[50]
+attributes(tempmat)
+```
+
+And now we can change this into a 3D array without touching the data part explicitly:
+
+```{r}
+attributes(tempmat)$dim = c(4,4,4)
+tempmat
+tempmat[50]
+```
+
+In both the 2D and 3D format of the 64 elements, the 50^th^ objects is always 50 and the memory is not altered at all.
+
+----
+
+## Built in R IO Formats
+
+**R** comes with a few simple routines for reading and writing data to disk.
+
+### ASCII and csv
+
+ASCII and csv are the most popular human readable file formats. The main functions you might use to write/read in table like data are base **R** **write.csv**/**read.csv** and **write.table**/**read.table**. Although note that the **data.table** package comes with the excellent and rapid **fwrite**/**fread** too.
+
+As an example let us first make a small amount of toy data:
+
+```{r}
+example_DF = data.frame(num=1:26, letters=letters, roots=sqrt(1:26))
+```
+
+
+We can then write out an ASCII tab (spaces separating data) and a csv version:
+
+```{r}
+write.table(example_DF, '../data/test.tab')
+write.csv(example_DF, '../data/test.csv')
+```
+
+Note in the above we have used the suffix ".tab" for the ASCII table. There is no real standard for this loosely define format, with people also often using ".dat" and ".ascii" amongst others. ".csv" is far more standardised, so it is one reason it tends to be preferred these days. With ASCII tables it is also often not clear whether the separation is made using tabs or spaces (they often look visually identical in a text editor), which can lead to mistakes when reading in the files. If you have ever seen the TV show Silicon Valley, you will know people can get pretty invested in tabs versus spaces...
+
+In any case, let us take a look at the first couple of lines of each file:
+
+```{r}
+readLines('../data/test.tab', n=6)
+readLines('../data/test.csv', n=6)
+```
+
+One odd thing is each line has gained a number. To be compatible with other formats it is usually better to turn this row numbering (technically naming) feature off:
+
+```{r}
+write.table(example_DF, '../data/test.tab', row.names=FALSE)
+write.csv(example_DF, '../data/test.csv', row.names=FALSE)
+readLines('../data/test.tab', n=6)
+readLines('../data/test.csv', n=6)
+```
+
+That looks a bit more as we would expect.
+
+We can benchmark the base **R** and **data.table** ASCII and csv IO functions:
+
+```{r}
+microbenchmark(
+  write.table(example_DF, '../data/test1.tab'), read.table('../data/test1.tab'),
+  write.csv(example_DF, '../data/test.csv'), read.csv('../data/test.csv'),
+  fwrite(example_DF, '../data/test2.tab', sep=' '), fread('../data/test2.tab', sep=' '),
+  fwrite(example_DF, '../data/test.csv'), fread('../data/test.csv')
+)
+```
+
+Here it is very close, but for much larger files **data.table** becomes increasingly more rapid relative to base **R**, so I suggest you consider using it for all ASCII or csv table use cases. It is not clear to me why ASCII tables might tend to read and write faster though (in most cases). I would expect them to behave almost identically, so perhaps there are some very low level optimisations used for writing spaces (since they are the most common characters to write).
+
+The base **R** functions will automatically assign the read in table to a data frame structure (not a matrix, which people might expect). This is almost always what you want, but for fully numeric data which you do want to be treated as a matrix (usually for processing speed, since matrix manipulation is very fast), you might need to explicitly convert things:
+
+```{r}
+gooddf2 = data.frame(a=1:3,b=4:6,c=7:9)
+gooddf2
+goodmat2 = as.matrix(gooddf2)
+goodmat2
+```
+
+Using native matrices will increase the speed of matrix-like operations (e.g. **svd**) by factors of a few usually.
+
+### Lists and Complex Data
+
+**R** supports a huge variety of complex file types that can be read in or written out, but internally complex files will usually be represented as lists.
+
+To save an individual **R** object or all **R** objects in the work-space you have three choices:
+
+```{r eval=FALSE}
+save.image('../data/workspace.rda') #saves everything in your workplace
+```
+
+```{r eval=FALSE}
+list2 = list(gooddf2, goodmat2)
+save(list2,file='../data/list2.rda') #just saves list2 with the name list2
+saveRDS(list2,file='../data/list2.rds') #saves list2 with no name (just data)
+load('../data/workspace.rda') #inherits original object names
+load('../data/list2.rda') #inherits original object name
+list2 = readRDS('../data/list2.rds') #has to be assigned to a named object
+```
+
+These are not especially rapid structures to access since you have to load the entire **R** structure into memory (you cannot target subsets of data). Luckily there are methods to efficiently access large data sets in **R**.
+
+Note that rds and rda files are binary open formats, but there are only readers and writers available for **R**, i.e. you will have a hard time trying to open these file formats in **Python** (although there is some limited support).
+
+----
+
+## External IO Formats
+
+### Arrow and Feather
+
+**Arrow** is a fairly new in-memory columnar data format that allows for efficient access to table-like data. **Feather** was written as an on-disk complement that has become quite popular because it is rapid to read and write, and is available across many languages now (originally **R** and **Python**). As such it is a good quick way to get data from one language to another without worrying about more complex routes like **reticulate** etc.
+
+Now we will write and read this back in:
+
+```{r}
+microbenchmark(
+  write_feather(example_DF, '../data/test.ft'), read_feather('../data/test.ft')
+)
+```
+
+Note in this example **Feather** is actually slower! This is a very small table- the speed up usually becomes noticeable once you have a few hundred rows.
+
+To help remove confusion (or perhaps sew more), the functions *write_arrow* and *read_arrow* are direct aliases to *write_feather* and *read_feather*.
+
+### Parquet
+
+The **Arrow** package also comes with functions to read and write the specifically on-disk **Parquet** format. This is a bit slower to read and write than **Feather**, but has the advantage of being stable over the long-term (archival grade).
+
+```{r}
+microbenchmark(
+  write_parquet(example_DF, '../data/test.pq'), read_parquet('../data/test.pq')
+)
+```
+
+These days I use **Parquet** almost exclusively over **feather** now it is beyond v1.0.0, so in theory feature stable etc.
+
+### FST
+
+An even faster (but currently **R** only) format comes with the **FST** package:
+
+```{r}
+microbenchmark(write_fst(example_DF, '../data/test.fst'), read_fst('../data/test.fst'))
+```
+
+A neat thing with **FST** is that for very large files you can just create a pointer to the file, and then access it like you would a normal **data.frame**, but it only loads the data requested (not the entire file). This makes it a very handy light-weight database:
+
+
+```{r}
+fst_point = fst('../data/test.fst')
+str(fst_point)
+```
+
+So the **fst** command actually just loads a limited amount of meta data, not the actual data. And yet it behaves just like a normal **data.frame**:
+
+```{r}
+fst_point[5:10, c('letters', 'roots')]
+dim(fst_point)
+```
+
+But be careful when using code that looks for **data.frames**, since:
+
+```{r}
+is.data.frame(fst_point)
+```
+
+In most speed tests, **FST** wipes the floor with all the competition, so if you are keeping your data within the **R** ecosystem, but perhaps moving it between machines or saving some data to analyse again later **FST** is a very good option.
+
+### HDF5
+
+A popular very general purpose format is **HDF5** This is popular in many fields of research because it is fairly low-level and it is possible to create almost any type of hierarchical data structure using it. This flexibility is its Achilles' Heel though- it is often hard to second guess how somebody might have saved in data as simple as a 2D matrix or a table (like a **data.frame**), which can make loading somebody else's data a pain (you often have to poke around the meta data to get a good idea of the format). In practice many higher level data formats use **HDF5** as the lower level data storage mechanism, and all that complexity is abstracted away.
+
+That said, **HDF5** is very popular and powerful, as well as fast. The **HDF5** consortium actually support the **C** API themselves, so whilst there is a standards document attached to **HDF5**, for most purposes **HDF5** *is* the **C** interface provided.
+
+Even with this interface, it is such a large standard that there are multiple packages that support different parts of **HDF5** dotted around **R**. This also adds to the confusion since some are more flexible but complex etc, and some are very fast and others slow. After far too much of my life wasted testing all the options, I can tell you the best answer though: **hdf5r**. Just use that, and ignore that others.
+
+That recommendation provided, it is a little bit odd to use because it makes a lot of use of **R6** classes that we only very briefly mentioned in the introduction section (sorry, we could not entirely avoid objects). This means it uses classes in a pretty unremitting manner, and I find myself having to use the documentation a lot to remind myself of how all the bits plug together (but at least it is very well documented).
+
+So how can we save a table? With a few steps: we have to make an **HDF5** pointer to a file that we can write to, subset this pointer with the name of the group (here 'example') and then fill this with our data. Finally (and very importantly!) we have to close the file. Do not forget to do this:
+
+```{r}
+if(file.exists('../data/test.h5')){
+  file.remove('../data/test.h5')
+}
+file.h5 = H5File$new('../data/test.h5', mode="w")
+file.h5[['example']] = example_DF
+file.h5$close_all()
+```
+
+We can now read it back:
+
+```{r}
+file.h5 = H5File$new('../data/test.h5', mode="r")
+file.h5[['example']][] #all rows
+file.h5[['example']][1:5] #just rows 1:5
+file.h5$close_all()
+```
+
+In this package the tables stored as 1D, so we can access specific rows, but we always extract all columns. This makes our interfacing a bit alien, and not much like **FST** which looks so similar to a **data.frame**.
+
+The big advantage of **HDF5** is we can make very complex structures easily though. For example:
+
+```{r}
+if(file.exists('../data/complex.h5')){
+  file.remove('../data/complex.h5')
+}
+file.h5 = H5File$new('../data/complex.h5', mode="w")
+file.h5$create_group('group1')
+file.h5[['group1/example']] = example_DF
+file.h5$create_attr('group1', 'test attribute info')
+file.h5$create_group('group2')
+file.h5[['group2/something']] = 1:100
+file.h5[['group2/else']] = 'nothing to see here'
+file.h5$close_all()
+```
+
+This is a bit like an **R** list, but the big plus here is unlike **rds** files we can access subsets of this structure efficiently (i.e. without loading it all into memory first):
+
+```{r}
+file.h5 = H5File$new('../data/complex.h5', mode="r")
+file.h5$ls()
+file.h5[['group1/example']][1:5]
+file.h5[['group2/something']][1:10]
+file.h5[['group2/else']][]
+file.h5$attr_open('group1')$read()
+file.h5$close_all()
+```
+
+This makes **HDF5** very useful for storing you own complex data, with metadata attached appropriately to explain the meaning of objects. Do not feel bad that none of the above looks obvious- it is not! The authors managed to find object class based methods to make the extremely complex **HDF5** interface more compact, with the advantage that class based methods are context aware, meaning when programming we see auto complete options (which helps to remind you how things work). With S3 it can be hard to know what methods might exist (does it have a plot function associated?), but with R6 you can simply see or the legal functions attached directly to the object, which is confusing for functional people (which I am) but handy.
+
+### FITS Files
+
+A very important file format in astronomy is FITS (Flexible Image Transport Specification). Despite its name, it can also store data cubes (in fact N dimensional arrays) and multi format tables.
+
+For a few years there were various FITS packages that existed in **R**, but none of them used the well supported **CFITSIO** library that provides a **C** level interface to FITS files. In 2019 I decided to spend a few days writing a proper interface into this lower level library (and adding to it over many days since...), with the result being the **Rfits** package. Unfortunately this cannot be put on CRAN due to warnings produced by **CFITSIO** (these have been reported, but to date not fixed), but a mature and stable version of the package is available from my own **GitHub** which should be easy to install using **remotes**:
+
+
+```{r eval=FALSE}
+library(remotes)
+# some sensible download options
+options(download.file.method = "libcurl")
+options(repos="http://cran.rstudio.com/")
+install_github('asgr/Rfits')
+```
+
+And now load **Rfits**:
+
+```{r}
+library(Rfits)
+```
+
+#### FITS Tables
+
+The first thing we want to look at is reading and writing table data. The package comes with some handy example data:
+
+```{r}
+file_table = system.file('extdata', 'table.fits', package = "Rfits")
+temp_table = Rfits_read_table(file_table, header=TRUE)
+temp_table[1:5,1:5]
+```
+
+Notice it properly supports 64 bit integers for *OBJID* (which other packages available do not).
+
+The table you get back when running **Rfits_read_table** with *header*=TRUE looks and behaves exactly like a **data.table** (which is my preferred data table format since it is faster than **data.frame**). However, hidden away in the object attributes is all of the header information!
+
+```{r}
+is.data.table(temp_table)
+str(attributes(temp_table), max.level=1)
+attributes(temp_table)$keyvalues$NAXIS1
+attributes(temp_table)$keycomments$TFORM22
+```
+
+For most users, this will never matter, but it is good to know that the information is all there if needed.
+
+It is worth carrying out some speed tests compared to **csv**, **feather** and **FST** using the same data:
+
+```{r}
+microbenchmark(
+  Rfits_write_table(temp_table, '../data/table.fits'),
+  write.csv(temp_table, '../data/table.csv'),
+  write_feather(temp_table, '../data/table.ft'),
+  write_parquet(temp_table, '../data/table.parquet'),
+  write.fst(temp_table, '../data/table.fst')
+)
+
+microbenchmark(
+  Rfits_read_table('../data/table.fits'),
+  read.csv('../data/table.csv'),
+  read_feather('../data/table.ft'),
+  read_parquet('../data/table.parquet'),
+  read.fst('../data/table.fst')
+)
+```
+
+For this example table we still find **FST** by far the fastest format, with **Parquet** actually last. This table is still quite small however- once you have more than a few thousand rows it scales better than **csv** and similar to **feather** (and **Rfits**), but **FST** still blitzes the field!
+
+#### FITS Images and Cubes
+
+The other side of **FITS** (and supplying the "I" in its name) is of course image storage (and by a small extension higher dimension cubes and arrays). In this paradigm **FITS** stands apart, because all of the formats mentioned so far are really built around table storage (although **HDF5** can be utilised for image too this is unusual in practice in astronomy, but common in other fields like geology and remote sensing).
+
+**Rfits** comes with some **FITS** images ready to try out:
+
+```{r}
+file_image = system.file('extdata', 'image.fits', package = "Rfits")
+temp_image = Rfits_read_image(file_image)
+```
+
+Let us have a quick look at the data:
+
+```{r, fig.width=6, fig.height=6}
+magimage(temp_image$imDat)
+```
+
+For convenience we can access the matrix part directly:
+
+```{r}
+temp_image$imDat[1:5,1:5] #explicit
+temp_image[1:5,1:5,header=FALSE] #convenient
+```
+
+But it really is a list with a header:
+
+```{r}
+str(temp_image)
+```
+
+So it seems a bit curious that temp_image[1:5,1:5] works like it does. The trick is we use the S3 class system to create a special '[' function, because '[' is really just a function, even if it looks different visually. Any **FITS** image that is read in with **Rfits** has a class of *Rfits_image*:
+
+```{r}
+class(temp_image)
+```
+
+So that means we can create a class dependent '[' function that **R** will search for when it tries to subset the top level object:
+
+```{r}
+Rfits:::`[.Rfits_image`
+```
+
+So temp_image[1:5,1:5] is really just a convenient shortcut to temp_image$imDat[1:5,1:5].
+
+We use a similar trick to get the dimensions out:
+
+```{r}
+dim(temp_image)
+Rfits:::dim.Rfits_image
+```
+
+For convenience, we can also access the dimensions of the data for the file on disk (so no need to fully load it first, so useful for very big files):
+
+```{r}
+Rfits_dim(file_image)
+```
+
+Using this same class system it is easy (fairly, anyway) to create a pointer-like interface to on-disk data. This is used to access big **FITS** images without loading them into memory:
+
+```{r}
+temp_point = Rfits_point(file_image)
+```
+
+This pointer contains little data, just some key info (the path to the **FITS** image, the extension to access) and the header:
+
+```{r}
+temp_point
+str(temp_point)
+```
+
+And yet this works:
+
+```{r}
+temp_point[1:5,1:5,header=FALSE]
+```
+
+You can perhaps guess how this works- our pointer has a particular class (Rfits_image_pointer) and it has its own '[' function:
+
+```{r}
+Rfits:::`[.Rfits_pointer`
+```
+
+Within this '[' function you can see a call to **Rfits_read_image** that has arguments to access subsets of images using **CFITSIO**, and this is what happens when we request the [1:5,1:5] subset. Because of how **CFITSIO** works, this means we can actually get the same subsetting result with:
+
+```{r}
+temp_point[c(1,5),c(1,5),header=FALSE]
+```
+
+Doing this is slow for small images (better just to load the whole thing into memory), but it is very useful for massive files (10s of GB is common in my work). By creating our own '[' function interface it means we can make our pointer work in functions that normally expect matrix inputs.
+
+These **Rfits** pointers also have their own **dim** and **print** functions:
+
+```{r}
+Rfits:::dim.Rfits_pointer
+Rfits:::print.Rfits_pointer
+```
+
+These examples with **Rfits** should give you a good insight into how the S3 class system works in **R**, and why you might want to use it for your own package or project (although I personally only use it in packages).
+
+----
+
+## Make Our Own Clever IO
+
+Putting together some of the above concepts, it is fairly easy to create our own easy access **HDF5** based image storage and access format.
+
+First, we can make a simple data saving function:
+
+```{r}
+hdf5_image_write = function(data, file='../data/test.h5'){
+  if(file.exists(file)){
+    file.remove(file)
+  }
+  file.h5 = H5File$new(file, mode="w")
+  file.h5[['image']] = data$imDat
+  file.h5[['header']] = data$header
+  file.h5$close_all()
+}
+```
+
+Let us write the image data from above, with the matrix and the simple header parts:
+
+```{r}
+hdf5_image_write(temp_image)
+```
+
+Next we can make an image reader:
+
+```{r}
+hdf5_image_read = function(file, xrange=NULL, yrange=NULL, header=TRUE){
+  file.h5 = H5File$new(file, mode="r")
+  dims = file.h5[['image']]$dims
+  if(is.null(xrange)){
+    xrange = 1:dims[1]
+  }
+  if(is.null(yrange)){
+    yrange = 1:dims[2]
+  }
+  if(header){
+    output=list(
+      image = file.h5[['image']][xrange,yrange],
+      header = file.h5[['header']][]
+    )
+  }else{
+    output = file.h5[['image']][xrange,yrange]
+  }
+  return(output)
+}
+```
+
+And just extract the bit of the on disk data we want:
+
+```{r}
+hdf5_image_read('../data/test.h5', xrange=1:5, yrange=1:5, header=FALSE)
+```
+
+We can compare the speed of this to the image subsetting available in **Rfits**:
+
+```{r}
+microbenchmark(
+  Rfits_read_image(file_image, xlo=1, xhi=5, ylo=1, yhi=5, header=FALSE),
+  hdf5_image_read('../data/test.h5', xrange=1:5, yrange=1:5, header=FALSE)
+)
+```
+
+So **Rfits** is a factor of a couple faster, but still not a bad effort given we did not have to write any low level code at all! This is the power of **HDF5**- it is easy to create your own flexible file formats that have pretty rapid IO out of the box.
+
+As a last exercise, let us create a simple pointer system for this new format:
+
+```{r}
+hdf5_point = function(file){
+  class(file) = 'hdf5_point'
+  return(file)
+}
+
+`[.hdf5_point` = function(x, i=NULL, j=NULL){
+  return(hdf5_image_read(x, i, j, header=FALSE))
+}
+
+dim.hdf5_point = function(x){
+  file.h5 = H5File$new(x, mode="r")
+  dims = file.h5[['image']]$dims
+}
+```
+
+And now we can interact with on disk data just like it is an in memory matrix:
+
+```{r}
+test = hdf5_point('../data/test.h5')
+test[1:5,1:5]
+dim(test)
+```
+
+Using the S3 class system it is easy to make your own user friendly IO interface that abstracts away a lot of the complexity, and therefore reduces the amount of learning and document reading required. If something is fundamentally a matrix on disk then you should make accessing it look like manipulating a matrix with **R**.
+
+### Clever IO Update
+
+As of 2021 the prototyped version of the above code was included and extended in **Rfits** itself. This means you can now write multi-extension FITS like HDF5 files using **Rfits** with eases:
+
+```{r}
+file_image = system.file('extdata', 'image.fits', package = "Rfits")
+temp_image = Rfits_read_image(file_image, header=TRUE)
+file_table = system.file('extdata', 'table.fits', package = "Rfits")
+temp_table = Rfits_read_table(file_table, header=TRUE)
+
+data = list(temp_image, temp_table)
+  
+file_mix_temp = tempfile()
+
+Rfits_write_all_hdf5(data, file_mix_temp)
+
+data2 = Rfits_read_all_hdf5(file_mix_temp)
+```
+
+And just to check nothing broke whilst reading and writing (this should all be 0):
+
+```{r}
+sum(data[[1]]$imDat - data2[[1]]$imDat)
+
+cols_check = which(sapply(temp_table[1,], is.numeric))
+sum(data[[2]][,..cols_check] - data2[[2]][,..cols_check])
+```
+
+On the user end, everything should look the same as a normal FITS file within **R**:
+
+```{r}
+print(data2)
+```
+
+An exercise for the reader is to make a new plot method to matrices- the default is not very sensible:
+
+```{r}
+plot(matrix(1:9,3))
+```
+
+## Databases
+
+At database is a generic term to refer to a consistent method of accessing and querying data that can be stored in a number of different ways. In principle the file format at the back end is abstracted away, and you are left with an API to worry about.
+
+### Arrow Databases
+
+**Arrow** is supported by the Apache open source foundation (https://arrow.apache.org), and is an in-memory format for data that allows consistent operations between programs (no need to keep saving and loading the data in memory as you switch between e.g. **R** and **Python**). I have spend a decent amount of time looking at low effort methods for working on Medium data, and my feeling is Apache **Arrow** is the sweet spot. It is threaded by default, and for the most part you can trust the defaults (re fiddly things like chunk sizes for data etc). **Arrow** is well supported in **R** (**arrow**), **Python** (**pyarrow**) and **Julia** (**Arrow.jl**) and many others, so it also meets the requirement to be cross-language and flexible. I prefer the speed (this is much faster in benchmarks), simplicity and flexibility of this system rather than setting up a **MiniSQL** database (or similar). Partly this is because it is easier to setup, but I also really dislike SQL syntax for data exploration.
+
+In short, **Arrow** Datasets (their name for a database) are a way to work with large on-disk objects and treat them like they are in memory (for the most part). The backend can be a number of different formats (two popular ones, CSV and Parquet, are discussed below). Once the virtual Dataset has been made the **R** **arrow** package allows us to interact with it using popular **dplyr** verbs (most of them exist). When using this workflow it is common to use the pipe operator `%>%` to send the result of one operation into the next. The clever part is the lazy evaluation of **R** means only the minimal outputs that are needed are extracted, i.e.\ if we only want certain rows and columns then the disk is only touched where absolutely necessary to extract this data- there is no expensive full read of each table into RAM.
+
+**Arrow** lets you build mini simple databases that allow you to access datasets that are larger than memory. A classic example would be a very large table, say 200 GB in size (we work with tables this big). This would be larger than most computer RAM, but if you wanted to extract out a logical subset that *does* fit inside your machine memory **Arrow** offers a simple solution. You can store multiple smaller tables in a number of formats, but **Arrow** most commonly uses csv or **Parquet** back ends.
+
+```{r}
+set.seed(666)
+tempDT = data.table(let=letters[sample(26,1e3,TRUE)], num=rnorm(1e3), loc=rep(1:10, each=100))
+```
+
+We can now make a simple 10 file Dataset:
+
+```{r}
+Parq_dir = paste0('../data/Parq_DB/')
+#partitioning tells it how to split the database
+write_dataset(tempDT, Parq_dir, format='parquet', partitioning='loc')
+```
+
+Let us check what it actually wrote to disk:
+
+```{r}
+list.files('../data/Parq_DB/', recursive=TRUE)
+```
+
+The sub folder names contain the *loc* value of the sub file, which in this case has been saved as a **Parquet**.
+
+We can now interact with it using **dplyr** verbs:
+
+```{r}
+Parq_DB = open_dataset(Parq_dir, format='parquet')
+print(Parq_DB) #should be 101 files, because there will be a parquet metadata file
+
+output1 = Parq_DB |> filter(let == 'a') |> collect()
+output1[1:10,]
+
+output2 = Parq_DB |> filter(loc == 2) |> collect()
+output2[1:10,]
+
+output3 = Parq_DB |> filter(num > 0) |> collect()
+output3[1:10,]
+```
+
+You can divide Datasets by multiple discrete entities. In general you want to split by the most common search type at the top level (this will be fastest). In this case searches by *loc* will be faster than those on *let* even though both are discrete. This should be pretty obvious- if we want to search *loc* = 1 we can just load the entire **Parquet** file in the 'loc=1' directory. How simple!
+
+### SQL Databases
+
+Probably the most popular on disk database format is **SQLite** or **MySQL**, where **SQL** is just a common language to interface with the databases. **SQL** databases are heavily used for storing and accessing astronomy survey data (e.g. **SDSS** and **GAMA**) since it is open, rapid, efficient on disk, and flexible to access (you only extract the exact data you need using human readable queries).
+
+It is a little bit different to other formats, where we first need to define an in-memory connection object that we can then use to write and read table data. This is a bit like the **HDF5** connection we saw earlier, but here it is written in a more functional manner. As as simple example we can write out our example table data with:
+
+```{r}
+con = dbConnect(SQLite(), "../data/table.sql") #setup connection, creating file if necessary
+dbWriteTable(con, "extable", as.data.frame(temp_table), overwrite=TRUE) #write database to connection
+dbDisconnect(con) #disconnect
+```
+
+Now we can make a new connection to this on-disk SQL database:
+
+```{r}
+con = dbConnect(SQLite(), "../data/table.sql") #setup connection
+```
+
+And now we can extract the parts we want using the SQL query language (this is too complex to discuss fully here, but the below shows some simple examples which should at least be human readable):
+
+```{r}
+dbGetQuery(con, 'SELECT * FROM extable')[1:5,1:5] #extract everything and subset in R
+dbGetQuery(con, 'SELECT * FROM extable LIMIT 5')
+dbGetQuery(con, 'SELECT CATAID, RA FROM extable LIMIT 5')
+dbGetQuery(con, 'SELECT CATAID, RA FROM extable WHERE "RA" > 184 LIMIT 5')
+```
+
+We can see how rapid SQL is for accessing certain columns compared to **Rfits** and **FST**, which can both extract specific columns too:
+
+```{r}
+microbenchmark(
+  temp_table[,c('CATAID','RA')],
+  dbGetQuery(con, 'SELECT CATAID, RA FROM extable'),
+  Rfits_read_table('../data/table.fits', cols = c('CATAID', 'RA')),
+  read.fst('../data/table.fst', columns = c('CATAID','RA'))
+)
+```
+
+SQL appears to be faster than **Rfits**, but as we might expect by now it is smoked by **FST**. Unbelievably, **FST** is not even much slower than directly subsetting the *temp_table* object that is stored in RAM!
+
+To be neat we should now close our SQL connection explicitly (although in practice, most things should work without doing this):
+
+```{r}
+dbDisconnect(con)
+```
+
+### DuckDB Databases
+
+Almost identically to the above example with **SQLite** we can test the somewhat new **DuckDB** database format:
+
+```{r}
+con = dbConnect(duckdb(), "../data/table.duck") #setup connection, creating file if necessary
+dbWriteTable(con, "extable", as.data.frame(temp_table), overwrite=TRUE) #write database to connection
+dbDisconnect(con) #disconnect
+```
+
+The only real change is switching to connecting via the the 'duckdb()' function rather than 'SQLite()'. This works because both use the abstracted database interface package (**DBI**) to handle the link between the code you want to execute and the actual database backend. This can be a bit confusing for people, since there is a now a clear distinction between the SQL language and the actual database running in the background, which does not need to any sort of SQL system at all (e.g. MySQL, SQLite etc)!
+
+Now we can make a new connection to this on-disk DuckDB database:
+
+```{r}
+con = dbConnect(duckdb(), "../data/table.duck") #setup connection
+```
+
+And now we can extract the parts we want using the SQL query language (this is too complex to discuss fully here, but the below shows some simple examples which should at least be human readable):
+
+```{r}
+dbGetQuery(con, 'SELECT * FROM extable')[1:5,1:5] #extract everything and subset in R
+dbGetQuery(con, 'SELECT * FROM extable LIMIT 5')
+dbGetQuery(con, 'SELECT CATAID, RA FROM extable LIMIT 5')
+dbGetQuery(con, 'SELECT CATAID, RA FROM extable WHERE "RA" > 184 LIMIT 5')
+```
+
+On this trivial example we can run a new benchmark:
+
+```{r}
+microbenchmark(
+  dbGetQuery(con, 'SELECT CATAID, RA FROM extable')
+)
+```
+
+Where **DuckDB** does not perform especially well, but really it is designed for much bigger datasets. In fact in recent benchmarks it often comes outright top in terms of speed and memory footprint.
+
+```{r}
+dbDisconnect(con)
+```

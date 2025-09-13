@@ -1,0 +1,8 @@
+{
+    "powermode.enabled": true,
+    "powermode.presets": "fireworks",
+    "powermode.combo.timerEnabled": "hide",
+    "powermode.combo.counterEnabled": "hide",
+    "powermode.explosions.gifMode": "restart",
+    "powermode.explosions.size": 10
+}

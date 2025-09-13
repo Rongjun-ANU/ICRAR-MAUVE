@@ -1,0 +1,224 @@
+---
+title: "ODE: r'' = - r^{-4} with r(0) = 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 10, fig.height = 6)
+```
+
+## Problem
+
+We study the family of ODEs
+$$ \frac{d^2 r}{dt^2} = - r^{p}, \quad r(0) = 1, \quad r'(0) = v_0, \quad p \in \{-10,-9,\dots,10\}. $$
+
+We'll default to the natural case $v_0 = 0$ unless stated otherwise.
+
+This is conservative with potential U(r) satisfying $-\,dU/dr = -r^p \Rightarrow dU/dr = r^p$:
+$$ U(r) = \begin{cases}
+\dfrac{r^{p+1}}{p+1}, & p \neq -1, \\
+\ln |r|, & p = -1.\end{cases} $$
+Hence the energy is
+$$ E = \tfrac{1}{2} (r')^2 + U(r). $$
+
+For $v_0=0$, $E = U(1)$ and the time to first zero (collapse time) is the proper integral
+$$ t_c(p) = \int_0^1 \frac{dr}{\sqrt{2\,(E - U(r))}}. $$
+When $p>-1$ this has a closed form
+$$ t_c(p) = \sqrt{\frac{1}{2(p+1)}}\,\mathrm{B}\!\left(\frac{1}{p+1},\,\tfrac{1}{2}\right), $$
+which reproduces special cases like $p=0$ ($t_c=\sqrt{2}$) and $p=1$ ($t_c=\pi/2$). For $p\le -1$ we evaluate the integral numerically.
+
+## Numerical solution (RK4, no dependencies)
+
+```{r ode-solver}
+# Potential and energy for general p
+potential_U <- function(r, p) {
+	if (p == -1) return(log(pmax(abs(r), 1e-16)))
+	return(r^(p+1) / (p+1))
+}
+
+energy_of <- function(r, v, p) 0.5*v^2 + potential_U(r, p)
+
+# Acceleration for general p; avoid singular evals when p<0 near r<=0
+accel <- function(r, p) {
+	if (p < 0) {
+		rpos <- max(r, 1e-12)
+		return(- rpos^p)
+	} else {
+		return(- (r^p))
+	}
+}
+
+# RK4 step with general p
+rk4_step <- function(y, dt, p) {
+	r <- y[1]; v <- y[2]
+	k1 <- c(v, accel(r, p))
+
+	y2 <- y + 0.5*dt*k1
+	r2 <- y2[1]; v2 <- y2[2]
+	k2 <- c(v2, accel(r2, p))
+
+	y3 <- y + 0.5*dt*k2
+	r3 <- y3[1]; v3 <- y3[2]
+	k3 <- c(v3, accel(r3, p))
+
+	y4 <- y + dt*k3
+	r4 <- y4[1]; v4 <- y4[2]
+	k4 <- c(v4, accel(r4, p))
+
+	y + dt*(k1 + 2*k2 + 2*k3 + k4)/6
+}
+
+simulate_ode <- function(p = -4, v0 = 0, dt = 1e-3, t_max = 2, eps = 1e-6) {
+	stopifnot(round(p) == p)  # integer p expected
+	y <- c(r = 1.0, v = v0)
+	t <- 0.0
+	ts <- c(t); rs <- c(y[1]); vs <- c(y[2])
+
+	n_steps <- ceiling(t_max/dt)
+	for (i in 1:n_steps) {
+		y_new <- rk4_step(y, dt, p)
+		t <- t + dt
+
+		# Stop at first zero crossing
+		if (y_new[1] <= eps) {
+			r_prev <- y[1]; r_curr <- y_new[1]
+			t_star <- t - dt
+			if (r_curr < r_prev) {
+				frac <- r_prev / (r_prev - r_curr)
+				t <- t_star + frac*dt
+			}
+			ts <- c(ts, t)
+			rs <- c(rs, max(0, y_new[1]))
+			vs <- c(vs, y_new[2])
+			break
+		}
+
+		y <- y_new
+		ts <- c(ts, t)
+		rs <- c(rs, y[1])
+		vs <- c(vs, y[2])
+	}
+
+	data.frame(t = ts, r = rs, v = vs)
+}
+
+# Collapse time function: closed-form when p>-1, numeric otherwise
+collapse_time <- function(p) {
+	if (p > -1) {
+		return(sqrt(1/(2*(p+1))) * beta(1/(p+1), 1/2))
+	}
+	u <- function(r) if (p == -1) log(pmax(abs(r), 1e-300)) else r^(p+1)/(p+1)
+	E <- u(1)
+	f <- function(r) {
+		r <- pmax(r, 1e-16)
+		denom <- 2*(E - u(r))
+		1/sqrt(pmax(denom, 1e-300))
+	}
+	integrate(f, lower = 0, upper = 1, rel.tol = 1e-8, subdivisions = 10000)$value
+}
+
+# Demonstration for p0 = -4
+p0 <- -4
+dt <- 5e-4
+t_max <- 2
+sol <- simulate_ode(p = p0, v0 = 0, dt = dt, t_max = t_max, eps = 1e-6)
+
+# Energy diagnostic
+energy <- energy_of(sol$r, sol$v, p0)
+E0 <- energy[1]
+
+# Collapse time (numeric for p0=-4)
+t_collapse <- collapse_time(p0)
+cat(sprintf("Collapse time t_c(p=%d) ≈ %.6f\n", p0, t_collapse))
+```
+
+### r(t) and collapse time
+
+```{r plot-r}
+plot(sol$t, sol$r, type = "l", lwd = 2, col = "steelblue",
+		 xlab = "t", ylab = "r(t)", main = "Solution of r'' = - r^{-4}, r(0)=1, r'(0)=0")
+abline(v = t_collapse, col = "red", lty = 2, lwd = 2)
+legend("topright", legend = c("r(t)", "analytic t_c"),
+			 col = c("steelblue", "red"), lty = c(1,2), lwd = c(2,2), bg = "white")
+grid()
+```
+
+### Velocity and energy conservation
+
+```{r plot-energy}
+par(mfrow = c(1,2))
+plot(sol$t, sol$v, type = "l", lwd = 2, col = "darkorange",
+		 xlab = "t", ylab = "v(t)", main = "Velocity")
+grid()
+
+plot(sol$t, energy, type = "l", lwd = 2, col = "darkgreen",
+	xlab = "t", ylab = "E", main = "Energy (should be const.)")
+abline(h = E0, col = "gray40", lty = 3)
+grid()
+par(mfrow = c(1,1))
+```
+
+## Try different initial velocities
+
+```{r try-v0}
+v0_vals <- c(-0.5, 0, 0.5)
+cols <- c("#d73027", "#4575b4", "#1a9850")
+
+plot(NULL, xlim = c(0, 2), ylim = c(0, 1.1),
+		 xlab = "t", ylab = "r(t)", main = "Effect of initial velocity r'(0)=v0 (p = -4)")
+for (i in seq_along(v0_vals)) {
+	s <- simulate_ode(p = p0, v0 = v0_vals[i], dt = dt, t_max = t_max)
+	lines(s$t, s$r, col = cols[i], lwd = 2)
+}
+abline(v = t_collapse, col = "red", lty = 2)
+legend("topright", legend = paste0("v0=", v0_vals), col = cols, lwd = 2, bg = "white")
+grid()
+```
+
+## Exponent sweep: p from -10 to 10
+
+```{r sweep}
+p_vals <- -10:10
+
+# Collapse time (analytic for p>-1, numeric otherwise)
+tc_vals <- sapply(p_vals, collapse_time)
+
+# ODE-estimated zero-crossing times (may be slightly low for very negative p if dt too large)
+tc_ode <- sapply(p_vals, function(p) {
+	s <- simulate_ode(p = p, v0 = 0, dt = 2e-4, t_max = 3, eps = 1e-7)
+	tail(s$t, 1)
+})
+
+par(mfrow = c(1,2))
+plot(p_vals, tc_vals, pch = 19, col = "black", xlab = "p", ylab = "t_c",
+		 main = "Collapse time vs exponent p")
+points(p_vals, tc_ode, pch = 4, col = "red")
+legend("topright", legend = c("exact/ numeric integral", "from ODE integration"),
+			 pch = c(19,4), col = c("black","red"), bg = "white", cex = 0.9)
+grid()
+
+# Sample trajectories for selected p
+sel_p <- c(-10, -4, -2, -1, 0, 1, 2, 4, 10)
+par(mfrow = c(3,3), mar = c(3.5,3.5,2.5,1))
+for (pp in sel_p) {
+	s <- simulate_ode(p = pp, v0 = 0, dt = 2e-4, t_max = 3, eps = 1e-7)
+	plot(s$t, s$r, type = "l", lwd = 2, col = "steelblue",
+			 xlab = "t", ylab = "r", main = paste0("p=", pp))
+	abline(v = collapse_time(pp), col = "red", lty = 2)
+	grid()
+}
+par(mfrow = c(1,1))
+```
+
+### Notes for the sweep
+
+- For p > -1, the closed-form $t_c(p)$ via Beta matches the ODE quite closely.
+- For p ≤ -1, the system is very stiff near r→0; the ODE integrator may slightly under-estimate $t_c$ unless dt is very small. The numeric integral is reliable.
+- For p = 1 (simple harmonic), $t_c = \pi/2$ and r(t) crosses zero smoothly; for p = 0, $t_c = \sqrt{2}$.
+
+### Notes
+
+- The ODE is singular at r = 0; integration stops just before collapse.
+- Decreasing dt improves accuracy, especially near collapse.
+- The analytic collapse time uses the Beta function: t_c = (1/√6) B(5/6, 1/2).
+

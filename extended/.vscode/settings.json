@@ -1,0 +1,19 @@
+{
+  // --- POWER MODE baseline ---
+  "powermode.enabled": true,                 // on / off
+  "powermode.presets": "exploding-rift", // 0 = no shake
+  "powermode.combo.location": "default",     // default | statusbar | editor
+  "powermode.combo.counterEnabled": "hide",  // show | hide
+  "powermode.combo.timeout": 5,              // seconds before combo resets
+
+  // optional custom explosions
+  "powermode.explosions.customExplosions": [
+    { "type": "explosion", "color": "#ff0000", "size": "large" }
+  ],
+  "powermode.explosions.explosionOrder": "random",
+  "powermode.shake.intensity": 3,
+  "powermode.combo.timerEnabled": "hide",
+  "powermode.explosions.enabled": false,
+  "powermode.explosions.backgroundMode": "image",
+  "powermode.explosions.frequency": 2
+}

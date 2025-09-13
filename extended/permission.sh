@@ -1,0 +1,1 @@
+sudo chmod -R 755 /Users/Igniz/Desktop/ICRAR/extended/

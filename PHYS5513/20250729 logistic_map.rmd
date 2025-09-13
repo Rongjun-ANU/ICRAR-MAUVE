@@ -1,0 +1,539 @@
+---
+title: "The Logistic Map: Chaos and Bifurcations"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 10, fig.height = 6)
+set.seed(666)
+```
+
+## Introduction to the Logistic Map
+
+The logistic map is defined by the equation:
+$$x_{n+1} = r \cdot x_n \cdot (1 - x_n)$$
+
+Where:
+- $x_n$ is the population at time $n$ (between 0 and 1)
+- $r$ is the growth rate parameter
+- The system exhibits different behaviors depending on the value of $r$
+
+## Basic Logistic Map Functions
+
+```{r functions}
+# Function to iterate the logistic map
+logistic_map <- function(x, r) {
+    return(r * x * (1 - x))
+}
+
+# Function to simulate time series
+simulate_logistic <- function(x0, r, n_steps) {
+    x <- numeric(n_steps + 1)
+    x[1] <- x0
+    
+    for (i in 1:n_steps) {
+        x[i + 1] <- logistic_map(x[i], r)
+    }
+    
+    return(x)
+}
+
+# Function to find attractors (final values after transients)
+find_attractor <- function(x0, r, n_transient = 1000, n_attractor = 100) {
+    # Run transient period
+    x <- x0
+    for (i in 1:n_transient) {
+        x <- logistic_map(x, r)
+    }
+    
+    # Collect attractor points
+    attractor <- numeric(n_attractor)
+    for (i in 1:n_attractor) {
+        x <- logistic_map(x, r)
+        attractor[i] <- x
+    }
+    
+    return(attractor)
+}
+
+cat("Logistic map functions loaded successfully!\n")
+```
+
+## Time Series for Different r Values
+
+```{r time_series}
+# Set parameters
+x0 <- 0.5  # Initial condition
+n_steps <- 100
+
+# Different r values showing different behaviors
+r_values <- c(1.5, 2.8, 3.2, 3.5, 3.8, 4.0)
+behaviors <- c("Extinction", "Fixed Point", "Period-2", "Period-4", "Chaos", "Full Chaos")
+
+# Create subplots
+par(mfrow = c(2, 3), mar = c(4, 4, 3, 1))
+
+for (i in 1:length(r_values)) {
+    r <- r_values[i]
+    x_series <- simulate_logistic(x0, r, n_steps)
+    
+    plot(0:n_steps, x_series, 
+         type = "l", 
+         main = paste("r =", r, "-", behaviors[i]),
+         xlab = "Time (n)", 
+         ylab = "x_n",
+         col = "blue",
+         lwd = 2)
+    
+    # Add points for the last few values to show attractor
+    points((n_steps-9):n_steps, x_series[(n_steps-8):(n_steps+1)], 
+           col = "red", pch = 19, cex = 0.8)
+    
+    grid()
+}
+
+# Reset plot parameters
+par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+```
+
+## The Famous Bifurcation Diagram
+
+```{r bifurcation_diagram}
+cat("Creating bifurcation diagram... This may take a moment.\n")
+
+# Parameters for bifurcation diagram
+r_min <- 2.5
+r_max <- 4.0
+r_resolution <- 0.002
+r_values <- seq(r_min, r_max, by = r_resolution)
+
+x0 <- 0.5
+n_transient <- 500
+n_plot <- 100
+
+# Storage for bifurcation data
+bifurcation_r <- c()
+bifurcation_x <- c()
+
+# Calculate bifurcation diagram
+for (r in r_values) {
+    attractor_points <- find_attractor(x0, r, n_transient, n_plot)
+    
+    # Store r and x values
+    bifurcation_r <- c(bifurcation_r, rep(r, length(attractor_points)))
+    bifurcation_x <- c(bifurcation_x, attractor_points)
+}
+
+# Plot bifurcation diagram
+plot(bifurcation_r, bifurcation_x,
+     pch = ".", cex = 0.5, col = "black",
+     main = "Logistic Map Bifurcation Diagram",
+     xlab = "Growth Rate (r)",
+     ylab = "Population (x)",
+     xlim = c(r_min, r_max),
+     ylim = c(0, 1))
+
+# Add important bifurcation points
+abline(v = 3.0, col = "red", lty = 2, lwd = 2)
+abline(v = 1 + sqrt(6), col = "blue", lty = 2, lwd = 2)
+abline(v = 3.449, col = "green", lty = 2, lwd = 2)
+abline(v = 3.544, col = "purple", lty = 2, lwd = 2)
+
+# Add legend
+legend("bottomleft", 
+       legend = c("r = 3.0 (First bifurcation)", 
+                  "r ≈ 3.45 (Period-2)",
+                  "r ≈ 3.449 (Chaos begins)", 
+                  "r ≈ 3.544 (Period-3 window)"),
+       col = c("red", "blue", "green", "purple"),
+       lty = 2, lwd = 2, cex = 0.8)
+
+grid()
+cat("Bifurcation diagram complete!\n")
+```
+
+## Zoom into Chaos Region
+
+```{r chaos_zoom}
+# Zoom into the chaotic region
+r_min_zoom <- 3.4
+r_max_zoom <- 4.0
+r_resolution_zoom <- 0.001
+r_values_zoom <- seq(r_min_zoom, r_max_zoom, by = r_resolution_zoom)
+
+bifurcation_r_zoom <- c()
+bifurcation_x_zoom <- c()
+
+cat("Creating detailed view of chaotic region...\n")
+
+for (r in r_values_zoom) {
+    attractor_points <- find_attractor(x0, r, 800, 150)
+    bifurcation_r_zoom <- c(bifurcation_r_zoom, rep(r, length(attractor_points)))
+    bifurcation_x_zoom <- c(bifurcation_x_zoom, attractor_points)
+}
+
+plot(bifurcation_r_zoom, bifurcation_x_zoom,
+     pch = ".", cex = 0.3, col = "darkblue",
+     main = "Logistic Map: Chaos Region Detail",
+     xlab = "Growth Rate (r)",
+     ylab = "Population (x)",
+     xlim = c(r_min_zoom, r_max_zoom),
+     ylim = c(0, 1))
+
+# Highlight period-3 window
+rect(3.54, 0, 3.57, 1, col = rgb(1, 0, 0, 0.1), border = "red", lwd = 2)
+text(3.555, 0.9, "Period-3\nWindow", col = "red", cex = 0.8, font = 2)
+
+grid()
+```
+
+## Ultra-High Resolution Zoom: λ = 3.64 to 3.70
+
+```{r lambda_zoom}
+# Ultra-detailed zoom into a specific interesting region
+# Using lambda (λ) notation instead of r
+lambda_min <- 3.64
+lambda_max <- 3.70
+lambda_resolution <- 0.0001  # Very high resolution
+lambda_values <- seq(lambda_min, lambda_max, by = lambda_resolution)
+
+x0 <- 0.5
+n_transient <- 1500
+n_plot <- 200
+
+bifurcation_lambda <- c()
+bifurcation_x_lambda <- c()
+
+cat("Creating ultra-high resolution zoom (λ = 3.64 to 3.70)...\n")
+cat("This shows fine structure in the bifurcation diagram.\n")
+
+# Progress indicator
+total_steps <- length(lambda_values)
+for (i in 1:length(lambda_values)) {
+    lambda <- lambda_values[i]
+    
+    # Progress update every 100 steps
+    if (i %% 100 == 0) {
+        cat("Progress:", round(100 * i / total_steps, 1), "%\n")
+    }
+    
+    attractor_points <- find_attractor(x0, lambda, n_transient, n_plot)
+    bifurcation_lambda <- c(bifurcation_lambda, rep(lambda, length(attractor_points)))
+    bifurcation_x_lambda <- c(bifurcation_x_lambda, attractor_points)
+}
+
+# Create the zoomed plot
+plot(bifurcation_lambda, bifurcation_x_lambda,
+     pch = ".", cex = 0.2, col = "navy",
+     main = "Logistic Map: Ultra-High Resolution Zoom",
+     xlab = "Growth Rate (λ)",
+     ylab = "Population (x)",
+     xlim = c(lambda_min, lambda_max),
+     ylim = c(0.65, 0.8))
+
+# Add grid for better readability
+grid(col = "lightgray", lty = 1)
+
+# Add some annotations for interesting features
+abline(v = 3.65, col = "red", lty = 3, alpha = 0.7)
+abline(v = 3.67, col = "blue", lty = 3, alpha = 0.7)
+abline(v = 3.69, col = "green", lty = 3, alpha = 0.7)
+
+# Add text annotations
+text(3.651, 0.79, "λ=3.65", col = "red", cex = 0.7, srt = 90)
+text(3.671, 0.79, "λ=3.67", col = "blue", cex = 0.7, srt = 90)
+text(3.691, 0.79, "λ=3.69", col = "green", cex = 0.7, srt = 90)
+
+cat("Ultra-zoom complete! Fine bifurcation structure revealed.\n")
+```
+
+## Analysis of the Zoomed Region
+
+```{r lambda_analysis}
+# Analyze specific lambda values in the zoomed region
+interesting_lambdas <- c(3.650, 3.655, 3.660, 3.665, 3.670, 3.675, 3.680, 3.685, 3.690, 3.695)
+
+cat("Detailed analysis of λ values in the zoomed region:\n")
+cat(paste(rep("=", 50), collapse = ""), "\n")
+
+par(mfrow = c(2, 3), mar = c(4, 4, 3, 1))
+
+for (i in 1:6) {  # Show first 6 values
+    lambda <- interesting_lambdas[i]
+    
+    # Generate time series
+    series <- simulate_logistic(x0, lambda, 200)
+    
+    # Focus on the y-range of interest
+    plot(150:200, series[151:201], 
+         type = "b", pch = 19, cex = 0.6,
+         main = paste("λ =", lambda),
+         xlab = "Time (n)", 
+         ylab = "x",
+         ylim = c(0.65, 0.8),
+         col = "darkblue")
+    
+    grid()
+    
+    # Print attractor info
+    final_vals <- series[180:200]
+    unique_vals <- unique(round(final_vals, 5))
+    cat("λ =", lambda, ": Period =", length(unique_vals), "\n")
+}
+
+par(mfrow = c(1, 1), mar = c(5, 4, 4, 2) + 0.1)
+
+# Create a summary plot showing period vs lambda
+periods <- numeric(length(interesting_lambdas))
+for (i in 1:length(interesting_lambdas)) {
+    lambda <- interesting_lambdas[i]
+    series <- simulate_logistic(x0, lambda, 300)
+    final_vals <- series[250:300]
+    unique_vals <- unique(round(final_vals, 5))
+    periods[i] <- length(unique_vals)
+}
+
+plot(interesting_lambdas, periods,
+     type = "b", pch = 19, lwd = 2, col = "purple",
+     main = "Period Structure in Zoomed Region",
+     xlab = "Growth Rate (λ)",
+     ylab = "Period",
+     ylim = c(1, max(periods) + 1))
+
+grid()
+
+# Add period labels
+for (i in 1:length(interesting_lambdas)) {
+    if (periods[i] <= 20) {  # Only label if period is reasonable
+        text(interesting_lambdas[i], periods[i] + 0.1, 
+             paste("P", periods[i], sep=""), 
+             cex = 0.7, col = "red")
+    }
+}
+
+cat("\nPeriod analysis complete!\n")
+```
+
+## 3D Visualization of the Zoomed Region
+
+```{r lambda_3d}
+# Create a 3D-like visualization showing the evolution
+# This shows how the system evolves over time for different lambda values
+
+lambda_sample <- seq(3.64, 3.70, by = 0.002)
+time_steps <- 50:100  # Show later time steps after transients
+
+# Create matrix to store results
+evolution_matrix <- matrix(NA, nrow = length(lambda_sample), ncol = length(time_steps))
+
+cat("Creating 3D evolution visualization...\n")
+
+for (i in 1:length(lambda_sample)) {
+    lambda <- lambda_sample[i]
+    series <- simulate_logistic(x0, lambda, max(time_steps))
+    evolution_matrix[i, ] <- series[time_steps]
+}
+
+# Create the 3D-like plot using image
+image(lambda_sample, time_steps, evolution_matrix,
+      col = heat.colors(100),
+      main = "Logistic Map Evolution: λ vs Time vs Population",
+      xlab = "Growth Rate (λ)",
+      ylab = "Time (n)",
+      zlim = c(0.65, 0.8))
+
+# Add contour lines
+contour(lambda_sample, time_steps, evolution_matrix, 
+        add = TRUE, col = "black", lwd = 0.5)
+
+# Add color scale legend
+legend_vals <- seq(0.65, 0.8, length.out = 6)
+legend("topright", 
+       legend = round(legend_vals, 3),
+       fill = heat.colors(6),
+       title = "Population",
+       cex = 0.8)
+
+cat("3D visualization complete!\n")
+```
+
+```{r lyapunov}
+# Function to calculate Lyapunov exponent
+calculate_lyapunov <- function(r, x0 = 0.5, n_steps = 10000, n_transient = 1000) {
+    x <- x0
+    
+    # Skip transient
+    for (i in 1:n_transient) {
+        x <- logistic_map(x, r)
+    }
+    
+    # Calculate Lyapunov exponent
+    lyap_sum <- 0
+    for (i in 1:n_steps) {
+        x <- logistic_map(x, r)
+        # Derivative of logistic map: r(1-2x)
+        derivative <- abs(r * (1 - 2 * x))
+        if (derivative > 0) {
+            lyap_sum <- lyap_sum + log(derivative)
+        }
+    }
+    
+    return(lyap_sum / n_steps)
+}
+
+# Calculate Lyapunov exponents for range of r values
+r_lyap <- seq(2.5, 4.0, by = 0.01)
+lyap_exp <- sapply(r_lyap, calculate_lyapunov)
+
+# Plot Lyapunov exponent
+plot(r_lyap, lyap_exp,
+     type = "l", lwd = 2, col = "darkred",
+     main = "Lyapunov Exponent vs Growth Rate",
+     xlab = "Growth Rate (r)",
+     ylab = "Lyapunov Exponent",
+     ylim = c(-2, 1))
+
+abline(h = 0, col = "black", lty = 2, lwd = 1)
+text(3.8, 0.1, "Chaos (λ > 0)", col = "red", cex = 0.9)
+text(3.1, -0.5, "Periodic (λ < 0)", col = "blue", cex = 0.9)
+
+grid()
+
+cat("Positive Lyapunov exponent indicates chaos!\n")
+```
+
+## Cobweb Plot Visualization
+
+```{r cobweb}
+# Function to create cobweb plot
+cobweb_plot <- function(r, x0, n_steps = 50) {
+    # Set up the plot
+    x_seq <- seq(0, 1, length.out = 1000)
+    y_logistic <- logistic_map(x_seq, r)
+    
+    plot(x_seq, y_logistic, 
+         type = "l", lwd = 2, col = "blue",
+         main = paste("Cobweb Plot: r =", r),
+         xlab = "x_n", ylab = "x_{n+1}",
+         xlim = c(0, 1), ylim = c(0, 1))
+    
+    # Add identity line
+    abline(0, 1, col = "gray", lty = 2, lwd = 1)
+    
+    # Create cobweb
+    x <- x0
+    for (i in 1:n_steps) {
+        x_next <- logistic_map(x, r)
+        
+        # Vertical line
+        lines(c(x, x), c(x, x_next), col = "red", lwd = 1)
+        
+        # Horizontal line
+        lines(c(x, x_next), c(x_next, x_next), col = "red", lwd = 1)
+        
+        x <- x_next
+    }
+    
+    # Mark starting point
+    points(x0, x0, col = "green", pch = 19, cex = 1.5)
+    text(x0, x0 - 0.05, "Start", col = "green", cex = 0.8)
+    
+    grid()
+}
+
+# Create cobweb plots for different behaviors
+par(mfrow = c(2, 2))
+
+cobweb_plot(2.8, 0.3)  # Fixed point
+cobweb_plot(3.2, 0.3)  # Period-2 cycle
+cobweb_plot(3.5, 0.3)  # Period-4 cycle
+cobweb_plot(3.9, 0.3)  # Chaotic behavior
+
+par(mfrow = c(1, 1))
+```
+
+## Sensitivity to Initial Conditions
+
+```{r sensitivity}
+# Demonstrate butterfly effect in chaotic regime
+r_chaos <- 3.8
+x0_1 <- 0.5
+x0_2 <- 0.5000001  # Tiny difference
+n_steps <- 50
+
+# Simulate both trajectories
+series1 <- simulate_logistic(x0_1, r_chaos, n_steps)
+series2 <- simulate_logistic(x0_2, r_chaos, n_steps)
+
+# Plot both series
+plot(0:n_steps, series1, 
+     type = "l", lwd = 2, col = "blue",
+     main = "Sensitivity to Initial Conditions (Butterfly Effect)",
+     xlab = "Time (n)", ylab = "Population (x)",
+     ylim = c(0, 1))
+
+lines(0:n_steps, series2, lwd = 2, col = "red")
+
+legend("topright", 
+       legend = c(paste("x0 =", x0_1), paste("x0 =", x0_2)),
+       col = c("blue", "red"), lwd = 2)
+
+# Calculate and plot difference
+difference <- abs(series1 - series2)
+plot(0:n_steps, log10(difference), 
+     type = "l", lwd = 2, col = "purple",
+     main = "Logarithmic Difference Between Trajectories",
+     xlab = "Time (n)", ylab = "log10(|difference|)")
+
+grid()
+
+cat("Small differences grow exponentially in chaotic systems!\n")
+```
+
+## Interactive Exploration
+
+```{r interactive_functions}
+# Function to explore specific r values
+explore_r <- function(r, x0 = 0.5, n_steps = 100) {
+    cat("Exploring r =", r, "\n")
+    
+    # Time series
+    series <- simulate_logistic(x0, r, n_steps)
+    
+    # Final behavior
+    final_values <- series[(n_steps-19):n_steps]
+    unique_finals <- unique(round(final_values, 6))
+    
+    cat("Final attractor has", length(unique_finals), "unique values\n")
+    if (length(unique_finals) <= 10) {
+        cat("Attractor values:", round(unique_finals, 4), "\n")
+    } else {
+        cat("System appears chaotic\n")
+    }
+    
+    # Lyapunov exponent
+    lyap <- calculate_lyapunov(r)
+    cat("Lyapunov exponent:", round(lyap, 4))
+    if (lyap > 0) cat(" (Chaotic)")
+    else if (lyap < 0) cat(" (Periodic)")
+    else cat(" (Neutral)")
+    cat("\n\n")
+    
+    # Plot
+    plot(0:n_steps, series, 
+         type = "l", lwd = 2, col = "darkgreen",
+         main = paste("Logistic Map: r =", r),
+         xlab = "Time (n)", ylab = "Population (x)")
+    points((n_steps-9):n_steps, series[(n_steps-8):(n_steps+1)], 
+           col = "red", pch = 19)
+    grid()
+}
+
+# Example usage - you can call this function with different r values
+cat("Use explore_r(r_value) to investigate specific growth rates!\n")
+cat("Try: explore_r(2.9), explore_r(3.1), explore_r(3.544), explore_r(3.9)\n")
+
+# Example
+explore_r(3.544)  # Interesting period-3 window
+```
+

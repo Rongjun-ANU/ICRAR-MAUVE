@@ -1,0 +1,261 @@
+---
+title: "ANOVA: A Practical Tutorial in R"
+author: ""
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.width = 7, fig.height = 5)
+
+# Helper: install/load packages
+pkgs <- c("ggplot2", "dplyr", "car", "emmeans", "effectsize")
+need <- setdiff(pkgs, rownames(installed.packages()))
+if (length(need)) install.packages(need, repos = "https://cloud.r-project.org")
+
+invisible(lapply(pkgs, require, character.only = TRUE))
+set.seed(123)
+```
+
+# What is ANOVA?
+
+- ANOVA (Analysis of Variance) tests whether 3+ group means are equal by comparing variance between groups to variance within groups.
+- Null hypothesis H0: all group means are equal. Alternative: at least one mean differs.
+- Test statistic: F = MS_between / MS_within, where MS are mean squares (sum of squares divided by degrees of freedom).
+- Common types:
+  - One-way ANOVA: 1 categorical factor (e.g., fertilizer type).
+  - Two-way (factorial) ANOVA: 2 factors, can test interaction.
+  - Repeated-measures ANOVA: the same subjects measured multiple times (not covered in depth here).
+
+Assumptions (for classical ANOVA):
+- Independence of observations (study design issue).
+- Normality of residuals (each group’s errors are roughly normal).
+- Homogeneity of variances (similar group variances).
+
+If assumptions fail, consider transformations or a non-parametric alternative (e.g., Kruskal–Wallis).
+
+# One-way ANOVA example (PlantGrowth)
+
+We’ll use the built-in `PlantGrowth` dataset: plant weights across 3 treatment groups.
+
+```{r data-peek}
+head(PlantGrowth)
+str(PlantGrowth)
+PlantGrowth %>% dplyr::count(group)
+```
+
+## Visualize
+
+```{r viz-oneway}
+library(ggplot2)
+
+ggplot(PlantGrowth, aes(x = group, y = weight, fill = group)) +
+  geom_boxplot(width = 0.6, alpha = 0.7) +
+  geom_jitter(width = 0.08, alpha = 0.6) +
+  guides(fill = "none") +
+  labs(title = "Plant weights by group", x = "Group", y = "Weight") +
+  theme_minimal(base_size = 13)
+```
+
+## Fit one-way ANOVA
+
+```{r fit-oneway}
+fit1 <- aov(weight ~ group, data = PlantGrowth)
+summary(fit1)
+```
+
+The F-test above tells you whether there is any difference among group means.
+
+## Assumption checks
+
+- Residual diagnostics
+
+```{r diag-oneway}
+par(mfrow = c(1, 2))
+plot(fit1, which = 1)   # Residuals vs Fitted (look for no pattern, constant spread)
+plot(fit1, which = 2)   # Normal Q-Q (points near line)
+par(mfrow = c(1, 1))
+```
+
+- Normality of residuals (Shapiro–Wilk)
+
+```{r shapiro-oneway}
+shapiro.test(residuals(fit1))
+```
+
+- Homogeneity of variances (Levene’s test; more robust than Bartlett’s)
+
+```{r levene-oneway}
+car::leveneTest(weight ~ group, data = PlantGrowth)
+```
+
+If these look acceptable, proceed. If not, consider a transformation (e.g., log) or non-parametric test (see later section).
+
+## Effect size
+
+Report how large the effect is (not just significance). Eta-squared and omega-squared are common.
+
+```{r effectsize-oneway}
+# Using effectsize package
+eta_squared(fit1)
+omega_squared(fit1)
+
+# Manual eta^2 for illustration
+an_tab <- anova(fit1)
+ss_between <- an_tab["group", "Sum Sq"]
+ss_within  <- an_tab["Residuals", "Sum Sq"]
+eta2_manual <- ss_between / (ss_between + ss_within)
+eta2_manual
+```
+
+## Post-hoc comparisons
+
+If the omnibus ANOVA is significant, identify which groups differ. Tukey’s HSD controls family-wise error.
+
+```{r tukey-oneway}
+TukeyHSD(fit1)
+```
+
+Modern approach using estimated marginal means (aka least-squares means):
+
+```{r emmeans-oneway}
+library(emmeans)
+em1 <- emmeans(fit1, ~ group)
+summary(em1)
+pairs(em1, adjust = "tukey")
+```
+
+## Compact report (example wording)
+
+- One-way ANOVA showed a significant effect of group on plant weight, F(df1, df2) = Fvalue, p = ..., eta^2 = ... .
+- Tukey-adjusted comparisons indicated that ... differs from ..., while ... and ... did not differ.
+
+You can extract numbers programmatically:
+
+```{r tidy-report-oneway}
+an1 <- summary(fit1)[[1]]
+Fval <- unname(an1["group", "F value"]) 
+df1  <- unname(an1["group", "Df"]) 
+df2  <- unname(an1["Residuals", "Df"]) 
+pval <- unname(an1["group", "Pr(>F)"]) 
+eta2 <- effectsize::eta_squared(fit1)$Eta2[1]
+list(df1 = df1, df2 = df2, F = Fval, p = pval, eta2 = eta2)
+```
+
+# Two-way ANOVA with interaction (ToothGrowth)
+
+`ToothGrowth` measures tooth length by supplement type (`supp`) and dose (`dose`). We’ll treat dose as a factor to perform a 2×3 ANOVA and test interaction.
+
+```{r data-two}
+head(ToothGrowth)
+ToothGrowth$dose <- factor(ToothGrowth$dose)
+with(ToothGrowth, table(supp, dose))
+```
+
+## Visualize means and interaction
+
+```{r viz-two}
+ToothGrowth %>%
+  group_by(supp, dose) %>%
+  summarise(mean_len = mean(len), .groups = "drop") %>%
+  ggplot(aes(dose, mean_len, color = supp, group = supp)) +
+  geom_point(size = 3) +
+  geom_line(linewidth = 0.8) +
+  labs(y = "Mean tooth length", title = "Interaction plot: supp × dose") +
+  theme_minimal(base_size = 13)
+```
+
+## Fit two-way ANOVA
+
+```{r fit-two}
+fit2 <- aov(len ~ supp * dose, data = ToothGrowth)
+summary(fit2)
+```
+
+Interpretation:
+- Main effects: overall differences across `supp` levels and across `dose` levels.
+- Interaction: whether the effect of `dose` depends on `supp` (non-parallel lines above suggest interaction).
+
+## Assumption checks
+
+```{r diag-two}
+par(mfrow = c(1, 2))
+plot(fit2, which = 1)
+plot(fit2, which = 2)
+par(mfrow = c(1, 1))
+car::leveneTest(len ~ supp * dose, data = ToothGrowth)
+shapiro.test(residuals(fit2))
+```
+
+## Post-hoc and simple effects
+
+Use `emmeans` to probe main effects and interaction with multiplicity control.
+
+```{r emmeans-two}
+# Marginal means for each factor
+em_supp <- emmeans(fit2, ~ supp)
+em_dose <- emmeans(fit2, ~ dose)
+contrast(em_supp, method = "pairwise", adjust = "tukey")
+contrast(em_dose, method = "pairwise", adjust = "tukey")
+
+# If interaction is significant, compare supplements at each dose (simple effects)
+em_int <- emmeans(fit2, ~ supp | dose)
+pairs(em_int, adjust = "tukey")
+```
+
+## Effect sizes
+
+```{r effectsize-two}
+eta_squared(fit2)
+omega_squared(fit2)
+```
+
+# When assumptions fail: non-parametric alternative
+
+For a one-way design, use Kruskal–Wallis instead of ANOVA.
+
+```{r kruskal}
+kruskal.test(weight ~ group, data = PlantGrowth)
+```
+
+For pairwise follow-ups, use Wilcoxon rank-sum tests with multiplicity adjustment.
+
+```{r pairwise-wilcox}
+pairwise.wilcox.test(PlantGrowth$weight, PlantGrowth$group, p.adjust.method = "BH")
+```
+
+# Practical checklist
+
+1. Plot your data (boxplots/violins + points).
+2. Fit ANOVA (`aov()` or `lm()` with factors).
+3. Check residuals (Q–Q), variance homogeneity (Levene).
+4. If OK, interpret the F-test; compute effect sizes.
+5. Run post-hoc comparisons with adjustment (Tukey/emmeans).
+6. If assumptions fail, consider transformation or Kruskal–Wallis.
+
+# Bonus: ANOVA via lm() and type-II/III SS
+
+`aov()` is a special case of `lm()`. In balanced designs, Type I/II/III sums of squares agree. In unbalanced designs, consider Type II or III using `car::Anova`.
+
+```{r type-ii-iii}
+# Same model with lm
+fit2_lm <- lm(len ~ supp * dose, data = ToothGrowth)
+
+# Type II SS (common default in many fields)
+car::Anova(fit2_lm, type = 2)
+
+# Type III SS (requires contrasts that sum to zero)
+old_contr <- options(contrasts = c("contr.sum", "contr.poly"))
+car::Anova(fit2_lm, type = 3)
+options(old_contr) # restore
+```
+
+# How to cite/report
+
+- Report F(df1, df2) = value, p-value, and an effect size (eta^2/omega^2), plus post-hoc results where relevant.
+- Example: "A one-way ANOVA showed a significant effect of treatment on weight, F(2, 27) = 4.85, p = 0.016, eta^2 = 0.26. Tukey’s HSD indicated that trt2 > ctrl (p = 0.012), while trt1 ≈ ctrl (p = 0.21)."

@@ -1,0 +1,309 @@
+---
+title: "Fibonacci Sequence Implementation and Testing"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+# We'll load libraries in the rcpp-setup chunk after checking/installing them
+```
+
+# Introduction
+
+The Fibonacci sequence is a famous mathematical sequence where each number is the sum of the two preceding ones. The sequence typically starts with 0 and 1, so the sequence goes: `r paste(c(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55), collapse = ", ")`.
+
+In this document, we'll implement an iterative algorithm to compute Fibonacci numbers and thoroughly test our implementation.
+
+# Fibonacci Function Implementation
+
+Below is our iterative implementation of the Fibonacci function:
+
+```{r fibonacci-function}
+fibonacci_r <- function(n) {
+    if (n <= 1) {
+        return(n)
+    }
+    
+    a <- 0
+    b <- 1
+    for (i in 2:n) {
+        temp <- a + b
+        a <- b
+        b <- temp
+    }
+    return(b)
+}
+```
+
+## Function Explanation
+
+The function works as follows:
+- For inputs `n ≤ 1`, we return `n` directly (base cases: F(0) = 0, F(1) = 1)
+- For larger values, we use two variables `a` and `b` to track consecutive Fibonacci numbers
+- We iterate from 2 to `n`, updating our variables to compute the next Fibonacci number
+
+# Testing the Implementation
+
+Let's test our function with several test cases to ensure it works correctly:
+
+```{r test-function}
+test_fibonacci_r <- function() {
+    test_cases <- c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    expected_results <- c(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55)
+    
+    cat("Running Fibonacci tests...\n\n")
+    
+    for (i in seq_along(test_cases)) {
+        result <- fibonacci_r(test_cases[i])
+        if (result == expected_results[i]) {
+            cat("✓ Test case F(", test_cases[i], ") = ", result, " passed.\n", sep = "")
+        } else {
+            cat("✗ Test case F(", test_cases[i], ") failed: expected ", 
+                expected_results[i], " but got ", result, "\n", sep = "")
+        }
+    }
+    
+    cat("\nTest summary complete.\n")
+}
+```
+
+## Running the Tests
+
+Now let's execute our test function:
+
+```{r run-tests}
+test_fibonacci_r()
+```
+
+# Individual Examples
+
+Let's also demonstrate some individual calculations:
+
+- The 5th Fibonacci number is: `r fibonacci_r(5)`
+- The 8th Fibonacci number is: `r fibonacci_r(8)`
+- The 10th Fibonacci number is: `r fibonacci_r(10)`
+
+# Verification Table
+
+Here's a table showing our results compared to the expected Fibonacci sequence:
+
+```{r results-table}
+n_values <- 0:10
+fibonacci_values <- sapply(n_values, fibonacci_r)
+results_df <- data.frame(
+    n = n_values,
+    "F(n)" = fibonacci_values,
+    check.names = FALSE
+)
+
+knitr::kable(results_df, caption = "Fibonacci Sequence Results")
+```
+
+# Performance Comparison: R vs Rcpp
+
+Now let's implement the same Fibonacci function using Rcpp (R's C++ interface) and compare the performance between pure R and C++ implementations.
+
+## Rcpp Implementation
+
+First, let's install and load the necessary packages, then implement the Fibonacci function in C++:
+
+```{r rcpp-setup, message=FALSE}
+# Install and load Rcpp if not already installed
+if (!require(Rcpp, quietly = TRUE)) {
+    install.packages("Rcpp")
+    library(Rcpp)
+}
+
+# Install and load microbenchmark if not already installed
+if (!require(microbenchmark, quietly = TRUE)) {
+    install.packages("microbenchmark")
+    library(microbenchmark)
+}
+
+# Also check for ggplot2 for plotting
+if (!require(ggplot2, quietly = TRUE)) {
+    install.packages("ggplot2")
+    library(ggplot2)
+}
+
+cat("All required packages loaded successfully!\n")
+```
+
+```{r rcpp-fibonacci}
+# Define the C++ Fibonacci function using Rcpp
+cppFunction('
+int fibonacci_cpp(int n) {
+    if (n <= 1) {
+        return n;
+    }
+    
+    int a = 0;
+    int b = 1;
+    for (int i = 2; i <= n; i++) {
+        int temp = a + b;
+        a = b;
+        b = temp;
+    }
+    return b;
+}
+')
+```
+
+## Testing the Rcpp Implementation
+
+Let's test our C++ implementation with the same test cases:
+
+```{r test-rcpp}
+test_fibonacci_cpp <- function() {
+    test_cases <- c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    expected_results <- c(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55)
+    
+    cat("Running Fibonacci tests for C++ implementation...\n\n")
+    
+    for (i in seq_along(test_cases)) {
+        result <- fibonacci_cpp(test_cases[i])
+        if (result == expected_results[i]) {
+            cat("✓ Test case F(", test_cases[i], ") = ", result, " passed.\n", sep = "")
+        } else {
+            cat("✗ Test case F(", test_cases[i], ") failed: expected ", 
+                expected_results[i], " but got ", result, "\n", sep = "")
+        }
+    }
+    
+    cat("\nC++ test summary complete.\n")
+}
+
+test_fibonacci_cpp()
+```
+
+## Performance Benchmarking
+
+Now let's compare the performance of both implementations using various input sizes:
+
+```{r benchmark-small}
+# Benchmark for small values (n = 10)
+cat("Benchmarking for n = 10:\n")
+benchmark_small <- microbenchmark(
+    R_version = fibonacci_r(10),
+    Cpp_version = fibonacci_cpp(10),
+    times = 1000
+)
+
+print(benchmark_small)
+```
+
+```{r benchmark-medium}
+# Benchmark for medium values (n = 100)
+cat("\nBenchmarking for n = 100:\n")
+benchmark_medium <- microbenchmark(
+    R_version = fibonacci_r(100),
+    Cpp_version = fibonacci_cpp(100),
+    times = 1000
+)
+
+print(benchmark_medium)
+```
+
+```{r benchmark-large}
+# Benchmark for larger values (n = 1000)
+cat("\nBenchmarking for n = 1000:\n")
+benchmark_large <- microbenchmark(
+    R_version = fibonacci_r(1000),
+    Cpp_version = fibonacci_cpp(1000),
+    times = 1000
+)
+
+print(benchmark_large)
+```
+
+## Visualization of Performance Results
+
+Let's create plots to visualize the performance differences:
+
+```{r performance-plots, fig.width=10, fig.height=6}
+# Create a comprehensive benchmark across different input sizes
+n_values <- c(10, 50, 100, 500, 1000)
+r_times <- numeric(length(n_values))
+cpp_times <- numeric(length(n_values))
+
+for (i in seq_along(n_values)) {
+    n <- n_values[i]
+    
+    # Benchmark R version
+    r_time <- system.time({
+        for (j in 1:100) fibonacci_r(n)
+    })["elapsed"]
+    
+    # Benchmark C++ version
+    cpp_time <- system.time({
+        for (j in 1:100) fibonacci_cpp(n)
+    })["elapsed"]
+    
+    r_times[i] <- r_time
+    cpp_times[i] <- cpp_time
+}
+
+# Create comparison data frame
+perf_df <- data.frame(
+    n = rep(n_values, 2),
+    time = c(r_times, cpp_times),
+    implementation = rep(c("R", "C++"), each = length(n_values))
+)
+
+# Plot comparison
+if (require(ggplot2, quietly = TRUE)) {
+    p <- ggplot(perf_df, aes(x = n, y = time, color = implementation, group = implementation)) +
+        geom_line(size = 1) +
+        geom_point(size = 3) +
+        scale_x_log10() +
+        scale_y_log10() +
+        labs(
+            title = "Performance Comparison: R vs C++ Fibonacci Implementation",
+            x = "Input Size (n)",
+            y = "Elapsed Time (seconds, log scale)",
+            color = "Implementation"
+        ) +
+        theme_minimal()
+    print(p)
+} else {
+    # Fallback to base R plotting
+    plot(n_values, r_times, type = "b", col = "blue", log = "xy",
+         xlab = "Input Size (n)", ylab = "Elapsed Time (seconds)",
+         main = "Performance Comparison: R vs C++")
+    lines(n_values, cpp_times, type = "b", col = "red")
+    legend("topleft", legend = c("R", "C++"), col = c("blue", "red"), lty = 1)
+}
+```
+
+## Performance Summary Table
+
+```{r performance-summary}
+# Create a summary table
+speedup <- r_times / cpp_times
+perf_summary <- data.frame(
+    "Input Size (n)" = n_values,
+    "R Time (sec)" = round(r_times, 6),
+    "C++ Time (sec)" = round(cpp_times, 6),
+    "Speedup Factor" = round(speedup, 2),
+    check.names = FALSE
+)
+
+knitr::kable(perf_summary, caption = "Performance Comparison Summary")
+```
+
+## Analysis
+
+Based on our benchmarking results:
+
+- **C++ Implementation**: The Rcpp version is typically `r round(mean(speedup), 1)`x faster on average
+- **Memory Efficiency**: Both implementations use O(1) space complexity
+- **Compilation Overhead**: The C++ version has a one-time compilation cost but runs faster for repeated calls
+- **Use Case**: For single calculations, the difference might be negligible, but for repeated calculations or larger values, C++ shows significant advantages
+
+The performance gain becomes more pronounced with larger input values, making the Rcpp implementation particularly beneficial for computationally intensive applications.
+
+# Conclusion
+
+Our iterative implementation of the Fibonacci sequence successfully computes the correct values for all test cases from F(0) to F(10). The algorithm has a time complexity of O(n) and space complexity of O(1), making it efficient for computing Fibonacci numbers.    

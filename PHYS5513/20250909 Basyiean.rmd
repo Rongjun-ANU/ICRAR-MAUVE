@@ -1,0 +1,383 @@
+---
+title: "Bayesian Inference: Model Comparison Example"
+author: "PHYS5513"
+date: "September 9, 2025"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(dplyr)
+```
+
+# Bayesian Inference: Determining the Source of an Observation
+
+## Problem Statement
+
+We have two possible data generating processes:
+1. **Model 1 (M₁)**: Uniform distribution U(0,1)
+2. **Model 2 (M₂)**: Gaussian distribution N(μ, σ²)
+
+We observe a value **x = 0.93** and want to determine: *What is the probability that this observation came from each distribution?*
+
+## Theoretical Foundation
+
+### Bayes' Theorem for Model Comparison
+
+For model comparison, we use Bayes' theorem:
+
+$$P(M_i|x) = \frac{P(x|M_i) \cdot P(M_i)}{P(x)}$$
+
+Where:
+- $P(M_i|x)$ = **Posterior probability** of model $M_i$ given observation $x$
+- $P(x|M_i)$ = **Likelihood** of observing $x$ under model $M_i$
+- $P(M_i)$ = **Prior probability** of model $M_i$ (before seeing data)
+- $P(x)$ = **Evidence** (normalization constant)
+
+### The Evidence (Denominator)
+
+The evidence is the total probability of observing $x$:
+
+$$P(x) = \sum_{i} P(x|M_i) \cdot P(M_i)$$
+
+For our two-model case:
+
+$$P(x) = P(x|M_1) \cdot P(M_1) + P(x|M_2) \cdot P(M_2)$$
+
+### Computing Relative Probabilities
+
+The ratio of posterior probabilities (Bayes factor × prior ratio):
+
+$$\frac{P(M_1|x)}{P(M_2|x)} = \frac{P(x|M_1)}{P(x|M_2)} \cdot \frac{P(M_1)}{P(M_2)}$$
+
+## Step-by-Step Derivation
+
+### Step 1: Define the Likelihoods
+
+For **Model 1** (Uniform U(0,1)):
+$$P(x|M_1) = \begin{cases} 
+1 & \text{if } 0 \leq x \leq 1 \\
+0 & \text{otherwise}
+\end{cases}$$
+
+For our observation $x = 0.93$: $P(0.93|M_1) = 1$
+
+For **Model 2** (Gaussian N(μ, σ²)):
+$$P(x|M_2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)$$
+
+### Step 2: Specify Priors
+
+We'll assume **equal priors**: $P(M_1) = P(M_2) = 0.5$
+
+This means we have no initial preference for either model.
+
+### Step 3: Calculate Posteriors
+
+$$P(M_1|x) = \frac{P(x|M_1) \cdot P(M_1)}{P(x|M_1) \cdot P(M_1) + P(x|M_2) \cdot P(M_2)}$$
+
+$$P(M_2|x) = \frac{P(x|M_2) \cdot P(M_2)}{P(x|M_1) \cdot P(M_1) + P(x|M_2) \cdot P(M_2)}$$
+
+## Implementation
+
+```{r bayesian_inference}
+# Define our observation
+x_obs <- 0.93
+
+# Model 1: Uniform distribution U(0,1)
+likelihood_uniform <- function(x) {
+  ifelse(x >= 0 & x <= 1, 1, 0)
+}
+
+# Model 2: Gaussian distribution N(mu, sigma^2)
+# We need to specify parameters for the Gaussian
+mu <- 0.5    # mean
+sigma <- 0.2 # standard deviation
+
+likelihood_gaussian <- function(x, mu, sigma) {
+  dnorm(x, mean = mu, sd = sigma)
+}
+
+# Calculate likelihoods for our observation
+L1 <- likelihood_uniform(x_obs)
+L2 <- likelihood_gaussian(x_obs, mu, sigma)
+
+cat("Likelihood under Uniform model:", L1, "\n")
+cat("Likelihood under Gaussian model:", L2, "\n")
+
+# Prior probabilities (equal priors)
+prior_M1 <- 0.5
+prior_M2 <- 0.5
+
+# Calculate evidence (normalization constant)
+evidence <- L1 * prior_M1 + L2 * prior_M2
+
+# Calculate posterior probabilities
+posterior_M1 <- (L1 * prior_M1) / evidence
+posterior_M2 <- (L2 * prior_M2) / evidence
+
+cat("\nPosterior Probabilities:\n")
+cat("P(Uniform | x = 0.93) =", round(posterior_M1, 4), "\n")
+cat("P(Gaussian | x = 0.93) =", round(posterior_M2, 4), "\n")
+
+# Bayes factor
+bayes_factor <- L1 / L2
+cat("\nBayes Factor (Uniform vs Gaussian):", round(bayes_factor, 4), "\n")
+```
+
+## Visualization
+
+Let's visualize both distributions and see where our observation falls:
+
+```{r visualization, fig.width=10, fig.height=6}
+# Create a range of x values
+x_range <- seq(-0.5, 1.5, length.out = 1000)
+
+# Calculate densities
+uniform_density <- sapply(x_range, likelihood_uniform)
+gaussian_density <- sapply(x_range, function(x) likelihood_gaussian(x, mu, sigma))
+
+# Create data frame for plotting
+plot_data <- data.frame(
+  x = rep(x_range, 2),
+  density = c(uniform_density, gaussian_density),
+  model = rep(c("Uniform U(0,1)", paste0("Gaussian N(", mu, ", ", sigma^2, ")")), 
+              each = length(x_range))
+)
+
+# Create the plot
+p1 <- ggplot(plot_data, aes(x = x, y = density, color = model)) +
+  geom_line(size = 1.2) +
+  geom_vline(xintercept = x_obs, linetype = "dashed", color = "red", size = 1) +
+  geom_point(x = x_obs, y = L1, color = "blue", size = 3) +
+  geom_point(x = x_obs, y = L2, color = "green", size = 3) +
+  annotate("text", x = x_obs + 0.1, y = L1 + 0.1, 
+           label = paste("Uniform likelihood =", round(L1, 3)), 
+           color = "blue") +
+  annotate("text", x = x_obs + 0.1, y = L2 + 0.1, 
+           label = paste("Gaussian likelihood =", round(L2, 3)), 
+           color = "green") +
+  annotate("text", x = x_obs, y = -0.2, 
+           label = paste("Observation: x =", x_obs), 
+           color = "red", size = 4) +
+  labs(title = "Probability Densities and Observed Value",
+       x = "x", y = "Probability Density",
+       color = "Model") +
+  theme_minimal() +
+  theme(legend.position = "top")
+
+print(p1)
+```
+
+## Posterior Probability Visualization
+
+```{r posterior_viz, fig.width=8, fig.height=5}
+# Create bar plot of posterior probabilities
+posterior_data <- data.frame(
+  Model = c("Uniform", "Gaussian"),
+  Posterior = c(posterior_M1, posterior_M2)
+)
+
+p2 <- ggplot(posterior_data, aes(x = Model, y = Posterior, fill = Model)) +
+  geom_bar(stat = "identity", alpha = 0.7) +
+  geom_text(aes(label = round(Posterior, 4)), vjust = -0.5, size = 5) +
+  labs(title = paste("Posterior Probabilities for x =", x_obs),
+       y = "Posterior Probability") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  ylim(0, 1)
+
+print(p2)
+```
+
+## Sensitivity Analysis: Effect of Gaussian Parameters
+
+Let's see how the posterior probabilities change with different Gaussian parameters:
+
+```{r sensitivity_analysis}
+# Test different Gaussian parameters
+mu_values <- c(0.3, 0.5, 0.7, 0.9)
+sigma_values <- c(0.1, 0.2, 0.3, 0.4)
+
+results <- expand.grid(mu = mu_values, sigma = sigma_values)
+results$posterior_uniform <- NA
+results$posterior_gaussian <- NA
+
+for (i in 1:nrow(results)) {
+  mu_test <- results$mu[i]
+  sigma_test <- results$sigma[i]
+  
+  L1_test <- likelihood_uniform(x_obs)
+  L2_test <- likelihood_gaussian(x_obs, mu_test, sigma_test)
+  
+  evidence_test <- L1_test * prior_M1 + L2_test * prior_M2
+  
+  results$posterior_uniform[i] <- (L1_test * prior_M1) / evidence_test
+  results$posterior_gaussian[i] <- (L2_test * prior_M2) / evidence_test
+}
+
+print("Sensitivity Analysis Results:")
+print(results)
+```
+
+## Key Insights
+
+1. **The observation x = 0.93 is quite extreme** for most reasonable Gaussian distributions centered around 0.5.
+
+2. **The uniform distribution assigns equal probability** to all values in [0,1], so it doesn't "prefer" any particular value.
+
+3. **The Gaussian distribution's likelihood depends heavily on how close the observation is to its mean** and how large its variance is.
+
+4. **Bayes factors provide evidence strength**:
+   - BF > 3: Substantial evidence
+   - BF > 10: Strong evidence  
+   - BF > 30: Very strong evidence
+
+## Mathematical Summary
+
+For our specific case with x = 0.93:
+
+$$P(\text{Uniform}|x) = \frac{1 \times 0.5}{1 \times 0.5 + P(x|N(\mu,\sigma^2)) \times 0.5}$$
+
+$$P(\text{Gaussian}|x) = \frac{P(x|N(\mu,\sigma^2)) \times 0.5}{1 \times 0.5 + P(x|N(\mu,\sigma^2)) \times 0.5}$$
+
+The key insight is that **the uniform distribution doesn't penalize extreme values**, while **the Gaussian distribution does** (unless the observation is close to its mean).
+
+## Extension: Multiple Observations
+
+Let's see what happens with multiple observations:
+
+```{r multiple_observations}
+# Simulate multiple observations
+set.seed(123)
+n_obs <- 10
+observations <- c(0.93, 0.85, 0.76, 0.88, 0.91, 0.82, 0.79, 0.86, 0.89, 0.84)
+
+# Calculate joint likelihood (assuming independence)
+joint_likelihood_uniform <- prod(sapply(observations, likelihood_uniform))
+joint_likelihood_gaussian <- prod(sapply(observations, function(x) 
+  likelihood_gaussian(x, mu, sigma)))
+
+# Calculate posterior probabilities
+evidence_joint <- joint_likelihood_uniform * prior_M1 + 
+                  joint_likelihood_gaussian * prior_M2
+
+posterior_uniform_joint <- (joint_likelihood_uniform * prior_M1) / evidence_joint
+posterior_gaussian_joint <- (joint_likelihood_gaussian * prior_M2) / evidence_joint
+
+cat("Multiple Observations Analysis:\n")
+cat("Observations:", paste(observations, collapse = ", "), "\n")
+cat("P(Uniform | data) =", round(posterior_uniform_joint, 6), "\n")
+cat("P(Gaussian | data) =", round(posterior_gaussian_joint, 6), "\n")
+
+# Calculate log Bayes factor to avoid numerical issues
+log_bayes_factor <- sum(log(sapply(observations, likelihood_uniform))) - 
+                   sum(log(sapply(observations, function(x) 
+                     likelihood_gaussian(x, mu, sigma))))
+
+cat("Log Bayes Factor =", round(log_bayes_factor, 4), "\n")
+```
+
+This example demonstrates the power of Bayesian inference for model comparison and how evidence accumulates with multiple observations!
+
+## IMPORTANT: Parameter Specification Matters!
+
+### Why Your Calculation Gives Different Results
+
+You suggested: `dunif(0.93)/(dunif(0.93)+dnorm(0.93))`
+
+Let's compare:
+
+```{r parameter_comparison}
+x_obs <- 0.93
+
+# Your calculation (using R defaults)
+prob_default <- dunif(0.93) / (dunif(0.93) + dnorm(0.93))
+
+# My calculation (with specified parameters)
+mu <- 0.5
+sigma <- 0.2
+L1 <- dunif(0.93)
+L2 <- dnorm(0.93, mean = mu, sd = sigma)
+prob_specified <- L1 / (L1 + L2)
+
+cat("Your calculation result:", round(prob_default, 4), "\n")
+cat("My calculation result:", round(prob_specified, 4), "\n")
+
+cat("\n--- The Key Difference ---\n")
+cat("dunif(0.93) =", dunif(0.93), "(same in both)\n")
+cat("dnorm(0.93) [default N(0,1)] =", round(dnorm(0.93), 4), "\n")
+cat("dnorm(0.93, 0.5, 0.2) [N(0.5,0.2²)] =", round(dnorm(0.93, 0.5, 0.2), 4), "\n")
+
+cat("\n--- Why This Matters ---\n")
+cat("With N(0,1): x=0.93 is only", round((0.93-0)/1, 2), "standard deviations from mean\n")
+cat("With N(0.5,0.2): x=0.93 is", round((0.93-0.5)/0.2, 2), "standard deviations from mean\n")
+```
+
+### The Fundamental Issue: **Which Gaussian Are We Comparing Against?**
+
+Your calculation assumes:
+- **Uniform**: U(0,1) 
+- **Gaussian**: N(0,1) - **Standard normal distribution**
+
+My calculation assumes:
+- **Uniform**: U(0,1)
+- **Gaussian**: N(0.5, 0.2²) - **Centered in the middle of [0,1] with small variance**
+
+### Mathematical Explanation
+
+For x = 0.93:
+
+**Your approach (N(0,1)):**
+$$P(\text{Uniform}|x) = \frac{1}{1 + \frac{1}{\sqrt{2\pi}} e^{-\frac{(0.93-0)^2}{2}}} = \frac{1}{1 + 0.259} = 0.794$$
+
+**My approach (N(0.5, 0.2²)):**
+$$P(\text{Uniform}|x) = \frac{1}{1 + \frac{1}{0.2\sqrt{2\pi}} e^{-\frac{(0.93-0.5)^2}{2(0.2)^2}}} = \frac{1}{1 + 0.198} = 0.835$$
+
+### Which Is More Reasonable?
+
+This depends on your **prior knowledge** about the Gaussian:
+
+1. **If you know nothing about the Gaussian parameters** → Use default N(0,1)
+2. **If you want a "fair" comparison** → Use N(0.5, 0.2²) so both distributions are focused on [0,1]
+3. **If you have domain knowledge** → Use parameters that reflect your beliefs
+
+### Visualizing the Difference
+
+```{r comparison_viz, fig.width=12, fig.height=6}
+x_range <- seq(-0.5, 1.5, length.out = 1000)
+
+# Compare the three distributions
+uniform_dens <- dunif(x_range)
+gaussian_01 <- dnorm(x_range, 0, 1)      # Your approach
+gaussian_05_02 <- dnorm(x_range, 0.5, 0.2)  # My approach
+
+plot_data <- data.frame(
+  x = rep(x_range, 3),
+  density = c(uniform_dens, gaussian_01, gaussian_05_02),
+  distribution = rep(c("Uniform U(0,1)", "Gaussian N(0,1)", "Gaussian N(0.5,0.2²)"), 
+                    each = length(x_range))
+)
+
+ggplot(plot_data, aes(x = x, y = density, color = distribution)) +
+  geom_line(size = 1.2) +
+  geom_vline(xintercept = 0.93, linetype = "dashed", color = "red", size = 1) +
+  geom_point(x = 0.93, y = dunif(0.93), color = "blue", size = 3) +
+  geom_point(x = 0.93, y = dnorm(0.93, 0, 1), color = "green", size = 3) +
+  geom_point(x = 0.93, y = dnorm(0.93, 0.5, 0.2), color = "purple", size = 3) +
+  annotate("text", x = 0.93, y = -0.3, label = "x = 0.93", color = "red", size = 4) +
+  labs(title = "Comparison: Different Gaussian Parameters",
+       subtitle = "Notice how parameter choice dramatically affects the likelihood at x = 0.93",
+       x = "x", y = "Probability Density") +
+  theme_minimal() +
+  xlim(-0.5, 1.5)
+```
+
+### Conclusion
+
+**Both calculations are mathematically correct** - they just answer slightly different questions:
+
+- **Your approach**: "Given x=0.93, what's the probability it came from U(0,1) vs. standard normal N(0,1)?"
+- **My approach**: "Given x=0.93, what's the probability it came from U(0,1) vs. a Gaussian centered in [0,1]?"
+
+The key lesson: **Always specify your model parameters explicitly** in Bayesian analysis!

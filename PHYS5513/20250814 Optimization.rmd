@@ -1,0 +1,388 @@
+---
+title: "Optimization Methods: Side-by-Side Comparison"
+date: "2025-08-14"
+output:
+	html_document:
+		toc: true
+		toc_float: true
+		theme: cosmo
+---
+
+This notebook compares several optimization methods on the same nonlinear least-squares problem and visualizes their behavior:
+
+- Newton–Raphson (2nd-order)
+- Levenberg–Marquardt (LM)
+- Nelder–Mead (simplex)
+- Conjugate Gradient (CG)
+- MCMC (Metropolis) for posterior exploration
+
+We fit synthetic data from the model y = a exp(b x) with Gaussian noise (two parameters a, b). We compare:
+
+- Trajectories in parameter space (a, b) over objective contours
+- Best-fit curves vs data
+- MCMC posterior samples in (a, b)
+
+```{r setup, message=FALSE, warning=FALSE}
+set.seed(42)
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+ensure_pkg <- function(pkg) {
+	if (!requireNamespace(pkg, quietly = TRUE)) install.packages(pkg)
+	suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+}
+
+pkgs <- c("ggplot2", "dplyr", "numDeriv", "minpack.lm")
+invisible(lapply(pkgs, ensure_pkg))
+
+theme_set(theme_bw(base_size = 13))
+```
+
+## Data and objective
+
+```{r data-objective}
+# True parameters and data
+a_true <- 2.0
+b_true <- 0.55
+sigma  <- 0.10
+n      <- 60
+x      <- seq(0, 3, length.out = n)
+y_true <- a_true * exp(b_true * x)
+y      <- y_true + rnorm(n, 0, sigma)
+
+# Residuals and objective (chi^2)
+residuals_fn <- function(par) {
+	a <- par[1]; b <- par[2]
+	(y - a * exp(b * x)) / sigma
+}
+chi2 <- function(par) {
+	r <- residuals_fn(par)
+	sum(r^2)
+}
+
+# Log-posterior (flat priors within a box)
+in_box <- function(par, a_rng = c(0.05, 5), b_rng = c(0.01, 1.5)) {
+	a <- par[1]; b <- par[2]
+	(a >= a_rng[1] && a <= a_rng[2] && b >= b_rng[1] && b <= b_rng[2])
+}
+logpost <- function(par) {
+	if (!in_box(par)) return(-Inf)
+	-0.5 * chi2(par)
+}
+
+# A helper for numerical derivatives
+grad_fn <- function(par) numDeriv::grad(chi2, par)
+hess_fn <- function(par) numDeriv::hessian(chi2, par)
+
+theta_true <- c(a_true, b_true)
+theta0     <- c(0.6, 0.10) # common starting point
+```
+
+### Visualizing the landscape (contours)
+
+```{r landscape, message=FALSE}
+# Make a grid for contour visualization of chi^2
+a_seq <- seq(0.2, 3.5, length.out = 160)
+b_seq <- seq(0.05, 1.2, length.out = 160)
+grid  <- expand.grid(a = a_seq, b = b_seq)
+grid$chi2 <- apply(as.matrix(grid), 1, function(p) chi2(c(p[1], p[2])))
+
+base_contours <- ggplot(grid, aes(a, b)) +
+	stat_contour(aes(z = chi2), bins = 25, color = "grey40", alpha = 0.7, show.legend = FALSE) +
+	stat_contour_filled(aes(z = chi2), bins = 25, alpha = 0.75) +
+	scale_fill_viridis_d(option = "C", direction = -1) +
+	labs(title = "Objective landscape (chi^2)", x = "a", y = "b") +
+	geom_point(aes(x = a_true, y = b_true), color = "black", size = 3, shape = 8) +
+	geom_point(aes(x = theta0[1], y = theta0[2]), color = "white", size = 2)
+
+base_contours
+```
+
+## Newton–Raphson (with line-search/damping)
+
+```{r newton}
+newton_solver <- function(theta, maxit = 50, tol = 1e-8) {
+	path <- matrix(theta, ncol = 2)
+	colnames(path) <- c("a", "b")
+	for (k in 1:maxit) {
+		g <- grad_fn(theta)
+		H <- try(hess_fn(theta), silent = TRUE)
+		if (inherits(H, "try-error") || any(!is.finite(H))) H <- diag(2) * 1e-3
+		# Damped step if needed
+		lambda <- 0
+		step_ok <- FALSE
+		f0 <- chi2(theta)
+		for (ls in 1:20) {
+			H_damped <- H + diag(2) * lambda
+			# Guard against singular Hessian
+			step <- try(solve(H_damped, g), silent = TRUE)
+			if (inherits(step, "try-error") || any(!is.finite(step))) {
+				lambda <- max(1e-6, if (lambda == 0) 1e-3 else lambda * 10)
+				next
+			}
+			theta_new <- theta - as.numeric(step)
+			if (!in_box(theta_new)) {
+				lambda <- max(1e-6, if (lambda == 0) 1e-3 else lambda * 10)
+				next
+			}
+			f1 <- chi2(theta_new)
+			if (is.finite(f1) && f1 <= f0 - 1e-9) {
+				theta <- theta_new
+				path <- rbind(path, theta)
+				step_ok <- TRUE
+				break
+			} else {
+				lambda <- max(1e-6, if (lambda == 0) 1e-3 else lambda * 10)
+			}
+		}
+		if (!step_ok) break
+		if (sqrt(sum(g^2)) < tol) break
+	}
+	list(par = theta, path = as.data.frame(path))
+}
+
+fit_newton <- newton_solver(theta0)
+fit_newton$par
+```
+
+## Levenberg–Marquardt (minpack.lm)
+
+```{r lm}
+# Record parameter trace by wrapping the residual function
+lm_trace <- NULL
+residuals_for_lm <- function(par) {
+	# store only occasionally to thin (every ~10th call) to avoid huge traces
+	if (is.null(lm_trace)) {
+		lm_trace <<- matrix(par, ncol = 2)
+	} else if ((nrow(lm_trace) %% 10) == 0) {
+		lm_trace <<- rbind(lm_trace, par)
+	}
+	# keep LM within a safe box to avoid overflow
+	if (!in_box(par)) return(rep(1e6, length(x)))
+	r <- residuals_fn(par)
+	if (any(!is.finite(r))) return(rep(1e6, length(x)))
+	r
+}
+
+ctrl <- minpack.lm::nls.lm.control(maxiter = 200, ftol = 1e-10, ptol = 1e-10)
+fit_lm <- minpack.lm::nls.lm(par = theta0, fn = residuals_for_lm, control = ctrl)
+lm_path <- as.data.frame(unique(lm_trace))
+colnames(lm_path) <- c("a", "b")
+fit_lm$par
+```
+
+## Nelder–Mead (optim) with path logging
+
+```{r nelder-mead}
+make_obj_with_trace <- function() {
+	fbest <- Inf
+	path <- NULL
+	list(
+		fn = function(par) {
+			# Penalize outside the box and non-finite values
+			if (!in_box(par)) return(1e12)
+			f <- chi2(par)
+			if (!is.finite(f)) return(1e12)
+			if (is.finite(f) && f < fbest - 1e-12) {
+				fbest <<- f
+				path <<- rbind(path, par)
+			}
+			f
+		},
+		path = function() {
+			if (is.null(path)) return(data.frame(a = numeric(0), b = numeric(0)))
+			df <- as.data.frame(unique(path))
+			colnames(df) <- c("a", "b")
+			df
+		}
+	)
+}
+
+nm <- make_obj_with_trace()
+fit_nm <- optim(theta0, nm$fn, method = "Nelder-Mead", control = list(maxit = 500))
+nm_path <- nm$path()
+fit_nm$par
+```
+
+## Conjugate Gradient (optim) with numeric gradient
+
+```{r cg}
+cg <- make_obj_with_trace()
+# Define a penalized objective for gradient-based methods
+chi2_pen <- function(p) {
+	if (!in_box(p)) return(1e12)
+	f <- chi2(p)
+	if (!is.finite(f)) return(1e12)
+	f
+}
+fit_cg <- optim(theta0, cg$fn, method = "CG", gr = function(p) numDeriv::grad(chi2_pen, p),
+								control = list(maxit = 500))
+cg_path <- cg$path()
+fit_cg$par
+```
+
+## MCMC (Metropolis) for posterior
+
+```{r mcmc}
+metropolis <- function(theta, n = 15000, burn = 5000, step_sd = c(0.03, 0.02)) {
+	samples <- matrix(NA_real_, n, 2)
+	lp <- logpost(theta)
+	acc <- 0L
+	for (i in 1:n) {
+		prop <- theta + rnorm(2, 0, step_sd)
+		lq <- logpost(prop)
+		if (is.finite(lq) && log(runif(1)) < (lq - lp)) {
+			theta <- prop
+			lp <- lq
+			acc <- acc + 1L
+		}
+		samples[i, ] <- theta
+	}
+	list(samples = samples[(burn + 1):n, , drop = FALSE], acc_rate = acc / n)
+}
+
+mcmc_out <- metropolis(theta0)
+mcmc_samps <- as.data.frame(mcmc_out$samples)
+colnames(mcmc_samps) <- c("a", "b")
+mcmc_out$acc_rate
+```
+
+## Paths on the landscape
+
+```{r paths-plot, fig.height=6.2}
+paths <- list(
+	Newton = fit_newton$path,
+	LM     = lm_path,
+	Nelder = nm_path,
+	CG     = cg_path
+)
+
+paths_df <- dplyr::bind_rows(lapply(names(paths), function(m) {
+	df <- paths[[m]]
+	if (nrow(df) == 0) return(NULL)
+	df$method <- m
+	df$step   <- seq_len(nrow(df))
+	df
+}))
+
+pal <- c(Newton = "#1b9e77", LM = "#d95f02", Nelder = "#7570b3", CG = "#e7298a")
+
+plot_paths <- base_contours +
+	geom_path(data = paths_df, aes(a, b, color = method), linewidth = 1) +
+	geom_point(data = paths_df %>% dplyr::group_by(method) %>% dplyr::slice_tail(n = 1),
+			   aes(a, b, color = method), size = 2.6) +
+	scale_color_manual(values = pal) +
+	labs(subtitle = "Optimization trajectories from the same start (white dot)")
+
+plot_paths
+```
+
+## Posterior samples (MCMC)
+
+```{r mcmc-plot, fig.height=6}
+ggplot() +
+	stat_contour(data = grid, aes(a, b, z = chi2, color = after_stat(level)), bins = 25, show.legend = FALSE) +
+	stat_contour_filled(data = grid, aes(a, b, z = chi2), bins = 25, alpha = 0.75) +
+	scale_fill_viridis_d(option = "C", direction = -1) +
+	geom_point(data = mcmc_samps %>% dplyr::slice(seq(1, n(), by = 5)),
+						 aes(a, b), color = "black", alpha = 0.25, size = 0.6) +
+	geom_point(aes(x = a_true, y = b_true), color = "white", size = 3, shape = 8) +
+	labs(title = "MCMC samples on the objective landscape", x = "a", y = "b")
+```
+
+## Best-fit curves vs data
+
+```{r curves-plot}
+theta_newton <- fit_newton$par
+theta_lm     <- fit_lm$par
+theta_nm     <- fit_nm$par
+theta_cg     <- fit_cg$par
+theta_mcmc   <- colMeans(mcmc_samps)
+
+pred <- function(par) par[1] * exp(par[2] * x)
+
+fits <- data.frame(
+	x = rep(x, 5),
+	yhat = c(pred(theta_newton), pred(theta_lm), pred(theta_nm), pred(theta_cg), pred(theta_mcmc)),
+	method = rep(c("Newton", "LM", "Nelder", "CG", "MCMC(mean)"), each = length(x))
+)
+
+# Order methods for consistent legends and aesthetics
+fits$method <- factor(fits$method, levels = c("Newton", "LM", "Nelder", "CG", "MCMC(mean)"))
+
+ggplot() +
+	geom_point(aes(x, y), color = "black", alpha = 0.6) +
+	geom_line(data = fits, aes(x, yhat, color = method, linetype = method), linewidth = 1.1) +
+	scale_color_manual(values = c(pal, `MCMC(mean)` = "#66a61e")) +
+	scale_linetype_manual(values = c(Newton = "solid", LM = "dashed", Nelder = "dotdash", CG = "twodash", `MCMC(mean)` = "longdash")) +
+	labs(title = "Data and fitted curves", x = "x", y = "y")
+```
+
+## Notes
+
+- Newton can be very fast near the optimum but needs a good Hessian and may require damping/line-search for stability.
+- LM is robust for least-squares and often converges reliably from wider starts.
+- Nelder–Mead is derivative-free but can be slower and sensitive to scaling.
+- Conjugate Gradient uses gradient information; it’s efficient in higher dimensions for smooth problems.
+- MCMC doesn’t “optimize”; it samples the posterior around the optimum, revealing uncertainty and parameter correlations.
+
+```{r session-info, echo=FALSE}
+sessionInfo()
+```
+
+## Example 2: Maximum coefficient of N-dimensional sphere volume
+
+We consider the volume of the unit N-ball:
+
+V_N(1) = π^{N/2} / Γ(N/2 + 1).
+
+Treating N as a continuous variable, the maximum occurs where d/dN log V_N = 0, i.e.
+
+0.5 log π - 0.5 ψ(N/2 + 1) = 0, with ψ the digamma function. The maximizing integer dimension is the nearest integer to the continuous maximizer.
+
+```{r nd-sphere}
+# Define coefficient as a function of real dimension N
+Vn <- function(N) pi^(N/2) / gamma(N/2 + 1)
+logV <- function(N) (N/2) * log(pi) - lgamma(N/2 + 1)
+dlogV <- function(N) 0.5 * log(pi) - 0.5 * digamma(N/2 + 1)
+
+# Continuous optimum: solve d/dN log V = 0
+root <- uniroot(dlogV, interval = c(0.5, 30))
+N_star <- root$root
+
+# Alternatively, confirm by direct 1D optimization of -logV
+opt <- optimize(function(N) -logV(N), interval = c(0.5, 30))
+N_star_opt <- opt$minimum
+
+# Integer optimum (scan a reasonable range)
+Ns <- 1:40
+vals <- Vn(Ns)
+N_int_star <- Ns[which.max(vals)]
+
+N_star; N_star_opt; N_int_star
+```
+
+### Visualize V_N vs N (log scale)
+
+```{r nd-sphere-plot}
+N_cont <- seq(0.5, 30, by = 0.05)
+df_cont <- data.frame(N = N_cont, V = Vn(N_cont))
+df_int  <- data.frame(N = Ns, V = vals)
+
+ggplot(df_cont, aes(N, V)) +
+	geom_line(color = "#1b9e77", linewidth = 1) +
+	geom_point(data = df_int, aes(N, V), color = "#d95f02", size = 2) +
+	geom_vline(xintercept = N_star, linetype = 2, color = "#1b9e77") +
+	geom_vline(xintercept = N_int_star, linetype = 3, color = "#d95f02") +
+	scale_y_log10() +
+	labs(title = "Unit N-ball volume coefficient vs dimension",
+			 subtitle = paste0("Continuous max at N ≈ ", round(N_star, 3),
+												 "; Integer max at N = ", N_int_star),
+			 x = "Dimension N", y = "V_N(1) = π^{N/2} / Γ(N/2+1) (log scale)")
+```
+
+Notes:
+
+- The continuous maximizer solves ψ(N/2 + 1) = log π and is ≈ 5.x.
+- The integer maximizer is N = 5 for the unit ball; volumes decrease for N ≥ 6.
+

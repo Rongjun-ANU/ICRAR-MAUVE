@@ -1,0 +1,371 @@
+---
+title: "Conway's Game of Life with Rcpp"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, root.dir = "/Users/Igniz/Desktop/ICRAR/PHYS5513")
+library(Rcpp)
+library(RcppArmadillo)
+set.seed(666)
+```
+
+## Conway's Game of Life Implementation
+
+This implementation uses Rcpp for efficient computation of Conway's Game of Life on a 100x100 matrix.
+
+**Important**: Run this code chunk first to compile the C++ functions before running any other chunks.
+
+```{Rcpp}
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+
+using namespace Rcpp;
+using namespace arma;
+
+// [[Rcpp::export]]
+arma::imat gameOfLifeStep(arma::imat grid) {
+    int rows = grid.n_rows;
+    int cols = grid.n_cols;
+    arma::imat newGrid = arma::zeros<arma::imat>(rows, cols);
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            int neighbors = 0;
+            
+            // Count neighbors (with boundary wrapping)
+            for (int di = -1; di <= 1; di++) {
+                for (int dj = -1; dj <= 1; dj++) {
+                    if (di == 0 && dj == 0) continue;
+                    
+                    int ni = (i + di + rows) % rows;
+                    int nj = (j + dj + cols) % cols;
+                    neighbors += grid(ni, nj);
+                }
+            }
+            
+            // Apply Conway's rules
+            if (grid(i, j) == 1) {
+                // Living cell
+                if (neighbors == 2 || neighbors == 3) {
+                    newGrid(i, j) = 1;
+                }
+            } else {
+                // Dead cell
+                if (neighbors == 3) {
+                    newGrid(i, j) = 1;
+                }
+            }
+        }
+    }
+    
+    return newGrid;
+}
+
+// [[Rcpp::export]]
+arma::imat initializeRandomGrid(int rows, int cols, double density = 0.3) {
+    arma::imat grid = arma::zeros<arma::imat>(rows, cols);
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (R::runif(0, 1) < density) {
+                grid(i, j) = 1;
+            }
+        }
+    }
+    
+    return grid;
+}
+```
+
+### Alternative R-only Implementation (if Rcpp compilation fails)
+
+```{r r_fallback, eval=TRUE}
+# R-only implementation as fallback
+gameOfLifeStep_R <- function(grid) {
+    rows <- nrow(grid)
+    cols <- ncol(grid)
+    newGrid <- matrix(0, rows, cols)
+    
+    for (i in 1:rows) {
+        for (j in 1:cols) {
+            neighbors <- 0
+            
+            # Count neighbors (with boundary wrapping)
+            for (di in -1:1) {
+                for (dj in -1:1) {
+                    if (di == 0 && dj == 0) next
+                    
+                    ni <- ((i + di - 1) %% rows) + 1
+                    nj <- ((j + dj - 1) %% cols) + 1
+                    neighbors <- neighbors + grid[ni, nj]
+                }
+            }
+            
+            # Apply Conway's rules
+            if (grid[i, j] == 1) {
+                # Living cell
+                if (neighbors == 2 || neighbors == 3) {
+                    newGrid[i, j] <- 1
+                }
+            } else {
+                # Dead cell
+                if (neighbors == 3) {
+                    newGrid[i, j] <- 1
+                }
+            }
+        }
+    }
+    
+    return(newGrid)
+}
+
+initializeRandomGrid_R <- function(rows, cols, density = 0.3) {
+    grid <- matrix(0, rows, cols)
+    random_vals <- runif(rows * cols)
+    grid[random_vals < density] <- 1
+    return(grid)
+}
+
+# Assign to global environment
+gameOfLifeStep <<- gameOfLifeStep_R
+initializeRandomGrid <<- initializeRandomGrid_R
+
+cat("R-only fallback functions loaded successfully!\n")
+```
+
+## Initialize and Run the Game
+
+```{r initialize}
+# Check if Rcpp functions are available, if not try to source them
+if (!exists("initializeRandomGrid")) {
+    cat("Rcpp functions not found. Attempting to compile...\n")
+    # Note: Make sure to run the Rcpp code chunk above first!
+    cat("Please run the Rcpp code chunk above to compile the C++ functions.\n")
+    cat("After running the Rcpp chunk, you can run this chunk again.\n")
+} else {
+    # Set random seed
+    set.seed(666)
+    
+    # Initialize 100x100 grid with random pattern
+    grid_size <- 100
+    initial_density <- 0.3  # 30% of cells start alive
+    
+    # Create initial grid
+    grid <- initializeRandomGrid(grid_size, grid_size, initial_density)
+    
+    # Display initial grid statistics
+    cat("Initial grid size:", dim(grid)[1], "x", dim(grid)[2], "\n")
+    cat("Initial living cells:", sum(grid), "\n")
+    cat("Initial density:", round(sum(grid) / (grid_size^2), 3), "\n")
+}
+```
+
+## Visualize the Game
+
+```{r visualization}
+# Function to plot the grid
+plot_grid <- function(grid, title = "Game of Life") {
+    if (missing(grid) || is.null(grid) || !is.matrix(grid)) {
+        plot.new()
+        text(0.5, 0.5, "No grid available to plot.\nPlease run the initialization chunk first.", 
+             cex = 1.2, col = "red")
+        title(title)
+        return()
+    }
+    image(grid, col = c("white", "black"), main = title, axes = FALSE)
+}
+
+# Check if grid exists before plotting
+if (exists("grid") && is.matrix(grid)) {
+    # Plot initial state
+    plot_grid(grid, "Initial State (Generation 0)")
+} else {
+    cat("Grid not found. Please run the initialization chunk first.\n")
+    plot.new()
+    text(0.5, 0.5, "Grid not initialized.\nPlease run the 'Initialize and Run the Game' chunk first.", 
+         cex = 1.2, col = "red")
+    title("Initial State (Generation 0)")
+}
+```
+
+## Run Multiple Generations
+
+```{r simulation}
+# Check if grid and functions exist
+if (!exists("grid") || !is.matrix(grid)) {
+    cat("Error: Grid not initialized. Please run the initialization chunk first.\n")
+} else if (!exists("gameOfLifeStep")) {
+    cat("Error: gameOfLifeStep function not found. Please run the Rcpp chunk or R fallback chunk first.\n")
+} else {
+    # Run the game for multiple generations
+    generations <- 1000
+    grids <- list()
+    grids[[1]] <- grid
+    
+    # Store living cell counts
+    living_counts <- numeric(generations + 1)
+    living_counts[1] <- sum(grid)
+    
+    cat("Running", generations, "generations...\n")
+    
+    for (gen in 1:generations) {
+        grid <- gameOfLifeStep(grid)
+        grids[[gen + 1]] <- grid
+        living_counts[gen + 1] <- sum(grid)
+        
+        if (gen %% 10 == 0) {
+            cat("Generation", gen, "- Living cells:", living_counts[gen + 1], "\n")
+        }
+    }
+    
+    # Plot final state
+    plot_grid(grid, paste("Final State (Generation", generations, ")"))
+}
+```
+
+## Analyze Population Dynamics
+
+```{r analysis}
+# Check if simulation data exists
+if (!exists("living_counts") || !exists("generations")) {
+    cat("Error: Simulation data not found. Please run the simulation chunk first.\n")
+    plot.new()
+    text(0.5, 0.5, "No simulation data available.\nPlease run the simulation chunk first.", 
+         cex = 1.2, col = "red")
+    title("Population Dynamics")
+} else {
+    # Plot population over time
+    plot(0:generations, living_counts, 
+         type = "l", 
+         xlab = "Generation", 
+         ylab = "Living Cells",
+         main = "Population Dynamics",
+         col = "blue",
+         lwd = 2)
+    grid()
+    
+    # Print statistics
+    cat("\nPopulation Statistics:\n")
+    cat("Initial population:", living_counts[1], "\n")
+    cat("Final population:", living_counts[length(living_counts)], "\n")
+    cat("Maximum population:", max(living_counts), "at generation", which.max(living_counts) - 1, "\n")
+    cat("Minimum population:", min(living_counts), "at generation", which.min(living_counts) - 1, "\n")
+}
+```
+
+## Animation (Last 100 Generations)
+
+```{r animation, eval=TRUE}
+# Create animation of the last 100 generations
+if (!exists("grids") || length(grids) < 100) {
+    cat("Error: Not enough simulation data. Please run the simulation chunk first.\n")
+} else {
+    cat("Creating animation of last 100 generations...\n")
+    
+    # Get the last 100 generations
+    total_gens <- length(grids)
+    start_gen <- max(1, total_gens - 99)  # Last 100 generations
+    animation_grids <- grids[start_gen:total_gens]
+    
+    # Set up the plot parameters for smooth animation
+    par(mar = c(2, 2, 3, 2))
+    
+    # Create animation loop
+    for (i in 1:length(animation_grids)) {
+        current_gen <- start_gen + i - 2  # Adjust for 0-based generation counting
+        
+        # Plot the grid
+        image(animation_grids[[i]], 
+              col = c("white", "black"), 
+              main = paste("Generation", current_gen, "- Living cells:", sum(animation_grids[[i]])),
+              axes = FALSE,
+              xlab = "", ylab = "")
+        
+        # Add generation counter in corner
+        text(0.02, 0.98, paste("Gen:", current_gen), 
+             col = "red", cex = 0.8, adj = c(0, 1))
+        
+        # Control animation speed
+        if (i %% 5 == 0) {  # Every 5th frame, pause slightly longer
+            Sys.sleep(0.15)
+        } else {
+            Sys.sleep(0.05)  # Fast animation
+        }
+        
+        # Flush the plot
+        if (i < length(animation_grids)) {
+            dev.flush()
+        }
+    }
+    
+    cat("Animation complete! Showed generations", start_gen-1, "to", total_gens-1, "\n")
+    
+    # Reset plot parameters
+    par(mar = c(5, 4, 4, 2) + 0.1)
+}
+```
+
+## Interactive Animation Controls
+
+```{r interactive_animation, eval=FALSE}
+# Alternative: Step-through animation with user control
+# Set eval=TRUE and run this chunk to manually step through generations
+
+if (exists("grids") && length(grids) >= 100) {
+    # Function to display a specific generation
+    show_generation <- function(gen_index) {
+        if (gen_index >= 1 && gen_index <= length(grids)) {
+            plot_grid(grids[[gen_index]], 
+                     paste("Generation", gen_index-1, "- Living cells:", sum(grids[[gen_index]])))
+        }
+    }
+    
+    # Get last 100 generations
+    total_gens <- length(grids)
+    start_gen <- max(1, total_gens - 99)
+    
+    cat("Interactive mode ready!\n")
+    cat("Use: show_generation(", start_gen, ") to show_generation(", total_gens, ")\n")
+    cat("Example: show_generation(", total_gens, ") shows the final generation\n")
+    
+    # Show first and last of the sequence as examples
+    cat("Showing generation", start_gen-1, "(start of last 100):\n")
+    show_generation(start_gen)
+    
+} else {
+    cat("Need simulation data first. Run the simulation chunk.\n")
+}
+```
+
+## Pattern Analysis
+
+```{r patterns}
+# Check if simulation data exists
+if (!exists("grids") || length(grids) < 2) {
+    cat("Error: Simulation grids not found. Please run the simulation chunk first.\n")
+} else {
+    # Look for stable patterns by comparing consecutive generations
+    stable_found <- FALSE
+    oscillator_period <- 0
+    
+    for (i in 2:min(20, length(grids))) {
+        if (identical(grids[[i]], grids[[i-1]])) {
+            cat("Stable pattern found at generation", i-1, "\n")
+            stable_found <- TRUE
+            break
+        }
+        
+        # Check for oscillators (period 2)
+        if (i > 2 && identical(grids[[i]], grids[[i-2]])) {
+            cat("Period-2 oscillator found at generation", i-1, "\n")
+            oscillator_period <- 2
+            break
+        }
+    }
+    
+    if (!stable_found && oscillator_period == 0) {
+        cat("No simple stable patterns or oscillators detected in first 20 generations\n")
+    }
+}
+```

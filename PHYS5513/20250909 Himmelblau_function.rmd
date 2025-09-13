@@ -1,0 +1,311 @@
+---
+title: "Himmelblau's Function: Analysis and Visualization"
+author: "PHYS5513 Student"
+date: "September 9, 2025"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: united
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(plotly)
+library(RColorBrewer)
+library(dplyr)
+library(gridExtra)
+```
+
+# Introduction to Himmelblau's Function
+
+Himmelblau's function is a well-known multimodal optimization test function used in mathematical optimization. It is named after David Mautner Himmelblau, who introduced it as a test case for optimization algorithms.
+
+## Mathematical Definition
+
+The Himmelblau function is defined as:
+
+$$f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2$$
+
+This function is defined over the domain $x, y \in \mathbb{R}$, but is typically evaluated on the square $x, y \in [-5, 5]$.
+
+## Key Properties
+
+1. **Multimodal**: The function has four global minima with the same function value
+2. **Non-convex**: Contains multiple local optima
+3. **Continuous and differentiable**: Smooth everywhere
+4. **Test function**: Commonly used to test optimization algorithms
+
+# Implementation in R
+
+```{r himmelblau_function}
+# Define Himmelblau's function
+himmelblau <- function(x, y) {
+  (x^2 + y - 11)^2 + (x + y^2 - 7)^2
+}
+
+# Vectorized version for plotting
+himmelblau_vec <- Vectorize(himmelblau)
+
+# Example evaluations
+cat("f(3, 2) =", himmelblau(3, 2), "\n")
+cat("f(0, 0) =", himmelblau(0, 0), "\n")
+cat("f(-2, 3) =", himmelblau(-2, 3), "\n")
+```
+
+# Visualization
+
+## 2D Contour Plot
+
+```{r contour_plot, fig.width=10, fig.height=8}
+# Create grid for plotting
+x <- seq(-5, 5, length.out = 200)
+y <- seq(-5, 5, length.out = 200)
+grid <- expand.grid(x = x, y = y)
+grid$z <- himmelblau_vec(grid$x, grid$y)
+
+# Create contour plot
+p1 <- ggplot(grid, aes(x = x, y = y, z = z)) +
+  geom_contour_filled(bins = 30, alpha = 0.8) +
+  geom_contour(color = "white", alpha = 0.3, size = 0.3) +
+  scale_fill_viridis_d(name = "f(x,y)") +
+  labs(title = "Himmelblau's Function - Contour Plot",
+       x = "x", y = "y") +
+  theme_minimal() +
+  coord_fixed()
+
+print(p1)
+```
+
+## 3D Surface Plot
+
+```{r surface_plot, fig.width=10, fig.height=8}
+# Create 3D surface plot
+z_matrix <- matrix(grid$z, nrow = length(x), ncol = length(y))
+
+plot_ly(x = x, y = y, z = z_matrix, type = "surface",
+        colorscale = "Viridis") %>%
+  layout(title = "Himmelblau's Function - 3D Surface",
+         scene = list(
+           xaxis = list(title = "x"),
+           yaxis = list(title = "y"),
+           zaxis = list(title = "f(x,y)")
+         ))
+```
+
+# Finding Critical Points
+
+## Analytical Solutions
+
+The four global minima of Himmelblau's function are known analytically:
+
+```{r analytical_minima}
+# Known global minima
+minima <- data.frame(
+  x = c(3.0, -2.805118, -3.779310, 3.584428),
+  y = c(2.0, 3.131312, -3.283186, -1.848126),
+  stringsAsFactors = FALSE
+)
+
+# Calculate function values at minima
+minima$f_value <- himmelblau_vec(minima$x, minima$y)
+
+print("Global Minima:")
+print(minima)
+
+# Verify these are indeed minima (should be close to 0)
+cat("\nFunction values at minima (should be ~0):\n")
+for(i in 1:nrow(minima)) {
+  cat(sprintf("f(%.6f, %.6f) = %.10f\n", 
+              minima$x[i], minima$y[i], minima$f_value[i]))
+}
+```
+
+## Gradient and Hessian
+
+```{r derivatives}
+# Partial derivatives
+grad_himmelblau <- function(x, y) {
+  df_dx <- 4*x*(x^2 + y - 11) + 2*(x + y^2 - 7)
+  df_dy <- 2*(x^2 + y - 11) + 4*y*(x + y^2 - 7)
+  return(c(df_dx, df_dy))
+}
+
+# Hessian matrix
+hessian_himmelblau <- function(x, y) {
+  d2f_dx2 <- 12*x^2 + 4*y - 42
+  d2f_dy2 <- 4*x + 12*y^2 - 26
+  d2f_dxdy <- 4*x + 4*y
+  
+  H <- matrix(c(d2f_dx2, d2f_dxdy, d2f_dxdy, d2f_dy2), nrow = 2)
+  return(H)
+}
+
+# Check gradients at minima (should be close to zero)
+cat("Gradients at minima (should be ~0):\n")
+for(i in 1:nrow(minima)) {
+  grad <- grad_himmelblau(minima$x[i], minima$y[i])
+  cat(sprintf("∇f(%.3f, %.3f) = [%.6f, %.6f]\n", 
+              minima$x[i], minima$y[i], grad[1], grad[2]))
+}
+```
+
+## Numerical Optimization
+
+```{r numerical_optimization}
+# Use optim() to find minima starting from different points
+set.seed(123)
+starting_points <- matrix(runif(8, -5, 5), ncol = 2)
+
+results <- list()
+for(i in 1:nrow(starting_points)) {
+  result <- optim(starting_points[i,], 
+                  function(par) himmelblau(par[1], par[2]),
+                  method = "BFGS")
+  results[[i]] <- data.frame(
+    start_x = starting_points[i,1],
+    start_y = starting_points[i,2],
+    final_x = result$par[1],
+    final_y = result$par[2],
+    final_value = result$value,
+    convergence = result$convergence
+  )
+}
+
+numerical_results <- do.call(rbind, results)
+print("Numerical optimization results:")
+print(numerical_results)
+```
+
+# Visualization with Critical Points
+
+```{r plot_with_minima, fig.width=12, fig.height=8}
+# Enhanced contour plot with minima marked
+p2 <- ggplot(grid, aes(x = x, y = y, z = z)) +
+  geom_contour_filled(bins = 30, alpha = 0.8) +
+  geom_contour(color = "white", alpha = 0.3, size = 0.3) +
+  geom_point(data = minima, aes(x = x, y = y), 
+             color = "red", size = 4, shape = 19) +
+  geom_text(data = minima, aes(x = x, y = y, 
+                               label = paste0("(", round(x,2), ", ", round(y,2), ")")),
+            color = "red", vjust = -1, hjust = 0.5, size = 3, fontface = "bold") +
+  scale_fill_viridis_d(name = "f(x,y)") +
+  labs(title = "Himmelblau's Function with Global Minima",
+       subtitle = "Red points show the four global minima",
+       x = "x", y = "y") +
+  theme_minimal() +
+  coord_fixed()
+
+print(p2)
+```
+
+# Optimization Algorithm Comparison
+
+```{r optimization_comparison}
+# Test different optimization algorithms
+algorithms <- c("Nelder-Mead", "BFGS", "CG", "L-BFGS-B")
+start_point <- c(0, 0)
+
+comparison_results <- data.frame()
+
+for(method in algorithms) {
+  result <- optim(start_point, 
+                  function(par) himmelblau(par[1], par[2]),
+                  method = method)
+  
+  comparison_results <- rbind(comparison_results, data.frame(
+    Method = method,
+    Final_x = result$par[1],
+    Final_y = result$par[2],
+    Final_value = result$value,
+    Function_calls = result$counts[1],
+    Convergence = result$convergence
+  ))
+}
+
+print("Optimization algorithm comparison (starting from (0,0)):")
+print(comparison_results)
+```
+
+# Saddle Points and Local Maxima
+
+```{r saddle_points}
+# The function also has a local maximum at approximately (0.0898, -0.7127)
+# Let's find it by maximizing the negative function
+
+local_max_result <- optim(c(0, 0), 
+                         function(par) -himmelblau(par[1], par[2]),
+                         method = "BFGS")
+
+local_max <- data.frame(
+  x = local_max_result$par[1],
+  y = local_max_result$par[2],
+  f_value = -local_max_result$value
+)
+
+cat("Local maximum found at:\n")
+print(local_max)
+
+# Check if this is indeed a maximum by examining the Hessian
+H <- hessian_himmelblau(local_max$x, local_max$y)
+eigenvals <- eigen(H)$values
+
+cat("\nHessian eigenvalues at this point:", eigenvals, "\n")
+if(all(eigenvals < 0)) {
+  cat("This is a local maximum (negative definite Hessian)\n")
+} else if(all(eigenvals > 0)) {
+  cat("This is a local minimum (positive definite Hessian)\n")
+} else {
+  cat("This is a saddle point (indefinite Hessian)\n")
+}
+```
+
+# Applications and Uses
+
+## Test Function Properties
+
+Himmelblau's function is particularly useful for testing optimization algorithms because:
+
+1. **Multiple global minima**: Tests algorithm's ability to find different solutions
+2. **Flat regions**: Challenges gradient-based methods in areas with small gradients
+3. **Non-convexity**: Tests robustness to local optima
+4. **Well-known solution**: Allows verification of algorithm performance
+
+```{r gradient_magnitude}
+# Visualize gradient magnitude
+grid$grad_mag <- sqrt((4*grid$x*(grid$x^2 + grid$y - 11) + 2*(grid$x + grid$y^2 - 7))^2 +
+                     (2*(grid$x^2 + grid$y - 11) + 4*grid$y*(grid$x + grid$y^2 - 7))^2)
+
+p3 <- ggplot(grid, aes(x = x, y = y, fill = log10(grad_mag + 1e-10))) +
+  geom_raster() +
+  geom_point(data = minima, aes(x = x, y = y), 
+             color = "red", size = 3, shape = 19, inherit.aes = FALSE) +
+  scale_fill_viridis_c(name = "log₁₀(|∇f|)") +
+  labs(title = "Gradient Magnitude of Himmelblau's Function",
+       subtitle = "Darker regions have smaller gradients",
+       x = "x", y = "y") +
+  theme_minimal() +
+  coord_fixed()
+
+print(p3)
+```
+
+# Summary
+
+The Himmelblau function demonstrates several important concepts in optimization:
+
+- **Function value at all four global minima**: $f(x^*, y^*) = 0$
+- **Global minima locations**:
+  - $(3.0, 2.0)$
+  - $(-2.805118, 3.131312)$
+  - $(-3.779310, -3.283186)$
+  - $(3.584428, -1.848126)$
+
+This function serves as an excellent benchmark for testing the robustness and effectiveness of optimization algorithms, particularly their ability to handle multimodal landscapes and avoid getting trapped in local optima.
+
+```{r session_info}
+# Session information
+sessionInfo()
+```

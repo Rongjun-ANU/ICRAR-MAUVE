@@ -1,0 +1,43 @@
+# 20250909 Global MZR
+
+I try to compare the global MZR with other previous work, I think all looks fine for me.
+
+## N2S2-D16
+
+![image-20250909154549029](assets/image-20250909154549029.png)
+
+## Scal-PG16
+
+![image-20250909154611631](assets/image-20250909154611631.png)
+
+## O3N2-M13
+
+![image-20250909154633817](assets/image-20250909154633817.png)
+
+## N2-M13
+
+![image-20250909154650228](assets/image-20250909154650228.png)
+
+## O3N2-PP04
+
+![image-20250909154716405](assets/image-20250909154716405.png)
+
+## N2-PP04
+
+![image-20250909154849280](assets/image-20250909154849280.png)
+
+## Those C20
+
+![image-20250909154908655](assets/image-20250909154908655.png)
+
+![image-20250909154918583](assets/image-20250909154918583.png)
+
+![image-20250909154927780](assets/image-20250909154927780.png)
+
+![image-20250909154934987](assets/image-20250909154934987.png)
+
+![image-20250909154942176](assets/image-20250909154942176.png)
+
+![image-20250909154950890](assets/image-20250909154950890.png)
+
+![image-20250909155004377](assets/image-20250909155004377.png)

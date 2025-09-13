@@ -1,0 +1,37 @@
+# Ignore everything by default
+*
+
+# But allow directories (so recursion works)
+!*/
+
+# Allowlisted file types
+!*.ipynb
+!*.py
+!*.sh
+!*.json
+!*.log
+!*.txt
+!*.md
+!*.csv
+!*.tsv
+!*.r
+!*.R
+!*.Rmd
+!*.rmd
+!*.yml
+!*.yaml
+!*.xml
+!*.cfg
+!*.ini
+!*.conf
+
+# Keep these metadata files tracked too
+!.gitignore
+!README.md
+!.gitattributes
+# Ignore the ppxf folder
+ppxf/
+# Ignore large files that exceed GitHub limits
+extended/MAUVE_all_R.png
+MAUVE/Rongjun_rFMR_Virgo_Mauve_Presentation.pdf
+extended/MAUVE_all_R.tiff

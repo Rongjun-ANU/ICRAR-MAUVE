@@ -1,0 +1,640 @@
+---
+title: "Monte Carlo Integration: Power Tower Integral on [0,1]^n"
+date: "2025-08-14"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Problem
+We estimate the n-dimensional integral
+I_n = ∫_{[0,1]^n} x1^(x2^(...^xn)) dx
+by Monte Carlo for n = 1, 2, 3, 4, 16, 32, 64, 128.
+
+A variance-reduction trick integrates out x1:
+for T = x2^(x3^(...^xn)) in (0,1), ∫_0^1 x1^T dx1 = 1/(1+T).
+Thus,
+I_n = E[ 1 / (1 + T_{n-1}) ],  where T_{n-1} = x2^(x3^(...^xn)).
+
+# Monte Carlo estimator
+```{r}
+mc_power_tower <- function(n, N = 2e5, seed = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  t_start <- proc.time()[["elapsed"]]
+  
+  if (n == 1L) {
+    est <- 0.5
+    se  <- 0
+    ci  <- c(0.5, 0.5)
+    elapsed <- proc.time()[["elapsed"]] - t_start
+    return(list(n = n, N = 0L, est = est, se = se, ci_lo = ci[1], ci_hi = ci[2],
+                exact = 0.5, abs_err = 0, elapsed_s = elapsed))
+  }
+  
+  # Simulate T = x2^(x3^(...^xn)) by starting at xn and folding down
+  M <- N
+  t <- runif(M)                  # x_n
+  if (n > 2L) {
+    for (k in seq_len(n - 2L)) { # generate x_{n-1}, ..., x_2
+      u <- runif(M)
+      t <- u^t
+    }
+  }
+  y <- 1 / (1 + t)               # integrand after integrating out x1
+  est <- mean(y)
+  se  <- stats::sd(y) / sqrt(M)
+  ci  <- est + c(-1, 1) * 1.96 * se
+  elapsed <- proc.time()[["elapsed"]] - t_start
+  
+  exact <- if (n == 2L) log(2) else NA_real_  # known: I1 = 1/2, I2 = log 2
+  abs_err <- if (!is.na(exact)) abs(est - exact) else NA_real_
+  
+  list(n = n, N = M, est = est, se = se, ci_lo = ci[1], ci_hi = ci[2],
+       exact = exact, abs_err = abs_err, elapsed_s = elapsed)
+}
+```
+
+# Run experiments
+You can tune N. Larger n needs more work per sample, so we use fewer samples for big n to keep runtime reasonable.
+
+```{r}
+ns_small <- c(1, 2, 3, 4)
+ns_big   <- c(16, 32, 64, 128)
+
+N_small <- 1e6    # good precision for small n
+N_big   <- 2e5    # keeps runtime reasonable for deep towers
+
+set.seed(5513)
+
+res_small <- lapply(ns_small, function(n) mc_power_tower(n, N = if (n == 1) 0 else N_small))
+res_big   <- lapply(ns_big,   function(n) mc_power_tower(n, N = N_big))
+
+res <- do.call(rbind, lapply(c(res_small, res_big), as.data.frame))
+res
+```
+
+# Plot convergence with error bars
+```{r}
+op <- par(no.readonly = TRUE); on.exit(par(op), add = TRUE)
+
+plot(res$n, res$est, pch = 19, xlab = "n", ylab = "Monte Carlo estimate",
+     main = "Power tower integral vs n with 95% CIs", ylim = range(c(res$ci_lo, res$ci_hi)))
+arrows(res$n, res$ci_lo, res$n, res$ci_hi, angle = 90, code = 3, length = 0.05)
+
+# Add exact values where known
+abline(h = 0.5, col = "gray60", lty = 2)         # I1 = 1/2
+abline(h = log(2), col = "gray60", lty = 3)      # I2 = log 2
+legend("topright",
+       legend = c("Estimate", "95% CI", "I1 = 1/2", "I2 = log 2"),
+       pch = c(19, NA, NA, NA),
+       lty = c(NA, 1, 2, 3),
+       col = c("black", "black", "gray60", "gray60"),
+       bty = "n")
+```
+
+# Notes
+- The estimator uses y = 1/(1 + T) to reduce variance.
+- For n = 1, the integral is exactly 1/2; for n = 2, it is log 2.
+- For large n, increase N_big if you want tighter CIs (at the cost of runtime).
+
+## Generic Monte Carlo via mcintegral
+
+We now provide a generic Monte Carlo integrator `mcintegral()` and use it in two ways:
+- Direct integrand: f(x) = x1^(x2^(...^xn)) on [0,1]^n
+- Variance-reduced: integrate out x1 analytically to use g(x2..xn) = 1/(1 + x2^(x3^(...^xn)))
+
+```{r}
+# Generic Monte Carlo integrator on hyper-rectangles
+mcintegral <- function(f, d, N, lower = rep(0, d), upper = rep(1, d),
+                       seed = NULL, conf = 0.95, batch_points = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  if (length(lower) != d || length(upper) != d) stop("lower/upper must be length d")
+  vol <- prod(upper - lower)
+  if (vol <= 0) stop("upper must be > lower component-wise")
+  # choose batch size to keep memory modest
+  if (is.null(batch_points)) batch_points <- max(1L, min(N, floor(1e6 / max(1L, d))))
+  n_done <- 0L
+  sum_fx <- 0.0
+  sum_fx2 <- 0.0
+  t0 <- proc.time()[["elapsed"]]
+  while (n_done < N) {
+    m <- min(batch_points, N - n_done)
+    U <- matrix(runif(m * d), nrow = m, ncol = d)
+    X <- sweep(U, 2, (upper - lower), `*`)
+    X <- sweep(X, 2, lower, `+`)
+    fx <- f(X)
+    if (!is.numeric(fx) || length(fx) != m) stop("f(X) must return a numeric vector of length nrow(X)")
+    sum_fx  <- sum_fx  + sum(fx)
+    sum_fx2 <- sum_fx2 + sum(fx * fx)
+    n_done <- n_done + m
+  }
+  mean_fx <- sum_fx / N
+  var_fx  <- max(0, (sum_fx2 / N) - mean_fx^2) * N/(max(1, N - 1))  # unbiased-ish
+  est <- mean_fx * vol
+  se  <- sqrt(var_fx / N) * vol
+  z   <- stats::qnorm(1 - (1 - conf)/2)
+  ci  <- est + c(-1, 1) * z * se
+  elapsed <- proc.time()[["elapsed"]] - t0
+  list(est = est, se = se, ci_lo = ci[1], ci_hi = ci[2], N = N, d = d, elapsed_s = elapsed)
+}
+
+# Safe power tower helper for numerical stability
+ptower <- function(x, t) {
+  res <- exp(t * log(pmax(1e-15, x)))
+  pmin(pmax(res, 0), 1)
+}
+
+# Helpers to build the power tower from a matrix of samples
+tower_from_matrix <- function(X) {
+  d <- ncol(X)
+  if (d == 0L) return(rep(1, nrow(X)))
+  t <- X[, d]
+  if (d > 1L) {
+    for (k in (d - 1L):1L) t <- ptower(X[, k], t)
+  }
+  t
+}
+
+integrand_direct <- function(n) {
+  force(n)
+  function(X) tower_from_matrix(X)  # X is (m x n)
+}
+
+integrand_reduced <- function(n) {
+  force(n)
+  function(X) {                     # X is (m x (n-1)) holding x2..xn
+    t <- tower_from_matrix(X)
+    1 / (1 + t)
+  }
+}
+```
+
+### Run with mcintegral (direct vs variance-reduced)
+
+```{r}
+ns_small <- c(1, 2, 3, 4)
+ns_big   <- c(16, 32, 64, 128)
+
+# You can tune these; direct MC is costlier and has higher variance
+N_small_direct <- 2e5
+N_big_direct   <- 5e4
+N_small_red    <- 1e6
+N_big_red      <- 2e5
+
+set.seed(5513)
+
+# Direct method over [0,1]^n
+res_dir_small <- lapply(ns_small, function(n) {
+  if (n == 1L) {
+    list(n = n, method = "direct", est = 0.5, se = 0, ci_lo = 0.5, ci_hi = 0.5, N = 0L,
+         exact = 0.5, abs_err = 0, elapsed_s = 0)
+  } else {
+    out <- mcintegral(f = integrand_direct(n), d = n, N = N_small_direct)
+    exact <- if (n == 2L) log(2) else NA_real_
+    abs_err <- if (!is.na(exact)) abs(out$est - exact) else NA_real_
+    c(list(n = n, method = "direct"), out, list(exact = exact, abs_err = abs_err))
+  }
+})
+
+res_dir_big <- lapply(ns_big, function(n) {
+  out <- mcintegral(f = integrand_direct(n), d = n, N = N_big_direct)
+  exact <- NA_real_
+  abs_err <- NA_real_
+  c(list(n = n, method = "direct"), out, list(exact = exact, abs_err = abs_err))
+})
+
+# Variance-reduced on [0,1]^(n-1) using g(x2..xn) = 1/(1+T)
+res_red_small <- lapply(ns_small, function(n) {
+  if (n == 1L) {
+    list(n = n, method = "reduced", est = 0.5, se = 0, ci_lo = 0.5, ci_hi = 0.5, N = 0L,
+         exact = 0.5, abs_err = 0, elapsed_s = 0)
+  } else {
+    out <- mcintegral(f = integrand_reduced(n), d = n - 1L, N = N_small_red)
+    exact <- if (n == 2L) log(2) else NA_real_
+    abs_err <- if (!is.na(exact)) abs(out$est - exact) else NA_real_
+    c(list(n = n, method = "reduced"), out, list(exact = exact, abs_err = abs_err))
+  }
+})
+
+res_red_big <- lapply(ns_big, function(n) {
+  out <- mcintegral(f = integrand_reduced(n), d = n - 1L, N = N_big_red)
+  exact <- NA_real_
+  abs_err <- NA_real_
+  c(list(n = n, method = "reduced"), out, list(exact = exact, abs_err = abs_err))
+})
+
+res_dir_small <- res_dir_small
+res_dir_big   <- res_dir_big
+res_red_small <- res_red_small
+res_red_big   <- res_red_big
+
+# standardize and bind; objects above are already data.frames
+res_mci <- do.call(rbind, c(res_dir_small, res_dir_big, res_red_small, res_red_big))
+res_mci
+```
+
+### Plot: direct vs reduced
+
+```{r}
+op <- par(no.readonly = TRUE); on.exit(par(op), add = TRUE)
+cols <- c(direct = "#1f77b4", reduced = "#d62728")
+
+ylim <- range(c(res_mci$ci_lo, res_mci$ci_hi))
+plot(NA, xlim = range(res_mci$n), ylim = ylim, xlab = "n", ylab = "Estimate",
+     main = "Power tower integral: direct vs variance-reduced (95% CIs)")
+
+for (m in names(cols)) {
+  sub <- res_mci[res_mci$method == m, ]
+  points(sub$n, sub$est, pch = if (m == "direct") 16 else 17, col = cols[m])
+  arrows(sub$n, sub$ci_lo, sub$n, sub$ci_hi, angle = 90, code = 3, length = 0.05, col = cols[m])
+}
+
+abline(h = 0.5, col = "gray60", lty = 2)
+abline(h = log(2), col = "gray60", lty = 3)
+legend("topright",
+       legend = c("Direct", "Reduced", "I1 = 1/2", "I2 = log 2"),
+       pch = c(16, 17, NA, NA), lty = c(NA, NA, 2, 3),
+       col = c(cols, "gray60", "gray60"), bty = "n")
+```
+---
+title: "Monte Carlo Integration: Power Tower Integral on [0,1]^n"
+date: "2025-08-14"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Problem
+We estimate the n-dimensional integral
+I_n = ∫_{[0,1]^n} x1^(x2^(...^xn)) dx
+by Monte Carlo for n = 1, 2, 3, 4, 16, 32, 64, 128.
+
+A variance-reduction trick integrates out x1:
+for T = x2^(x3^(...^xn)) in (0,1), ∫_0^1 x1^T dx1 = 1/(1+T).
+Thus,
+I_n = E[ 1 / (1 + T_{n-1}) ],  where T_{n-1} = x2^(x3^(...^xn)).
+
+# Monte Carlo estimator
+```{r}
+mc_power_tower <- function(n, N = 2e5, seed = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  t_start <- proc.time()[["elapsed"]]
+  
+  if (n == 1L) {
+    est <- 0.5
+    se  <- 0
+    ci  <- c(0.5, 0.5)
+    elapsed <- proc.time()[["elapsed"]] - t_start
+    return(list(n = n, N = 0L, est = est, se = se, ci_lo = ci[1], ci_hi = ci[2],
+                exact = 0.5, abs_err = 0, elapsed_s = elapsed))
+  }
+  
+  # Simulate T = x2^(x3^(...^xn)) by starting at xn and folding down
+  M <- N
+  t <- runif(M)                  # x_n
+  if (n > 2L) {
+    for (k in seq_len(n - 2L)) { # generate x_{n-1}, ..., x_2
+      u <- runif(M)
+      t <- u^t
+    }
+  }
+  y <- 1 / (1 + t)               # integrand after integrating out x1
+  est <- mean(y)
+  se  <- stats::sd(y) / sqrt(M)
+  ci  <- est + c(-1, 1) * 1.96 * se
+  elapsed <- proc.time()[["elapsed"]] - t_start
+  
+  exact <- if (n == 2L) log(2) else NA_real_  # known: I1 = 1/2, I2 = log 2
+  abs_err <- if (!is.na(exact)) abs(est - exact) else NA_real_
+  
+  list(n = n, N = M, est = est, se = se, ci_lo = ci[1], ci_hi = ci[2],
+       exact = exact, abs_err = abs_err, elapsed_s = elapsed)
+}
+```
+
+# Run experiments
+You can tune N. Larger n needs more work per sample, so we use fewer samples for big n to keep runtime reasonable.
+
+```{r}
+ns_small <- c(1, 2, 3, 4)
+ns_big   <- c(16, 32, 64, 128)
+
+N_small <- 1e6    # good precision for small n
+N_big   <- 2e5    # keeps runtime reasonable for deep towers
+
+set.seed(5513)
+
+res_small <- lapply(ns_small, function(n) mc_power_tower(n, N = if (n == 1) 0 else N_small))
+res_big   <- lapply(ns_big,   function(n) mc_power_tower(n, N = N_big))
+
+res <- do.call(rbind, lapply(c(res_small, res_big), as.data.frame))
+res
+```
+
+# Plot convergence with error bars
+```{r}
+op <- par(no.readonly = TRUE); on.exit(par(op), add = TRUE)
+
+plot(res$n, res$est, pch = 19, xlab = "n", ylab = "Monte Carlo estimate",
+     main = "Power tower integral vs n with 95% CIs", ylim = range(c(res$ci_lo, res$ci_hi)))
+arrows(res$n, res$ci_lo, res$n, res$ci_hi, angle = 90, code = 3, length = 0.05)
+
+# Add exact values where known
+abline(h = 0.5, col = "gray60", lty = 2)         # I1 = 1/2
+abline(h = log(2), col = "gray60", lty = 3)      # I2 = log 2
+legend("topright",
+       legend = c("Estimate", "95% CI", "I1 = 1/2", "I2 = log 2"),
+       pch = c(19, NA, NA, NA),
+       lty = c(NA, 1, 2, 3),
+       col = c("black", "black", "gray60", "gray60"),
+       bty = "n")
+```
+
+# Notes
+- The estimator uses y = 1/(1 + T) to reduce variance.
+- For n = 1, the integral is exactly 1/2; for n = 2, it is log 2.
+- For large n, increase N_big if you want tighter CIs (at the cost of runtime).
+```// filepath: /Users/Igniz/Desktop/ICRAR/PHYS5513/20250814 Monte_Caro_Integration.rmd
+---
+title: "Monte Carlo Integration: Power Tower Integral on [0,1]^n"
+date: "2025-08-14"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: readable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+# Problem
+We estimate the n-dimensional integral
+I_n = ∫_{[0,1]^n} x1^(x2^(...^xn)) dx
+by Monte Carlo for n = 1, 2, 3, 4, 16, 32, 64, 128.
+
+A variance-reduction trick integrates out x1:
+for T = x2^(x3^(...^xn)) in (0,1), ∫_0^1 x1^T dx1 = 1/(1+T).
+Thus,
+I_n = E[ 1 / (1 + T_{n-1}) ],  where T_{n-1} = x2^(x3^(...^xn)).
+
+# Monte Carlo estimator
+```{r}
+mc_power_tower <- function(n, N = 2e5, seed = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  t_start <- proc.time()[["elapsed"]]
+  
+  if (n == 1L) {
+    est <- 0.5
+    se  <- 0
+    ci  <- c(0.5, 0.5)
+    elapsed <- proc.time()[["elapsed"]] - t_start
+    return(list(n = n, N = 0L, est = est, se = se, ci_lo = ci[1], ci_hi = ci[2],
+                exact = 0.5, abs_err = 0, elapsed_s = elapsed))
+  }
+  
+  # Simulate T = x2^(x3^(...^xn)) by starting at xn and folding down
+  M <- N
+  t <- runif(M)                  # x_n
+  if (n > 2L) {
+    for (k in seq_len(n - 2L)) { # generate x_{n-1}, ..., x_2
+      u <- runif(M)
+      t <- u^t
+    }
+  }
+  y <- 1 / (1 + t)               # integrand after integrating out x1
+  est <- mean(y)
+  se  <- stats::sd(y) / sqrt(M)
+  ci  <- est + c(-1, 1) * 1.96 * se
+  elapsed <- proc.time()[["elapsed"]] - t_start
+  
+  exact <- if (n == 2L) log(2) else NA_real_  # known: I1 = 1/2, I2 = log 2
+  abs_err <- if (!is.na(exact)) abs(est - exact) else NA_real_
+  
+  list(n = n, N = M, est = est, se = se, ci_lo = ci[1], ci_hi = ci[2],
+       exact = exact, abs_err = abs_err, elapsed_s = elapsed)
+}
+```
+
+# Run experiments
+You can tune N. Larger n needs more work per sample, so we use fewer samples for big n to keep runtime reasonable.
+
+```{r}
+ns_small <- c(1, 2, 3, 4)
+ns_big   <- c(16, 32, 64, 128)
+
+N_small <- 1e6    # good precision for small n
+N_big   <- 2e5    # keeps runtime reasonable for deep towers
+
+set.seed(5513)
+
+res_small <- lapply(ns_small, function(n) mc_power_tower(n, N = if (n == 1) 0 else N_small))
+res_big   <- lapply(ns_big,   function(n) mc_power_tower(n, N = N_big))
+
+res <- do.call(rbind, lapply(c(res_small, res_big), as.data.frame))
+res
+```
+
+# Plot convergence with error bars
+```{r}
+op <- par(no.readonly = TRUE); on.exit(par(op), add = TRUE)
+
+plot(res$n, res$est, pch = 19, xlab = "n", ylab = "Monte Carlo estimate",
+     main = "Power tower integral vs n with 95% CIs", ylim = range(c(res$ci_lo, res$ci_hi)))
+arrows(res$n, res$ci_lo, res$n, res$ci_hi, angle = 90, code = 3, length = 0.05)
+
+# Add exact values where known
+abline(h = 0.5, col = "gray60", lty = 2)         # I1 = 1/2
+abline(h = log(2), col = "gray60", lty = 3)      # I2 = log 2
+legend("topright",
+       legend = c("Estimate", "95% CI", "I1 = 1/2", "I2 = log 2"),
+       pch = c(19, NA, NA, NA),
+       lty = c(NA, 1, 2, 3),
+       col = c("black", "black", "gray60", "gray60"),
+       bty = "n")
+```
+
+# Notes
+- The estimator uses y = 1/(1 + T) to reduce variance.
+- For n = 1, the integral is exactly 1/2; for n = 2, it is log 2.
+- For large n, increase N_big if you want tighter CIs (at the cost of runtime).
+
+## Generic Monte Carlo via mcintegral
+
+We now provide a generic Monte Carlo integrator `mcintegral()` and use it in two ways:
+- Direct integrand: f(x) = x1^(x2^(...^xn)) on [0,1]^n
+- Variance-reduced: integrate out x1 analytically to use g(x2..xn) = 1/(1 + x2^(x3^(...^xn)))
+
+```{r}
+# Generic Monte Carlo integrator on hyper-rectangles
+mcintegral <- function(f, d, N, lower = rep(0, d), upper = rep(1, d),
+                       seed = NULL, conf = 0.95, batch_points = NULL) {
+  if (!is.null(seed)) set.seed(seed)
+  if (length(lower) != d || length(upper) != d) stop("lower/upper must be length d")
+  vol <- prod(upper - lower)
+  if (vol <= 0) stop("upper must be > lower component-wise")
+  # choose batch size to keep memory modest
+  if (is.null(batch_points)) batch_points <- max(1L, min(N, floor(1e6 / max(1L, d))))
+  n_done <- 0L
+  sum_fx <- 0.0
+  sum_fx2 <- 0.0
+  t0 <- proc.time()[["elapsed"]]
+  while (n_done < N) {
+    m <- min(batch_points, N - n_done)
+    U <- matrix(runif(m * d), nrow = m, ncol = d)
+    X <- sweep(U, 2, (upper - lower), `*`)
+    X <- sweep(X, 2, lower, `+`)
+    fx <- f(X)
+    if (!is.numeric(fx) || length(fx) != m) stop("f(X) must return a numeric vector of length nrow(X)")
+    sum_fx  <- sum_fx  + sum(fx)
+    sum_fx2 <- sum_fx2 + sum(fx * fx)
+    n_done <- n_done + m
+  }
+  mean_fx <- sum_fx / N
+  var_fx  <- max(0, (sum_fx2 / N) - mean_fx^2) * N/(max(1, N - 1))  # unbiased-ish
+  est <- mean_fx * vol
+  se  <- sqrt(var_fx / N) * vol
+  z   <- stats::qnorm(1 - (1 - conf)/2)
+  ci  <- est + c(-1, 1) * z * se
+  elapsed <- proc.time()[["elapsed"]] - t0
+  list(est = est, se = se, ci_lo = ci[1], ci_hi = ci[2], N = N, d = d, elapsed_s = elapsed)
+}
+
+# Numerically stable x^t to avoid NaNs near 0/1
+ptower <- function(x, t) {
+  res <- exp(t * log(pmax(1e-15, x)))
+  pmin(pmax(res, 0), 1)
+}
+
+# Helpers to build the power tower from a matrix of samples
+tower_from_matrix <- function(X) {
+  d <- ncol(X)
+  if (d == 0L) return(rep(1, nrow(X)))
+  t <- X[, d]
+  if (d > 1L) {
+    for (k in (d - 1L):1L) t <- ptower(X[, k], t)
+  }
+  t
+}
+
+integrand_direct <- function(n) {
+  force(n)
+  function(X) tower_from_matrix(X)  # X is (m x n)
+}
+
+integrand_reduced <- function(n) {
+  force(n)
+  function(X) {                     # X is (m x (n-1)) holding x2..xn
+    t <- tower_from_matrix(X)
+    1 / (1 + t)
+  }
+}
+```
+
+### Run with mcintegral (direct vs variance-reduced)
+
+```{r}
+ns_small <- c(1, 2, 3, 4)
+ns_big   <- c(16, 32, 64, 128)
+
+# You can tune these; direct MC is costlier and has higher variance
+N_small_direct <- 2e5
+N_big_direct   <- 5e4
+N_small_red    <- 1e6
+N_big_red      <- 2e5
+
+set.seed(5513)
+
+# Coerce rows to a uniform schema
+std_row <- function(n, method, out, exact = NA_real_) {
+  data.frame(
+    n = n,
+    method = method,
+    est = out$est,
+    se = out$se,
+    ci_lo = out$ci_lo,
+    ci_hi = out$ci_hi,
+    N = out$N,
+    d = out$d,
+    elapsed_s = out$elapsed_s,
+    exact = exact,
+    abs_err = if (!is.na(exact)) abs(out$est - exact) else NA_real_,
+    stringsAsFactors = FALSE
+  )
+}
+
+# Direct method over [0,1]^n
+res_dir_small <- lapply(ns_small, function(n) {
+  if (n == 1L) {
+    data.frame(n = 1L, method = "direct", est = 0.5, se = 0, ci_lo = 0.5, ci_hi = 0.5,
+               N = 0L, d = 1L, elapsed_s = 0, exact = 0.5, abs_err = 0, stringsAsFactors = FALSE)
+  } else {
+    out <- mcintegral(f = integrand_direct(n), d = n, N = N_small_direct)
+    exact <- if (n == 2L) log(2) else NA_real_
+    std_row(n, "direct", out, exact)
+  }
+})
+
+res_dir_big <- lapply(ns_big, function(n) {
+  out <- mcintegral(f = integrand_direct(n), d = n, N = N_big_direct)
+  std_row(n, "direct", out, NA_real_)
+})
+
+# Variance-reduced on [0,1]^(n-1)
+res_red_small <- lapply(ns_small, function(n) {
+  if (n == 1L) {
+    data.frame(n = 1L, method = "reduced", est = 0.5, se = 0, ci_lo = 0.5, ci_hi = 0.5,
+               N = 0L, d = 0L, elapsed_s = 0, exact = 0.5, abs_err = 0, stringsAsFactors = FALSE)
+  } else {
+    out <- mcintegral(f = integrand_reduced(n), d = n - 1L, N = N_small_red)
+    exact <- if (n == 2L) log(2) else NA_real_
+    std_row(n, "reduced", out, exact)
+  }
+})
+
+res_red_big <- lapply(ns_big, function(n) {
+  out <- mcintegral(f = integrand_reduced(n), d = n - 1L, N = N_big_red)
+  std_row(n, "reduced", out, NA_real_)
+})
+
+res_mci <- do.call(rbind, c(res_dir_small, res_dir_big, res_red_small, res_red_big))
+res_mci
+```
+
+### Plot: direct vs reduced
+
+```{r}
+op <- par(no.readonly = TRUE); on.exit(par(op), add = TRUE)
+cols <- c(direct = "#1f77b4", reduced = "#d62728")
+
+ylim <- range(c(res_mci$ci_lo, res_mci$ci_hi))
+plot(NA, xlim = range(res_mci$n), ylim = ylim, xlab = "n", ylab = "Estimate",
+     main = "Power tower integral: direct vs variance-reduced (95% CIs)")
+
+for (m in names(cols)) {
+  sub <- res_mci[res_mci$method == m, ]
+  points(sub$n, sub$est, pch = if (m == "direct") 16 else 17, col = cols[m])
+  arrows(sub$n, sub$ci_lo, sub$n, sub$ci_hi, angle = 90, code = 3, length = 0.05, col = cols[m])
+}
+
+abline(h = 0.5, col = "gray60", lty = 2)
+abline(h = log(2), col = "gray60", lty = 3)
+legend("topright",
+       legend = c("Direct", "Reduced", "I1 = 1/2", "I2 = log 2"),
+       pch = c(16, 17, NA, NA), lty = c(NA, NA, 2, 3),
+       col = c(cols, "gray60", "gray60"), bty = "n")
+```
+*** End Patch
