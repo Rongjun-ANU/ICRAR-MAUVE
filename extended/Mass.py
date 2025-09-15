@@ -24,7 +24,20 @@ Changes (2025-09-14)
 * Implemented read_galaxy_inclination() function to read inclination angles from MAUVE_Inclination.dat.
 * Applied cos(θ) correction factor to stellar_mass_surface_density where θ is the galaxy inclination angle.
 * Enhanced logging to show inclination values and correction factors applied.
+
+Changes (2025-09-15)
+-----------------------
+* Added user-configurable inclination correction parameter.
+* Users can now enable/disable inclination correction by setting apply_inclination_correction = True/False.
 """
+
+# ------------------------------------------------------------------
+# User Configuration Parameters
+# ------------------------------------------------------------------
+
+# Inclination correction toggle
+# Set to True to apply cos(θ) inclination correction, False to disable
+apply_inclination_correction = False
 
 # ------------------------------------------------------------------
 # 0.  Command‑line interface
@@ -423,18 +436,25 @@ pixel_area_Mpc = ((pixel_scale[0]).to(u.rad).value*16.5*u.Mpc)*(((pixel_scale[1]
 pixel_area_kpc = pixel_area_Mpc.to(u.kpc**2)
 
 # 2. Read galaxy inclination and calculate correction factor
-galaxy_inclination = read_galaxy_inclination(galaxy)
-if galaxy_inclination is not None:
-    inclination_rad = np.deg2rad(galaxy_inclination)
-    cos_inclination = np.cos(inclination_rad)
-    print(f"Galaxy {galaxy} inclination: {galaxy_inclination}° (cos θ = {cos_inclination:.3f})")
+if apply_inclination_correction:
+    galaxy_inclination = read_galaxy_inclination(galaxy)
+    if galaxy_inclination is not None:
+        inclination_rad = np.deg2rad(galaxy_inclination)
+        cos_inclination = np.cos(inclination_rad)
+        print(f"Galaxy {galaxy} inclination: {galaxy_inclination}° (cos θ = {cos_inclination:.3f})")
+        print(f"Inclination correction ENABLED: applying cos(θ) = {cos_inclination:.3f}")
+    else:
+        cos_inclination = 1.0
+        print(f"No inclination data found for {galaxy}, using cos_inclination = 1.0")
 else:
     cos_inclination = 1.0
-    print(f"No inclination correction applied for {galaxy}")
+    print(f"Inclination correction DISABLED: using cos_inclination = 1.0")
 
 # 3. Convert stellar mass to surface density with inclination correction
 stellar_mass_surface_density = M_star / pixel_area_kpc  # M☉/kpc²
 stellar_mass_surface_density_corrected = stellar_mass_surface_density * cos_inclination  # Apply inclination correction
+# stellar_mass_surface_density_corrected = stellar_mass_surface_density 
+
 # 4. Convert to log10 scale
 log_stellar_mass_surface_density = np.log10(stellar_mass_surface_density_corrected.value)
 
