@@ -76,6 +76,13 @@ Changes (2025-09-11)
 * Added robust error handling and validation for all total metallicity calculations
 * Maintained backwards compatibility with existing FITS output structure
 
+Changes (2025-09-14)
+-----------------------
+* Added inclination correction for SFR surface density calculation.
+* Implemented read_galaxy_inclination() function to read inclination angles from MAUVE_Inclination.dat.
+* Applied cos(θ) correction factor to SFR_surface_density_map where θ is the galaxy inclination angle.
+* Enhanced logging to show inclination values and correction factors applied.
+
 """
 
 
@@ -91,6 +98,41 @@ from astropy import units as u
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 
+# ------------------------------------------------------------------
+# Helper function for inclination correction
+# ------------------------------------------------------------------
+
+def read_galaxy_inclination(galaxy_name, inclination_file="MAUVE_Inclination.dat"):
+    """
+    Read galaxy inclination from MAUVE_Inclination.dat file.
+    
+    Parameters:
+    -----------
+    galaxy_name : str
+        Name of the galaxy (e.g., 'IC3392')
+    inclination_file : str
+        Path to the inclination data file
+        
+    Returns:
+    --------
+    float
+        Inclination angle in degrees, or None if galaxy not found
+    """
+    try:
+        with open(inclination_file, 'r') as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) == 2 and parts[0].upper() == galaxy_name.upper():
+                    return float(parts[1])
+        print(f"Warning: Galaxy {galaxy_name} not found in {inclination_file}")
+        return None
+    except FileNotFoundError:
+        print(f"Warning: Inclination file {inclination_file} not found")
+        return None
+    except Exception as e:
+        print(f"Warning: Error reading inclination file: {e}")
+        return None
+
 p = argparse.ArgumentParser(description="Generate SFR maps for a MAUVE galaxy")
 p.add_argument("-g", "--galaxy", default="IC3392", help="Galaxy ID (default IC3392)")
 p.add_argument("--root", default="/arc/projects/mauve", help="MAUVE root path")
@@ -105,7 +147,7 @@ gal  = args.galaxy.upper()
 root = Path(args.root)
 
 gas_path = root / "products" / "v0.6" / gal / f"{gal}_gas_BIN_maps.fits" # For CANFAR
-# gas_path = Path(f"{gal}_gas_BIN_maps.fits") # For local testing
+gas_path = Path(f"{gal}_gas_BIN_maps.fits") # For local testing
 out_path = Path(f"{gal}_gas_BIN_maps_extended.fits")
 kin_path = Path(f"{gal}_KIN_maps_extended.fits")          # foreground + stellar V
 
@@ -968,11 +1010,23 @@ legacy_wcs2 = WCS(gas_header).celestial  # strip spectral axis
 pixel_scale = (proj_plane_pixel_scales(legacy_wcs2) * u.deg).to(u.arcsec)
 pixel_area_Mpc = ((pixel_scale[0]).to(u.rad).value*16.5*u.Mpc)*(((pixel_scale[1]).to(u.rad).value*16.5*u.Mpc))
 pixel_area_kpc = pixel_area_Mpc.to(u.kpc**2)
-# 2. Convert SFR to surface density
-SFR_surface_density_map = SFR_map / pixel_area_kpc.value
 
-# 3. Convert to log10 scale
-LOG_SFR_surface_density_map = np.log10(SFR_surface_density_map)
+# 2. Read galaxy inclination and calculate correction factor
+galaxy_inclination = read_galaxy_inclination(gal)
+if galaxy_inclination is not None:
+    inclination_rad = np.deg2rad(galaxy_inclination)
+    cos_inclination = np.cos(inclination_rad)
+    print(f"Galaxy {gal} inclination: {galaxy_inclination}° (cos θ = {cos_inclination:.3f})")
+else:
+    cos_inclination = 1.0
+    print(f"No inclination correction applied for {gal}")
+
+# 3. Convert SFR to surface density with inclination correction
+SFR_surface_density_map = SFR_map / pixel_area_kpc.value
+SFR_surface_density_map_corrected = SFR_surface_density_map * cos_inclination  # Apply inclination correction
+
+# 4. Convert to log10 scale
+LOG_SFR_surface_density_map = np.log10(SFR_surface_density_map_corrected)
 
 # ------------------------------------------------------------------
 # 4.  Masks: basic QC cut

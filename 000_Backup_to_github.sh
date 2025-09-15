@@ -33,6 +33,16 @@ cat > .gitignore << 'EOF'
 !*.cfg
 !*.ini
 !*.conf
+!*.json
+!*.dat
+!*.json
+!*.dat
+!*.png
+!*.pdf
+!*.tiff
+!*.jpg
+!*.jpeg
+!*.gif
 
 # Keep these metadata files tracked too
 !.gitignore

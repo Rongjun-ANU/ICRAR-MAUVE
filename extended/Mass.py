@@ -17,6 +17,13 @@ The MAUVE directory tree is assumed to look like::
              └─ {galaxy}_sfh-weights.fits
 
 Pass a different root path with ``--root`` if your tree lives elsewhere.
+
+Changes (2025-09-14)
+-----------------------
+* Added inclination correction for stellar mass surface density calculation.
+* Implemented read_galaxy_inclination() function to read inclination angles from MAUVE_Inclination.dat.
+* Applied cos(θ) correction factor to stellar_mass_surface_density where θ is the galaxy inclination angle.
+* Enhanced logging to show inclination values and correction factors applied.
 """
 
 # ------------------------------------------------------------------
@@ -89,7 +96,42 @@ import ppxf.ppxf_util as util
 from ppxf import sps_util as lib
 
 # ------------------------------------------------------------------
-# 3.  Begin main workflow 
+# 3.  Helper function for inclination correction
+# ------------------------------------------------------------------
+
+def read_galaxy_inclination(galaxy_name, inclination_file="MAUVE_Inclination.dat"):
+    """
+    Read galaxy inclination from MAUVE_Inclination.dat file.
+    
+    Parameters:
+    -----------
+    galaxy_name : str
+        Name of the galaxy (e.g., 'IC3392')
+    inclination_file : str
+        Path to the inclination data file
+        
+    Returns:
+    --------
+    float
+        Inclination angle in degrees, or None if galaxy not found
+    """
+    try:
+        with open(inclination_file, 'r') as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) == 2 and parts[0].upper() == galaxy_name.upper():
+                    return float(parts[1])
+        print(f"Warning: Galaxy {galaxy_name} not found in {inclination_file}")
+        return None
+    except FileNotFoundError:
+        print(f"Warning: Inclination file {inclination_file} not found")
+        return None
+    except Exception as e:
+        print(f"Warning: Error reading inclination file: {e}")
+        return None
+
+# ------------------------------------------------------------------
+# 4.  Begin main workflow 
 # ------------------------------------------------------------------
 
 # Load spatial binning map IC3392_individual.fits 
@@ -117,9 +159,6 @@ with fits.open(weight_path) as hdul:
     grid_hdr  = hdul[2].header
 
     hdul.close()
-
-import numpy as np
-from pathlib import Path
 
 # ---------- 2.1  Column names (from HEADER_out_phot) ----------
 names = [
@@ -382,10 +421,22 @@ legacy_wcs2 = WCS(binning_hdr).celestial  # strip spectral axis
 pixel_scale = (proj_plane_pixel_scales(legacy_wcs2) * u.deg).to(u.arcsec)
 pixel_area_Mpc = ((pixel_scale[0]).to(u.rad).value*16.5*u.Mpc)*(((pixel_scale[1]).to(u.rad).value*16.5*u.Mpc))
 pixel_area_kpc = pixel_area_Mpc.to(u.kpc**2)
-# 2. Convert stellar mass to surface density
+
+# 2. Read galaxy inclination and calculate correction factor
+galaxy_inclination = read_galaxy_inclination(galaxy)
+if galaxy_inclination is not None:
+    inclination_rad = np.deg2rad(galaxy_inclination)
+    cos_inclination = np.cos(inclination_rad)
+    print(f"Galaxy {galaxy} inclination: {galaxy_inclination}° (cos θ = {cos_inclination:.3f})")
+else:
+    cos_inclination = 1.0
+    print(f"No inclination correction applied for {galaxy}")
+
+# 3. Convert stellar mass to surface density with inclination correction
 stellar_mass_surface_density = M_star / pixel_area_kpc  # M☉/kpc²
-# 3. Convert to log10 scale
-log_stellar_mass_surface_density = np.log10(stellar_mass_surface_density.value)
+stellar_mass_surface_density_corrected = stellar_mass_surface_density * cos_inclination  # Apply inclination correction
+# 4. Convert to log10 scale
+log_stellar_mass_surface_density = np.log10(stellar_mass_surface_density_corrected.value)
 
 
 with fits.open(out_path, mode="append") as hdul:             # open existing file

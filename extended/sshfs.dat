@@ -1,0 +1,28 @@
+sudo umount -f /Users/Igniz/arc         # use -f if plain umount complains “busy”
+# or, equivalent:
+# diskutil unmount force /Users/Igniz/arc
+
+sshfs \
+  -o ssh_command="sshpass -p rj990726 ssh -p 64022" \
+  -o reconnect,ServerAliveInterval=15,ServerAliveCountMax=6 \
+  -o defer_permissions,noapplexattr,noappledouble,auto_cache,negative_vncache \
+  RongjunHuang@ws-uv.canfar.net:/  /Users/Igniz/arc
+
+rsync -avhP /Users/Igniz/arc/home/RongjunHuang/ICRAR/extended/ \
+            /Users/Igniz/Desktop/ICRAR/extended
+
+cp /Users/Igniz/arc/home/RongjunHuang/ICRAR/extended/*gas_BIN_maps_extended.fits /Users/Igniz/Desktop/ICRAR/extended
+
+cp -r /Users/Igniz/arc/home/RongjunHuang/ICRAR/extended/sfr_logs /Users/Igniz/Desktop/ICRAR/extended
+
+rsync -avh --info=progress2 --human-readable \
+      --no-inc-recursive \
+      /Users/Igniz/arc/home/RongjunHuang/ICRAR/extended/**/*gas_BIN_maps_extended.fits \
+      /Users/Igniz/Desktop/ICRAR/extended/
+
+rsync -a --info=progress2 --human-readable \
+      --no-inc-recursive \
+      /Users/Igniz/arc/home/RongjunHuang/ICRAR/extended/sfr_logs/ \
+      /Users/Igniz/Desktop/ICRAR/extended/sfr_logs/
+
+
