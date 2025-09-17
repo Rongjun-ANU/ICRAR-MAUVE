@@ -18,7 +18,7 @@ export LANG=C
 # 1.  Configurable variables
 # ──────────────────────────────────────────────────────────────
 ROOT="/arc/projects/mauve"   # MAUVE root path, for CANFAR
-ROOT="$PWD"                  # MAUVE root path, for local testing
+# ROOT="$PWD"                  # MAUVE root path, for local testing
 SCRIPT="SFR+Z.py"              # Python driver
 LOGDIR="sfr_logs"            # Log directory
 mkdir -p "$LOGDIR"

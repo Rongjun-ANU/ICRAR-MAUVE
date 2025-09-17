@@ -26,7 +26,7 @@ No.    Name      Ver    Type      Cards   Dimensions   Format
   2  GRID          1 BinTableHDU     31   477R x 3C   [D, D, D]   
 /arc/home/RongjunHuang/.conda/envs/ICRAR/lib/python3.13/site-packages/speclite/filters.py:1119: RuntimeWarning: invalid value encountered in log10
   return -2.5 * np.log10(maggies)
-/arc/home/RongjunHuang/ICRAR/extended/Mass.py:248: RuntimeWarning: invalid value encountered in cast
+/arc/home/RongjunHuang/ICRAR/extended/Mass.py:308: RuntimeWarning: invalid value encountered in cast
   BINID   = BINID_f32.astype(np.int32)   # safe: all finite →
 None
 Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
@@ -66,7 +66,8 @@ Total stellar mass (R)   : 10.595 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
+Inclination correction DISABLED: using ba_factor = 1.0
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4698 finished in 7m42s
+✅  NGC4698 finished in 7m41s

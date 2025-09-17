@@ -24,7 +24,7 @@ No.    Name      Ver    Type      Cards   Dimensions   Format
   0  PRIMARY       1 PrimaryHDU      23   ()      
   1  WEIGHTS       1 BinTableHDU     27   9411R x 1C   [477D]   
   2  GRID          1 BinTableHDU     31   477R x 3C   [D, D, D]   
-/arc/home/RongjunHuang/ICRAR/extended/Mass.py:248: RuntimeWarning: invalid value encountered in cast
+/arc/home/RongjunHuang/ICRAR/extended/Mass.py:308: RuntimeWarning: invalid value encountered in cast
   BINID   = BINID_f32.astype(np.int32)   # safe: all finite →
 None
 Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
@@ -54,7 +54,8 @@ Total stellar mass (R)   : 9.923 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
+Inclination correction DISABLED: using ba_factor = 1.0
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4064 finished in 4m25s
+✅  NGC4064 finished in 4m3s

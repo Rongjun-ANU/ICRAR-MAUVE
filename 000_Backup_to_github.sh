@@ -50,6 +50,8 @@ cat > .gitignore << 'EOF'
 !.gitattributes
 # Ignore the ppxf folder
 ppxf/
+Prepare/
+Unihall/
 # Ignore large files that exceed GitHub limits
 extended/MAUVE_all_R.png
 MAUVE/Rongjun_rFMR_Virgo_Mauve_Presentation.pdf

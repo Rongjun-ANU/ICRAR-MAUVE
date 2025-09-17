@@ -88,6 +88,13 @@ Changes (2025-09-15)
 * Added user-configurable inclination correction parameter.
 * Users can now enable/disable inclination correction by setting apply_inclination_correction = True/False.
 
+Changes (2025-09-17)
+-----------------------
+* Enhanced inclination correction methodology from simple cos(θ) to account for b/a factor.
+* More physically accurate correction accounting for finite disc thickness rather than infinitely thin discs.
+* Implemented b/a = sqrt((1-q₀²)*cos²(i) + q₀²) correction where q₀ = 0.2 (intrinsic disc thickness).
+* Updated logging to report inclination angle, cos(θ), b/a factor, and adopted q₀ parameter.
+
 """
 
 # ------------------------------------------------------------------
@@ -159,7 +166,7 @@ gal  = args.galaxy.upper()
 root = Path(args.root)
 
 gas_path = root / "products" / "v0.6" / gal / f"{gal}_gas_BIN_maps.fits" # For CANFAR
-gas_path = Path(f"{gal}_gas_BIN_maps.fits") # For local testing
+# gas_path = Path(f"{gal}_gas_BIN_maps.fits") # For local testing
 out_path = Path(f"{gal}_gas_BIN_maps_extended.fits")
 kin_path = Path(f"{gal}_KIN_maps_extended.fits")          # foreground + stellar V
 
@@ -1347,18 +1354,20 @@ if apply_inclination_correction:
     if galaxy_inclination is not None:
         inclination_rad = np.deg2rad(galaxy_inclination)
         cos_inclination = np.cos(inclination_rad)
+        # Calculate b/a factor: sqrt((1-q0^2)*cos^2(i) + q0^2) where q0=0.2
+        ba_factor = np.abs(np.sqrt((1-0.2**2)*cos_inclination**2 + 0.2**2))
         print(f"Galaxy {gal} inclination: {galaxy_inclination}° (cos θ = {cos_inclination:.3f})")
-        print(f"Inclination correction ENABLED: applying cos(θ) = {cos_inclination:.3f}")
+        print(f"Inclination correction ENABLED: applying b/a = {ba_factor:.3f} (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)")
     else:
-        cos_inclination = 1.0
-        print(f"No inclination data found for {gal}, using cos_inclination = 1.0")
+        ba_factor = 1.0
+        print(f"No inclination data found for {gal}, using ba_factor = 1.0")
 else:
-    cos_inclination = 1.0
-    print(f"Inclination correction DISABLED: using cos_inclination = 1.0")
+    ba_factor = 1.0
+    print(f"Inclination correction DISABLED: using ba_factor = 1.0")
 
 # 3. Convert SFR to surface density with inclination correction
 SFR_surface_density_map = SFR_map / pixel_area_kpc.value
-SFR_surface_density_map_corrected = SFR_surface_density_map * cos_inclination  # Apply inclination correction
+SFR_surface_density_map_corrected = SFR_surface_density_map * ba_factor  # Apply inclination correction
 # SFR_surface_density_map_corrected = SFR_surface_density_map 
 
 # 4. Convert to log10 scale
