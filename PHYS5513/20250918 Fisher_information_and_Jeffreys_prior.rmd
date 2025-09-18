@@ -1,0 +1,2400 @@
+---
+title: "Complete Guide to Fisher Information: What, Why, and How"
+author: "GitHub Copilot"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+classoption: a4paper
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# What is Fisher Information?
+
+## Intuitive Understanding
+
+**Fisher Information** measures how much information a random observation carries about an unknown parameter. Think of it as:
+
+- **"How sensitive is the data to changes in the parameter?"**
+- **"How sharply peaked is the likelihood function?"**
+- **"How precisely can we estimate the parameter?"**
+
+Higher Fisher Information = More informative data = Better parameter estimates = Lower uncertainty
+
+## Load Required Libraries
+
+```{r libraries}
+library(magicaxis)
+library(MASS)
+library(pracma)
+library(numDeriv)
+library(mvtnorm)
+library(plotly)
+library(reshape2)
+set.seed(42)
+```
+
+## Mathematical Definition
+
+For a parameter θ and data X, the **Fisher Information** is defined as:
+
+$$\mathcal{I}(\theta) = \mathbb{E}\left[\left(\frac{\partial \ln \mathcal{L}(\theta)}{\partial \theta}\right)^2\right]$$
+
+where $\mathcal{L}(\theta)$ is the likelihood function.
+
+**Alternative (equivalent) definition:**
+$$\mathcal{I}(\theta) = -\mathbb{E}\left[\frac{\partial^2 \ln \mathcal{L}(\theta)}{\partial \theta^2}\right]$$
+
+```{r fisher_intuition}
+cat("Fisher Information Intuition:\n\n")
+cat("High Fisher Information:\n")
+cat("  • Sharp likelihood peak\n")
+cat("  • Small parameter uncertainty\n") 
+cat("  • Data is very informative\n")
+cat("  • Good experimental design\n\n")
+
+cat("Low Fisher Information:\n")
+cat("  • Flat likelihood peak\n")
+cat("  • Large parameter uncertainty\n")
+cat("  • Data is not very informative\n") 
+cat("  • Poor experimental design\n")
+```
+
+# Why Do We Use Fisher Information?
+
+## 1. Cramér-Rao Lower Bound
+
+The most important application: Fisher Information provides the **theoretical minimum variance** for any unbiased estimator.
+
+For any unbiased estimator $\hat{\theta}$ of parameter $\theta$:
+
+$$\text{Var}(\hat{\theta}) \geq \frac{1}{\mathcal{I}(\theta)}$$
+
+This is the **Cramér-Rao Lower Bound (CRLB)**.
+
+```{r cramer_rao_demo}
+# Demonstrate CRLB with normal distribution
+# True parameter: mean μ of normal distribution with known σ = 1
+
+mu_true <- 5
+sigma <- 1
+sample_sizes <- c(5, 10, 20, 50, 100, 200)
+n_simulations <- 1000
+
+# Function to calculate Fisher Information for normal mean
+fisher_info_normal_mean <- function(n, sigma) {
+  return(n / sigma^2)
+}
+
+# Function to calculate theoretical CRLB
+crlb_variance <- function(n, sigma) {
+  return(1 / fisher_info_normal_mean(n, sigma))
+}
+
+# Simulate sampling distributions
+results <- data.frame()
+
+for (n in sample_sizes) {
+  # Simulate many samples
+  sample_means <- replicate(n_simulations, {
+    sample_data <- rnorm(n, mu_true, sigma)
+    mean(sample_data)
+  })
+  
+  empirical_var <- var(sample_means)
+  theoretical_var <- crlb_variance(n, sigma)
+  fisher_info <- fisher_info_normal_mean(n, sigma)
+  
+  results <- rbind(results, data.frame(
+    n = n,
+    empirical_variance = empirical_var,
+    theoretical_variance = theoretical_var,
+    fisher_information = fisher_info,
+    efficiency = theoretical_var / empirical_var
+  ))
+}
+
+knitr::kable(results, digits = 4, 
+             caption = "Cramér-Rao Bound Verification: Sample Mean of Normal Distribution")
+
+# Plot comparison
+plot(sample_sizes, results$empirical_variance, type = 'o', pch = 20, lwd = 2,
+     xlab = 'Sample Size', ylab = 'Variance', log = 'xy',
+     main = 'Cramér-Rao Lower Bound Verification',
+     ylim = range(c(results$empirical_variance, results$theoretical_variance)))
+lines(sample_sizes, results$theoretical_variance, type = 'o', pch = 17, 
+      col = 'red', lwd = 2)
+legend('topright', c('Empirical Variance', 'CRLB (1/Fisher Info)'), 
+       col = c('black', 'red'), pch = c(20, 17), lwd = 2)
+
+cat("The sample mean achieves the Cramér-Rao bound (efficiency ≈ 1)\n")
+cat("This means it's the most efficient unbiased estimator possible!\n")
+```
+
+## 2. Experimental Design
+
+Fisher Information helps design experiments to maximize information gain.
+
+```{r experimental_design}
+# Example: Optimal spacing for parameter estimation in exponential decay
+# Model: y = A * exp(-λ * t) + noise
+# Question: What time points give maximum information about λ?
+
+# True parameters
+A_true <- 10
+lambda_true <- 0.5
+sigma_noise <- 0.5
+
+# Function to calculate Fisher Information for exponential decay parameter λ
+fisher_info_exponential <- function(t_points, A, lambda, sigma) {
+  # Derivative of log-likelihood w.r.t. λ
+  # d/dλ [ln L] = Σ (y_i - A*exp(-λ*t_i)) * A*t_i*exp(-λ*t_i) / σ²
+  
+  # Expected Fisher Information
+  expected_y <- A * exp(-lambda * t_points)
+  derivative <- -A * t_points * exp(-lambda * t_points)
+  
+  fisher_info <- sum((derivative^2) / sigma^2)
+  return(fisher_info)
+}
+
+# Test different experimental designs
+max_time <- 5
+n_points <- 5
+
+# Design 1: Equally spaced points
+t_equal <- seq(0.5, max_time, length = n_points)
+
+# Design 2: Exponentially spaced points
+t_exp <- exp(seq(log(0.5), log(max_time), length = n_points))
+
+# Design 3: Optimized spacing (more points where signal changes rapidly)
+# For exponential decay, this is typically at early time points
+t_optimal <- c(0.5, 1, 1.5, 2.5, 4)
+
+# Design 4: Random spacing
+set.seed(123)
+t_random <- sort(runif(n_points, 0.5, max_time))
+
+designs <- list(
+  "Equal spacing" = t_equal,
+  "Exponential spacing" = t_exp,
+  "Optimized spacing" = t_optimal,
+  "Random spacing" = t_random
+)
+
+# Calculate Fisher Information for each design
+design_results <- data.frame()
+for (name in names(designs)) {
+  t_points <- designs[[name]]
+  fi <- fisher_info_exponential(t_points, A_true, lambda_true, sigma_noise)
+  design_results <- rbind(design_results, data.frame(
+    Design = name,
+    Fisher_Information = fi,
+    CRLB_std_error = 1/sqrt(fi)
+  ))
+}
+
+knitr::kable(design_results, digits = 3,
+             caption = "Fisher Information for Different Experimental Designs")
+
+# Visualize the designs
+par(mfrow = c(2, 2))
+for (i in seq_along(designs)) {
+  name <- names(designs)[i]
+  t_points <- designs[[i]]
+  
+  # Plot the exponential function and measurement points
+  t_fine <- seq(0, max_time, length = 200)
+  y_true <- A_true * exp(-lambda_true * t_fine)
+  
+  plot(t_fine, y_true, type = 'l', lwd = 2, col = 'blue',
+       xlab = 'Time', ylab = 'Signal',
+       main = paste(name, sprintf("\nFisher Info = %.2f", design_results$Fisher_Information[i])))
+  points(t_points, A_true * exp(-lambda_true * t_points), 
+         pch = 20, cex = 1.5, col = 'red')
+  grid()
+}
+par(mfrow = c(1, 1))
+
+best_design <- design_results$Design[which.max(design_results$Fisher_Information)]
+cat(sprintf("Best design for parameter estimation: %s\n", best_design))
+```
+
+## 3. Model Comparison and Selection
+
+Fisher Information helps compare how well different models can estimate parameters.
+
+```{r model_comparison_fisher}
+# Compare parameter estimation quality for different models
+# Data: noisy sine wave
+# Models: polynomial vs Fourier series
+
+n_data <- 50
+t <- seq(0, 2*pi, length = n_data)
+y_true <- 2 * sin(t) + 0.5 * sin(3*t)
+sigma_noise <- 0.3
+y_obs <- y_true + rnorm(n_data, 0, sigma_noise)
+
+# Model 1: Polynomial approximation
+# y = β₀ + β₁t + β₂t² + ... + βₖtᵏ
+
+# Model 2: Fourier series
+# y = a₀ + Σ[aₙcos(nt) + bₙsin(nt)]
+
+# Function to calculate Fisher Information Matrix for linear model
+# X is design matrix, σ is noise level
+fisher_info_linear <- function(X, sigma) {
+  return(t(X) %*% X / sigma^2)
+}
+
+# Test polynomial degrees 1 to 6
+poly_results <- data.frame()
+for (degree in 1:6) {
+  X_poly <- poly(t, degree, raw = TRUE)
+  X_poly <- cbind(1, X_poly)  # Add intercept
+  
+  fisher_matrix <- fisher_info_linear(X_poly, sigma_noise)
+  
+  # Determinant measures overall information content
+  det_fisher <- det(fisher_matrix)
+  
+  # Trace measures sum of individual parameter information
+  trace_fisher <- sum(diag(fisher_matrix))
+  
+  # Condition number measures numerical stability
+  cond_number <- kappa(fisher_matrix)
+  
+  poly_results <- rbind(poly_results, data.frame(
+    degree = degree,
+    parameters = degree + 1,
+    det_fisher = det_fisher,
+    trace_fisher = trace_fisher,
+    condition_number = cond_number
+  ))
+}
+
+# Test Fourier series with different numbers of harmonics
+fourier_results <- data.frame()
+for (n_harmonics in 1:6) {
+  # Create Fourier design matrix
+  X_fourier <- matrix(1, nrow = n_data, ncol = 1)  # Constant term
+  
+  for (k in 1:n_harmonics) {
+    X_fourier <- cbind(X_fourier, cos(k*t), sin(k*t))
+  }
+  
+  fisher_matrix <- fisher_info_linear(X_fourier, sigma_noise)
+  
+  fourier_results <- rbind(fourier_results, data.frame(
+    harmonics = n_harmonics,
+    parameters = 2*n_harmonics + 1,
+    det_fisher = det(fisher_matrix),
+    trace_fisher = sum(diag(fisher_matrix)),
+    condition_number = kappa(fisher_matrix)
+  ))
+}
+
+# Compare results
+cat("POLYNOMIAL MODELS:\n")
+knitr::kable(poly_results, digits = 2,
+             caption = "Fisher Information for Polynomial Models")
+
+cat("\nFOURIER SERIES MODELS:\n")
+knitr::kable(fourier_results, digits = 2,
+             caption = "Fisher Information for Fourier Series Models")
+
+# Plot comparison
+par(mfrow = c(1, 2))
+
+# Determinant comparison
+plot(poly_results$degree, poly_results$det_fisher, type = 'o', 
+     pch = 20, col = 'blue', lwd = 2,
+     xlab = 'Model Complexity', ylab = 'det(Fisher Information)',
+     main = 'Information Content Comparison', log = 'y')
+lines(fourier_results$harmonics, fourier_results$det_fisher, 
+      type = 'o', pch = 17, col = 'red', lwd = 2)
+legend('topright', c('Polynomial', 'Fourier'), 
+       col = c('blue', 'red'), pch = c(20, 17), lwd = 2)
+
+# Condition number comparison  
+plot(poly_results$degree, poly_results$condition_number, type = 'o',
+     pch = 20, col = 'blue', lwd = 2, log = 'y',
+     xlab = 'Model Complexity', ylab = 'Condition Number',
+     main = 'Numerical Stability Comparison')
+lines(fourier_results$harmonics, fourier_results$condition_number,
+      type = 'o', pch = 17, col = 'red', lwd = 2)
+legend('topleft', c('Polynomial', 'Fourier'), 
+       col = c('blue', 'red'), pch = c(20, 17), lwd = 2)
+
+par(mfrow = c(1, 1))
+```
+
+# How to Calculate Fisher Information
+
+## Method 1: Direct Calculation (When Analytical)
+
+For many standard distributions, Fisher Information can be calculated analytically.
+
+```{r analytical_fisher}
+# Example 1: Normal distribution with unknown mean μ, known variance σ²
+# Likelihood: L(μ) = ∏ (2πσ²)^(-1/2) exp(-(xᵢ-μ)²/(2σ²))
+# Log-likelihood: ℓ(μ) = -n/2 log(2πσ²) - Σ(xᵢ-μ)²/(2σ²)
+
+fisher_normal_mean <- function(n, sigma) {
+  # ∂²ℓ/∂μ² = -n/σ²
+  # Fisher Info = -E[∂²ℓ/∂μ²] = n/σ²
+  return(n / sigma^2)
+}
+
+# Example 2: Normal distribution with unknown variance σ², known mean μ  
+fisher_normal_variance <- function(n, sigma) {
+  # Fisher Info = n/(2σ⁴)
+  return(n / (2 * sigma^4))
+}
+
+# Example 3: Poisson distribution with parameter λ
+fisher_poisson <- function(n, lambda) {
+  # Fisher Info = n/λ
+  return(n / lambda)
+}
+
+# Example 4: Binomial distribution with parameter p (n trials known)
+fisher_binomial <- function(n_trials, p) {
+  # Fisher Info = n_trials / (p(1-p))
+  return(n_trials / (p * (1 - p)))
+}
+
+# Demonstrate these formulas
+cat("ANALYTICAL FISHER INFORMATION FORMULAS:\n\n")
+
+# Normal mean
+n_samples <- 20
+sigma_known <- 2
+fi_norm_mean <- fisher_normal_mean(n_samples, sigma_known)
+cat(sprintf("Normal (mean unknown): n=%d, σ=%g → Fisher Info = %.3f\n", 
+            n_samples, sigma_known, fi_norm_mean))
+cat(sprintf("  → CRLB for μ̂: σ²(μ̂) ≥ %.3f\n", 1/fi_norm_mean))
+
+# Normal variance  
+mu_known <- 0
+sigma_unknown <- 2
+fi_norm_var <- fisher_normal_variance(n_samples, sigma_unknown)
+cat(sprintf("\nNormal (variance unknown): n=%d, μ=%g → Fisher Info = %.3f\n",
+            n_samples, mu_known, fi_norm_var))
+cat(sprintf("  → CRLB for σ̂²: Var(σ̂²) ≥ %.3f\n", 1/fi_norm_var))
+
+# Poisson
+lambda_poisson <- 3
+fi_poisson <- fisher_poisson(n_samples, lambda_poisson)
+cat(sprintf("\nPoisson: n=%d, λ=%g → Fisher Info = %.3f\n",
+            n_samples, lambda_poisson, fi_poisson))
+cat(sprintf("  → CRLB for λ̂: Var(λ̂) ≥ %.3f\n", 1/fi_poisson))
+
+# Binomial
+n_trials <- 50
+p_binomial <- 0.3
+fi_binomial <- fisher_binomial(n_trials, p_binomial)
+cat(sprintf("\nBinomial: n=%d, p=%g → Fisher Info = %.3f\n",
+            n_trials, p_binomial, fi_binomial))
+cat(sprintf("  → CRLB for p̂: Var(p̂) ≥ %.6f\n", 1/fi_binomial))
+```
+
+## Method 2: Numerical Computation
+
+When analytical calculation is difficult, use numerical methods.
+
+```{r numerical_fisher}
+# Example: Beta distribution with unknown parameters α, β
+# This requires numerical computation of Fisher Information Matrix
+
+# Log-likelihood for Beta distribution
+log_likelihood_beta <- function(params, data) {
+  alpha <- params[1]
+  beta <- params[2]
+  
+  if (alpha <= 0 || beta <= 0) return(-Inf)
+  
+  # Beta log-likelihood
+  ll <- sum(dbeta(data, alpha, beta, log = TRUE))
+  return(ll)
+}
+
+# Generate synthetic Beta data
+set.seed(456)
+alpha_true <- 2.5
+beta_true <- 1.5
+n_data <- 100
+beta_data <- rbeta(n_data, alpha_true, beta_true)
+
+# Function to compute Fisher Information Matrix numerically
+compute_fisher_numerical <- function(log_lik_func, params, data, h = 1e-5) {
+  k <- length(params)
+  hessian_matrix <- matrix(NA, k, k)
+  
+  # Compute second derivatives numerically
+  for (i in 1:k) {
+    for (j in 1:k) {
+      if (i == j) {
+        # Second derivative w.r.t. same parameter
+        params_plus <- params_minus <- params
+        params_plus[i] <- params[i] + h
+        params_minus[i] <- params[i] - h
+        
+        hessian_matrix[i, j] <- (log_lik_func(params_plus, data) - 
+                                2*log_lik_func(params, data) + 
+                                log_lik_func(params_minus, data)) / h^2
+      } else {
+        # Mixed second derivative
+        params_pp <- params_pm <- params_mp <- params_mm <- params
+        params_pp[i] <- params[i] + h; params_pp[j] <- params[j] + h
+        params_pm[i] <- params[i] + h; params_pm[j] <- params[j] - h  
+        params_mp[i] <- params[i] - h; params_mp[j] <- params[j] + h
+        params_mm[i] <- params[i] - h; params_mm[j] <- params[j] - h
+        
+        hessian_matrix[i, j] <- (log_lik_func(params_pp, data) - 
+                                log_lik_func(params_pm, data) -
+                                log_lik_func(params_mp, data) + 
+                                log_lik_func(params_mm, data)) / (4*h^2)
+      }
+    }
+  }
+  
+  # Fisher Information is negative expected Hessian
+  fisher_matrix <- -hessian_matrix
+  return(fisher_matrix)
+}
+
+# Compute Fisher Information at true parameters
+true_params <- c(alpha_true, beta_true)
+fisher_matrix <- compute_fisher_numerical(log_likelihood_beta, true_params, beta_data)
+
+cat("NUMERICAL FISHER INFORMATION MATRIX (Beta Distribution):\n")
+rownames(fisher_matrix) <- c("α", "β")
+colnames(fisher_matrix) <- c("α", "β")
+print(round(fisher_matrix, 3))
+
+# Extract standard errors (square root of diagonal of inverse)
+covariance_matrix <- solve(fisher_matrix)
+standard_errors <- sqrt(diag(covariance_matrix))
+
+cat("\nCRLB Standard Errors:\n")
+cat(sprintf("SE(α̂) ≥ %.4f\n", standard_errors[1]))
+cat(sprintf("SE(β̂) ≥ %.4f\n", standard_errors[2]))
+
+# Correlation between parameters
+correlation_matrix <- cov2cor(covariance_matrix)
+cat(sprintf("\nParameter correlation: %.3f\n", correlation_matrix[1,2]))
+
+# Verify with MLE estimation
+mle_result <- optim(c(1, 1), log_likelihood_beta, data = beta_data,
+                   method = "BFGS", hessian = TRUE, 
+                   control = list(fnscale = -1))
+
+observed_fisher <- -mle_result$hessian
+observed_se <- sqrt(diag(solve(observed_fisher)))
+
+cat("\nComparison with MLE results:\n")
+cat("Parameter | True Value | MLE Estimate | CRLB SE | Observed SE\n")
+cat("----------|------------|--------------|---------|------------\n")
+cat(sprintf("α         | %10.3f | %12.3f | %7.4f | %11.4f\n", 
+            alpha_true, mle_result$par[1], standard_errors[1], observed_se[1]))
+cat(sprintf("β         | %10.3f | %12.3f | %7.4f | %11.4f\n", 
+            beta_true, mle_result$par[2], standard_errors[2], observed_se[2]))
+```
+
+## Method 3: Bootstrap Estimation
+
+Sometimes Fisher Information is estimated through bootstrap resampling.
+
+```{r bootstrap_fisher}
+# Bootstrap estimation of Fisher Information
+# Useful when theoretical calculation is very difficult
+
+# Function to estimate Fisher Info via bootstrap
+bootstrap_fisher_info <- function(data, estimator_func, n_bootstrap = 1000) {
+  n_data <- length(data)
+  bootstrap_estimates <- replicate(n_bootstrap, {
+    # Resample data with replacement
+    bootstrap_sample <- sample(data, n_data, replace = TRUE)
+    # Apply estimator
+    estimator_func(bootstrap_sample)
+  })
+  
+  # Fisher Information ≈ 1/Var(estimator)
+  # (This is an approximation based on CRLB)
+  empirical_variance <- var(bootstrap_estimates)
+  fisher_info_estimate <- 1 / empirical_variance
+  
+  return(list(
+    fisher_info = fisher_info_estimate,
+    bootstrap_estimates = bootstrap_estimates,
+    empirical_se = sqrt(empirical_variance)
+  ))
+}
+
+# Example: Exponential distribution parameter estimation
+# Generate exponential data
+set.seed(789)
+rate_true <- 2
+n_exp <- 50
+exp_data <- rexp(n_exp, rate_true)
+
+# MLE estimator for exponential rate parameter
+exp_mle <- function(data) {
+  return(1 / mean(data))  # MLE for rate = 1/sample_mean
+}
+
+# Bootstrap Fisher Information
+bootstrap_result <- bootstrap_fisher_info(exp_data, exp_mle, 2000)
+
+# Theoretical Fisher Information for exponential rate
+# Fisher Info = n/λ² 
+theoretical_fisher <- n_exp / (rate_true^2)
+theoretical_se <- 1 / sqrt(theoretical_fisher)
+
+cat("BOOTSTRAP vs THEORETICAL FISHER INFORMATION:\n\n")
+cat("Exponential Distribution (rate parameter):\n")
+cat(sprintf("True rate: %.3f\n", rate_true))
+cat(sprintf("Sample size: %d\n", n_exp))
+cat(sprintf("MLE estimate: %.3f\n", exp_mle(exp_data)))
+cat("\nFisher Information:\n")
+cat(sprintf("Theoretical: %.3f\n", theoretical_fisher))
+cat(sprintf("Bootstrap:   %.3f\n", bootstrap_result$fisher_info))
+cat("\nStandard Errors:\n")
+cat(sprintf("Theoretical: %.4f\n", theoretical_se))
+cat(sprintf("Bootstrap:   %.4f\n", bootstrap_result$empirical_se))
+
+# Plot bootstrap distribution
+hist(bootstrap_result$bootstrap_estimates, breaks = 30, probability = TRUE,
+     main = "Bootstrap Distribution of MLE",
+     xlab = "Rate Estimate", col = 'lightblue', border = 'darkblue')
+abline(v = rate_true, col = 'red', lwd = 2, lty = 2)
+abline(v = mean(bootstrap_result$bootstrap_estimates), col = 'blue', lwd = 2)
+
+# Overlay theoretical normal approximation
+x_range <- range(bootstrap_result$bootstrap_estimates)
+x_seq <- seq(x_range[1], x_range[2], length = 200)
+theoretical_density <- dnorm(x_seq, rate_true, theoretical_se)
+lines(x_seq, theoretical_density, col = 'red', lwd = 2)
+
+legend('topright', 
+       c('True Value', 'Bootstrap Mean', 'Theoretical Normal'),
+       col = c('red', 'blue', 'red'), 
+       lty = c(2, 1, 1), lwd = 2)
+```
+
+# Multivariate Fisher Information
+
+## Fisher Information Matrix
+
+For multiple parameters θ = (θ₁, θ₂, ..., θₖ), Fisher Information becomes a matrix:
+
+$$\mathcal{I}_{ij}(\theta) = \mathbb{E}\left[\frac{\partial \ln \mathcal{L}}{\partial \theta_i} \frac{\partial \ln \mathcal{L}}{\partial \theta_j}\right]$$
+
+```{r multivariate_fisher}
+# Example: Bivariate normal distribution with unknown mean vector μ = (μ₁, μ₂)
+# and known covariance matrix Σ
+
+# Generate bivariate normal data
+set.seed(101)
+mu_true <- c(2, -1)
+Sigma_true <- matrix(c(1, 0.5, 0.5, 2), 2, 2)
+n_biv <- 80
+biv_data <- mvrnorm(n_biv, mu_true, Sigma_true)
+
+# Fisher Information Matrix for bivariate normal mean
+# When Σ is known: I(μ) = n * Σ⁻¹
+fisher_biv_known_cov <- n_biv * solve(Sigma_true)
+
+cat("BIVARIATE NORMAL - KNOWN COVARIANCE:\n")
+cat("Fisher Information Matrix:\n")
+print(round(fisher_biv_known_cov, 3))
+
+# Covariance matrix of estimators (inverse of Fisher Info)
+cov_estimators <- solve(fisher_biv_known_cov)
+cat("\nCovariance Matrix of μ̂:\n") 
+print(round(cov_estimators, 4))
+
+# Standard errors
+se_mu1 <- sqrt(cov_estimators[1,1])
+se_mu2 <- sqrt(cov_estimators[2,2])
+correlation_mu <- cov_estimators[1,2] / (se_mu1 * se_mu2)
+
+cat(sprintf("\nStandard Errors:\n"))
+cat(sprintf("SE(μ̂₁) = %.4f\n", se_mu1))
+cat(sprintf("SE(μ̂₂) = %.4f\n", se_mu2))
+cat(sprintf("Correlation(μ̂₁, μ̂₂) = %.3f\n", correlation_mu))
+
+# Verify with sample estimates
+sample_mean <- colMeans(biv_data)
+sample_cov_of_mean <- Sigma_true / n_biv
+
+cat(sprintf("\nVerification:\n"))
+cat(sprintf("Sample μ̂₁ = %.3f (true = %.3f)\n", sample_mean[1], mu_true[1]))
+cat(sprintf("Sample μ̂₂ = %.3f (true = %.3f)\n", sample_mean[2], mu_true[2]))
+cat(sprintf("Theoretical SE(μ̂₁) = %.4f\n", sqrt(sample_cov_of_mean[1,1])))
+cat(sprintf("Theoretical SE(μ̂₂) = %.4f\n", sqrt(sample_cov_of_mean[2,2])))
+
+# Plot confidence ellipse
+plot(biv_data[,1], biv_data[,2], pch = 20, col = 'lightblue',
+     xlab = expression(x[1]), ylab = expression(x[2]),
+     main = "Bivariate Normal Data with Confidence Ellipse")
+
+# Add true mean
+points(mu_true[1], mu_true[2], pch = 4, cex = 2, lwd = 3, col = 'red')
+
+# Add sample mean  
+points(sample_mean[1], sample_mean[2], pch = 20, cex = 2, col = 'blue')
+
+# Add confidence ellipse for the mean estimate
+library(ellipse)
+ellipse_95 <- ellipse(cov_estimators, centre = mu_true, level = 0.95)
+lines(ellipse_95, col = 'red', lwd = 2)
+
+ellipse_68 <- ellipse(cov_estimators, centre = mu_true, level = 0.68)
+lines(ellipse_68, col = 'red', lwd = 2, lty = 2)
+
+legend('topright', 
+       c('Data', 'True Mean', 'Sample Mean', '68% CI', '95% CI'),
+       col = c('lightblue', 'red', 'blue', 'red', 'red'),
+       pch = c(20, 4, 20, NA, NA), 
+       lty = c(NA, NA, NA, 2, 1), lwd = c(NA, 3, NA, 2, 2))
+```
+
+## Information Geometry
+
+Fisher Information defines a Riemannian metric on the parameter space - this is the foundation of **Information Geometry**.
+
+```{r information_geometry}
+# Example: Information geometry of normal distribution family
+# Parameter space: (μ, σ) with σ > 0
+
+# Fisher Information Matrix for bivariate normal (μ, σ both unknown)
+fisher_normal_both <- function(mu, sigma, n) {
+  # For normal distribution with both μ and σ unknown:
+  # I₁₁ = n/σ²        (information about μ)
+  # I₁₂ = I₂₁ = 0     (μ and σ are orthogonal)  
+  # I₂₂ = n/(2σ²)     (information about σ)
+  
+  matrix(c(n/sigma^2, 0, 0, n/(2*sigma^2)), 2, 2)
+}
+
+# Create grid of (μ, σ) values
+mu_grid <- seq(-2, 2, length = 20)
+sigma_grid <- seq(0.5, 3, length = 20)
+n_sample <- 25
+
+# Calculate determinant of Fisher Information Matrix across parameter space
+det_fisher_grid <- outer(mu_grid, sigma_grid, function(mu, sigma) {
+  sapply(seq_along(mu), function(i) {
+    fisher_mat <- fisher_normal_both(mu[i], sigma[i], n_sample)
+    det(fisher_mat)
+  })
+})
+
+# Plot information landscape
+filled.contour(mu_grid, sigma_grid, det_fisher_grid,
+               xlab = expression(mu), ylab = expression(sigma),
+               main = "Fisher Information Landscape\n(Determinant of Fisher Matrix)",
+               color.palette = heat.colors)
+
+# The determinant measures the "volume" of information
+# Higher values = more informative parameter combinations
+
+cat("INFORMATION GEOMETRY INSIGHTS:\n\n")
+cat("• Fisher Information Matrix defines Riemannian metric\n")
+cat("• Geodesics = paths of steepest information gain\n") 
+cat("• Volume element = √det(Fisher Matrix)\n")
+cat("• Parameter transformations change the metric\n")
+cat("• Jeffreys prior ∝ √det(Fisher Matrix)\n")
+```
+
+# Advanced Applications
+
+## 1. Optimal Experimental Design
+
+Fisher Information guides optimal allocation of experimental resources.
+
+```{r optimal_design}
+# D-optimal design: maximize determinant of Fisher Information Matrix
+# A-optimal design: minimize trace of inverse Fisher Information Matrix
+
+# Example: Polynomial regression with resource constraints
+# Model: y = β₀ + β₁x + β₂x² + ε
+# Question: Where to place measurement points to best estimate coefficients?
+
+# Design region: x ∈ [0, 1]
+# Constraint: exactly n points
+
+design_polynomial_optimal <- function(x_points) {
+  # Create design matrix
+  X <- cbind(1, x_points, x_points^2)
+  
+  # Fisher Information Matrix (assuming σ² = 1)
+  fisher_matrix <- t(X) %*% X
+  
+  # Check if matrix is invertible
+  if (det(fisher_matrix) < 1e-10) {
+    return(list(det = 0, trace_inv = Inf, condition = Inf))
+  }
+  
+  # D-optimality criterion (maximize determinant)
+  det_criterion <- det(fisher_matrix)
+  
+  # A-optimality criterion (minimize trace of inverse)
+  trace_inv_criterion <- sum(diag(solve(fisher_matrix)))
+  
+  # Condition number (numerical stability)
+  condition_number <- kappa(fisher_matrix)
+  
+  return(list(
+    det = det_criterion,
+    trace_inv = trace_inv_criterion, 
+    condition = condition_number,
+    fisher_matrix = fisher_matrix
+  ))
+}
+
+# Compare different designs with n = 6 points
+n_design_points <- 6
+
+designs_to_test <- list(
+  "Equally spaced" = seq(0, 1, length = n_design_points),
+  "Clustered at ends" = c(rep(0, 2), rep(0.5, 2), rep(1, 2)),
+  "Chebyshev nodes" = 0.5 + 0.5*cos((2*(1:n_design_points)-1)*pi/(2*n_design_points)),
+  "Random" = sort(runif(n_design_points, 0, 1))
+)
+
+# Evaluate each design
+design_comparison <- data.frame()
+for (name in names(designs_to_test)) {
+  x_points <- designs_to_test[[name]]
+  result <- design_polynomial_optimal(x_points)
+  
+  design_comparison <- rbind(design_comparison, data.frame(
+    Design = name,
+    D_optimal = result$det,
+    A_optimal = result$trace_inv,
+    Condition = result$condition
+  ))
+}
+
+# Rank designs
+design_comparison$D_rank <- rank(-design_comparison$D_optimal)
+design_comparison$A_rank <- rank(design_comparison$A_optimal)
+
+knitr::kable(design_comparison, digits = 3,
+             caption = "Optimal Design Comparison for Polynomial Regression")
+
+# Visualize best design
+best_D_design <- names(designs_to_test)[which.max(design_comparison$D_optimal)]
+best_x <- designs_to_test[[best_D_design]]
+
+x_fine <- seq(0, 1, length = 200)
+y_true <- 1 + 2*x_fine - 3*x_fine^2  # Example polynomial
+
+plot(x_fine, y_true, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'x', ylab = 'y', 
+     main = paste("Best D-Optimal Design:", best_D_design))
+points(best_x, 1 + 2*best_x - 3*best_x^2, pch = 20, cex = 2, col = 'red')
+grid()
+
+cat(sprintf("Best D-optimal design: %s\n", best_D_design))
+cat(sprintf("Design points: %s\n", paste(round(best_x, 3), collapse = ", ")))
+```
+
+## 2. Sequential Experimental Design
+
+Use Fisher Information to adaptively choose next measurement.
+
+```{r sequential_design}
+# Sequential design: choose next experiment to maximize information gain
+
+# Example: Estimating parameters of logistic growth curve
+# Model: y(t) = K / (1 + exp(-r(t - t₀)))
+# Parameters: K (carrying capacity), r (growth rate), t₀ (inflection point)
+
+# True parameters
+K_true <- 100
+r_true <- 0.3
+t0_true <- 10
+
+# Logistic model function
+logistic_model <- function(t, K, r, t0) {
+  K / (1 + exp(-r * (t - t0)))
+}
+
+# Log-likelihood for logistic regression with normal errors
+logistic_loglik <- function(params, t_data, y_data, sigma = 1) {
+  K <- params[1]
+  r <- params[2] 
+  t0 <- params[3]
+  
+  if (K <= 0 || r <= 0) return(-Inf)
+  
+  y_pred <- logistic_model(t_data, K, r, t0)
+  ll <- sum(dnorm(y_data, y_pred, sigma, log = TRUE))
+  return(ll)
+}
+
+# Function to compute Fisher Information numerically
+compute_logistic_fisher <- function(params, t_data, sigma = 1) {
+  # Use numerical derivatives
+  h <- 1e-6
+  k <- length(params)
+  fisher_matrix <- matrix(0, k, k)
+  
+  for (i in 1:k) {
+    for (j in 1:k) {
+      # Approximate second derivative
+      params_ij_pp <- params_ij_pm <- params_ij_mp <- params_ij_mm <- params
+      
+      params_ij_pp[i] <- params[i] + h; params_ij_pp[j] <- params[j] + h
+      params_ij_pm[i] <- params[i] + h; params_ij_pm[j] <- params[j] - h
+      params_ij_mp[i] <- params[i] - h; params_ij_mp[j] <- params[j] + h  
+      params_ij_mm[i] <- params[i] - h; params_ij_mm[j] <- params[j] - h
+      
+      if (i == j) {
+        params_i_plus <- params_i_minus <- params
+        params_i_plus[i] <- params[i] + h
+        params_i_minus[i] <- params[i] - h
+        
+        # Expected second derivative for normal likelihood
+        y_pred <- logistic_model(t_data, params[1], params[2], params[3])
+        y_pred_plus <- logistic_model(t_data, params_i_plus[1], params_i_plus[2], params_i_plus[3])
+        y_pred_minus <- logistic_model(t_data, params_i_minus[1], params_i_minus[2], params_i_minus[3])
+        
+        # Fisher info = sum of squared derivatives / sigma^2
+        deriv <- (y_pred_plus - y_pred_minus) / (2*h)
+        fisher_matrix[i,j] <- sum(deriv^2) / sigma^2
+      } else {
+        # Mixed derivatives
+        y_pred_pp <- logistic_model(t_data, params_ij_pp[1], params_ij_pp[2], params_ij_pp[3])
+        y_pred_pm <- logistic_model(t_data, params_ij_pm[1], params_ij_pm[2], params_ij_pm[3])
+        y_pred_mp <- logistic_model(t_data, params_ij_mp[1], params_ij_mp[2], params_ij_mp[3])
+        y_pred_mm <- logistic_model(t_data, params_ij_mm[1], params_ij_mm[2], params_ij_mm[3])
+        
+        deriv_i <- (y_pred_pp + y_pred_mm - y_pred_pm - y_pred_mp) / (4*h^2)
+        fisher_matrix[i,j] <- sum(deriv_i) / sigma^2
+      }
+    }
+  }
+  
+  return(fisher_matrix)
+}
+
+# Sequential design simulation
+set.seed(999)
+current_params <- c(K_true, r_true, t0_true)  # Assume we know true parameters
+sigma_noise <- 2
+
+# Start with a few initial measurements
+t_current <- c(5, 15)
+y_current <- logistic_model(t_current, K_true, r_true, t0_true) + 
+             rnorm(length(t_current), 0, sigma_noise)
+
+# Sequential selection of next time points
+t_candidates <- seq(0, 20, by = 0.5)
+n_sequential <- 6
+
+sequential_results <- data.frame()
+
+for (step in 1:n_sequential) {
+  best_t <- NA
+  best_det <- 0
+  
+  # Test each candidate time point
+  for (t_candidate in t_candidates) {
+    if (t_candidate %in% t_current) next  # Skip already measured points
+    
+    # Compute Fisher Information if we add this point
+    t_test <- c(t_current, t_candidate)
+    fisher_test <- compute_logistic_fisher(current_params, t_test, sigma_noise)
+    
+    det_test <- det(fisher_test)
+    if (det_test > best_det) {
+      best_det <- det_test
+      best_t <- t_candidate
+    }
+  }
+  
+  # Add the best point
+  t_current <- c(t_current, best_t)
+  y_new <- logistic_model(best_t, K_true, r_true, t0_true) + 
+           rnorm(1, 0, sigma_noise)
+  y_current <- c(y_current, y_new)
+  
+  # Record results
+  fisher_current <- compute_logistic_fisher(current_params, t_current, sigma_noise)
+  sequential_results <- rbind(sequential_results, data.frame(
+    Step = step,
+    Added_t = best_t,
+    Det_Fisher = det(fisher_current),
+    Trace_Inv_Fisher = sum(diag(solve(fisher_current))),
+    N_points = length(t_current)
+  ))
+}
+
+knitr::kable(sequential_results, digits = 3,
+             caption = "Sequential Experimental Design Results")
+
+# Plot results
+par(mfrow = c(1, 2))
+
+# Plot the logistic curve with measurement points
+t_plot <- seq(0, 20, length = 200)
+y_plot <- logistic_model(t_plot, K_true, r_true, t0_true)
+
+plot(t_plot, y_plot, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'Time', ylab = 'Response',
+     main = 'Sequential Design for Logistic Growth')
+points(t_current, y_current, pch = 20, cex = 1.5, col = 'red')
+
+# Annotate order of selection
+text(t_current, y_current + 3, labels = 1:length(t_current), col = 'red')
+
+# Plot information gain
+plot(sequential_results$Step, sequential_results$Det_Fisher, 
+     type = 'o', pch = 20, lwd = 2,
+     xlab = 'Sequential Step', ylab = 'det(Fisher Information)',
+     main = 'Information Gain Over Time')
+
+par(mfrow = c(1, 1))
+
+cat("Sequential design places points where information gain is highest!\n")
+```
+
+## 3. Model Comparison via Fisher Information
+
+```{r model_comparison_advanced}
+# Compare models based on their Fisher Information properties
+
+# Generate data that could come from different models
+set.seed(777)
+t_data <- seq(0, 10, length = 30)
+true_model <- "exponential"  # Choose: "linear", "exponential", "logistic"
+
+if (true_model == "linear") {
+  y_data <- 2 + 1.5*t_data + rnorm(length(t_data), 0, 1)
+} else if (true_model == "exponential") {
+  y_data <- 3*exp(0.2*t_data) + rnorm(length(t_data), 0, 2)
+} else {
+  y_data <- 10/(1 + exp(-0.5*(t_data - 5))) + rnorm(length(t_data), 0, 0.5)
+}
+
+# Define model fitting functions
+fit_linear <- function(t, y) {
+  fit <- lm(y ~ t)
+  params <- coef(fit)
+  sigma <- summary(fit)$sigma
+  
+  # Fisher Information for linear regression: X'X/σ²
+  X <- cbind(1, t)
+  fisher <- t(X) %*% X / sigma^2
+  
+  list(params = params, sigma = sigma, fisher = fisher, 
+       aic = AIC(fit), bic = BIC(fit))
+}
+
+fit_exponential <- function(t, y) {
+  # Fit y = a*exp(b*t)
+  start_a <- max(y)
+  start_b <- log(max(y)/min(y)) / max(t)
+  
+  tryCatch({
+    fit <- nls(y ~ a*exp(b*t), start = list(a = start_a, b = start_b))
+    params <- coef(fit)
+    sigma <- summary(fit)$sigma
+    
+    # Approximate Fisher Information numerically
+    residuals_sq <- sum(residuals(fit)^2)
+    n <- length(y)
+    fisher <- matrix(c(1, 1, 1, 2), 2, 2) * n / sigma^2  # Simplified approximation
+    
+    list(params = params, sigma = sigma, fisher = fisher,
+         aic = AIC(fit), bic = BIC(fit))
+  }, error = function(e) {
+    list(params = c(NA, NA), sigma = NA, fisher = matrix(NA, 2, 2),
+         aic = Inf, bic = Inf)
+  })
+}
+
+fit_logistic <- function(t, y) {
+  # Fit y = K/(1 + exp(-r*(t - t0)))
+  K_start <- max(y)
+  r_start <- 1
+  t0_start <- median(t)
+  
+  tryCatch({
+    fit <- nls(y ~ K/(1 + exp(-r*(t - t0))), 
+               start = list(K = K_start, r = r_start, t0 = t0_start))
+    params <- coef(fit)
+    sigma <- summary(fit)$sigma
+    
+    # Simplified Fisher Information approximation
+    n <- length(y)
+    fisher <- diag(c(1, 2, 1)) * n / sigma^2
+    
+    list(params = params, sigma = sigma, fisher = fisher,
+         aic = AIC(fit), bic = BIC(fit))
+  }, error = function(e) {
+    list(params = c(NA, NA, NA), sigma = NA, fisher = matrix(NA, 3, 3),
+         aic = Inf, bic = Inf)
+  })
+}
+
+# Fit all models
+linear_result <- fit_linear(t_data, y_data)
+exp_result <- fit_exponential(t_data, y_data)
+logistic_result <- fit_logistic(t_data, y_data)
+
+# Model comparison table
+model_comparison <- data.frame(
+  Model = c("Linear", "Exponential", "Logistic"),
+  Parameters = c(2, 2, 3),
+  Det_Fisher = c(
+    ifelse(is.matrix(linear_result$fisher), det(linear_result$fisher), NA),
+    ifelse(is.matrix(exp_result$fisher), det(exp_result$fisher), NA),
+    ifelse(is.matrix(logistic_result$fisher), det(logistic_result$fisher), NA)
+  ),
+  AIC = c(linear_result$aic, exp_result$aic, logistic_result$aic),
+  BIC = c(linear_result$bic, exp_result$bic, logistic_result$bic)
+)
+
+model_comparison$Delta_AIC <- model_comparison$AIC - min(model_comparison$AIC, na.rm = TRUE)
+model_comparison$Delta_BIC <- model_comparison$BIC - min(model_comparison$BIC, na.rm = TRUE)
+
+knitr::kable(model_comparison, digits = 2,
+             caption = "Model Comparison including Fisher Information")
+
+# Plot data and fitted models
+plot(t_data, y_data, pch = 20, cex = 1.2,
+     xlab = 'Time', ylab = 'Response',
+     main = paste('Model Comparison (True model:', true_model, ')'))
+
+t_fine <- seq(min(t_data), max(t_data), length = 200)
+
+# Plot fitted models
+if (!any(is.na(linear_result$params))) {
+  y_linear <- linear_result$params[1] + linear_result$params[2] * t_fine
+  lines(t_fine, y_linear, col = 'red', lwd = 2, lty = 2)
+}
+
+if (!any(is.na(exp_result$params))) {
+  y_exp <- exp_result$params[1] * exp(exp_result$params[2] * t_fine)
+  lines(t_fine, y_exp, col = 'blue', lwd = 2, lty = 3)
+}
+
+if (!any(is.na(logistic_result$params))) {
+  y_logistic <- logistic_result$params[1] / (1 + exp(-logistic_result$params[2] * (t_fine - logistic_result$params[3])))
+  lines(t_fine, y_logistic, col = 'green', lwd = 2, lty = 4)
+}
+
+legend('topleft', c('Data', 'Linear', 'Exponential', 'Logistic'),
+       col = c('black', 'red', 'blue', 'green'),
+       pch = c(20, NA, NA, NA), lty = c(NA, 2, 3, 4), lwd = c(NA, 2, 2, 2))
+
+# Best model by different criteria
+best_fisher <- model_comparison$Model[which.max(model_comparison$Det_Fisher)]
+best_aic <- model_comparison$Model[which.min(model_comparison$AIC)]
+best_bic <- model_comparison$Model[which.min(model_comparison$BIC)]
+
+cat(sprintf("\nModel Selection Results:\n"))
+cat(sprintf("True model: %s\n", true_model))
+cat(sprintf("Best by Fisher Info: %s\n", best_fisher))
+cat(sprintf("Best by AIC: %s\n", best_aic))
+cat(sprintf("Best by BIC: %s\n", best_bic))
+```
+
+# Information Entropy and Its Connection to Fisher Information
+
+## What is Information Entropy?
+
+**Information Entropy** (Shannon Entropy) measures the uncertainty or "surprise" in a probability distribution. It's closely related to Fisher Information but measures different aspects of information.
+
+```{r entropy_introduction}
+cat("INFORMATION ENTROPY vs FISHER INFORMATION:\n")
+cat("=========================================\n\n")
+
+cat("Information Entropy (Shannon):\n")
+cat("• Measures uncertainty in a distribution\n")
+cat("• H(X) = -Σ p(x) log p(x)\n")
+cat("• Higher entropy = More uncertainty\n")
+cat("• Units: bits (log₂) or nats (ln)\n\n")
+
+cat("Fisher Information:\n") 
+cat("• Measures precision of parameter estimation\n")
+cat("• I(θ) = E[(∂ ln L/∂θ)²]\n")
+cat("• Higher Fisher Info = Less uncertainty in θ̂\n")
+cat("• Units: inverse of parameter variance\n\n")
+
+cat("Key Relationship:\n")
+cat("• Both quantify 'information' but differently\n")
+cat("• Entropy: uncertainty about outcomes\n")
+cat("• Fisher Info: uncertainty about parameters\n")
+```
+
+## Mathematical Definitions
+
+### Shannon Entropy
+For a discrete random variable X with probability mass function p(x):
+$$H(X) = -\sum_x p(x) \log p(x)$$
+
+For a continuous random variable with probability density function f(x):
+$$H(X) = -\int f(x) \log f(x) dx$$
+
+### Differential Entropy
+For continuous distributions, we use **differential entropy**:
+$$h(X) = -\int_{-\infty}^{\infty} f(x) \ln f(x) dx$$
+
+```{r entropy_examples}
+# Calculate entropy for various distributions
+
+# Function to calculate differential entropy numerically
+differential_entropy <- function(density_func, range_vals) {
+  # Numerical integration of -f(x) * log(f(x))
+  integrand <- function(x) {
+    fx <- density_func(x)
+    # Handle vectorized input properly
+    result <- ifelse(fx <= 0, 0, -fx * log(fx))
+    # Replace any NaN or Inf values with 0
+    result[!is.finite(result)] <- 0
+    return(result)
+  }
+  
+  result <- integrate(integrand, range_vals[1], range_vals[2])
+  return(result$value)
+}
+
+# Example 1: Normal distribution entropy
+# For N(μ, σ²): h(X) = ½ln(2πeσ²)
+normal_entropy_theoretical <- function(sigma) {
+  return(0.5 * log(2 * pi * exp(1) * sigma^2))
+}
+
+# Verify numerically
+sigma_test <- 2
+normal_density <- function(x) dnorm(x, 0, sigma_test)
+normal_entropy_numerical <- differential_entropy(normal_density, c(-10, 10))
+normal_entropy_exact <- normal_entropy_theoretical(sigma_test)
+
+cat("NORMAL DISTRIBUTION ENTROPY:\n")
+cat(sprintf("σ = %.1f\n", sigma_test))
+cat(sprintf("Theoretical: %.4f nats\n", normal_entropy_exact))
+cat(sprintf("Numerical:   %.4f nats\n", normal_entropy_numerical))
+
+# Example 2: Uniform distribution entropy  
+# For Uniform[a,b]: h(X) = ln(b-a)
+uniform_entropy_theoretical <- function(a, b) {
+  return(log(b - a))
+}
+
+a_unif <- 0; b_unif <- 4
+uniform_density <- function(x) dunif(x, a_unif, b_unif)
+uniform_entropy_numerical <- differential_entropy(uniform_density, c(a_unif, b_unif))
+uniform_entropy_exact <- uniform_entropy_theoretical(a_unif, b_unif)
+
+cat(sprintf("\nUNIFORM DISTRIBUTION ENTROPY:\n"))
+cat(sprintf("Range: [%.1f, %.1f]\n", a_unif, b_unif))
+cat(sprintf("Theoretical: %.4f nats\n", uniform_entropy_exact))
+cat(sprintf("Numerical:   %.4f nats\n", uniform_entropy_numerical))
+
+# Example 3: Exponential distribution entropy
+# For Exp(λ): h(X) = 1 - ln(λ)
+exponential_entropy_theoretical <- function(lambda) {
+  return(1 - log(lambda))
+}
+
+lambda_exp <- 0.5
+exp_density <- function(x) dexp(x, lambda_exp)
+exp_entropy_numerical <- differential_entropy(exp_density, c(0, 20))
+exp_entropy_exact <- exponential_entropy_theoretical(lambda_exp)
+
+cat(sprintf("\nEXPONENTIAL DISTRIBUTION ENTROPY:\n"))
+cat(sprintf("λ = %.1f\n", lambda_exp))
+cat(sprintf("Theoretical: %.4f nats\n", exp_entropy_exact))
+cat(sprintf("Numerical:   %.4f nats\n", exp_entropy_numerical))
+```
+
+## Entropy vs Fisher Information: Key Relationships
+
+### 1. Inverse Relationship Intuition
+There's often an **inverse relationship** between entropy and Fisher Information:
+
+```{r entropy_fisher_relationship}
+# Demonstrate relationship for normal distribution
+sigmas <- seq(0.5, 3, by = 0.1)
+n_sample <- 20
+
+entropies <- sapply(sigmas, normal_entropy_theoretical)
+fisher_infos <- sapply(sigmas, function(s) n_sample / s^2)
+
+# Plot the relationship
+par(mfrow = c(1, 2))
+
+plot(sigmas, entropies, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'σ', ylab = 'Differential Entropy',
+     main = 'Entropy vs Parameter')
+
+plot(sigmas, fisher_infos, type = 'l', lwd = 2, col = 'red', 
+     xlab = 'σ', ylab = 'Fisher Information',
+     main = 'Fisher Information vs Parameter')
+
+par(mfrow = c(1, 1))
+
+# Plot them together (normalized)
+entropy_norm <- (entropies - min(entropies)) / (max(entropies) - min(entropies))
+fisher_norm <- (fisher_infos - min(fisher_infos)) / (max(fisher_infos) - min(fisher_infos))
+
+plot(sigmas, entropy_norm, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'σ', ylab = 'Normalized Values',
+     main = 'Entropy vs Fisher Information (Normalized)')
+lines(sigmas, fisher_norm, lwd = 2, col = 'red')
+legend('right', c('Entropy', 'Fisher Information'), 
+       col = c('blue', 'red'), lwd = 2)
+
+cat("OBSERVATION:\n")
+cat("As σ increases:\n")
+cat("• Entropy increases (more uncertainty in X)\n") 
+cat("• Fisher Information decreases (less precision in estimating μ)\n")
+cat("• They show inverse relationship!\n")
+```
+
+### 2. De Bruijn's Identity
+A beautiful connection between entropy and Fisher Information:
+
+For a random variable X with density f(x), if we add Gaussian noise:
+$$Y = X + \sqrt{t} Z, \quad Z \sim N(0,1)$$
+
+Then: $$\frac{d}{dt} h(Y) = \frac{1}{2} \mathcal{I}(Y)$$
+
+where h(Y) is differential entropy and ℐ(Y) is Fisher Information.
+
+```{r de_bruijn_demo}
+# Demonstrate De Bruijn's identity numerically
+# Start with a non-Gaussian distribution and add Gaussian noise
+
+# Original distribution: mixture of two normals
+mixture_density <- function(x) {
+  0.6 * dnorm(x, -1, 0.5) + 0.4 * dnorm(x, 2, 0.8)
+}
+
+# Function to create noisy version
+noisy_density <- function(x, t) {
+  # Convolution with Gaussian noise of variance t
+  # Approximate numerically
+  sigma_noise <- sqrt(t)
+  # This is a simplified approximation
+  mixture_density(x) * exp(-x^2/(2*(1 + t))) / sqrt(1 + t)
+}
+
+# Calculate entropy and Fisher Information for different noise levels
+t_values <- seq(0.1, 2, by = 0.1)
+entropies_noisy <- numeric(length(t_values))
+fisher_infos_noisy <- numeric(length(t_values))
+
+for (i in seq_along(t_values)) {
+  t_val <- t_values[i]
+  
+  # Entropy (approximate)
+  density_func <- function(x) noisy_density(x, t_val)
+  entropies_noisy[i] <- differential_entropy(density_func, c(-6, 6))
+  
+  # Fisher Information (approximate using score function)
+  # For this demo, use simplified calculation
+  fisher_infos_noisy[i] <- 1 / (1 + t_val)  # Simplified approximation
+}
+
+# Plot De Bruijn relationship
+plot(t_values, entropies_noisy, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'Noise Level t', ylab = 'Entropy',
+     main = "De Bruijn's Identity: Entropy vs Noise")
+
+# Numerical derivative of entropy
+entropy_derivative <- diff(entropies_noisy) / diff(t_values)
+t_mid <- (t_values[-1] + t_values[-length(t_values)]) / 2
+
+# Plot derivative vs Fisher Information/2
+plot(t_mid, entropy_derivative, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'Noise Level t', ylab = 'dH/dt',
+     main = "De Bruijn's Identity Verification")
+lines(t_mid, 0.5 * fisher_infos_noisy[-length(fisher_infos_noisy)], 
+      col = 'red', lwd = 2, lty = 2)
+legend('topright', c('dH/dt (numerical)', 'I(Y)/2 (theoretical)'),
+       col = c('blue', 'red'), lty = c(1, 2), lwd = 2)
+
+cat("DE BRUIJN'S IDENTITY:\n")
+cat("Adding Gaussian noise with variance t:\n")
+cat("dH/dt = ½I(Y)\n")
+cat("This connects entropy growth to Fisher Information!\n")
+```
+
+## Maximum Entropy Principle
+
+The **Maximum Entropy Principle** states that the probability distribution that best represents our state of knowledge is the one with maximum entropy subject to constraints.
+
+```{r maximum_entropy}
+# Maximum entropy distributions for different constraints
+
+cat("MAXIMUM ENTROPY DISTRIBUTIONS:\n")
+cat("==============================\n\n")
+
+# Constraint 1: Support on [0,1] → Uniform distribution
+cat("1. Support on [0,1]:\n")
+cat("   → Uniform distribution\n")
+cat("   → Entropy = ln(1) = 0 nats\n\n")
+
+# Constraint 2: Fixed mean μ → Exponential distribution  
+cat("2. Support on [0,∞) with fixed mean μ:\n")
+cat("   → Exponential distribution with λ = 1/μ\n")
+cat("   → Entropy = 1 + ln(μ) nats\n\n")
+
+# Constraint 3: Fixed mean and variance → Normal distribution
+cat("3. Fixed mean μ and variance σ²:\n") 
+cat("   → Normal distribution N(μ, σ²)\n")
+cat("   → Entropy = ½ln(2πeσ²) nats\n")
+cat("   → Maximum possible entropy for given variance!\n\n")
+
+# Demonstrate: Normal has maximum entropy among all distributions with same variance
+set.seed(456)
+n_samples <- 1000
+
+# Generate samples from different distributions with same variance
+target_var <- 4
+target_sd <- 2
+
+# Normal distribution
+normal_samples <- rnorm(n_samples, 0, target_sd)
+
+# Uniform distribution with same variance
+# Var(Uniform[a,b]) = (b-a)²/12 = target_var
+# So b-a = sqrt(12*target_var) = 2*sqrt(3)*target_sd
+range_uniform <- sqrt(12 * target_var)
+uniform_samples <- runif(n_samples, -range_uniform/2, range_uniform/2)
+
+# Laplace distribution with same variance  
+# Var(Laplace(0,b)) = 2b² = target_var, so b = sqrt(target_var/2)
+b_laplace <- sqrt(target_var/2)
+laplace_samples <- rexp(n_samples, 1/b_laplace) * sample(c(-1,1), n_samples, replace=TRUE)
+
+# Calculate empirical entropies using histogram method
+calculate_empirical_entropy <- function(samples, nbins = 30) {
+  hist_result <- hist(samples, breaks = nbins, plot = FALSE)
+  bin_width <- diff(hist_result$breaks)[1]
+  probabilities <- hist_result$counts / sum(hist_result$counts)
+  
+  # Remove zero probabilities
+  probabilities <- probabilities[probabilities > 0]
+  
+  # Differential entropy approximation
+  entropy <- -sum(probabilities * log(probabilities)) + log(bin_width)
+  return(entropy)
+}
+
+entropy_normal <- calculate_empirical_entropy(normal_samples)
+entropy_uniform <- calculate_empirical_entropy(uniform_samples) 
+entropy_laplace <- calculate_empirical_entropy(laplace_samples)
+
+# Theoretical entropy for normal
+entropy_normal_theory <- 0.5 * log(2 * pi * exp(1) * target_var)
+
+entropy_comparison <- data.frame(
+  Distribution = c("Normal", "Uniform", "Laplace"),
+  Empirical_Entropy = c(entropy_normal, entropy_uniform, entropy_laplace),
+  Theoretical_Entropy = c(entropy_normal_theory, 
+                         log(range_uniform), 
+                         1 + log(2*b_laplace)),
+  Sample_Variance = c(var(normal_samples), var(uniform_samples), var(laplace_samples))
+)
+
+knitr::kable(entropy_comparison, digits = 3,
+             caption = "Maximum Entropy: Normal Distribution has Highest Entropy for Fixed Variance")
+
+cat("RESULT: Normal distribution maximizes entropy for fixed variance!\n")
+```
+
+## Mutual Information and Fisher Information
+
+**Mutual Information** I(X;Y) measures how much information one random variable contains about another:
+
+$$I(X;Y) = H(X) + H(Y) - H(X,Y)$$
+
+This connects to Fisher Information in experimental design.
+
+```{r mutual_information}
+# Mutual information in the context of parameter estimation
+# Consider: I(Data; Parameter) via Fisher Information
+
+# Example: How much information does each measurement give about θ?
+
+# Simulation: exponential distribution parameter estimation
+theta_true <- 2
+n_experiments <- seq(5, 100, by = 5)
+
+# Function to calculate mutual information approximation
+# I(Data; θ) ≈ ½ log(2πe * I(θ)⁻¹) where I(θ) is Fisher Information
+mutual_info_approx <- function(fisher_info) {
+  if (fisher_info <= 0) return(0)
+  return(0.5 * log(2 * pi * exp(1) / fisher_info))
+}
+
+# Calculate for different sample sizes
+fisher_infos <- n_experiments / theta_true^2  # For exponential: I(θ) = n/θ²
+mutual_infos <- sapply(fisher_infos, mutual_info_approx)
+
+# Plot relationship
+par(mfrow = c(1, 2))
+
+plot(n_experiments, fisher_infos, type = 'l', lwd = 2, col = 'red',
+     xlab = 'Sample Size', ylab = 'Fisher Information',
+     main = 'Fisher Information vs Sample Size')
+
+plot(n_experiments, mutual_infos, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'Sample Size', ylab = 'Mutual Information I(Data;θ)',
+     main = 'Mutual Information vs Sample Size')
+
+par(mfrow = c(1, 1))
+
+# Direct relationship plot
+plot(fisher_infos, mutual_infos, type = 'l', lwd = 2, col = 'purple',
+     xlab = 'Fisher Information', ylab = 'Mutual Information',
+     main = 'Mutual Information vs Fisher Information')
+
+cat("MUTUAL INFORMATION & FISHER INFORMATION:\n")
+cat("I(Data; θ) ≈ ½ log(2πe / I(θ))\n")
+cat("• Higher Fisher Info → Higher Mutual Info\n")
+cat("• More informative experiments have higher I(Data; θ)\n")
+cat("• Optimal design maximizes mutual information\n")
+```
+
+## Information-Theoretic Model Selection
+
+Information theory provides alternative approaches to model selection.
+
+```{r information_theoretic_selection}
+# Compare models using information-theoretic criteria
+
+# Generate data from quadratic model
+set.seed(789)
+n_data <- 40
+x_data <- seq(0, 1, length = n_data)
+y_true <- 1 + 2*x_data - 3*x_data^2
+y_data <- y_true + rnorm(n_data, 0, 0.2)
+
+# Fit polynomial models of different degrees
+max_degree <- 5
+model_results <- list()
+
+for (degree in 1:max_degree) {
+  if (degree == 1) {
+    fit <- lm(y_data ~ x_data)
+  } else {
+    X_poly <- poly(x_data, degree, raw = TRUE)
+    fit <- lm(y_data ~ X_poly)
+  }
+  
+  # Extract model information
+  k <- length(coef(fit))  # parameters
+  n <- length(y_data)     # sample size
+  loglik <- logLik(fit)[1]
+  rss <- sum(residuals(fit)^2)
+  
+  # Information criteria
+  aic <- AIC(fit)
+  bic <- BIC(fit)
+  
+  # Fisher Information (approximate)
+  sigma_hat <- sqrt(rss / (n - k))
+  if (degree == 1) {
+    X_design <- cbind(1, x_data)
+  } else {
+    X_design <- cbind(1, poly(x_data, degree, raw = TRUE))
+  }
+  fisher_matrix <- t(X_design) %*% X_design / sigma_hat^2
+  det_fisher <- det(fisher_matrix)
+  
+  # Information-theoretic quantities
+  # Entropy of residuals (approximation)
+  residual_entropy <- 0.5 * log(2 * pi * exp(1) * sigma_hat^2)
+  
+  # Model complexity (Rissanen's MDL approximation)
+  mdl <- -loglik + 0.5 * k * log(n)
+  
+  model_results[[degree]] <- list(
+    degree = degree,
+    parameters = k,
+    loglik = loglik,
+    aic = aic,
+    bic = bic,
+    det_fisher = det_fisher,
+    residual_entropy = residual_entropy,
+    mdl = mdl
+  )
+}
+
+# Create comparison table
+info_comparison <- data.frame(
+  Degree = sapply(model_results, function(x) x$degree),
+  Parameters = sapply(model_results, function(x) x$parameters),
+  LogLik = sapply(model_results, function(x) x$loglik),
+  AIC = sapply(model_results, function(x) x$aic),
+  BIC = sapply(model_results, function(x) x$bic),
+  Det_Fisher = sapply(model_results, function(x) x$det_fisher),
+  Residual_Entropy = sapply(model_results, function(x) x$residual_entropy),
+  MDL = sapply(model_results, function(x) x$mdl)
+)
+
+# Add relative rankings
+info_comparison$AIC_rank <- rank(info_comparison$AIC)
+info_comparison$BIC_rank <- rank(info_comparison$BIC)
+info_comparison$MDL_rank <- rank(info_comparison$MDL)
+info_comparison$Fisher_rank <- rank(-info_comparison$Det_Fisher)
+
+knitr::kable(info_comparison, digits = 3,
+             caption = "Information-Theoretic Model Comparison")
+
+# Plot comparison
+matplot(info_comparison$Degree, 
+        cbind(info_comparison$AIC, info_comparison$BIC, info_comparison$MDL),
+        type = 'o', pch = c(20, 17, 15), lwd = 2,
+        col = c('red', 'blue', 'green'),
+        xlab = 'Polynomial Degree', ylab = 'Information Criterion',
+        main = 'Information-Theoretic Model Selection')
+legend('topright', c('AIC', 'BIC', 'MDL'), 
+       col = c('red', 'blue', 'green'), 
+       pch = c(20, 17, 15), lwd = 2)
+
+# Find best models by each criterion
+best_aic <- which.min(info_comparison$AIC)
+best_bic <- which.min(info_comparison$BIC) 
+best_mdl <- which.min(info_comparison$MDL)
+best_fisher <- which.max(info_comparison$Det_Fisher)
+
+cat("MODEL SELECTION RESULTS:\n")
+cat(sprintf("True model: degree 2\n"))
+cat(sprintf("Best by AIC: degree %d\n", best_aic))
+cat(sprintf("Best by BIC: degree %d\n", best_bic))
+cat(sprintf("Best by MDL: degree %d\n", best_mdl))
+cat(sprintf("Best by Fisher Info: degree %d\n", best_fisher))
+```
+
+## Summary: Information Entropy vs Fisher Information
+
+```{r entropy_fisher_summary}
+cat("INFORMATION ENTROPY vs FISHER INFORMATION SUMMARY:\n")
+cat("==================================================\n\n")
+
+comparison_table <- data.frame(
+  Aspect = c(
+    "What it measures",
+    "Mathematical form",
+    "Higher value means",
+    "Units",
+    "Domain",
+    "Primary use",
+    "Connection to uncertainty",
+    "Optimization goal"
+  ),
+  Information_Entropy = c(
+    "Uncertainty in outcomes",
+    "-∫ f(x) ln f(x) dx",
+    "More uncertainty/surprise",
+    "Nats or bits",
+    "Random variables",
+    "Data compression, ML",
+    "Measures inherent randomness",
+    "Often maximize (max entropy)"
+  ),
+  Fisher_Information = c(
+    "Precision of estimation",
+    "E[(∂ ln L/∂θ)²]",
+    "Less uncertainty in θ̂",
+    "Inverse parameter variance",
+    "Parameter space", 
+    "Statistical inference",
+    "Measures estimation precision",
+    "Maximize (better estimates)"
+  )
+)
+
+knitr::kable(comparison_table, caption = "Information Entropy vs Fisher Information")
+
+cat("\nKEY CONNECTIONS:\n")
+cat("================\n")
+cat("1. De Bruijn's Identity: dH/dt = ½I(Y) for Gaussian noise\n")
+cat("2. Mutual Information: I(Data;θ) ≈ ½ log(2πe/I(θ))\n") 
+cat("3. Maximum Entropy → Optimal distributions\n")
+cat("4. Fisher Information → Optimal experiments\n")
+cat("5. Both used in model selection criteria\n")
+cat("6. Information geometry unifies both concepts\n\n")
+
+cat("PRACTICAL IMPLICATIONS:\n")
+cat("=======================\n")
+cat("• High entropy distributions are 'spread out'\n")
+cat("• High Fisher Info means 'sharp' likelihood\n")
+cat("• Both guide optimal design decisions\n")
+cat("• Complementary perspectives on 'information'\n")
+cat("• Both connect to fundamental limits in inference\n")
+```
+
+# Summary and Best Practices
+
+## Key Takeaways
+
+```{r summary_takeaways}
+cat("FISHER INFORMATION: KEY CONCEPTS\n")
+cat("================================\n\n")
+
+key_concepts <- data.frame(
+  Concept = c(
+    "Definition",
+    "Interpretation", 
+    "CRLB",
+    "Experimental Design",
+    "Model Comparison",
+    "Information Geometry"
+  ),
+  Description = c(
+    "Expected curvature of log-likelihood",
+    "Amount of information about parameter",
+    "Theoretical minimum variance bound",
+    "Optimize information gain",
+    "Compare parameter estimation quality", 
+    "Riemannian metric on parameter space"
+  ),
+  Formula = c(
+    "E[(∂ℓ/∂θ)²] = -E[∂²ℓ/∂θ²]",
+    "High FI → Low uncertainty",
+    "Var(θ̂) ≥ 1/I(θ)",
+    "Maximize det(I) or minimize tr(I⁻¹)",
+    "Compare det(I) across models",
+    "ds² = I_ij dθⁱ dθʲ"
+  )
+)
+
+knitr::kable(key_concepts, caption = "Fisher Information Key Concepts")
+```
+
+## When to Use Fisher Information
+
+```{r when_to_use_fisher}
+usage_scenarios <- data.frame(
+  Scenario = c(
+    "Parameter uncertainty quantification",
+    "Experimental design optimization",
+    "Model comparison", 
+    "Sample size calculation",
+    "Robustness analysis",
+    "Prior specification (Jeffreys)",
+    "Asymptotic approximations"
+  ),
+  Use_Fisher = c("Essential", "Highly useful", "Useful", "Essential", 
+                "Useful", "Essential", "Essential"),
+  Why = c(
+    "Provides theoretical lower bound",
+    "Maximizes information gain per measurement",
+    "Quantifies relative estimation quality",
+    "Determines minimum n for target precision",
+    "Identifies sensitive parameters",
+    "Provides objective non-informative prior",
+    "Basis for normal approximations"
+  )
+)
+
+knitr::kable(usage_scenarios, caption = "When to Use Fisher Information")
+```
+
+## Best Practices
+
+```{r best_practices}
+cat("FISHER INFORMATION BEST PRACTICES:\n")
+cat("==================================\n\n")
+
+best_practices <- c(
+  "✓ Always check regularity conditions",
+  "✓ Verify Fisher Information is positive definite", 
+  "✓ Use numerical methods when analytical is intractable",
+  "✓ Bootstrap to validate theoretical calculations",
+  "✓ Consider parameter transformations for stability",
+  "✓ Check sensitivity to model assumptions",
+  "✓ Use for experimental design before data collection",
+  "✓ Combine with other model selection criteria",
+  "✓ Remember CRLB assumes unbiased estimators",
+  "✓ Be cautious with small sample sizes"
+)
+
+for (practice in best_practices) {
+  cat(practice, "\n")
+}
+
+cat("\nCOMMON PITFALLS:\n")
+cat("================\n\n")
+
+pitfalls <- c(
+  "✗ Assuming Fisher Info equals observed information",
+  "✗ Ignoring parameter constraints (e.g., σ > 0)",
+  "✗ Using with biased estimators", 
+  "✗ Forgetting about model misspecification",
+  "✗ Over-relying on asymptotic approximations",
+  "✗ Neglecting correlation structure in multivariate case",
+  "✗ Using inappropriate numerical step sizes",
+  "✗ Ignoring computational numerical issues"
+)
+
+for (pitfall in pitfalls) {
+  cat(pitfall, "\n")
+}
+```
+
+## Computational Considerations
+
+```{r computational_considerations}
+cat("COMPUTATIONAL METHODS FOR FISHER INFORMATION:\n")
+cat("============================================\n\n")
+
+methods_comparison <- data.frame(
+  Method = c("Analytical", "Numerical derivatives", "Bootstrap", "MCMC"),
+  Accuracy = c("Exact", "Good", "Good", "Excellent"),
+  Speed = c("Fast", "Medium", "Slow", "Very slow"),
+  Complexity = c("High", "Medium", "Low", "Low"),
+  When_to_use = c(
+    "Standard distributions",
+    "Complex likelihood", 
+    "Non-regular problems",
+    "Full Bayesian analysis"
+  )
+)
+
+knitr::kable(methods_comparison, caption = "Computational Methods Comparison")
+
+cat("\nIMPLEMENTATION TIPS:\n")
+cat("===================\n\n")
+
+tips <- c(
+  "• Use symbolic math software for analytical derivatives",
+  "• Choose appropriate step size for numerical derivatives (typically 1e-5 to 1e-6)",
+  "• Check matrix condition number to avoid numerical instability", 
+  "• Use robust optimization for MLE before computing Fisher Information",
+  "• Validate results with multiple methods when possible",
+  "• Consider parameter re-parameterization for better numerical properties",
+  "• Use regularization if Fisher Information Matrix is nearly singular"
+)
+
+for (tip in tips) {
+  cat(tip, "\n")
+}
+```
+
+# Jeffreys Prior: Connection to Fisher Information
+
+## Introduction to Jeffreys Prior
+
+The **Jeffreys prior** is a non-informative (objective) prior distribution that is directly derived from the Fisher Information Matrix. It was introduced by Harold Jeffreys in 1946 as a way to construct priors that are invariant under parameter transformations.
+
+```{r jeffreys_intro}
+cat("JEFFREYS PRIOR DEFINITION:\n")
+cat("=========================\n\n")
+cat("For a single parameter θ:\n")
+cat("π(θ) ∝ √I(θ)\n\n")
+cat("For multiple parameters θ = (θ₁, θ₂, ..., θₖ):\n") 
+cat("π(θ) ∝ √det(I(θ))\n\n")
+cat("where I(θ) is the Fisher Information Matrix\n")
+```
+
+## Mathematical Foundation
+
+### Single Parameter Case
+
+For a single parameter $\theta$, the Jeffreys prior is:
+
+$$\pi(\theta) \propto \sqrt{I(\theta)}$$
+
+where $I(\theta)$ is the Fisher Information.
+
+### Multi-parameter Case
+
+For multiple parameters $\boldsymbol{\theta} = (\theta_1, \theta_2, \ldots, \theta_k)$, the Jeffreys prior is:
+
+$$\pi(\boldsymbol{\theta}) \propto \sqrt{\det(\mathbf{I}(\boldsymbol{\theta}))}$$
+
+where $\mathbf{I}(\boldsymbol{\theta})$ is the Fisher Information Matrix.
+
+## Key Properties of Jeffreys Prior
+
+```{r jeffreys_properties}
+cat("JEFFREYS PRIOR PROPERTIES:\n")
+cat("==========================\n\n")
+
+properties <- data.frame(
+  Property = c(
+    "Transformation Invariance",
+    "Non-informative", 
+    "Improper (often)",
+    "Asymptotic Optimality",
+    "Reference Prior",
+    "Connection to Information"
+  ),
+  Description = c(
+    "Invariant under reparameterization",
+    "Minimal prior information",
+    "May not integrate to finite value", 
+    "Optimal frequentist properties",
+    "Standard choice for objective analysis",
+    "Based on information content of data"
+  ),
+  Mathematical_Form = c(
+    "π(g(θ)) = π(θ)|dθ/dg|",
+    "Flat on information scale",
+    "∫π(θ)dθ may be infinite",
+    "Achieves efficiency bounds",
+    "Maximizes entropy in some sense",
+    "π(θ) ∝ √I(θ)"
+  )
+)
+
+knitr::kable(properties, caption = "Properties of Jeffreys Prior")
+```
+
+## Detailed Examples
+
+### Example 1: Normal Distribution with Unknown Mean
+
+For $X \sim N(\mu, \sigma^2)$ with known $\sigma^2$ and unknown $\mu$:
+
+```{r jeffreys_normal_mean}
+# Fisher Information for normal mean (known variance)
+# I(μ) = n/σ²
+
+# Function to calculate Jeffreys prior for normal mean
+jeffreys_normal_mean <- function(mu, n, sigma) {
+  fisher_info <- n / sigma^2
+  prior_density <- sqrt(fisher_info)  # Constant!
+  return(prior_density)
+}
+
+# Example parameters
+n <- 20
+sigma <- 1
+mu_range <- seq(-5, 5, length = 100)
+
+# Calculate Jeffreys prior (it's constant!)
+jeffreys_prior <- jeffreys_normal_mean(mu_range[1], n, sigma)
+
+# Plot
+plot(mu_range, rep(jeffreys_prior, length(mu_range)), type = 'l', lwd = 3,
+     xlab = 'μ', ylab = 'Prior Density', 
+     main = 'Jeffreys Prior for Normal Mean (Known Variance)',
+     col = 'blue')
+abline(h = 0, col = 'gray', lty = 2)
+
+cat("NORMAL MEAN (KNOWN VARIANCE):\n")
+cat("============================\n")
+cat("Fisher Information: I(μ) = n/σ²\n")
+cat("Jeffreys Prior: π(μ) ∝ √(n/σ²) = constant\n")
+cat("Result: Uniform (flat) prior on μ\n\n")
+cat(sprintf("For n = %d, σ = %.1f:\n", n, sigma))
+cat(sprintf("I(μ) = %.1f\n", n/sigma^2))
+cat(sprintf("π(μ) ∝ %.2f (constant)\n", sqrt(n/sigma^2)))
+```
+
+### Example 2: Normal Distribution with Unknown Variance
+
+For $X \sim N(\mu, \sigma^2)$ with known $\mu$ and unknown $\sigma^2$:
+
+```{r jeffreys_normal_variance}
+# Fisher Information for normal variance (known mean)
+# I(σ²) = n/(2σ⁴)
+
+# Function to calculate Jeffreys prior for normal variance
+jeffreys_normal_variance <- function(sigma2, n) {
+  fisher_info <- n / (2 * sigma2^2)
+  prior_density <- sqrt(fisher_info)
+  return(prior_density)
+}
+
+# Example
+n <- 20
+sigma2_range <- seq(0.1, 5, length = 100)
+jeffreys_prior_var <- sapply(sigma2_range, function(s2) jeffreys_normal_variance(s2, n))
+
+# Plot
+plot(sigma2_range, jeffreys_prior_var, type = 'l', lwd = 3, col = 'red',
+     xlab = 'σ²', ylab = 'Prior Density',
+     main = 'Jeffreys Prior for Normal Variance (Known Mean)')
+
+cat("NORMAL VARIANCE (KNOWN MEAN):\n")
+cat("=============================\n")
+cat("Fisher Information: I(σ²) = n/(2σ⁴)\n") 
+cat("Jeffreys Prior: π(σ²) ∝ √(n/(2σ⁴)) ∝ 1/σ²\n")
+cat("Result: π(σ²) ∝ 1/σ² (inverse prior)\n\n")
+
+# This is equivalent to π(σ) ∝ 1/σ for the standard deviation
+sigma_range <- sqrt(sigma2_range)
+jeffreys_prior_sigma <- jeffreys_prior_var * 2 * sigma_range  # Jacobian transformation
+
+plot(sigma_range, jeffreys_prior_sigma, type = 'l', lwd = 3, col = 'green',
+     xlab = 'σ', ylab = 'Prior Density', 
+     main = 'Jeffreys Prior for Normal Standard Deviation')
+
+cat("For standard deviation σ:\n")
+cat("π(σ) ∝ 1/σ (log-uniform prior)\n")
+```
+
+### Example 3: Binomial Distribution
+
+For $X \sim \text{Binomial}(n, p)$ with unknown $p$:
+
+```{r jeffreys_binomial}
+# Fisher Information for binomial parameter
+# I(p) = n/(p(1-p))
+
+# Function to calculate Jeffreys prior for binomial
+jeffreys_binomial <- function(p, n) {
+  fisher_info <- n / (p * (1 - p))
+  prior_density <- sqrt(fisher_info)
+  return(prior_density)
+}
+
+# Example
+n <- 20
+p_range <- seq(0.01, 0.99, length = 100)
+jeffreys_prior_binom <- sapply(p_range, function(p) jeffreys_binomial(p, n))
+
+# Plot
+plot(p_range, jeffreys_prior_binom, type = 'l', lwd = 3, col = 'purple',
+     xlab = 'p', ylab = 'Prior Density',
+     main = 'Jeffreys Prior for Binomial Probability')
+
+# Compare with Beta(1/2, 1/2)
+beta_half <- dbeta(p_range, 0.5, 0.5)
+lines(p_range, beta_half, lwd = 3, col = 'orange', lty = 2)
+legend('top', c('Jeffreys Prior', 'Beta(1/2, 1/2)'), 
+       col = c('purple', 'orange'), lty = c(1, 2), lwd = 3)
+
+cat("BINOMIAL PARAMETER:\n")
+cat("===================\n")
+cat("Fisher Information: I(p) = n/(p(1-p))\n")
+cat("Jeffreys Prior: π(p) ∝ √(n/(p(1-p))) ∝ 1/√(p(1-p))\n")
+cat("Result: π(p) ∝ p^(-1/2)(1-p)^(-1/2) = Beta(1/2, 1/2)\n\n")
+
+# Verify this is Beta(1/2, 1/2)
+cat("This is equivalent to Beta(1/2, 1/2) distribution:\n")
+cat("π(p) ∝ p^(1/2-1)(1-p)^(1/2-1) = p^(-1/2)(1-p)^(-1/2)\n")
+```
+
+### Example 4: Multivariate Case - Bivariate Normal
+
+For bivariate normal with unknown mean vector $\boldsymbol{\mu} = (\mu_1, \mu_2)$ and known covariance:
+
+```{r jeffreys_multivariate}
+# Bivariate normal Fisher Information Matrix
+# For known covariance Σ: I(μ) = Σ^(-1)
+
+# Example with known covariance matrix
+Sigma <- matrix(c(1, 0.5, 0.5, 2), nrow = 2)
+Sigma_inv <- solve(Sigma)
+
+cat("BIVARIATE NORMAL MEAN:\n")
+cat("======================\n")
+cat("Known covariance matrix Σ:\n")
+print(Sigma)
+cat("\nFisher Information Matrix I(μ) = Σ^(-1):\n")
+print(Sigma_inv)
+
+# Jeffreys prior density
+det_I <- det(Sigma_inv)
+jeffreys_density <- sqrt(det_I)
+
+cat(sprintf("\ndet(I(μ)) = %.4f\n", det_I))
+cat(sprintf("Jeffreys Prior: π(μ) ∝ %.4f (constant)\n", jeffreys_density))
+cat("Result: Flat (uniform) prior on (μ₁, μ₂)\n")
+
+# Visualize the multivariate Jeffreys prior (constant surface)
+library(mvtnorm)
+mu1_range <- seq(-3, 3, length = 30)
+mu2_range <- seq(-3, 3, length = 30)
+mu_grid <- expand.grid(mu1 = mu1_range, mu2 = mu2_range)
+
+# Jeffreys prior is constant everywhere
+jeffreys_surface <- matrix(jeffreys_density, nrow = length(mu1_range), 
+                          ncol = length(mu2_range))
+
+# Plot
+contour(mu1_range, mu2_range, jeffreys_surface, 
+        xlab = 'μ₁', ylab = 'μ₂',
+        main = 'Jeffreys Prior for Bivariate Normal Mean\n(Constant Surface)')
+
+# Also show the Fisher Information ellipse for comparison
+library(ellipse)
+plot(0, 0, xlim = c(-3, 3), ylim = c(-3, 3), type = 'n',
+     xlab = 'μ₁', ylab = 'μ₂', 
+     main = 'Fisher Information Ellipse')
+lines(ellipse(Sigma_inv, centre = c(0, 0), level = 0.95), col = 'blue', lwd = 2)
+points(0, 0, pch = 20, col = 'red', cex = 1.5)
+legend('topright', 'Fisher Information\n(95% level)', col = 'blue', lty = 1, lwd = 2)
+```
+
+## Transformation Invariance
+
+One of the most important properties of Jeffreys prior is its invariance under parameter transformations.
+
+```{r transformation_invariance}
+cat("TRANSFORMATION INVARIANCE:\n")
+cat("==========================\n\n")
+
+# Example: Normal distribution with σ vs σ²
+# Original parameter: σ
+# Transformed parameter: τ = σ² (so σ = √τ)
+
+# Fisher Information for σ: I(σ) = 2n/σ²
+# Jeffreys prior for σ: π(σ) ∝ √(2n)/σ ∝ 1/σ
+
+# Fisher Information for τ = σ²: I(τ) = n/(2τ²)  
+# Jeffreys prior for τ: π(τ) ∝ √(n/(2τ²)) ∝ 1/τ
+
+# Verify transformation invariance
+sigma_test <- 2
+tau_test <- sigma_test^2
+
+# Original scale
+I_sigma <- 2 * n / sigma_test^2
+jeffreys_sigma <- sqrt(I_sigma)
+
+# Transformed scale  
+I_tau <- n / (2 * tau_test^2)
+jeffreys_tau <- sqrt(I_tau)
+
+# Check invariance: π(τ) should equal π(σ) * |dσ/dτ|
+# dσ/dτ = d(√τ)/dτ = 1/(2√τ)
+jacobian <- 1 / (2 * sqrt(tau_test))
+jeffreys_tau_via_transformation <- jeffreys_sigma * jacobian
+
+cat("Transformation Invariance Check:\n")
+cat("================================\n")
+cat(sprintf("σ = %.1f, τ = σ² = %.1f\n", sigma_test, tau_test))
+cat(sprintf("π(σ) ∝ %.4f\n", jeffreys_sigma))
+cat(sprintf("π(τ) ∝ %.4f\n", jeffreys_tau))
+cat(sprintf("π(σ) × |dσ/dτ| = %.4f × %.4f = %.4f\n", 
+            jeffreys_sigma, jacobian, jeffreys_tau_via_transformation))
+cat(sprintf("Difference: %.2e (should be ≈ 0)\n", 
+            abs(jeffreys_tau - jeffreys_tau_via_transformation)))
+
+# Demonstrate with plots
+par(mfrow = c(1, 2))
+
+# Plot 1: Jeffreys prior for σ
+sigma_range <- seq(0.5, 4, length = 100)
+jeffreys_sigma_plot <- sapply(sigma_range, function(s) sqrt(2*n)/s)
+plot(sigma_range, jeffreys_sigma_plot, type = 'l', lwd = 3, col = 'blue',
+     xlab = 'σ', ylab = 'π(σ)', main = 'Jeffreys Prior for σ')
+
+# Plot 2: Jeffreys prior for τ = σ²
+tau_range <- sigma_range^2
+jeffreys_tau_plot <- sapply(tau_range, function(t) sqrt(n/(2*t^2)))
+plot(tau_range, jeffreys_tau_plot, type = 'l', lwd = 3, col = 'red',
+     xlab = 'τ = σ²', ylab = 'π(τ)', main = 'Jeffreys Prior for τ = σ²')
+
+par(mfrow = c(1, 1))
+```
+
+## Computational Implementation
+
+```{r jeffreys_implementation}
+# General function to compute Jeffreys prior
+compute_jeffreys_prior <- function(fisher_info_matrix) {
+  if (is.matrix(fisher_info_matrix)) {
+    # Multivariate case
+    det_I <- det(fisher_info_matrix)
+    if (det_I <= 0) {
+      warning("Fisher Information Matrix is not positive definite")
+      return(NA)
+    }
+    return(sqrt(det_I))
+  } else {
+    # Univariate case
+    if (fisher_info_matrix <= 0) {
+      warning("Fisher Information must be positive")
+      return(NA)
+    }
+    return(sqrt(fisher_info_matrix))
+  }
+}
+
+# Example usage for different distributions
+cat("JEFFREYS PRIOR CALCULATOR:\n")
+cat("==========================\n\n")
+
+# Normal mean (known variance)
+I_normal_mean <- n / sigma^2
+jeffreys_normal_mean_val <- compute_jeffreys_prior(I_normal_mean)
+cat(sprintf("Normal mean: π(μ) ∝ %.4f (constant)\n", jeffreys_normal_mean_val))
+
+# Normal variance (known mean)  
+sigma2_example <- 1
+I_normal_var <- n / (2 * sigma2_example^2)
+jeffreys_normal_var_val <- compute_jeffreys_prior(I_normal_var)
+cat(sprintf("Normal variance: π(σ²) ∝ %.4f/σ²\n", jeffreys_normal_var_val))
+
+# Binomial parameter
+p_example <- 0.5
+I_binomial <- n / (p_example * (1 - p_example))
+jeffreys_binomial_val <- compute_jeffreys_prior(I_binomial)
+cat(sprintf("Binomial: π(p) ∝ %.4f/√(p(1-p))\n", jeffreys_binomial_val))
+
+# Multivariate normal mean
+I_bivariate <- Sigma_inv
+jeffreys_bivariate_val <- compute_jeffreys_prior(I_bivariate)
+cat(sprintf("Bivariate normal mean: π(μ) ∝ %.4f (constant)\n", jeffreys_bivariate_val))
+```
+
+## Reference Priors and Extensions
+
+```{r reference_priors}
+cat("REFERENCE PRIORS:\n")
+cat("=================\n\n")
+
+comparison_table <- data.frame(
+  Prior_Type = c(
+    "Jeffreys Prior",
+    "Reference Prior", 
+    "Matching Prior",
+    "Uniform Prior",
+    "Maximum Entropy"
+  ),
+  Construction = c(
+    "√det(I(θ))",
+    "Sequential information",
+    "Frequentist matching", 
+    "Constant density",
+    "Maximize entropy"
+  ),
+  Properties = c(
+    "Transformation invariant",
+    "Asymptotically Jeffreys",
+    "Exact frequentist properties",
+    "Simple but not invariant", 
+    "Minimal information"
+  ),
+  When_to_Use = c(
+    "Standard objective choice",
+    "Complex multiparameter",
+    "Exact inference needed",
+    "Simple problems only",
+    "Maximum ignorance"
+  )
+)
+
+knitr::kable(comparison_table, caption = "Comparison of Objective Priors")
+
+cat("\nADVANTAGES OF JEFFREYS PRIOR:\n")
+advantages <- c(
+  "• Transformation invariant (most important)",
+  "• Based on information content of data",
+  "• Well-defined for most standard distributions", 
+  "• Leads to good frequentist properties",
+  "• Widely accepted as 'objective'",
+  "• Easy to compute from Fisher Information"
+)
+
+for (adv in advantages) {
+  cat(adv, "\n")
+}
+
+cat("\nDISADVANTAGES:\n")
+disadvantages <- c(
+  "• Often improper (doesn't integrate to 1)",
+  "• May not exist for some problems",
+  "• Can be difficult to compute analytically",
+  "• Not always sensible for multiparameter problems",
+  "• May conflict with scientific knowledge",
+  "• Asymptotic approximation"
+)
+
+for (disadv in disadvantages) {
+  cat(disadv, "\n")
+}
+```
+
+## Practical Applications
+
+```{r jeffreys_applications}
+# Example: Bayesian estimation using Jeffreys prior
+# Generate some binomial data
+set.seed(789)
+n_trials <- 50
+true_p <- 0.3
+observed_successes <- rbinom(1, n_trials, true_p)
+
+cat("BAYESIAN ESTIMATION WITH JEFFREYS PRIOR:\n")
+cat("=========================================\n")
+cat(sprintf("Binomial data: %d successes in %d trials\n", observed_successes, n_trials))
+cat(sprintf("True p = %.2f\n\n", true_p))
+
+# Jeffreys prior for binomial: Beta(1/2, 1/2)
+# Posterior: Beta(1/2 + successes, 1/2 + failures)
+posterior_alpha <- 0.5 + observed_successes
+posterior_beta <- 0.5 + (n_trials - observed_successes)
+
+cat("Prior: Beta(1/2, 1/2) [Jeffreys]\n")
+cat(sprintf("Posterior: Beta(%.1f, %.1f)\n", posterior_alpha, posterior_beta))
+
+# Posterior statistics
+posterior_mean <- posterior_alpha / (posterior_alpha + posterior_beta)
+posterior_var <- (posterior_alpha * posterior_beta) / 
+                ((posterior_alpha + posterior_beta)^2 * (posterior_alpha + posterior_beta + 1))
+posterior_sd <- sqrt(posterior_var)
+
+cat(sprintf("Posterior mean: %.4f\n", posterior_mean))
+cat(sprintf("Posterior SD: %.4f\n", posterior_sd))
+cat(sprintf("95%% Credible interval: [%.4f, %.4f]\n", 
+            qbeta(0.025, posterior_alpha, posterior_beta),
+            qbeta(0.975, posterior_alpha, posterior_beta)))
+
+# Compare with MLE
+mle_estimate <- observed_successes / n_trials
+mle_se <- sqrt(mle_estimate * (1 - mle_estimate) / n_trials)
+
+cat(sprintf("\nMLE estimate: %.4f ± %.4f\n", mle_estimate, mle_se))
+
+# Plot prior, likelihood, and posterior
+p_grid <- seq(0.001, 0.999, length = 1000)  # Avoid exact 0 and 1
+
+# Prior (Beta(1/2, 1/2) - Jeffreys prior)
+prior_density <- dbeta(p_grid, 0.5, 0.5)
+
+# Likelihood (proportional to)
+likelihood <- dbinom(observed_successes, n_trials, p_grid)
+likelihood <- likelihood / max(likelihood)  # Normalize for plotting
+
+# Posterior
+posterior_density <- dbeta(p_grid, posterior_alpha, posterior_beta)
+
+# Calculate safe ylim bounds (exclude infinite values)
+all_densities <- c(prior_density, posterior_density, likelihood)
+finite_densities <- all_densities[is.finite(all_densities)]
+y_max <- max(finite_densities)
+y_max <- min(y_max, 10)  # Cap at reasonable value for visualization
+
+# Plot
+plot(p_grid, prior_density, type = 'l', lwd = 2, col = 'blue',
+     xlab = 'p', ylab = 'Density', 
+     main = sprintf('Bayesian Analysis with Jeffreys Prior\n(%d successes in %d trials)', 
+                    observed_successes, n_trials),
+     ylim = c(0, y_max))
+lines(p_grid, likelihood, lwd = 2, col = 'red', lty = 2)
+lines(p_grid, posterior_density, lwd = 3, col = 'black')
+abline(v = true_p, col = 'green', lwd = 2, lty = 3)
+abline(v = posterior_mean, col = 'purple', lwd = 2, lty = 4)
+
+legend('topright', 
+       c('Jeffreys Prior', 'Likelihood', 'Posterior', 'True p', 'Posterior Mean'),
+       col = c('blue', 'red', 'black', 'green', 'purple'),
+       lty = c(1, 2, 1, 3, 4), lwd = c(2, 2, 3, 2, 2))
+```
+
+## When to Use Jeffreys Prior
+
+```{r when_use_jeffreys}
+usage_guidelines <- data.frame(
+  Scenario = c(
+    "Single parameter estimation",
+    "Transformation invariance needed",
+    "Objective/non-informative analysis", 
+    "Standard distributions",
+    "Large sample sizes",
+    "Reporting to diverse audience",
+    "Sensitivity analysis baseline"
+  ),
+  Recommendation = c("Excellent", "Excellent", "Excellent", "Good", "Good", "Good", "Good"),
+  Alternative = c(
+    "Uniform prior",
+    "No good alternative", 
+    "Reference prior",
+    "Conjugate prior",
+    "Any reasonable prior",
+    "Multiple priors",
+    "Uniform/reference"
+  )
+)
+
+knitr::kable(usage_guidelines, caption = "When to Use Jeffreys Prior")
+
+cat("\nDO USE JEFFREYS PRIOR WHEN:\n")
+cat("===========================\n")
+do_use <- c(
+  "✓ You want objective/non-informative analysis",
+  "✓ Parameter transformation invariance is important", 
+  "✓ Working with standard statistical distributions",
+  "✓ You have no strong prior information",
+  "✓ Reporting to audience with diverse opinions",
+  "✓ As a baseline for sensitivity analysis",
+  "✓ Large sample sizes (asymptotic validity)"
+)
+
+for (item in do_use) {
+  cat(item, "\n")
+}
+
+cat("\nDON'T USE JEFFREYS PRIOR WHEN:\n")
+cat("==============================\n")
+dont_use <- c(
+  "✗ You have strong scientific prior information",
+  "✗ Working with very small sample sizes",
+  "✗ The prior doesn't exist or is problematic",
+  "✗ Computational issues arise",
+  "✗ Prior conflicts with parameter constraints",
+  "✗ Multiparameter nuisance parameter issues",
+  "✗ Prior predictive distributions are unreasonable"
+)
+
+for (item in dont_use) {
+  cat(item, "\n")
+}
+```
+
+## Summary and Best Practices
+
+```{r jeffreys_summary}
+cat("JEFFREYS PRIOR SUMMARY:\n")
+cat("=======================\n\n")
+
+summary_points <- c(
+  "✓ Jeffreys prior is derived from Fisher Information",
+  "✓ π(θ) ∝ √I(θ) for single parameter",
+  "✓ π(θ) ∝ √det(I(θ)) for multiple parameters",
+  "✓ Most important property: transformation invariance",
+  "✓ Provides objective/non-informative analysis",
+  "✓ Often improper but well-behaved posteriors",
+  "✓ Excellent choice for standard distributions",
+  "✓ Foundation for modern objective Bayesian methods"
+)
+
+for (point in summary_points) {
+  cat(point, "\n")
+}
+
+cat("\nBEST PRACTICES:\n")
+cat("===============\n")
+
+best_practices <- c(
+  "• Always check that the prior exists and is well-defined",
+  "• Verify posterior is proper even if prior is improper",
+  "• Consider transformation invariance requirements",
+  "• Compare with other objective priors when available",
+  "• Check sensitivity to prior choice",
+  "• Be aware of computational implications",
+  "• Document choice clearly in analysis",
+  "• Consider scientific context and constraints"
+)
+
+for (practice in best_practices) {
+  cat(practice, "\n")
+}
+```
+
+Fisher Information is a fundamental concept that bridges theory and practice in statistical inference, providing the theoretical foundation for understanding parameter estimation uncertainty and guiding optimal experimental design.

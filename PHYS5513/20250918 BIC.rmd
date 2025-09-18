@@ -1,0 +1,757 @@
+---
+title: "Detailed Guide to Bayesian Information Criterion (BIC)"
+author: "GitHub Copilot"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 3
+classoption: a4paper
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Introduction to BIC
+
+The **Bayesian Information Criterion (BIC)** is a model selection criterion that balances model fit with model complexity. It was developed by Gideon Schwarz in 1978 as an approximation to the Bayesian model evidence, providing a practical way to compare competing models.
+
+## Load Required Libraries
+
+```{r libraries}
+library(magicaxis)
+library(MASS)
+library(pracma)
+library(mgcv)
+library(splines)
+set.seed(42)
+```
+
+# Mathematical Foundation
+
+## Definition of BIC
+
+The BIC is defined as:
+
+$$\text{BIC} = k \ln(n) - 2\mathcal{L}(\hat{\theta}_{MLE})$$
+
+where:
+- $k$ = number of parameters in the model
+- $n$ = number of data points (sample size)
+- $\mathcal{L}(\hat{\theta}_{MLE})$ = log-likelihood at the Maximum Likelihood Estimate
+
+## Relationship to Model Evidence
+
+The BIC approximates the **log model evidence** (log marginal likelihood):
+
+$$\ln P(D|M) \approx -\frac{\text{BIC}}{2}$$
+
+This approximation comes from the **Laplace approximation** to the model evidence integral:
+
+$$P(D|M) = \int P(D|\theta, M) P(\theta|M) d\theta$$
+
+Under certain regularity conditions (large sample size, well-behaved likelihood), this integral can be approximated as:
+
+$$\ln P(D|M) \approx \ln P(D|\hat{\theta}_{MLE}, M) + \ln P(\hat{\theta}_{MLE}|M) + \frac{k}{2}\ln(2\pi) - \frac{1}{2}\ln|\mathcal{I}(\hat{\theta}_{MLE})|$$
+
+where $\mathcal{I}(\hat{\theta}_{MLE})$ is the Fisher Information Matrix at the MLE.
+
+```{r bic_derivation}
+# Illustration of BIC components
+cat("BIC = k*ln(n) - 2*LL(MLE)\n")
+cat("     ↑         ↑\n")
+cat("  Penalty   Goodness\n")
+cat("    for       of\n")
+cat(" Complexity  Fit\n\n")
+
+cat("Model Evidence approximation:\n")
+cat("ln P(D|M) ≈ -BIC/2\n")
+cat("P(D|M) ≈ exp(-BIC/2)\n")
+```
+
+# BIC Properties and Interpretation
+
+## Key Properties
+
+1. **Consistent**: As $n \to \infty$, BIC will select the true model with probability 1
+2. **Penalizes complexity**: The $k \ln(n)$ term grows with both parameters and sample size
+3. **Scale-free**: BIC differences are what matter, not absolute values
+4. **Asymptotic**: Valid for large sample sizes ($n \gg k$)
+
+## Model Selection Rule
+
+- **Lower BIC is better**
+- Choose the model with the minimum BIC
+- BIC differences can be interpreted using Bayes factors
+
+```{r bic_interpretation}
+# BIC difference interpretation (Kass & Raftery, 1995)
+bic_interpretation <- data.frame(
+  Delta_BIC = c("0-2", "2-6", "6-10", ">10"),
+  Evidence = c("Not worth mentioning", "Positive", "Strong", "Very Strong"),
+  Bayes_Factor = c("1-3", "3-20", "20-150", ">150")
+)
+
+knitr::kable(bic_interpretation, 
+             caption = "Interpretation of BIC Differences (Δ BIC = BIC₁ - BIC₂)")
+```
+
+# Detailed Examples
+
+## Example 1: Polynomial Model Selection
+
+Let's generate data from a cubic polynomial and see how BIC helps select the correct model order.
+
+```{r polynomial_example}
+# Generate data from a cubic polynomial with noise
+n <- 50
+x <- seq(0, 1, length = n)
+true_coeffs <- c(1, -2, 3, -1)  # intercept, linear, quadratic, cubic
+y_true <- true_coeffs[1] + true_coeffs[2]*x + true_coeffs[3]*x^2 + true_coeffs[4]*x^3
+sigma_noise <- 0.2
+y <- y_true + rnorm(n, 0, sigma_noise)
+
+# Function to fit polynomial and calculate BIC
+fit_polynomial <- function(x, y, degree) {
+  # Create polynomial basis
+  X <- poly(x, degree, raw = TRUE)
+  
+  # Fit linear model
+  fit <- lm(y ~ X)
+  
+  # Calculate BIC
+  loglik <- logLik(fit)[1]
+  k <- degree + 1  # including intercept
+  n <- length(y)
+  bic <- k * log(n) - 2 * loglik
+  
+  return(list(
+    fit = fit,
+    bic = bic,
+    loglik = loglik,
+    k = k,
+    predictions = predict(fit)
+  ))
+}
+
+# Test polynomials of degree 1 to 8
+max_degree <- 8
+results <- list()
+bic_values <- numeric(max_degree)
+
+for (degree in 1:max_degree) {
+  results[[degree]] <- fit_polynomial(x, y, degree)
+  bic_values[degree] <- results[[degree]]$bic
+}
+
+# Plot BIC values
+magplot(1:max_degree, bic_values, type = 'o', pch = 20, lwd = 2,
+        xlab = 'Polynomial Degree', ylab = 'BIC',
+        main = 'Model Selection using BIC')
+abline(v = 3, col = 'red', lty = 2, lwd = 2)
+text(3.2, min(bic_values) + 5, 'True Model\n(Degree 3)', col = 'red')
+
+# Find optimal degree
+optimal_degree <- which.min(bic_values)
+cat(sprintf("Optimal polynomial degree according to BIC: %d\n", optimal_degree))
+cat(sprintf("True polynomial degree: 3\n"))
+```
+
+### Detailed BIC Analysis
+
+```{r polynomial_bic_details}
+# Create detailed BIC table
+bic_table <- data.frame(
+  Degree = 1:max_degree,
+  Parameters = sapply(results, function(x) x$k),
+  LogLikelihood = sapply(results, function(x) x$loglik),
+  BIC = bic_values,
+  Delta_BIC = bic_values - min(bic_values),
+  Weight = exp(-0.5 * (bic_values - min(bic_values))) / 
+           sum(exp(-0.5 * (bic_values - min(bic_values))))
+)
+
+knitr::kable(bic_table, digits = 3, 
+             caption = "BIC Analysis for Polynomial Models")
+
+# Plot the fitted models
+par(mfrow = c(2, 2))
+
+degrees_to_plot <- c(1, 3, 5, 7)
+for (i in seq_along(degrees_to_plot)) {
+  deg <- degrees_to_plot[i]
+  plot(x, y, pch = 20, main = sprintf('Degree %d (BIC = %.1f)', deg, bic_values[deg]),
+       xlab = 'x', ylab = 'y')
+  lines(x, y_true, col = 'red', lwd = 2, lty = 2)  # True function
+  lines(x, results[[deg]]$predictions, col = 'blue', lwd = 2)  # Fitted function
+  legend('topright', c('Data', 'True Function', 'Fitted'), 
+         col = c('black', 'red', 'blue'), 
+         pch = c(20, NA, NA), lty = c(NA, 2, 1), lwd = c(NA, 2, 2))
+}
+par(mfrow = c(1, 1))
+```
+
+## Example 2: Comparing Different Model Types
+
+Let's compare fundamentally different model types: linear, exponential, and sinusoidal.
+
+```{r model_comparison_example}
+# Generate data from a sinusoidal function
+n <- 60
+x <- seq(0, 4*pi, length = n)
+y_true <- 2 * sin(0.5 * x) + 1
+sigma_noise <- 0.3
+y <- y_true + rnorm(n, 0, sigma_noise)
+
+# Model 1: Linear model
+fit_linear <- lm(y ~ x)
+loglik_linear <- logLik(fit_linear)[1]
+k_linear <- 2
+bic_linear <- k_linear * log(n) - 2 * loglik_linear
+
+# Model 2: Quadratic model
+fit_quad <- lm(y ~ x + I(x^2))
+loglik_quad <- logLik(fit_quad)[1]
+k_quad <- 3
+bic_quad <- k_quad * log(n) - 2 * loglik_quad
+
+# Model 3: Exponential model (nonlinear)
+# Try exponential fitting with better starting values and error handling
+tryCatch({
+  # Use better starting values based on data characteristics
+  y_range <- max(y) - min(y)
+  start_a <- y_range / 2
+  start_b <- 0.01  # Very small initial slope
+  start_c <- min(y)
+  
+  fit_exp <- nls(y ~ a * exp(b * x) + c, 
+                 start = list(a = start_a, b = start_b, c = start_c),
+                 control = nls.control(maxiter = 500, minFactor = 1e-10))
+  
+  # Calculate log-likelihood for exponential model
+  residual_var <- sum(residuals(fit_exp)^2) / (n - 3)
+  loglik_exp <- -0.5 * sum(residuals(fit_exp)^2) / residual_var - 
+                0.5 * n * log(2 * pi * residual_var)
+  k_exp <- 3
+  bic_exp <- k_exp * log(n) - 2 * loglik_exp
+  
+}, error = function(e) {
+  # If exponential fitting fails, set to very high BIC (poor model)
+  cat("Exponential model failed to converge. Setting high BIC.\n")
+  fit_exp <<- NULL
+  loglik_exp <<- -Inf
+  k_exp <<- 3
+  bic_exp <<- 1e6  # Very high BIC indicates poor fit
+})
+
+# Model 4: Sinusoidal model (nonlinear)
+fit_sin <- nls(y ~ a * sin(b * x) + c, 
+               start = list(a = 2, b = 0.5, c = 1),
+               control = nls.control(maxiter = 100))
+loglik_sin <- -0.5 * sum(residuals(fit_sin)^2) / sigma(fit_sin)^2 - 
+              0.5 * n * log(2 * pi * sigma(fit_sin)^2)
+k_sin <- 3
+bic_sin <- k_sin * log(n) - 2 * loglik_sin
+
+# Model 5: Spline model
+fit_spline <- gam(y ~ s(x, k = 6))
+loglik_spline <- logLik(fit_spline)[1]
+k_spline <- sum(fit_spline$edf)  # Effective degrees of freedom
+bic_spline <- k_spline * log(n) - 2 * loglik_spline
+
+# Compare models
+model_comparison <- data.frame(
+  Model = c("Linear", "Quadratic", "Exponential", "Sinusoidal", "Spline"),
+  Parameters = c(k_linear, k_quad, k_exp, k_sin, k_spline),
+  LogLikelihood = c(loglik_linear, loglik_quad, loglik_exp, loglik_sin, loglik_spline),
+  BIC = c(bic_linear, bic_quad, bic_exp, bic_sin, bic_spline),
+  Delta_BIC = c(bic_linear, bic_quad, bic_exp, bic_sin, bic_spline) - 
+              min(c(bic_linear, bic_quad, bic_exp, bic_sin, bic_spline))
+)
+
+model_comparison$Model_Weight <- exp(-0.5 * model_comparison$Delta_BIC) / 
+                                sum(exp(-0.5 * model_comparison$Delta_BIC))
+
+knitr::kable(model_comparison, digits = 3, 
+             caption = "Model Comparison using BIC")
+
+# Plot all models
+plot(x, y, pch = 20, main = 'Model Comparison', xlab = 'x', ylab = 'y',
+     ylim = range(c(y, y_true)))
+lines(x, y_true, col = 'black', lwd = 3, lty = 1)  # True function
+
+# Add fitted lines
+x_pred <- seq(min(x), max(x), length = 200)
+lines(x_pred, predict(fit_linear, newdata = data.frame(x = x_pred)), 
+      col = 'red', lwd = 2, lty = 2)
+lines(x_pred, predict(fit_quad, newdata = data.frame(x = x_pred)), 
+      col = 'blue', lwd = 2, lty = 3)
+lines(x_pred, predict(fit_spline, newdata = data.frame(x = x_pred)), 
+      col = 'green', lwd = 2, lty = 4)
+
+# Nonlinear model predictions need to be handled separately
+if (!is.null(fit_exp)) {
+  y_exp_pred <- predict(fit_exp, newdata = data.frame(x = x_pred))
+  lines(x_pred, y_exp_pred, col = 'orange', lwd = 2, lty = 5)
+} else {
+  cat("Exponential model failed - not plotted\n")
+}
+
+y_sin_pred <- predict(fit_sin, newdata = data.frame(x = x_pred))
+lines(x_pred, y_sin_pred, col = 'purple', lwd = 2, lty = 6)
+
+legend('topright', 
+       c('True Function', 'Linear', 'Quadratic', 
+         if(!is.null(fit_exp)) 'Exponential' else 'Exponential (failed)', 
+         'Sinusoidal', 'Spline'),
+       col = c('black', 'red', 'blue', 'orange', 'purple', 'green'),
+       lty = c(1, 2, 3, 5, 6, 4), lwd = 2)
+
+# Best model according to BIC
+best_model <- model_comparison$Model[which.min(model_comparison$BIC)]
+cat(sprintf("\nBest model according to BIC: %s\n", best_model))
+```
+
+# BIC vs Other Information Criteria
+
+## Comparison with AIC
+
+The **Akaike Information Criterion (AIC)** is another popular model selection criterion:
+
+$$\text{AIC} = 2k - 2\mathcal{L}(\hat{\theta}_{MLE})$$
+
+```{r aic_vs_bic}
+# Calculate AIC for the polynomial example
+aic_values <- numeric(max_degree)
+for (degree in 1:max_degree) {
+  k <- degree + 1
+  loglik <- results[[degree]]$loglik
+  aic_values[degree] <- 2 * k - 2 * loglik
+}
+
+# Compare AIC and BIC
+comparison_df <- data.frame(
+  Degree = 1:max_degree,
+  BIC = bic_values,
+  AIC = aic_values,
+  BIC_optimal = bic_values == min(bic_values),
+  AIC_optimal = aic_values == min(aic_values)
+)
+
+# Plot comparison
+matplot(1:max_degree, cbind(bic_values, aic_values), 
+        type = 'o', pch = c(20, 17), lwd = 2,
+        col = c('red', 'blue'),
+        xlab = 'Polynomial Degree', ylab = 'Information Criterion',
+        main = 'BIC vs AIC Comparison')
+abline(v = 3, col = 'gray', lty = 2)
+legend('topright', c('BIC', 'AIC'), col = c('red', 'blue'), 
+       pch = c(20, 17), lty = 1, lwd = 2)
+
+cat("Optimal degrees:\n")
+cat(sprintf("BIC: %d\n", which.min(bic_values)))
+cat(sprintf("AIC: %d\n", which.min(aic_values)))
+cat(sprintf("True: 3\n"))
+
+# Key differences table
+differences <- data.frame(
+  Criterion = c("BIC", "AIC"),
+  Penalty = c("k*ln(n)", "2*k"),
+  Philosophy = c("Bayesian approximation", "Information theory"),
+  Behavior = c("More conservative (fewer parameters)", "Less conservative"),
+  Consistency = c("Yes (finds true model)", "No (overfits asymptotically)")
+)
+
+knitr::kable(differences, caption = "BIC vs AIC Comparison")
+```
+
+# Advanced BIC Applications
+
+## Example 3: Variable Selection in Regression
+
+BIC can be used for variable selection in multiple regression.
+
+```{r variable_selection}
+# Generate regression data with some irrelevant variables
+set.seed(123)
+n <- 100
+p <- 8  # number of potential predictors
+
+# True model uses only first 3 variables
+X <- matrix(rnorm(n * p), nrow = n)
+true_beta <- c(2, -1.5, 1, rep(0, p - 3))  # Only first 3 are non-zero
+y <- X %*% true_beta + rnorm(n, 0, 0.5)
+
+# Function to evaluate all possible subsets (for small p only)
+evaluate_subset <- function(subset_indices) {
+  if (length(subset_indices) == 0) {
+    # Intercept-only model
+    fit <- lm(y ~ 1)
+  } else {
+    X_subset <- X[, subset_indices, drop = FALSE]
+    fit <- lm(y ~ X_subset)
+  }
+  
+  loglik <- logLik(fit)[1]
+  k <- length(subset_indices) + 1  # including intercept
+  bic <- k * log(n) - 2 * loglik
+  
+  return(list(bic = bic, k = k, loglik = loglik, 
+              variables = subset_indices, fit = fit))
+}
+
+# For demonstration, test a few key models
+models_to_test <- list(
+  "Intercept only" = numeric(0),
+  "True model (1,2,3)" = 1:3,
+  "Overfitted (1,2,3,4,5)" = 1:5,
+  "All variables" = 1:p,
+  "Wrong variables (4,5,6)" = 4:6,
+  "Mixed (1,2,5,7)" = c(1, 2, 5, 7)
+)
+
+# Evaluate each model
+model_results <- lapply(models_to_test, evaluate_subset)
+names(model_results) <- names(models_to_test)
+
+# Create comparison table
+variable_selection_table <- data.frame(
+  Model = names(model_results),
+  Variables = sapply(model_results, function(x) 
+    if(length(x$variables) == 0) "Intercept" else paste(x$variables, collapse = ",")),
+  K = sapply(model_results, function(x) x$k),
+  LogLik = sapply(model_results, function(x) x$loglik),
+  BIC = sapply(model_results, function(x) x$bic)
+)
+
+variable_selection_table$Delta_BIC <- variable_selection_table$BIC - min(variable_selection_table$BIC)
+variable_selection_table$Weight <- exp(-0.5 * variable_selection_table$Delta_BIC) / 
+                                  sum(exp(-0.5 * variable_selection_table$Delta_BIC))
+
+knitr::kable(variable_selection_table, digits = 3,
+             caption = "Variable Selection using BIC")
+
+best_model_name <- names(model_results)[which.min(variable_selection_table$BIC)]
+cat(sprintf("Best model according to BIC: %s\n", best_model_name))
+```
+
+## Example 4: Mixture Model Selection
+
+BIC is particularly useful for determining the number of components in mixture models.
+
+```{r mixture_models}
+# Generate data from a mixture of two Gaussians
+set.seed(456)
+n1 <- 40; n2 <- 60
+component1 <- rnorm(n1, mean = -2, sd = 0.8)
+component2 <- rnorm(n2, mean = 3, sd = 1.2)
+mixture_data <- c(component1, component2)
+n_total <- length(mixture_data)
+
+# Function to fit Gaussian mixture and calculate BIC
+fit_gaussian_mixture <- function(data, k_components) {
+  if (k_components == 1) {
+    # Single Gaussian
+    mu <- mean(data)
+    sigma <- sd(data)
+    loglik <- sum(dnorm(data, mu, sigma, log = TRUE))
+    n_params <- 2  # mu, sigma
+  } else {
+    # Use mixtools for mixture fitting
+    library(mixtools)
+    fit <- normalmixEM(data, k = k_components, verb = FALSE)
+    
+    # Calculate log-likelihood
+    loglik <- sum(log(rowSums(sapply(1:k_components, function(j) 
+      fit$lambda[j] * dnorm(data, fit$mu[j], fit$sigma[j])))))
+    
+    n_params <- 3 * k_components - 1  # mu, sigma, pi for each component (minus 1 constraint)
+  }
+  
+  bic <- n_params * log(length(data)) - 2 * loglik
+  
+  return(list(bic = bic, loglik = loglik, k = k_components, n_params = n_params))
+}
+
+# Test different numbers of components
+max_components <- 5
+mixture_results <- list()
+mixture_bic <- numeric(max_components)
+
+for (k in 1:max_components) {
+  mixture_results[[k]] <- fit_gaussian_mixture(mixture_data, k)
+  mixture_bic[k] <- mixture_results[[k]]$bic
+}
+
+# Plot BIC for mixture models
+plot(1:max_components, mixture_bic, type = 'o', pch = 20, lwd = 2,
+     xlab = 'Number of Components', ylab = 'BIC',
+     main = 'BIC for Gaussian Mixture Models')
+abline(v = 2, col = 'red', lty = 2, lwd = 2)
+text(2.2, max(mixture_bic) - 5, 'True Number\nof Components', col = 'red')
+
+optimal_components <- which.min(mixture_bic)
+cat(sprintf("Optimal number of components: %d\n", optimal_components))
+cat(sprintf("True number of components: 2\n"))
+
+# Create mixture results table
+mixture_table <- data.frame(
+  Components = 1:max_components,
+  Parameters = sapply(mixture_results, function(x) x$n_params),
+  LogLikelihood = sapply(mixture_results, function(x) x$loglik),
+  BIC = mixture_bic,
+  Delta_BIC = mixture_bic - min(mixture_bic)
+)
+
+knitr::kable(mixture_table, digits = 3,
+             caption = "Mixture Model Selection using BIC")
+
+# Plot the data with histogram
+hist(mixture_data, breaks = 20, probability = TRUE, 
+     main = 'Mixture Data with True Components',
+     xlab = 'Value', col = 'lightblue', border = 'darkblue')
+
+# Overlay true component densities
+x_range <- seq(min(mixture_data), max(mixture_data), length = 200)
+true_density1 <- (n1/n_total) * dnorm(x_range, -2, 0.8)
+true_density2 <- (n2/n_total) * dnorm(x_range, 3, 1.2)
+lines(x_range, true_density1, col = 'red', lwd = 2, lty = 2)
+lines(x_range, true_density2, col = 'red', lwd = 2, lty = 2)
+lines(x_range, true_density1 + true_density2, col = 'red', lwd = 3)
+legend('topright', c('Data', 'True Components', 'True Mixture'), 
+       col = c('darkblue', 'red', 'red'), lty = c(1, 2, 1), lwd = c(1, 2, 3))
+```
+
+# BIC Limitations and Considerations
+
+## When BIC May Not Work Well
+
+```{r bic_limitations}
+cat("BIC Limitations:\n\n")
+
+limitations <- data.frame(
+  Issue = c(
+    "Small sample size",
+    "Model misspecification", 
+    "Non-nested models",
+    "Improper priors",
+    "Non-regular conditions"
+  ),
+  Problem = c(
+    "Asymptotic approximation invalid",
+    "None of the models is true",
+    "Prior odds matter",
+    "Undefined model evidence", 
+    "Laplace approximation fails"
+  ),
+  Solution = c(
+    "Use exact Bayesian methods",
+    "Consider model averaging",
+    "Be careful with interpretation",
+    "Use proper priors",
+    "Check regularity conditions"
+  )
+)
+
+knitr::kable(limitations, caption = "BIC Limitations and Solutions")
+```
+
+## Sample Size Effects
+
+Let's demonstrate how BIC behavior changes with sample size.
+
+```{r sample_size_effects}
+# Function to simulate BIC behavior across sample sizes
+simulate_bic_sample_size <- function(sample_sizes, true_degree = 3) {
+  results <- matrix(NA, nrow = length(sample_sizes), ncol = 2)
+  colnames(results) <- c("BIC_Selected", "AIC_Selected")
+  
+  for (i in seq_along(sample_sizes)) {
+    n <- sample_sizes[i]
+    x <- seq(0, 1, length = n)
+    y_true <- 1 - 2*x + 3*x^2 - x^3
+    y <- y_true + rnorm(n, 0, 0.2)
+    
+    # Test degrees 1 to 6
+    bic_vals <- numeric(6)
+    aic_vals <- numeric(6)
+    
+    for (deg in 1:6) {
+      X <- poly(x, deg, raw = TRUE)
+      fit <- lm(y ~ X)
+      loglik <- logLik(fit)[1]
+      k <- deg + 1
+      
+      bic_vals[deg] <- k * log(n) - 2 * loglik
+      aic_vals[deg] <- 2 * k - 2 * loglik
+    }
+    
+    results[i, 1] <- which.min(bic_vals)
+    results[i, 2] <- which.min(aic_vals)
+  }
+  
+  return(results)
+}
+
+# Test different sample sizes
+sample_sizes <- c(20, 50, 100, 200, 500, 1000)
+size_results <- simulate_bic_sample_size(sample_sizes)
+
+# Plot results
+matplot(sample_sizes, size_results, type = 'o', pch = c(20, 17), lwd = 2,
+        col = c('red', 'blue'), log = 'x',
+        xlab = 'Sample Size', ylab = 'Selected Degree',
+        main = 'Model Selection vs Sample Size')
+abline(h = 3, col = 'gray', lty = 2, lwd = 2)
+legend('right', c('BIC', 'AIC', 'True Degree'), 
+       col = c('red', 'blue', 'gray'), 
+       pch = c(20, 17, NA), lty = c(1, 1, 2), lwd = 2)
+
+sample_size_table <- data.frame(
+  Sample_Size = sample_sizes,
+  BIC_Selected = size_results[, 1],
+  AIC_Selected = size_results[, 2],
+  BIC_Correct = size_results[, 1] == 3,
+  AIC_Correct = size_results[, 2] == 3
+)
+
+knitr::kable(sample_size_table, 
+             caption = "Model Selection Performance vs Sample Size")
+```
+
+# Practical Guidelines for Using BIC
+
+## Step-by-Step BIC Analysis
+
+```{r practical_guidelines}
+cat("Practical BIC Analysis Workflow:\n\n")
+
+workflow <- data.frame(
+  Step = 1:8,
+  Action = c(
+    "Define candidate models",
+    "Check sample size (n >> k)",
+    "Fit each model via MLE", 
+    "Calculate log-likelihood",
+    "Compute BIC for each model",
+    "Compare BIC values",
+    "Check robustness",
+    "Interpret results carefully"
+  ),
+  Details = c(
+    "Include reasonable alternatives",
+    "Ensure asymptotic validity",
+    "Use robust optimization",
+    "Account for all parameters",
+    "BIC = k*ln(n) - 2*LL",
+    "Lower is better",
+    "Bootstrap, cross-validation",
+    "Consider scientific context"
+  )
+)
+
+knitr::kable(workflow, caption = "BIC Analysis Workflow")
+```
+
+## BIC Implementation Template
+
+```{r bic_template}
+# Template function for BIC calculation
+calculate_bic <- function(fitted_model, data) {
+  # Extract key quantities
+  loglik <- logLik(fitted_model)[1]
+  k <- length(coef(fitted_model))  # Number of parameters
+  n <- nobs(fitted_model)          # Number of observations
+  
+  # Calculate BIC
+  bic <- k * log(n) - 2 * loglik
+  
+  # Return comprehensive results
+  return(list(
+    bic = bic,
+    loglik = loglik,
+    k = k,
+    n = n,
+    aic = 2 * k - 2 * loglik,  # For comparison
+    model = fitted_model
+  ))
+}
+
+# Example usage
+example_model <- lm(y ~ x, data = data.frame(x = 1:10, y = 1:10 + rnorm(10)))
+bic_result <- calculate_bic(example_model, data.frame(x = 1:10, y = 1:10))
+
+cat("BIC Template Output:\n")
+str(bic_result)
+```
+
+# Summary and Best Practices
+
+## Key Takeaways
+
+```{r summary}
+cat("BIC Summary:\n\n")
+
+summary_points <- c(
+  "✓ BIC balances model fit with complexity",
+  "✓ Lower BIC indicates better model",
+  "✓ Penalty grows with ln(n), favoring simpler models",
+  "✓ Approximates Bayesian model evidence",
+  "✓ Consistent: finds true model as n → ∞",
+  "✓ More conservative than AIC",
+  "✓ Requires large sample sizes for validity",
+  "✓ Useful for nested and non-nested model comparison"
+)
+
+for (point in summary_points) {
+  cat(point, "\n")
+}
+
+cat("\nBest Practices:\n\n")
+
+best_practices <- c(
+  "• Always report BIC differences, not absolute values",
+  "• Check that n >> k for asymptotic validity", 
+  "• Consider multiple criteria (BIC, AIC, cross-validation)",
+  "• Validate with independent data when possible",
+  "• Don't rely solely on BIC for model selection",
+  "• Consider scientific/theoretical knowledge",
+  "• Be cautious with non-nested model comparisons",
+  "• Report uncertainty in model selection"
+)
+
+for (practice in best_practices) {
+  cat(practice, "\n")
+}
+```
+
+## When to Use BIC
+
+```{r when_to_use}
+usage_guide <- data.frame(
+  Scenario = c(
+    "Model selection",
+    "Variable selection", 
+    "Determining model complexity",
+    "Hypothesis testing",
+    "Prediction focus",
+    "Small samples",
+    "Non-nested models"
+  ),
+  Use_BIC = c("Yes", "Yes", "Yes", "Caution", "Consider AIC", "No", "Caution"),
+  Reason = c(
+    "Primary use case",
+    "Good for sparse solutions",
+    "Conservative complexity penalty",
+    "Not a replacement for formal tests",
+    "AIC better for prediction",
+    "Asymptotic approximation invalid",
+    "Prior model probabilities matter"
+  )
+)
+
+knitr::kable(usage_guide, caption = "When to Use BIC")
+```
+
+The BIC is a powerful and principled tool for model selection that provides a practical approximation to Bayesian model comparison. While it has limitations, understanding its theoretical foundation and proper application makes it invaluable for statistical modeling and scientific inference.
