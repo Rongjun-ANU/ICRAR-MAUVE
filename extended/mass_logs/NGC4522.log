@@ -56,8 +56,9 @@ Total stellar mass (R)   : 9.298 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4522 inclination: 82.0° (cos θ = 0.139)
+Inclination correction ENABLED: applying b/a = 0.242 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4522 finished in 4m19s
+✅  NGC4522 finished in 6m2s

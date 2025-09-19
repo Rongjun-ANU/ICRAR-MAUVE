@@ -119,7 +119,8 @@ Foreground stars are removed successfully!
 Calculating all 6 C20 metallicities for NGC4064...
 Combined C20 metallicity: median = 8.505, range = (8.111, 8.952)
 Combined C20 method usage: O3N2=9560, O3S2=0, RS32=140003, R3=251, N2=2666, S2=360
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4064 inclination: 70.0° (cos θ = 0.342)
+Inclination correction ENABLED: applying b/a = 0.390 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.010
 Available methods: [('O3N2-C20', np.float64(8.794766583129213), np.float64(0.019083163817176122)), ('O3S2-C20', np.float64(8.858117757970293), np.float64(0.019475859088243123)), ('RS32-C20', np.float64(8.804808881980893), np.float64(0.010398282314973063)), ('R3-C20', np.float64(8.80903506441552), np.float64(0.022491690873074136)), ('N2-C20', np.float64(8.677111000765033), np.float64(0.06344277373949196)), ('S2-C20', np.float64(8.454959656647775), np.float64(0.07190696019134057))]
 Combined C20 total: Selected O3N2-C20 with error 0.000
@@ -171,5 +172,5 @@ Total Halpha SFR from SF region: 0.37 M☉/yr or in log10 scale: -0.43 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  8.524864406110353
 [O/H] Combined-C20: Total metallicity in total region:  8.74138091289995
 --------------------------------------------------------------
-Total runtime: 147.2 s
-✅  NGC4064 finished in 2m31s
+Total runtime: 160.5 s
+✅  NGC4064 finished in 3m22s

@@ -135,7 +135,8 @@ File not found: NGC4330_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4330...
 Combined C20 metallicity: median = 8.626, range = (8.005, 9.175)
 Combined C20 method usage: O3N2=11354, O3S2=1317, RS32=73169, R3=10761, N2=39159, S2=2721
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4330 inclination: 90.0° (cos θ = 0.000)
+Inclination correction ENABLED: applying b/a = 0.200 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.012
 Available methods: [('O3N2-C20', np.float64(8.73871321159816), np.float64(0.020056305559551582)), ('O3S2-C20', np.float64(8.86021272216451), np.float64(0.019436934614155427)), ('RS32-C20', np.float64(8.702057980618218), np.float64(0.012027460525835584)), ('R3-C20', np.float64(8.741957295749037), np.float64(0.025443286071107598)), ('N2-C20', np.float64(8.673439156128385), np.float64(0.06276321799054695))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -187,5 +188,5 @@ Total Halpha SFR from SF region: 0.19 M☉/yr or in log10 scale: -0.72 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.671663282407433
 --------------------------------------------------------------
-Total runtime: 112.8 s
-✅  NGC4330 finished in 1m56s
+Total runtime: 146.7 s
+✅  NGC4330 finished in 3m9s

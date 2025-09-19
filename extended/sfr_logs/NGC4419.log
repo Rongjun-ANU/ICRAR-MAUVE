@@ -69,7 +69,8 @@ File not found: NGC4419_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4419...
 Combined C20 metallicity: median = 8.520, range = (8.114, 9.131)
 Combined C20 method usage: O3N2=18399, O3S2=0, RS32=129852, R3=1276, N2=2401, S2=389
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4419 inclination: 74.0° (cos θ = 0.276)
+Inclination correction ENABLED: applying b/a = 0.336 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.013
 Available methods: [('O3N2-C20', np.float64(8.738293370650945), np.float64(0.020063969032442095)), ('O3S2-C20', np.float64(8.761848678760268), np.float64(0.021480474959197193)), ('RS32-C20', np.float64(8.6647047136607), np.float64(0.013334793180862906)), ('R3-C20', np.float64(8.655543609250786), np.float64(0.030258189208659955)), ('S2-C20', np.float64(8.55933537827948), np.float64(0.11319477464979384))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -121,5 +122,5 @@ Total Halpha SFR from SF region: 0.34 M☉/yr or in log10 scale: -0.47 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.579708756189778
 --------------------------------------------------------------
-Total runtime: 146.5 s
-✅  NGC4419 finished in 2m30s
+Total runtime: 165.1 s
+✅  NGC4419 finished in 3m27s

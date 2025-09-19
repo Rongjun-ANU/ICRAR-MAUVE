@@ -57,7 +57,8 @@ File not found: IC3392_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for IC3392...
 Combined C20 metallicity: median = 8.575, range = (8.113, 8.892)
 Combined C20 method usage: O3N2=9384, O3S2=0, RS32=49182, R3=0, N2=11330, S2=72
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy IC3392 inclination: 68.0° (cos θ = 0.375)
+Inclination correction ENABLED: applying b/a = 0.418 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.010
 Available methods: [('O3N2-C20', np.float64(8.767149373607165), np.float64(0.019550534927614358)), ('O3S2-C20', np.float64(8.81748878162685), np.float64(0.020268365380024533)), ('RS32-C20', np.float64(8.796303192422453), np.float64(0.010395137130327954)), ('R3-C20', np.float64(8.778355558958527), np.float64(0.023770482609153563)), ('N2-C20', np.float64(8.670656730775027), np.float64(0.062268551699394006)), ('S2-C20', np.float64(8.405576940816797), np.float64(0.06618131660518776))]
 Combined C20 total: Selected O3N2-C20 with error 0.000
@@ -109,5 +110,5 @@ Total Halpha SFR from SF region: 0.17 M☉/yr or in log10 scale: -0.78 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  8.450767631252676
 [O/H] Combined-C20: Total metallicity in total region:  8.737998683892823
 --------------------------------------------------------------
-Total runtime: 56.7 s
-✅  IC3392 finished in 1m0s
+Total runtime: 63.3 s
+✅  IC3392 finished in 1m45s

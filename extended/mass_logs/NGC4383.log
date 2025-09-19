@@ -57,8 +57,9 @@ Total stellar mass (R)   : 9.516 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4383_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4383_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4383_SPATIAL_BINNING_maps_extended.fits
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4383 inclination: 56.0° (cos θ = 0.559)
+Inclination correction ENABLED: applying b/a = 0.583 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4383_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4383_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4383_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4383 finished in 4m51s
+✅  NGC4383 finished in 5m38s

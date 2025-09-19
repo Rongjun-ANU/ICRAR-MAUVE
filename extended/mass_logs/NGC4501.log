@@ -67,8 +67,9 @@ Total stellar mass (R)   : 11.026 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4501 inclination: 65.0° (cos θ = 0.423)
+Inclination correction ENABLED: applying b/a = 0.460 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4501 finished in 16m35s
+✅  NGC4501 finished in 24m17s

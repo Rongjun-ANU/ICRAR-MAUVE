@@ -127,7 +127,8 @@ File not found: NGC4457_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4457...
 Combined C20 metallicity: median = 8.487, range = (8.109, 9.003)
 Combined C20 method usage: O3N2=11126, O3S2=0, RS32=247032, R3=327, N2=188, S2=29
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4457 inclination: 37.0° (cos θ = 0.799)
+Inclination correction ENABLED: applying b/a = 0.808 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.012
 Available methods: [('O3N2-C20', np.float64(8.755491789903438), np.float64(0.019754761393283127)), ('O3S2-C20', np.float64(8.8099424610685), np.float64(0.02042379771185701)), ('RS32-C20', np.float64(8.706898198591821), np.float64(0.01182466101812487)), ('R3-C20', np.float64(8.711125088714063), np.float64(0.027011562846962642)), ('S2-C20', np.float64(8.610721631739873), np.float64(0.20653931636907738))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -179,5 +180,5 @@ Total Halpha SFR from SF region: 0.16 M☉/yr or in log10 scale: -0.81 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.582865892808986
 --------------------------------------------------------------
-Total runtime: 208.6 s
-✅  NGC4457 finished in 3m32s
+Total runtime: 214.0 s
+✅  NGC4457 finished in 4m16s

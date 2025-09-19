@@ -41,7 +41,8 @@ File not found: NGC4383_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4383...
 Combined C20 metallicity: median = 8.591, range = (8.345, 8.846)
 Combined C20 method usage: O3N2=0, O3S2=157, RS32=128967, R3=0, N2=0, S2=0
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4383 inclination: 56.0° (cos θ = 0.559)
+Inclination correction ENABLED: applying b/a = 0.583 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.017
 Available methods: [('O3N2-C20', np.float64(8.573323151318974), np.float64(0.023608548650878008)), ('O3S2-C20', np.float64(8.691966952481957), np.float64(0.023245090800994808)), ('RS32-C20', np.float64(8.598423215266875), np.float64(0.016593799937190165)), ('R3-C20', np.float64(8.57943422321214), np.float64(0.03583648957841421)), ('N2-C20', np.float64(8.552139915308937), np.float64(0.051401997958408996)), ('S2-C20', np.float64(8.485056800427564), np.float64(0.07799194417527085))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -93,5 +94,5 @@ Total Halpha SFR from SF region: 1.07 M☉/yr or in log10 scale: 0.03 log(M☉/y
 [O/H] S2-C20: Total metallicity in total region:  8.526258590461278
 [O/H] Combined-C20: Total metallicity in total region:  8.60643801074457
 --------------------------------------------------------------
-Total runtime: 129.7 s
-✅  NGC4383 finished in 2m13s
+Total runtime: 136.4 s
+✅  NGC4383 finished in 2m58s

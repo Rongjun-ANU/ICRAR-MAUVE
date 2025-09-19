@@ -103,7 +103,7 @@ Changes (2025-09-17)
 
 # Inclination correction toggle
 # Set to True to apply cos(θ) inclination correction, False to disable
-apply_inclination_correction = False
+apply_inclination_correction = True
 
 # ------------------------------------------------------------------
 # 0.  Command-line interface  (exactly as requested)

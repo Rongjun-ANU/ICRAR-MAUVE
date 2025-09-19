@@ -69,7 +69,8 @@ File not found: NGC4192_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4192...
 Combined C20 metallicity: median = 8.635, range = (8.110, 9.143)
 Combined C20 method usage: O3N2=131784, O3S2=219, RS32=342488, R3=8, N2=12735, S2=69
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4192 inclination: 83.0° (cos θ = 0.122)
+Inclination correction ENABLED: applying b/a = 0.233 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.012
 Available methods: [('O3N2-C20', np.float64(8.752560028218166), np.float64(0.01980679545356582)), ('O3S2-C20', np.float64(8.80715276014625), np.float64(0.0204819405184766)), ('RS32-C20', np.float64(8.71992802078779), np.float64(0.011619778609907743)), ('R3-C20', np.float64(8.718617616423863), np.float64(0.026616581965037012)), ('N2-C20', np.float64(8.807592071464994), np.float64(0.14834176188053502)), ('S2-C20', np.float64(8.551726059987455), np.float64(0.10711785984560372))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -121,5 +122,5 @@ Total Halpha SFR from SF region: 1.35 M☉/yr or in log10 scale: 0.13 log(M☉/y
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.674789381371907
 --------------------------------------------------------------
-Total runtime: 390.0 s
-✅  NGC4192 finished in 6m34s
+Total runtime: 409.0 s
+✅  NGC4192 finished in 7m31s

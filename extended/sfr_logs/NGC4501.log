@@ -135,7 +135,8 @@ File not found: NGC4501_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4501...
 Combined C20 metallicity: median = 8.666, range = (8.021, 9.056)
 Combined C20 method usage: O3N2=205587, O3S2=200, RS32=305066, R3=6482, N2=115883, S2=886
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4501 inclination: 65.0° (cos θ = 0.423)
+Inclination correction ENABLED: applying b/a = 0.460 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.011
 Available methods: [('O3N2-C20', np.float64(8.773829034889266), np.float64(0.01943540724148125)), ('O3S2-C20', np.float64(8.820422765856218), np.float64(0.02020865361866498)), ('RS32-C20', np.float64(8.77718371869691), np.float64(0.010650904897624214)), ('R3-C20', np.float64(8.766551729892399), np.float64(0.024293383200176672)), ('N2-C20', np.float64(8.727765387225183), np.float64(0.07711112752332938)), ('S2-C20', np.float64(8.448976260336076), np.float64(0.07097490511558362))]
 Combined C20 total: Selected O3N2-C20 with error 0.000
@@ -187,5 +188,5 @@ Total Halpha SFR from SF region: 2.80 M☉/yr or in log10 scale: 0.45 log(M☉/y
 [O/H] S2-C20: Total metallicity in total region:  8.514661368301706
 [O/H] Combined-C20: Total metallicity in total region:  8.75231555829904
 --------------------------------------------------------------
-Total runtime: 531.5 s
-✅  NGC4501 finished in 8m55s
+Total runtime: 550.3 s
+✅  NGC4501 finished in 9m52s

@@ -111,7 +111,8 @@ Foreground stars are removed successfully!
 Calculating all 6 C20 metallicities for NGC4694...
 Combined C20 metallicity: median = 8.501, range = (8.082, 9.103)
 Combined C20 method usage: O3N2=1578, O3S2=10, RS32=77987, R3=27, N2=140, S2=8
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4694 inclination: 62.0° (cos θ = 0.469)
+Inclination correction ENABLED: applying b/a = 0.502 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.012
 Available methods: [('O3N2-C20', np.float64(8.741234442462854), np.float64(0.02001040768913669)), ('O3S2-C20', np.float64(8.8261546699739), np.float64(0.020093145343981704)), ('RS32-C20', np.float64(8.717099530694785), np.float64(0.011579125323306981)), ('R3-C20', np.float64(8.728111257918997), np.float64(0.02612915775165576)), ('N2-C20', np.float64(8.718229960780546), np.float64(0.07375235544510683))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -163,5 +164,5 @@ Total Halpha SFR from SF region: 0.08 M☉/yr or in log10 scale: -1.12 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.613123890640967
 --------------------------------------------------------------
-Total runtime: 64.3 s
-✅  NGC4694 finished in 1m8s
+Total runtime: 67.8 s
+✅  NGC4694 finished in 1m50s

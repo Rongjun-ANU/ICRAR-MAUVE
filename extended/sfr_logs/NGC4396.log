@@ -123,7 +123,8 @@ File not found: NGC4396_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4396...
 Combined C20 metallicity: median = 8.607, range = (8.123, 9.020)
 Combined C20 method usage: O3N2=293, O3S2=2600, RS32=152359, R3=55, N2=2235, S2=1158
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4396 inclination: 83.0° (cos θ = 0.122)
+Inclination correction ENABLED: applying b/a = 0.233 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.014
 Available methods: [('O3N2-C20', np.float64(8.599717365978686), np.float64(0.02295959264196661)), ('O3S2-C20', np.float64(8.754292510814487), np.float64(0.021657497527566353)), ('RS32-C20', np.float64(8.621825110048485), np.float64(0.01449210829591315)), ('R3-C20', np.float64(8.62031140742774), np.float64(0.03265294977175088)), ('N2-C20', np.float64(8.54894966169932), np.float64(0.05128859882548107))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -175,5 +176,5 @@ Total Halpha SFR from SF region: 0.27 M☉/yr or in log10 scale: -0.57 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.613297226606917
 --------------------------------------------------------------
-Total runtime: 146.6 s
-✅  NGC4396 finished in 2m30s
+Total runtime: 158.6 s
+✅  NGC4396 finished in 3m20s

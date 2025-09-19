@@ -85,7 +85,8 @@ File not found: NGC4698_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4698...
 Combined C20 metallicity: median = 8.500, range = (8.107, 8.988)
 Combined C20 method usage: O3N2=18527, O3S2=1, RS32=259214, R3=467, N2=3093, S2=86
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4698 inclination: 66.0° (cos θ = 0.407)
+Inclination correction ENABLED: applying b/a = 0.446 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.012
 Available methods: [('O3N2-C20', np.float64(8.742084905810318), np.float64(0.019994972732966)), ('O3S2-C20', np.float64(8.782038344575017), np.float64(0.02102251694373629)), ('RS32-C20', np.float64(8.710324272953205), np.float64(0.012055402476410381)), ('R3-C20', np.float64(8.69936474121734), np.float64(0.027650637636518673)), ('N2-C20', np.float64(8.844986785345084), np.float64(0.3364679869606531)), ('S2-C20', np.float64(8.512356914679234), np.float64(0.08633029108728886))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -137,5 +138,5 @@ Total Halpha SFR from SF region: 0.02 M☉/yr or in log10 scale: -1.65 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.470548349592773
 --------------------------------------------------------------
-Total runtime: 254.7 s
-✅  NGC4698 finished in 4m18s
+Total runtime: 260.4 s
+✅  NGC4698 finished in 5m2s

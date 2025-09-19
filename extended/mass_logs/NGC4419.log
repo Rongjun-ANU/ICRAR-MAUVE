@@ -55,8 +55,9 @@ Total stellar mass (R)   : 10.404 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4419 inclination: 74.0° (cos θ = 0.276)
+Inclination correction ENABLED: applying b/a = 0.336 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4419 finished in 4m18s
+✅  NGC4419 finished in 6m20s

@@ -143,7 +143,8 @@ Foreground stars are removed successfully!
 Calculating all 6 C20 metallicities for NGC4298...
 Combined C20 metallicity: median = 8.646, range = (8.085, 9.063)
 Combined C20 method usage: O3N2=55954, O3S2=24, RS32=155588, R3=2034, N2=114674, S2=3241
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4298 inclination: 52.0° (cos θ = 0.616)
+Inclination correction ENABLED: applying b/a = 0.636 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.010
 Available methods: [('O3N2-C20', np.float64(8.775934327033493), np.float64(0.019399401861341623)), ('O3S2-C20', np.float64(8.83923821691539), np.float64(0.01983506007478835)), ('RS32-C20', np.float64(8.792734517074372), np.float64(0.010436526251208252)), ('R3-C20', np.float64(8.78856389222521), np.float64(0.023332480653213503)), ('N2-C20', np.float64(8.671755376664068), np.float64(0.062461835907208975)), ('S2-C20', np.float64(8.45003177516454), np.float64(0.07113366548120334))]
 Combined C20 total: Selected N2-C20 with error 0.000
@@ -195,5 +196,5 @@ Total Halpha SFR from SF region: 0.70 M☉/yr or in log10 scale: -0.16 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  8.47894595933534
 [O/H] Combined-C20: Total metallicity in total region:  8.686120898495046
 --------------------------------------------------------------
-Total runtime: 296.0 s
-✅  NGC4298 finished in 5m0s
+Total runtime: 318.4 s
+✅  NGC4298 finished in 6m0s

@@ -49,8 +49,9 @@ Total stellar mass (R)   : 9.643 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy IC3392 inclination: 68.0° (cos θ = 0.375)
+Inclination correction ENABLED: applying b/a = 0.418 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
-✅  IC3392 finished in 2m2s
+✅  IC3392 finished in 3m10s

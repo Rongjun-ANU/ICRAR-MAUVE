@@ -135,7 +135,8 @@ File not found: NGC4522_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4522...
 Combined C20 metallicity: median = 8.631, range = (8.202, 8.992)
 Combined C20 method usage: O3N2=13094, O3S2=952, RS32=71739, R3=6662, N2=11568, S2=946
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4522 inclination: 82.0° (cos θ = 0.139)
+Inclination correction ENABLED: applying b/a = 0.242 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.011
 Available methods: [('O3N2-C20', np.float64(8.742270894270165), np.float64(0.019991600423488565)), ('O3S2-C20', np.float64(8.840186955422597), np.float64(0.019816641440856434)), ('RS32-C20', np.float64(8.726199031629767), np.float64(0.011445618013097025)), ('R3-C20', np.float64(8.743601414667351), np.float64(0.025363745704020266)), ('N2-C20', np.float64(8.680603498254683), np.float64(0.06411880666614417))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -187,5 +188,5 @@ Total Halpha SFR from SF region: 0.23 M☉/yr or in log10 scale: -0.63 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.688271092177828
 --------------------------------------------------------------
-Total runtime: 99.9 s
-✅  NGC4522 finished in 1m44s
+Total runtime: 113.2 s
+✅  NGC4522 finished in 2m35s

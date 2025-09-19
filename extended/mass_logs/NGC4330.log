@@ -58,8 +58,9 @@ Total stellar mass (R)   : 9.540 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4330 inclination: 90.0° (cos θ = 0.000)
+Inclination correction ENABLED: applying b/a = 0.200 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4330 finished in 7m11s
+✅  NGC4330 finished in 8m37s

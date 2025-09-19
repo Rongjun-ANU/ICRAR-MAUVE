@@ -55,8 +55,9 @@ Total stellar mass (R)   : 10.459 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4457_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4457_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4457_SPATIAL_BINNING_maps_extended.fits
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4457 inclination: 37.0° (cos θ = 0.799)
+Inclination correction ENABLED: applying b/a = 0.808 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4457_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4457_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4457_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4457 finished in 5m46s
+✅  NGC4457 finished in 7m0s

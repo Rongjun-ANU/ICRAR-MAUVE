@@ -121,7 +121,8 @@ File not found: NGC4293_KIN_maps_extended.fits
 Calculating all 6 C20 metallicities for NGC4293...
 Combined C20 metallicity: median = 8.479, range = (8.108, 9.013)
 Combined C20 method usage: O3N2=34873, O3S2=56, RS32=189015, R3=4807, N2=2482, S2=3386
-Inclination correction DISABLED: using ba_factor = 1.0
+Galaxy NGC4293 inclination: 67.0° (cos θ = 0.391)
+Inclination correction ENABLED: applying b/a = 0.432 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Combined C20 total: Selected RS32-C20 with error 0.012
 Available methods: [('O3N2-C20', np.float64(8.73229617442798), np.float64(0.02017408033481794)), ('O3S2-C20', np.float64(8.749758094341622), np.float64(0.021765244466545867)), ('RS32-C20', np.float64(8.7400760332815), np.float64(0.011952216221370084)), ('R3-C20', np.float64(8.710066004745773), np.float64(0.027068146519061028)), ('N2-C20', np.float64(8.736212511229162), np.float64(0.0805215497196628)), ('S2-C20', np.float64(8.397604179106068), np.float64(0.06560516087042394))]
 Combined C20 total: Selected RS32-C20 with error 0.000
@@ -173,5 +174,5 @@ Total Halpha SFR from SF region: 0.01 M☉/yr or in log10 scale: -1.93 log(M☉/
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.460189395360395
 --------------------------------------------------------------
-Total runtime: 209.7 s
-✅  NGC4293 finished in 3m33s
+Total runtime: 207.4 s
+✅  NGC4293 finished in 4m9s
