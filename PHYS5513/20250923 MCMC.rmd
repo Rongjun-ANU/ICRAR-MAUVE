@@ -1,0 +1,1709 @@
+---
+title: "Comprehensive Guide to Bayesian Computation and MCMC Methods"
+author: "Advanced Statistical Methods"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+    toc_float: true
+    theme: readable
+    code_folding: show
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.width = 8, fig.height = 6)
+library(ggplot2)
+library(MASS)
+library(coda)
+library(magicaxis)
+library(viridis)
+set.seed(42)
+```
+
+# Introduction to Bayesian Computation
+
+Bayesian computation forms the backbone of modern statistical inference, providing a principled framework for learning from data while incorporating prior knowledge. Unlike frequentist approaches that treat parameters as fixed but unknown quantities, Bayesian methods treat parameters as random variables with probability distributions.
+
+## Core Concepts
+
+### Bayes' Theorem
+The fundamental equation governing Bayesian inference:
+
+$$P(\theta|D) = \frac{P(D|\theta)P(\theta)}{P(D)}$$
+
+Where:
+- $P(\theta|D)$ = **Posterior**: Our updated belief about parameters after seeing data
+- $P(D|\theta)$ = **Likelihood**: Probability of observing data given parameters  
+- $P(\theta)$ = **Prior**: Our initial belief about parameters before seeing data
+- $P(D)$ = **Evidence/Marginal Likelihood**: Normalizing constant
+
+### The Challenge
+The denominator $P(D) = \int P(D|\theta)P(\theta)d\theta$ is often intractable analytically, especially for complex models with multiple parameters. This is where **Markov Chain Monte Carlo (MCMC)** methods become essential.
+
+# Monte Carlo Methods
+
+## Basic Monte Carlo Integration
+
+Monte Carlo methods use random sampling to solve computational problems. For integration:
+
+$$\int_a^b f(x)dx \approx \frac{b-a}{N}\sum_{i=1}^N f(x_i)$$
+
+where $x_i$ are random samples from $\text{Uniform}(a,b)$.
+
+```{r monte_carlo_basic}
+# Basic Monte Carlo integration example
+monte_carlo_integrate <- function(f, a, b, n_samples = 10000) {
+  x <- runif(n_samples, a, b)
+  y <- sapply(x, f)
+  estimate <- (b - a) * mean(y)
+  se <- (b - a) * sd(y) / sqrt(n_samples)
+  return(list(estimate = estimate, se = se))
+}
+
+# Example: integrate x^2 from 0 to 1 (true answer = 1/3)
+result <- monte_carlo_integrate(function(x) x^2, 0, 1, 50000)
+cat("Estimate:", result$estimate, "± ", result$se)
+cat("\nTrue value: 0.3333...")
+cat("\nError:", abs(result$estimate - 1/3))
+```
+
+## Importance Sampling
+
+Standard Monte Carlo can be inefficient for functions with most mass in small regions. Importance sampling uses a proposal distribution $q(x)$ that better matches the integrand:
+
+$$\int f(x)dx = \int \frac{f(x)}{q(x)}q(x)dx \approx \frac{1}{N}\sum_{i=1}^N \frac{f(x_i)}{q(x_i)}$$
+
+```{r importance_sampling}
+# Importance sampling example
+importance_sampling <- function(target_fn, proposal_sampler, proposal_density, 
+                              n_samples = 10000) {
+  # Generate samples from proposal distribution
+  samples <- proposal_sampler(n_samples)
+  
+  # Compute importance weights
+  weights <- target_fn(samples) / proposal_density(samples)
+  
+  # Estimate integral
+  estimate <- mean(weights)
+  se <- sd(weights) / sqrt(n_samples)
+  
+  return(list(estimate = estimate, se = se, samples = samples, weights = weights))
+}
+
+# Example: integrate exp(-x^2/2) from 0 to 5 (half of standard normal)
+target <- function(x) exp(-x^2/2)
+# Use exponential proposal distribution
+prop_sampler <- function(n) rexp(n, rate = 1)
+prop_density <- function(x) dexp(x, rate = 1)
+
+is_result <- importance_sampling(target, prop_sampler, prop_density, 50000)
+cat("Importance sampling estimate:", is_result$estimate)
+
+# Compare with direct Monte Carlo
+direct_result <- monte_carlo_integrate(target, 0, 5, 50000)
+cat("\nDirect Monte Carlo estimate:", direct_result$estimate)
+```
+
+# Markov Chain Monte Carlo (MCMC)
+
+MCMC methods generate samples from the posterior distribution by constructing a Markov chain whose stationary distribution is the target posterior. The key insight is that we don't need to compute the normalizing constant!
+
+## Markov Chain Properties
+
+A Markov chain has the **Markov property**: the next state depends only on the current state, not the entire history.
+
+For MCMC to work, the chain must be:
+1. **Irreducible**: Can reach any state from any other state
+2. **Aperiodic**: Doesn't get trapped in cycles  
+3. **Ergodic**: Combines irreducibility and aperiodicity
+
+## Detailed Balance
+
+The crucial condition for MCMC algorithms:
+$$\pi(x)P(x \to y) = \pi(y)P(y \to x)$$
+
+Where $\pi(x)$ is the target distribution and $P(x \to y)$ is the transition probability.
+
+# Metropolis-Hastings Algorithm
+
+The Metropolis-Hastings algorithm is the foundation of most MCMC methods. It satisfies detailed balance by accepting or rejecting proposed moves based on the ratio of posterior probabilities.
+
+## Algorithm Steps
+
+1. **Initialize**: Start with parameter value $\theta^{(0)}$
+2. **Propose**: Generate candidate $\theta^* \sim q(\theta^*|\theta^{(t)})$ from proposal distribution
+3. **Compute acceptance probability**: 
+   $$\alpha = \min\left(1, \frac{P(\theta^*|D)}{P(\theta^{(t)}|D)} \times \frac{q(\theta^{(t)}|\theta^*)}{q(\theta^*|\theta^{(t)})}\right)$$
+4. **Accept/Reject**: 
+   - If $u \sim \text{Uniform}(0,1) < \alpha$: accept $\theta^{(t+1)} = \theta^*$
+   - Otherwise: reject $\theta^{(t+1)} = \theta^{(t)}$
+5. **Repeat**: Go to step 2
+
+## Basic Implementation
+
+```{r metropolis_hastings_basic}
+# Basic Metropolis-Hastings implementation
+metropolis_hastings <- function(log_posterior, initial_value, n_samples, 
+                               proposal_sd = 1, burn_in = 1000) {
+  
+  n_params <- length(initial_value)
+  samples <- matrix(NA, n_samples + burn_in, n_params)
+  current_value <- initial_value
+  current_log_post <- log_posterior(current_value)
+  n_accepted <- 0
+  
+  for (i in 1:(n_samples + burn_in)) {
+    # Propose new state
+    proposal <- current_value + rnorm(n_params, 0, proposal_sd)
+    
+    # Compute log posterior for proposal
+    proposal_log_post <- log_posterior(proposal)
+    
+    # Compute acceptance probability (in log space)
+    log_alpha <- proposal_log_post - current_log_post
+    
+    # Accept or reject
+    if (log(runif(1)) < log_alpha) {
+      current_value <- proposal
+      current_log_post <- proposal_log_post
+      n_accepted <- n_accepted + 1
+    }
+    
+    samples[i, ] <- current_value
+  }
+  
+  # Remove burn-in
+  final_samples <- samples[(burn_in + 1):(n_samples + burn_in), , drop = FALSE]
+  
+  acceptance_rate <- n_accepted / (n_samples + burn_in)
+  
+  return(list(
+    samples = final_samples,
+    acceptance_rate = acceptance_rate,
+    all_samples = samples
+  ))
+}
+```
+
+## Example: Bayesian Linear Regression
+
+Let's implement a complete Bayesian analysis of linear regression using MCMC:
+
+```{r bayesian_regression}
+# Generate synthetic data
+set.seed(123)
+n <- 100
+x <- seq(0, 10, length.out = n)
+true_alpha <- 2.5
+true_beta <- 1.2
+true_sigma <- 0.8
+y <- true_alpha + true_beta * x + rnorm(n, 0, true_sigma)
+
+# Plot data
+plot(x, y, pch = 16, col = "steelblue", main = "Synthetic Linear Data")
+abline(a = true_alpha, b = true_beta, col = "red", lwd = 2)
+legend("topleft", "True relationship", col = "red", lwd = 2)
+
+# Define log posterior (assuming flat priors)
+log_posterior_regression <- function(params) {
+  alpha <- params[1]
+  beta <- params[2] 
+  sigma <- params[3]
+  
+  if (sigma <= 0) return(-Inf)  # Constraint: sigma > 0
+  
+  # Log likelihood
+  predicted <- alpha + beta * x
+  log_lik <- sum(dnorm(y, predicted, sigma, log = TRUE))
+  
+  # Log priors (flat, so contribute 0 in log space)
+  log_prior_alpha <- 0  # flat prior
+  log_prior_beta <- 0   # flat prior  
+  log_prior_sigma <- 0  # flat prior (but constrained > 0)
+  
+  return(log_lik + log_prior_alpha + log_prior_beta + log_prior_sigma)
+}
+
+# Run MCMC
+mcmc_result <- metropolis_hastings(
+  log_posterior_regression,
+  initial_value = c(0, 0, 1),
+  n_samples = 10000,
+  proposal_sd = c(0.1, 0.05, 0.05),  # Different step sizes per parameter
+  burn_in = 2000
+)
+
+cat("Acceptance rate:", round(mcmc_result$acceptance_rate, 3))
+
+# Extract samples
+alpha_samples <- mcmc_result$samples[, 1]
+beta_samples <- mcmc_result$samples[, 2] 
+sigma_samples <- mcmc_result$samples[, 3]
+
+# Summary statistics
+params_summary <- data.frame(
+  Parameter = c("α (intercept)", "β (slope)", "σ (noise)"),
+  True_Value = c(true_alpha, true_beta, true_sigma),
+  Posterior_Mean = c(mean(alpha_samples), mean(beta_samples), mean(sigma_samples)),
+  Posterior_SD = c(sd(alpha_samples), sd(beta_samples), sd(sigma_samples)),
+  CI_2.5 = c(quantile(alpha_samples, 0.025), quantile(beta_samples, 0.025), 
+             quantile(sigma_samples, 0.025)),
+  CI_97.5 = c(quantile(alpha_samples, 0.975), quantile(beta_samples, 0.975), 
+              quantile(sigma_samples, 0.975))
+)
+
+print(params_summary)
+```
+
+## MCMC Diagnostics
+
+### Trace Plots
+Trace plots show the evolution of parameter values over iterations:
+
+```{r trace_plots}
+par(mfrow = c(3, 1))
+
+# Trace plots
+plot(alpha_samples, type = "l", main = "Trace: α (intercept)", 
+     ylab = "α", xlab = "Iteration")
+abline(h = true_alpha, col = "red", lwd = 2)
+
+plot(beta_samples, type = "l", main = "Trace: β (slope)", 
+     ylab = "β", xlab = "Iteration")
+abline(h = true_beta, col = "red", lwd = 2)
+
+plot(sigma_samples, type = "l", main = "Trace: σ (noise)", 
+     ylab = "σ", xlab = "Iteration")
+abline(h = true_sigma, col = "red", lwd = 2)
+
+par(mfrow = c(1, 1))
+```
+
+### Posterior Distributions
+
+```{r posterior_plots}
+par(mfrow = c(2, 2))
+
+# Marginal posteriors
+hist(alpha_samples, breaks = 50, probability = TRUE, 
+     main = "Posterior: α", xlab = "α", col = "lightblue")
+abline(v = true_alpha, col = "red", lwd = 2)
+abline(v = mean(alpha_samples), col = "blue", lwd = 2, lty = 2)
+
+hist(beta_samples, breaks = 50, probability = TRUE,
+     main = "Posterior: β", xlab = "β", col = "lightgreen") 
+abline(v = true_beta, col = "red", lwd = 2)
+abline(v = mean(beta_samples), col = "blue", lwd = 2, lty = 2)
+
+hist(sigma_samples, breaks = 50, probability = TRUE,
+     main = "Posterior: σ", xlab = "σ", col = "lightcoral")
+abline(v = true_sigma, col = "red", lwd = 2)
+abline(v = mean(sigma_samples), col = "blue", lwd = 2, lty = 2)
+
+# Joint posterior (α vs β)
+plot(alpha_samples, beta_samples, pch = ".", 
+     main = "Joint Posterior: α vs β", xlab = "α", ylab = "β")
+points(true_alpha, true_beta, col = "red", pch = 16, cex = 2)
+points(mean(alpha_samples), mean(beta_samples), col = "blue", pch = 16, cex = 2)
+
+par(mfrow = c(1, 1))
+```
+
+### Autocorrelation and Effective Sample Size
+
+```{r autocorrelation}
+# Autocorrelation function
+compute_autocorr <- function(x, max_lag = 50) {
+  n <- length(x)
+  autocorr <- numeric(max_lag + 1)
+  x_centered <- x - mean(x)
+  
+  for (k in 0:max_lag) {
+    if (k == 0) {
+      autocorr[k + 1] <- 1
+    } else {
+      autocorr[k + 1] <- cor(x_centered[1:(n-k)], x_centered[(k+1):n])
+    }
+  }
+  return(autocorr)
+}
+
+# Plot autocorrelation
+par(mfrow = c(1, 3))
+
+autocorr_alpha <- compute_autocorr(alpha_samples)
+plot(0:50, autocorr_alpha, type = "l", main = "Autocorr: α", 
+     xlab = "Lag", ylab = "Autocorrelation")
+abline(h = 0, col = "gray")
+
+autocorr_beta <- compute_autocorr(beta_samples) 
+plot(0:50, autocorr_beta, type = "l", main = "Autocorr: β",
+     xlab = "Lag", ylab = "Autocorrelation")
+abline(h = 0, col = "gray")
+
+autocorr_sigma <- compute_autocorr(sigma_samples)
+plot(0:50, autocorr_sigma, type = "l", main = "Autocorr: σ",
+     xlab = "Lag", ylab = "Autocorrelation") 
+abline(h = 0, col = "gray")
+
+par(mfrow = c(1, 1))
+
+# Effective sample size (rough estimate)
+eff_sample_size <- function(x) {
+  autocorr <- compute_autocorr(x, min(length(x)/4, 200))
+  # Find where autocorr first goes negative
+  first_negative <- which(autocorr < 0)[1]
+  if (is.na(first_negative)) first_negative <- length(autocorr)
+  
+  tau_int <- 1 + 2 * sum(autocorr[2:first_negative])
+  eff_size <- length(x) / (2 * tau_int)
+  return(max(1, eff_size))
+}
+
+cat("Effective sample sizes:\n")
+cat("α:", round(eff_sample_size(alpha_samples)))
+cat("\nβ:", round(eff_sample_size(beta_samples))) 
+cat("\nσ:", round(eff_sample_size(sigma_samples)))
+```
+
+# Advanced MCMC Methods
+
+## Adaptive Metropolis
+
+Adaptive methods tune the proposal distribution during sampling to achieve optimal acceptance rates (typically 20-50%):
+
+```{r adaptive_metropolis}
+adaptive_metropolis <- function(log_posterior, initial_value, n_samples,
+                               target_rate = 0.3, adaptation_period = 100) {
+  
+  n_params <- length(initial_value)
+  samples <- matrix(NA, n_samples, n_params)
+  current_value <- initial_value
+  current_log_post <- log_posterior(current_value)
+  
+  # Initial covariance (scaled identity)
+  cov_matrix <- 0.1 * diag(n_params)
+  n_accepted <- 0
+  
+  for (i in 1:n_samples) {
+    # Propose new state using current covariance
+    proposal <- current_value + mvrnorm(1, rep(0, n_params), cov_matrix)
+    proposal_log_post <- log_posterior(proposal)
+    
+    # Accept/reject
+    log_alpha <- proposal_log_post - current_log_post
+    if (log(runif(1)) < log_alpha) {
+      current_value <- proposal
+      current_log_post <- proposal_log_post
+      n_accepted <- n_accepted + 1
+    }
+    
+    samples[i, ] <- current_value
+    
+    # Adapt covariance every adaptation_period iterations
+    if (i %% adaptation_period == 0 && i > adaptation_period) {
+      recent_acceptance <- n_accepted / i
+      
+      # Update empirical covariance
+      if (i > 2 * n_params) {
+        sample_cov <- cov(samples[1:i, ])
+        cov_matrix <- 2.38^2 / n_params * sample_cov + 1e-6 * diag(n_params)
+      }
+      
+      # Scale based on acceptance rate
+      if (recent_acceptance < target_rate - 0.05) {
+        cov_matrix <- cov_matrix * 0.9  # Shrink if too many rejections
+      } else if (recent_acceptance > target_rate + 0.05) {
+        cov_matrix <- cov_matrix * 1.1  # Expand if too many acceptances
+      }
+    }
+  }
+  
+  return(list(
+    samples = samples,
+    acceptance_rate = n_accepted / n_samples,
+    final_cov = cov_matrix
+  ))
+}
+
+# Test adaptive Metropolis on our regression problem
+adaptive_result <- adaptive_metropolis(
+  log_posterior_regression,
+  initial_value = c(0, 0, 1),
+  n_samples = 5000,
+  target_rate = 0.3
+)
+
+cat("Adaptive Metropolis acceptance rate:", round(adaptive_result$acceptance_rate, 3))
+```
+
+## Hamiltonian Monte Carlo (HMC)
+
+HMC uses gradient information to propose distant but high-probability states:
+
+```{r hmc_basics}
+# Simple HMC implementation (conceptual)
+# Note: This is a simplified version for illustration
+hamiltonian_mc <- function(log_posterior, grad_log_posterior, initial_value,
+                          n_samples, step_size = 0.01, n_steps = 10) {
+  
+  n_params <- length(initial_value)
+  samples <- matrix(NA, n_samples, n_params)
+  current_q <- initial_value
+  n_accepted <- 0
+  
+  for (i in 1:n_samples) {
+    # Sample momentum
+    current_p <- rnorm(n_params, 0, 1)
+    
+    # Leapfrog integration
+    q <- current_q
+    p <- current_p
+    
+    # Half step for momentum
+    p <- p + (step_size / 2) * grad_log_posterior(q)
+    
+    for (j in 1:n_steps) {
+      # Full step for position
+      q <- q + step_size * p
+      
+      # Full step for momentum (except last)
+      if (j < n_steps) {
+        p <- p + step_size * grad_log_posterior(q)
+      }
+    }
+    
+    # Half step for momentum
+    p <- p + (step_size / 2) * grad_log_posterior(q)
+    
+    # Negate momentum to make proposal symmetric
+    p <- -p
+    
+    # Compute acceptance probability
+    current_H <- -log_posterior(current_q) + 0.5 * sum(current_p^2)
+    proposed_H <- -log_posterior(q) + 0.5 * sum(p^2)
+    
+    log_alpha <- current_H - proposed_H
+    
+    if (log(runif(1)) < log_alpha) {
+      current_q <- q
+      n_accepted <- n_accepted + 1
+    }
+    
+    samples[i, ] <- current_q
+  }
+  
+  return(list(
+    samples = samples,
+    acceptance_rate = n_accepted / n_samples
+  ))
+}
+
+# For demonstration, we'd need to compute gradients
+# This is typically done with automatic differentiation
+cat("HMC requires gradient computation - typically implemented in specialized software like Stan")
+```
+
+## Gibbs Sampling
+
+When the full conditional distributions are available, Gibbs sampling can be very efficient:
+
+```{r gibbs_sampling}
+# Gibbs sampler for bivariate normal
+# Demonstrates conditional sampling
+gibbs_bivariate_normal <- function(n_samples, mu1 = 0, mu2 = 0, 
+                                  sigma1 = 1, sigma2 = 1, rho = 0.5) {
+  
+  samples <- matrix(NA, n_samples, 2)
+  x1 <- 0  # Initialize
+  x2 <- 0
+  
+  for (i in 1:n_samples) {
+    # Sample x1 given x2
+    mu1_given_x2 <- mu1 + rho * (sigma1 / sigma2) * (x2 - mu2)
+    sigma1_given_x2 <- sigma1 * sqrt(1 - rho^2)
+    x1 <- rnorm(1, mu1_given_x2, sigma1_given_x2)
+    
+    # Sample x2 given x1  
+    mu2_given_x1 <- mu2 + rho * (sigma2 / sigma1) * (x1 - mu1)
+    sigma2_given_x1 <- sigma2 * sqrt(1 - rho^2)
+    x2 <- rnorm(1, mu2_given_x1, sigma2_given_x1)
+    
+    samples[i, ] <- c(x1, x2)
+  }
+  
+  return(samples)
+}
+
+# Run Gibbs sampler
+gibbs_samples <- gibbs_bivariate_normal(5000, rho = 0.7)
+
+# Compare with direct sampling
+direct_samples <- mvrnorm(5000, c(0, 0), matrix(c(1, 0.7, 0.7, 1), 2, 2))
+
+par(mfrow = c(1, 2))
+plot(gibbs_samples, main = "Gibbs Sampling", pch = ".", 
+     xlab = "X1", ylab = "X2", xlim = c(-4, 4), ylim = c(-4, 4))
+
+plot(direct_samples, main = "Direct Sampling", pch = ".", 
+     xlab = "X1", ylab = "X2", xlim = c(-4, 4), ylim = c(-4, 4))
+par(mfrow = c(1, 1))
+```
+
+# Model Selection and Comparison
+
+Model selection is one of the most challenging aspects of statistical inference. Unlike parameter estimation within a given model, comparing different models requires balancing goodness-of-fit against model complexity. This section covers the major approaches used in practice.
+
+## Theoretical Foundation
+
+### The Bias-Variance Tradeoff
+
+All model selection criteria attempt to balance two competing objectives:
+
+1. **Bias**: Simple models may be too restrictive (underfitting)
+2. **Variance**: Complex models may be too flexible (overfitting)
+
+The optimal model minimizes the expected prediction error:
+$$\text{EPE} = \text{Bias}^2 + \text{Variance} + \text{Irreducible Error}$$
+
+### Information Theory Perspective
+
+Many criteria are grounded in information theory, specifically Kullback-Leibler (KL) divergence:
+$$D_{KL}(f||g) = \int f(x) \log\frac{f(x)}{g(x)} dx$$
+
+This measures the information lost when using model $g$ to approximate true distribution $f$.
+
+## Information Criteria
+
+### Akaike Information Criterion (AIC)
+
+**Developed by**: Hirotugu Akaike (1973)  
+**Theoretical basis**: Asymptotic approximation to KL divergence
+
+$$\text{AIC} = 2k - 2\ln(\hat{L})$$
+
+Where:
+- $k$ = number of parameters
+- $\hat{L}$ = maximum likelihood value
+
+**Key Properties:**
+- **Asymptotically unbiased** estimator of KL divergence
+- **Consistent** for prediction (selects best predicting model)
+- **Not consistent** for model selection (may overfit with large samples)
+- Penalty term $2k$ is relatively mild
+
+```{r aic_detailed}
+# Detailed AIC implementation and interpretation
+compute_aic_detailed <- function(log_likelihood, n_params, n_data) {
+  max_log_lik <- max(log_likelihood)
+  
+  # Standard AIC
+  aic <- 2 * n_params - 2 * max_log_lik
+  
+  # AIC corrected for small samples (AICc)
+  if (n_data / n_params < 40) {
+    correction <- (2 * n_params * (n_params + 1)) / (n_data - n_params - 1)
+    aicc <- aic + correction
+  } else {
+    aicc <- aic
+  }
+  
+  return(list(
+    AIC = aic,
+    AICc = aicc,
+    penalty = 2 * n_params,
+    log_likelihood = max_log_lik,
+    small_sample = n_data / n_params < 40
+  ))
+}
+
+# Example: Compare different polynomial models
+set.seed(999)
+n_obs <- 50
+x_poly <- seq(0, 1, length.out = n_obs)
+# True model is quadratic
+y_true <- 2 + 3*x_poly - 4*x_poly^2
+y_poly <- y_true + rnorm(n_obs, 0, 0.3)
+
+# Fit polynomials of different degrees
+max_degree <- 6
+aic_comparison <- data.frame(
+  degree = 1:max_degree,
+  aic = numeric(max_degree),
+  aicc = numeric(max_degree),
+  bic = numeric(max_degree),
+  log_lik = numeric(max_degree),
+  n_params = numeric(max_degree)
+)
+
+for (degree in 1:max_degree) {
+  # Fit polynomial
+  X <- poly(x_poly, degree, raw = TRUE)
+  model <- lm(y_poly ~ X)
+  
+  n_params <- length(coef(model))
+  log_lik <- logLik(model)[1]
+  
+  aic_result <- compute_aic_detailed(log_lik, n_params, n_obs)
+  
+  aic_comparison[degree, ] <- c(
+    degree = degree,
+    aic = aic_result$AIC,
+    aicc = aic_result$AICc, 
+    bic = log(n_obs) * n_params - 2 * log_lik,
+    log_lik = log_lik,
+    n_params = n_params
+  )
+}
+
+print(aic_comparison)
+
+# Find best models
+best_aic <- which.min(aic_comparison$aic)
+best_aicc <- which.min(aic_comparison$aicc)
+best_bic <- which.min(aic_comparison$bic)
+
+cat("\nBest models:\n")
+cat("AIC selects degree:", best_aic, "\n")
+cat("AICc selects degree:", best_aicc, "\n") 
+cat("BIC selects degree:", best_bic, "\n")
+cat("True model degree: 2\n")
+
+# Plot comparison
+par(mfrow = c(1, 2))
+plot(aic_comparison$degree, aic_comparison$aic, type = "b", 
+     main = "Model Selection Criteria", xlab = "Polynomial Degree", 
+     ylab = "Information Criterion", pch = 16, col = "red")
+lines(aic_comparison$degree, aic_comparison$aicc, type = "b", pch = 17, col = "orange")
+lines(aic_comparison$degree, aic_comparison$bic, type = "b", pch = 18, col = "blue")
+legend("topright", c("AIC", "AICc", "BIC"), col = c("red", "orange", "blue"), 
+       pch = c(16, 17, 18), lty = 1)
+abline(v = 2, col = "gray", lty = 2)
+
+# Show the data and selected models
+plot(x_poly, y_poly, pch = 16, main = "Data and Selected Models")
+lines(x_poly, y_true, col = "black", lwd = 2, lty = 1)
+
+# Plot best AIC model
+X_aic <- poly(x_poly, best_aic, raw = TRUE)
+model_aic <- lm(y_poly ~ X_aic)
+lines(x_poly, predict(model_aic), col = "red", lwd = 2, lty = 2)
+
+# Plot best BIC model  
+X_bic <- poly(x_poly, best_bic, raw = TRUE)
+model_bic <- lm(y_poly ~ X_bic)
+lines(x_poly, predict(model_bic), col = "blue", lwd = 2, lty = 3)
+
+legend("topright", c("True", paste("AIC (deg", best_aic, ")"), paste("BIC (deg", best_bic, ")")), 
+       col = c("black", "red", "blue"), lwd = 2, lty = c(1, 2, 3))
+
+par(mfrow = c(1, 1))
+```
+
+#### AIC Variants
+
+**AICc (Corrected AIC)**: For small samples where $n/k < 40$:
+$$\text{AICc} = \text{AIC} + \frac{2k(k+1)}{n-k-1}$$
+
+**Quasi-AIC (QAIC)**: For overdispersed data:
+$$\text{QAIC} = \frac{2k - 2\ln(\hat{L})}{\hat{c}}$$
+where $\hat{c}$ is the overdispersion parameter.
+
+### Bayesian Information Criterion (BIC)
+
+**Developed by**: Gideon Schwarz (1978)  
+**Also known as**: Schwarz Information Criterion (SIC)  
+**Theoretical basis**: Bayesian model selection with flat priors
+
+$$\text{BIC} = k\ln(n) - 2\ln(\hat{L})$$
+
+**Key Properties:**
+- **Consistent** for model selection (selects true model as $n \to \infty$)
+- **Stronger penalty** than AIC: $k\ln(n)$ vs $2k$
+- Approximates **Bayes factor** when priors are uniform
+- Favors **simpler models** more than AIC
+
+```{r bic_detailed}
+# BIC theoretical foundation and comparison
+analyze_bic_penalty <- function() {
+  n_values <- c(10, 50, 100, 500, 1000, 5000)
+  k_values <- 1:10
+  
+  penalty_comparison <- expand.grid(n = n_values, k = k_values)
+  penalty_comparison$aic_penalty <- 2 * penalty_comparison$k
+  penalty_comparison$bic_penalty <- penalty_comparison$k * log(penalty_comparison$n)
+  penalty_comparison$ratio <- penalty_comparison$bic_penalty / penalty_comparison$aic_penalty
+  
+  return(penalty_comparison)
+}
+
+penalty_data <- analyze_bic_penalty()
+
+# Plot penalty comparison
+library(ggplot2)
+ggplot(penalty_data, aes(x = k, y = ratio, color = factor(n))) +
+  geom_line(size = 1) +
+  geom_point() +
+  scale_color_viridis_d(name = "Sample Size (n)") +
+  labs(title = "BIC vs AIC Penalty Ratio",
+       subtitle = "BIC becomes increasingly harsh relative to AIC as sample size grows",
+       x = "Number of Parameters (k)", 
+       y = "BIC Penalty / AIC Penalty") +
+  geom_hline(yintercept = 1, linetype = "dashed", alpha = 0.5) +
+  theme_minimal()
+
+# Show crossover points
+crossover_points <- penalty_data[penalty_data$ratio > 1, ]
+min_crossover <- min(crossover_points$n)
+cat("BIC penalty exceeds AIC when n ≥", min_crossover, "for k=1\n")
+cat("At n=100, BIC penalty is", round(log(100)/2, 2), "times AIC penalty\n")
+```
+
+**Relationship to Bayes Factors:**
+
+BIC approximates $-2\log(BF_{01})$ where $BF_{01}$ is the Bayes factor comparing models 0 and 1:
+$$BF_{01} \approx \exp\left(\frac{\text{BIC}_1 - \text{BIC}_0}{2}\right)$$
+
+This makes BIC differences interpretable:
+- $\Delta\text{BIC} < 2$: Weak evidence
+- $2 < \Delta\text{BIC} < 6$: Positive evidence  
+- $6 < \Delta\text{BIC} < 10$: Strong evidence
+- $\Delta\text{BIC} > 10$: Very strong evidence
+
+### Deviance Information Criterion (DIC)
+
+**Developed by**: Spiegelhalter et al. (2002)  
+**Context**: Bayesian analysis with MCMC samples  
+**Advantage**: Uses full posterior distribution, not just point estimates
+
+$$\text{DIC} = \bar{D} + p_D = D(\bar{\theta}) + 2p_D$$
+
+Where:
+- $D(\theta) = -2\log p(y|\theta)$ (deviance)
+- $\bar{D} = E_{\theta|y}[D(\theta)]$ (posterior mean deviance)
+- $D(\bar{\theta}) = D(E_{\theta|y}[\theta])$ (deviance at posterior mean)
+- $p_D = \bar{D} - D(\bar{\theta})$ (effective number of parameters)
+
+```{r dic_detailed}
+# Comprehensive DIC implementation
+compute_dic_comprehensive <- function(mcmc_samples, log_likelihood_fn, data) {
+  n_samples <- nrow(mcmc_samples)
+  n_params <- ncol(mcmc_samples)
+  
+  # Compute deviance for each MCMC sample
+  deviances <- numeric(n_samples)
+  log_likelihoods <- numeric(n_samples)
+  
+  for (i in 1:n_samples) {
+    log_lik <- log_likelihood_fn(mcmc_samples[i, ], data)
+    log_likelihoods[i] <- log_lik
+    deviances[i] <- -2 * log_lik
+  }
+  
+  # Posterior mean deviance
+  D_bar <- mean(deviances)
+  
+  # Deviance at posterior mean parameters
+  theta_bar <- colMeans(mcmc_samples)
+  D_theta_bar <- -2 * log_likelihood_fn(theta_bar, data)
+  
+  # Effective number of parameters
+  p_D <- D_bar - D_theta_bar
+  
+  # DIC
+  dic <- D_bar + p_D
+  
+  # Alternative formulation: DIC = D(theta_bar) + 2*p_D
+  dic_alt <- D_theta_bar + 2 * p_D
+  
+  # Variance-based effective parameters
+  p_V <- var(deviances) / 2
+  dic_v <- D_bar + p_V
+  
+  return(list(
+    DIC = dic,
+    DIC_alt = dic_alt,
+    DIC_variance = dic_v,
+    D_bar = D_bar,
+    D_theta_bar = D_theta_bar,
+    p_D = p_D,
+    p_V = p_V,
+    effective_params_ratio = p_D / n_params,
+    deviances = deviances,
+    log_likelihoods = log_likelihoods
+  ))
+}
+
+# Apply to our regression example
+regression_log_lik <- function(params, data) {
+  alpha <- params[1]
+  beta <- params[2]
+  sigma <- params[3]
+  
+  predicted <- alpha + beta * data$x
+  return(sum(dnorm(data$y, predicted, sigma, log = TRUE)))
+}
+
+data_list <- list(x = x, y = y)
+dic_result <- compute_dic_comprehensive(mcmc_result$samples, regression_log_lik, data_list)
+
+cat("DIC Analysis Results:\n")
+cat("DIC =", round(dic_result$DIC, 2), "\n")
+cat("Effective parameters (p_D) =", round(dic_result$p_D, 2), "\n")
+cat("Actual parameters =", ncol(mcmc_result$samples), "\n")
+cat("Effective/Actual ratio =", round(dic_result$effective_params_ratio, 3), "\n")
+
+# Plot deviance distribution
+par(mfrow = c(1, 2))
+hist(dic_result$deviances, breaks = 30, probability = TRUE,
+     main = "Posterior Distribution of Deviance", 
+     xlab = "Deviance", col = "lightblue")
+abline(v = dic_result$D_bar, col = "red", lwd = 2)
+abline(v = dic_result$D_theta_bar, col = "blue", lwd = 2)
+legend("topright", c("Mean Deviance", "Deviance at Mean"), 
+       col = c("red", "blue"), lwd = 2)
+
+# Plot effective parameters over iterations
+effective_params_running <- cumsum(dic_result$deviances) / (1:length(dic_result$deviances)) - 
+                           dic_result$D_theta_bar
+plot(effective_params_running, type = "l", 
+     main = "Running Estimate of Effective Parameters",
+     xlab = "MCMC Iteration", ylab = "p_D")
+abline(h = dic_result$p_D, col = "red", lwd = 2)
+abline(h = ncol(mcmc_result$samples), col = "blue", lwd = 2, lty = 2)
+legend("topright", c("Final p_D", "Actual parameters"), 
+       col = c("red", "blue"), lwd = 2, lty = c(1, 2))
+
+par(mfrow = c(1, 1))
+```
+
+**Interpretation of Effective Parameters:**
+- $p_D \approx k$: Parameters are well-identified
+- $p_D < k$: Parameters are constrained by priors or correlations
+- $p_D > k$: Model may be overfitting or have identification issues
+
+**Limitations of DIC:**
+- Can give negative $p_D$ (problematic)
+- Not appropriate for model averaging
+- Can be unstable for mixture models
+- Assumes posterior is approximately normal
+
+### Watanabe-Akaike Information Criterion (WAIC)
+
+**Developed by**: Sumio Watanabe (2010)  
+**Advantages**: More robust than DIC, pointwise calculation  
+**Also known as**: Widely Applicable Information Criterion
+
+$$\text{WAIC} = -2(\text{lppd} - p_{\text{WAIC}})$$
+
+Where:
+- $\text{lppd} = \sum_{i=1}^n \log\left(\frac{1}{S}\sum_{s=1}^S p(y_i|\theta^s)\right)$ (log pointwise predictive density)
+- $p_{\text{WAIC}} = \sum_{i=1}^n \text{Var}_s(\log p(y_i|\theta^s))$ (effective parameters)
+
+```{r waic_detailed}
+# WAIC implementation
+compute_waic <- function(mcmc_samples, log_likelihood_pointwise_fn, data) {
+  n_samples <- nrow(mcmc_samples)
+  n_data <- length(data$y)
+  
+  # Matrix to store pointwise log-likelihoods
+  log_lik_matrix <- matrix(NA, n_samples, n_data)
+  
+  # Compute pointwise log-likelihoods for each MCMC sample
+  for (s in 1:n_samples) {
+    log_lik_matrix[s, ] <- log_likelihood_pointwise_fn(mcmc_samples[s, ], data)
+  }
+  
+  # Compute lppd (log pointwise predictive density)
+  lppd_terms <- numeric(n_data)
+  for (i in 1:n_data) {
+    # Log of average likelihood for observation i
+    lppd_terms[i] <- log(mean(exp(log_lik_matrix[, i])))
+  }
+  lppd <- sum(lppd_terms)
+  
+  # Compute effective parameters (penalty term)
+  p_waic_terms <- numeric(n_data)
+  for (i in 1:n_data) {
+    p_waic_terms[i] <- var(log_lik_matrix[, i])
+  }
+  p_waic <- sum(p_waic_terms)
+  
+  # WAIC
+  waic <- -2 * (lppd - p_waic)
+  
+  # Standard error of WAIC
+  waic_se <- sqrt(n_data * var(-2 * (lppd_terms - p_waic_terms)))
+  
+  return(list(
+    WAIC = waic,
+    lppd = lppd,
+    p_waic = p_waic,
+    pointwise_waic = -2 * (lppd_terms - p_waic_terms),
+    waic_se = waic_se,
+    log_lik_matrix = log_lik_matrix
+  ))
+}
+
+# Pointwise log-likelihood function
+pointwise_log_lik <- function(params, data) {
+  alpha <- params[1]
+  beta <- params[2] 
+  sigma <- params[3]
+  
+  predicted <- alpha + beta * data$x
+  return(dnorm(data$y, predicted, sigma, log = TRUE))
+}
+
+waic_result <- compute_waic(mcmc_result$samples, pointwise_log_lik, data_list)
+
+cat("WAIC Analysis Results:\n")
+cat("WAIC =", round(waic_result$WAIC, 2), "±", round(waic_result$waic_se, 2), "\n")
+cat("lppd =", round(waic_result$lppd, 2), "\n") 
+cat("Effective parameters (p_WAIC) =", round(waic_result$p_waic, 2), "\n")
+
+# Compare all criteria
+all_criteria <- data.frame(
+  Criterion = c("AIC", "BIC", "DIC", "WAIC"),
+  Value = c(
+    aic_comparison[2, "aic"],  # Use degree 2 from polynomial example
+    aic_comparison[2, "bic"],
+    dic_result$DIC,
+    waic_result$WAIC
+  ),
+  Effective_Params = c(
+    2,  # Fixed for AIC/BIC
+    2,
+    dic_result$p_D,
+    waic_result$p_waic
+  )
+)
+
+print(all_criteria)
+
+# Plot pointwise WAIC contributions
+plot(waic_result$pointwise_waic, type = "p", pch = 16,
+     main = "Pointwise WAIC Contributions", 
+     xlab = "Observation", ylab = "Pointwise WAIC")
+abline(h = mean(waic_result$pointwise_waic), col = "red", lwd = 2)
+```
+
+### Leave-One-Out Cross-Validation (LOO-CV)
+
+**Theoretical optimum**: Uses all available data for both training and validation  
+**Challenge**: Computationally expensive ($n$ model fits)  
+**PSIS-LOO**: Pareto Smoothed Importance Sampling approximation
+
+```{r loo_cv_detailed}
+# Approximate LOO using importance sampling
+compute_loo_is <- function(log_lik_matrix) {
+  n_samples <- nrow(log_lik_matrix)
+  n_data <- ncol(log_lik_matrix)
+  
+  loo_pointwise <- numeric(n_data)
+  pareto_k <- numeric(n_data)
+  
+  for (i in 1:n_data) {
+    # Raw importance weights (leave-one-out)
+    log_weights <- -log_lik_matrix[, i]
+    
+    # Normalize weights
+    max_log_weight <- max(log_weights)
+    log_weights_norm <- log_weights - max_log_weight
+    weights <- exp(log_weights_norm)
+    weights <- weights / sum(weights)
+    
+    # Estimate LOO likelihood  
+    loo_pointwise[i] <- log(sum(weights * exp(log_lik_matrix[, i])))
+    
+    # Diagnose with Pareto k (simplified)
+    # In practice, would use proper Pareto smoothing
+    if (max(weights) > 0.7) {
+      pareto_k[i] <- 1  # High k indicates unreliable estimate
+    } else {
+      pareto_k[i] <- 0.5  # Reasonable estimate
+    }
+  }
+  
+  loo_total <- sum(loo_pointwise)
+  
+  # Effective parameters
+  p_loo <- waic_result$lppd - loo_total
+  
+  # LOO-IC  
+  looic <- -2 * loo_total
+  
+  return(list(
+    LOO = loo_total,
+    LOOIC = looic,
+    p_loo = p_loo,
+    pointwise_loo = loo_pointwise,
+    pareto_k = pareto_k,
+    reliable = mean(pareto_k < 0.7)
+  ))
+}
+
+loo_result <- compute_loo_is(waic_result$log_lik_matrix)
+
+cat("LOO-CV Results:\n")
+cat("LOO =", round(loo_result$LOO, 2), "\n")
+cat("LOOIC =", round(loo_result$LOOIC, 2), "\n")
+cat("p_loo =", round(loo_result$p_loo, 2), "\n")
+cat("Reliable estimates:", round(100 * loo_result$reliable, 1), "%\n")
+
+# Compare WAIC and LOO
+comparison_df <- data.frame(
+  Method = c("WAIC", "LOO-CV"),
+  IC_Value = c(waic_result$WAIC, loo_result$LOOIC),
+  Effective_Params = c(waic_result$p_waic, loo_result$p_loo)
+)
+print(comparison_df)
+```
+
+## Advanced Model Selection Topics
+
+### Model Averaging
+
+Instead of selecting a single "best" model, model averaging weights predictions by model probabilities:
+
+$$\hat{y} = \sum_{m=1}^M w_m \hat{y}_m$$
+
+where $w_m$ are model weights (e.g., from AIC weights).
+
+```{r model_averaging}
+# AIC model averaging example
+compute_aic_weights <- function(aic_values) {
+  delta_aic <- aic_values - min(aic_values)
+  weights <- exp(-0.5 * delta_aic)
+  return(weights / sum(weights))
+}
+
+# Use polynomial comparison from earlier
+aic_weights <- compute_aic_weights(aic_comparison$aic)
+
+cat("AIC Model Weights:\n")
+for (i in 1:max_degree) {
+  cat("Degree", i, ":", round(aic_weights[i], 3), "\n")
+}
+
+# Model-averaged prediction
+x_new <- seq(0, 1, length.out = 100)
+pred_averaged <- numeric(length(x_new))
+
+for (degree in 1:max_degree) {
+  X_pred <- poly(x_new, degree, raw = TRUE)
+  X_fit <- poly(x_poly, degree, raw = TRUE)
+  model <- lm(y_poly ~ X_fit)
+  
+  # Predict (need to be careful with poly() predictions)
+  pred_degree <- predict(model, newdata = data.frame(X_fit = X_pred))
+  pred_averaged <- pred_averaged + aic_weights[degree] * pred_degree
+}
+
+# Plot model averaging result
+plot(x_poly, y_poly, pch = 16, main = "Model Averaging vs Best Model")
+lines(x_new, 2 + 3*x_new - 4*x_new^2, col = "black", lwd = 2)  # True
+lines(x_new, pred_averaged, col = "purple", lwd = 2, lty = 2)   # Averaged
+legend("topright", c("True", "Model Averaged"), 
+       col = c("black", "purple"), lwd = 2, lty = c(1, 2))
+```
+
+### Cross-Validation Strategies
+
+```{r cv_strategies}
+# K-fold cross-validation
+k_fold_cv <- function(data_x, data_y, k = 5, max_degree = 6) {
+  n <- length(data_y)
+  fold_size <- floor(n / k)
+  cv_errors <- matrix(NA, k, max_degree)
+  
+  for (fold in 1:k) {
+    # Create test indices
+    start_idx <- (fold - 1) * fold_size + 1
+    end_idx <- min(fold * fold_size, n)
+    test_idx <- start_idx:end_idx
+    train_idx <- setdiff(1:n, test_idx)
+    
+    # Split data
+    x_train <- data_x[train_idx]
+    y_train <- data_y[train_idx]
+    x_test <- data_x[test_idx]
+    y_test <- data_y[test_idx]
+    
+    for (degree in 1:max_degree) {
+      # Fit on training data
+      X_train <- poly(x_train, degree, raw = TRUE)
+      model <- lm(y_train ~ X_train)
+      
+      # Predict on test data
+      X_test <- poly(x_test, degree, raw = TRUE)
+      pred_test <- predict(model, newdata = data.frame(X_train = X_test))
+      
+      # Compute prediction error
+      cv_errors[fold, degree] <- mean((y_test - pred_test)^2)
+    }
+  }
+  
+  return(colMeans(cv_errors))
+}
+
+cv_errors <- k_fold_cv(x_poly, y_poly, k = 5)
+best_cv <- which.min(cv_errors)
+
+cat("Cross-validation selects degree:", best_cv, "\n")
+
+# Plot CV errors
+plot(1:max_degree, cv_errors, type = "b", pch = 16,
+     main = "5-Fold Cross-Validation Error",
+     xlab = "Polynomial Degree", ylab = "CV Error")
+abline(v = best_cv, col = "red", lty = 2)
+abline(v = 2, col = "gray", lty = 2)  # True model
+```
+
+## Practical Guidelines
+
+### Which Criterion to Use?
+
+| **Criterion** | **Best for** | **Avoid when** |
+|---------------|--------------|----------------|
+| **AIC** | Prediction, model averaging | Want parsimonious model |
+| **BIC** | Model selection, large samples | Small samples, prediction focus |
+| **DIC** | Bayesian models, MCMC | Mixture models, non-normal posteriors |
+| **WAIC** | General Bayesian analysis | Computational constraints |
+| **LOO-CV** | Gold standard | Very large datasets |
+
+### Sample Size Considerations
+
+```{r sample_size_effects}
+# Demonstrate how criteria behave with different sample sizes
+simulate_model_selection <- function(n, true_degree = 2, noise_sd = 0.3) {
+  x_sim <- seq(0, 1, length.out = n)
+  y_sim <- 2 + 3*x_sim - 4*x_sim^2 + rnorm(n, 0, noise_sd)
+  
+  results <- data.frame(degree = 1:5, aic = NA, bic = NA)
+  
+  for (deg in 1:5) {
+    X_sim <- poly(x_sim, deg, raw = TRUE)
+    model <- lm(y_sim ~ X_sim)
+    
+    log_lik <- logLik(model)[1]
+    n_params <- length(coef(model))
+    
+    results$aic[deg] <- 2 * n_params - 2 * log_lik
+    results$bic[deg] <- log(n) * n_params - 2 * log_lik
+  }
+  
+  return(list(
+    aic_best = which.min(results$aic),
+    bic_best = which.min(results$bic),
+    results = results
+  ))
+}
+
+# Test different sample sizes
+sample_sizes <- c(20, 50, 100, 200, 500)
+n_simulations <- 100
+
+selection_results <- data.frame(
+  n = rep(sample_sizes, each = n_simulations),
+  aic_correct = logical(length(sample_sizes) * n_simulations),
+  bic_correct = logical(length(sample_sizes) * n_simulations)
+)
+
+set.seed(123)
+for (i in seq_along(sample_sizes)) {
+  for (sim in 1:n_simulations) {
+    idx <- (i - 1) * n_simulations + sim
+    result <- simulate_model_selection(sample_sizes[i])
+    
+    selection_results$aic_correct[idx] <- result$aic_best == 2
+    selection_results$bic_correct[idx] <- result$bic_best == 2
+  }
+}
+
+# Summarize results
+accuracy_summary <- aggregate(cbind(aic_correct, bic_correct) ~ n, 
+                             data = selection_results, FUN = mean)
+
+print(accuracy_summary)
+
+# Plot accuracy vs sample size
+plot(accuracy_summary$n, accuracy_summary$aic_correct, type = "b", 
+     col = "red", pch = 16, ylim = c(0, 1),
+     main = "Model Selection Accuracy vs Sample Size",
+     xlab = "Sample Size", ylab = "Proportion Correct")
+lines(accuracy_summary$n, accuracy_summary$bic_correct, type = "b", 
+      col = "blue", pch = 17)
+legend("bottomright", c("AIC", "BIC"), col = c("red", "blue"), 
+       pch = c(16, 17), lty = 1)
+```
+
+## Leave-One-Out Cross-Validation (LOO)
+
+```{r loo_cv}
+# Approximate LOO using Pareto smoothed importance sampling
+# This is a simplified implementation
+compute_loo <- function(log_lik_matrix) {
+  n_data <- ncol(log_lik_matrix)
+  n_samples <- nrow(log_lik_matrix)
+  
+  loo_estimates <- numeric(n_data)
+  
+  for (i in 1:n_data) {
+    # Importance weights for leaving out observation i
+    # This is a simplified version - real implementation is more complex
+    weights <- exp(log_lik_matrix[, i])
+    loo_estimates[i] <- log(mean(weights))
+  }
+  
+  total_loo <- sum(loo_estimates)
+  return(list(total_loo = total_loo, pointwise = loo_estimates))
+}
+
+cat("LOO computation requires careful implementation - typically use 'loo' package in R")
+```
+
+# Practical Guidelines and Best Practices
+
+## Tuning MCMC
+
+### Acceptance Rates
+- **Metropolis-Hastings**: Aim for 20-50% acceptance rate
+- **HMC**: Aim for 60-90% acceptance rate  
+- **Random Walk Metropolis**: ~23% for high dimensions
+
+### Proposal Distributions
+```{r proposal_tuning}
+# Test different proposal standard deviations
+test_proposals <- function(log_posterior, true_values, proposal_sds) {
+  results <- data.frame(
+    proposal_sd = proposal_sds,
+    acceptance_rate = numeric(length(proposal_sds)),
+    efficiency = numeric(length(proposal_sds))
+  )
+  
+  for (i in seq_along(proposal_sds)) {
+    result <- metropolis_hastings(
+      log_posterior, 
+      initial_value = true_values,
+      n_samples = 2000,
+      proposal_sd = proposal_sds[i],
+      burn_in = 500
+    )
+    
+    results$acceptance_rate[i] <- result$acceptance_rate
+    
+    # Rough efficiency measure (inverse of autocorr time)
+    ess <- eff_sample_size(result$samples[, 1])
+    results$efficiency[i] <- ess / nrow(result$samples)
+  }
+  
+  return(results)
+}
+
+# Test range of proposal SDs
+proposal_test <- test_proposals(
+  log_posterior_regression,
+  c(true_alpha, true_beta, true_sigma),
+  seq(0.01, 0.5, by = 0.05)
+)
+
+par(mfrow = c(1, 2))
+plot(proposal_test$proposal_sd, proposal_test$acceptance_rate, 
+     type = "b", main = "Acceptance Rate vs Proposal SD",
+     xlab = "Proposal SD", ylab = "Acceptance Rate")
+abline(h = c(0.2, 0.5), col = "red", lty = 2)
+
+plot(proposal_test$proposal_sd, proposal_test$efficiency,
+     type = "b", main = "Efficiency vs Proposal SD", 
+     xlab = "Proposal SD", ylab = "Effective Sample Size Ratio")
+par(mfrow = c(1, 1))
+```
+
+## Convergence Diagnostics
+
+### Gelman-Rubin Statistic (R-hat)
+
+```{r convergence_diagnostics}
+# Multiple chains for convergence assessment
+run_multiple_chains <- function(n_chains = 4) {
+  chains <- vector("list", n_chains)
+  
+  for (i in 1:n_chains) {
+    # Start from different initial values
+    initial <- c(runif(1, 0, 5), runif(1, 0, 2), runif(1, 0.5, 1.5))
+    
+    chains[[i]] <- metropolis_hastings(
+      log_posterior_regression,
+      initial_value = initial,
+      n_samples = 2500,
+      proposal_sd = c(0.1, 0.05, 0.05),
+      burn_in = 500
+    )$samples
+  }
+  
+  return(chains)
+}
+
+# Run multiple chains
+multiple_chains <- run_multiple_chains(4)
+
+# Simple R-hat computation
+compute_rhat <- function(chains) {
+  n_chains <- length(chains)
+  n_samples <- nrow(chains[[1]])
+  n_params <- ncol(chains[[1]])
+  
+  rhat_values <- numeric(n_params)
+  
+  for (p in 1:n_params) {
+    # Extract parameter p from all chains
+    chain_data <- sapply(chains, function(x) x[, p])
+    
+    # Between-chain variance
+    chain_means <- colMeans(chain_data)
+    overall_mean <- mean(chain_means)
+    B <- n_samples * var(chain_means)
+    
+    # Within-chain variance
+    W <- mean(apply(chain_data, 2, var))
+    
+    # Estimated variance
+    var_est <- ((n_samples - 1) / n_samples) * W + (1 / n_samples) * B
+    
+    # R-hat
+    rhat_values[p] <- sqrt(var_est / W)
+  }
+  
+  return(rhat_values)
+}
+
+rhat_vals <- compute_rhat(multiple_chains)
+param_names <- c("α", "β", "σ")
+
+for (i in 1:3) {
+  cat(sprintf("R-hat for %s: %.3f", param_names[i], rhat_vals[i]))
+  if (rhat_vals[i] < 1.1) cat(" ✓") else cat(" ⚠")
+  cat("\n")
+}
+```
+
+### Trace Plot Examination
+
+```{r trace_diagnostics}
+# Plot traces from multiple chains
+par(mfrow = c(3, 1))
+colors <- c("red", "blue", "green", "purple")
+
+for (p in 1:3) {
+  plot(1, type = "n", xlim = c(1, 2500), 
+       ylim = range(sapply(multiple_chains, function(x) range(x[, p]))),
+       main = paste("Trace Plot:", param_names[p]),
+       xlab = "Iteration", ylab = param_names[p])
+  
+  for (chain in 1:4) {
+    lines(multiple_chains[[chain]][, p], col = colors[chain], alpha = 0.7)
+  }
+  
+  abline(h = c(true_alpha, true_beta, true_sigma)[p], col = "black", lwd = 2, lty = 2)
+}
+
+par(mfrow = c(1, 1))
+```
+
+# Advanced Topics
+
+## Hierarchical Models
+
+```{r hierarchical_example}
+# Example: Hierarchical normal model
+# y_ij ~ N(theta_i, sigma^2)  [data level]
+# theta_i ~ N(mu, tau^2)      [group level] 
+# mu ~ N(0, 100)              [hyperprior]
+# tau ~ Half-Cauchy(0, 5)     [hyperprior]
+# sigma ~ Half-Cauchy(0, 5)   [hyperprior]
+
+# Generate hierarchical data
+set.seed(456)
+n_groups <- 5
+n_per_group <- 10
+true_mu <- 5
+true_tau <- 2
+true_sigma <- 1
+
+true_theta <- rnorm(n_groups, true_mu, true_tau)
+hierarchical_data <- vector("list", n_groups)
+
+for (i in 1:n_groups) {
+  hierarchical_data[[i]] <- rnorm(n_per_group, true_theta[i], true_sigma)
+}
+
+# Flatten data for analysis
+y_flat <- unlist(hierarchical_data)
+group_id <- rep(1:n_groups, each = n_per_group)
+
+# Log posterior for hierarchical model
+log_posterior_hierarchical <- function(params) {
+  mu <- params[1]
+  log_tau <- params[2]
+  log_sigma <- params[3] 
+  theta <- params[4:(3 + n_groups)]
+  
+  tau <- exp(log_tau)
+  sigma <- exp(log_sigma)
+  
+  if (tau <= 0 || sigma <= 0) return(-Inf)
+  
+  # Data likelihood
+  log_lik <- 0
+  for (i in 1:n_groups) {
+    group_data <- hierarchical_data[[i]]
+    log_lik <- log_lik + sum(dnorm(group_data, theta[i], sigma, log = TRUE))
+  }
+  
+  # Group-level prior
+  log_prior_theta <- sum(dnorm(theta, mu, tau, log = TRUE))
+  
+  # Hyperpriors
+  log_prior_mu <- dnorm(mu, 0, 10, log = TRUE)
+  log_prior_tau <- dhalfcauchy_log(tau, 5)  # Would need custom function
+  log_prior_sigma <- dhalfcauchy_log(sigma, 5)  # Would need custom function
+  
+  return(log_lik + log_prior_theta + log_prior_mu + log_prior_tau + log_prior_sigma)
+}
+
+cat("Hierarchical models require careful implementation of hyperpriors")
+cat("\nTypically implemented in specialized software like Stan, BUGS, or JAGS")
+```
+
+## Mixture Models
+
+```{r mixture_models}
+# Simple 2-component Gaussian mixture
+# Demonstrates label switching problem
+
+# Generate mixture data
+set.seed(789)
+n1 <- 100
+n2 <- 150
+true_mu1 <- -2
+true_mu2 <- 3
+true_sigma1 <- 1
+true_sigma2 <- 1.5
+true_pi <- 0.4  # mixing proportion
+
+component1_data <- rnorm(n1, true_mu1, true_sigma1)
+component2_data <- rnorm(n2, true_mu2, true_sigma2)
+mixture_data <- c(component1_data, component2_data)
+
+# Plot mixture data
+hist(mixture_data, breaks = 30, probability = TRUE, 
+     main = "Mixture Data", xlab = "Value", col = "lightblue")
+
+# Overlay true components
+x_seq <- seq(min(mixture_data), max(mixture_data), length.out = 200)
+true_density <- true_pi * dnorm(x_seq, true_mu1, true_sigma1) + 
+                (1 - true_pi) * dnorm(x_seq, true_mu2, true_sigma2)
+lines(x_seq, true_density, col = "red", lwd = 2)
+
+cat("Mixture models suffer from label switching - identifiability issues")
+cat("\nRequire specialized techniques or constraints for proper inference")
+```
+
+# Software and Tools
+
+## R Packages
+
+### Essential MCMC Packages
+- **`coda`**: MCMC diagnostics and analysis
+- **`MCMCpack`**: Ready-made MCMC functions
+- **`rstan`**: Interface to Stan (HMC/NUTS)
+- **`rjags`**: Interface to JAGS (Gibbs sampling)
+- **`LaplacesDemon`**: Comprehensive Bayesian computing
+
+### Example with `coda` package
+
+```{r coda_example}
+library(coda)
+
+# Convert our MCMC samples to coda format
+mcmc_coda <- mcmc(mcmc_result$samples)
+
+# Diagnostic plots
+# plot(mcmc_coda)  # Would show trace and density plots
+
+# Summary statistics
+summary(mcmc_coda)
+
+# Effective sample size
+effectiveSize(mcmc_coda)
+
+# Autocorrelation
+autocorr.plot(mcmc_coda, lag.max = 50)
+```
+
+## Stan Example
+
+```{r stan_example}
+# Stan model specification (would be in separate .stan file)
+stan_model_code <- "
+data {
+  int<lower=0> N;
+  vector[N] x;
+  vector[N] y;
+}
+parameters {
+  real alpha;
+  real beta;
+  real<lower=0> sigma;
+}
+model {
+  // Priors
+  alpha ~ normal(0, 10);
+  beta ~ normal(0, 10);
+  sigma ~ cauchy(0, 5);
+  
+  // Likelihood
+  y ~ normal(alpha + beta * x, sigma);
+}
+"
+
+# This would run Stan if available:
+# library(rstan)
+# stan_fit <- stan(model_code = stan_model_code, 
+#                  data = list(N = length(x), x = x, y = y),
+#                  chains = 4, iter = 2000)
+
+cat("Stan provides state-of-the-art HMC/NUTS sampling")
+cat("\nAutomatic differentiation and adaptive tuning")
+```
+
+# Summary and Recommendations
+
+## When to Use Different Methods
+
+### Metropolis-Hastings
+- **Good for**: Simple problems, learning MCMC concepts
+- **Pros**: Easy to implement, general purpose
+- **Cons**: Can be inefficient, requires tuning
+
+### Gibbs Sampling  
+- **Good for**: Problems with known conditional distributions
+- **Pros**: No tuning required, often efficient
+- **Cons**: Limited applicability, can be slow for correlated parameters
+
+### Hamiltonian Monte Carlo (HMC/NUTS)
+- **Good for**: Complex, high-dimensional problems
+- **Pros**: Very efficient, automatic tuning (NUTS)
+- **Cons**: Requires gradients, complex implementation
+
+### Adaptive Methods
+- **Good for**: When optimal proposal distribution unknown
+- **Pros**: Self-tuning, often more efficient
+- **Cons**: More complex, convergence theory more involved
+
+## Best Practices Checklist
+
+1. **Start Simple**: Begin with basic Metropolis-Hastings
+2. **Check Convergence**: Use multiple chains, R-hat < 1.1
+3. **Examine Traces**: Look for good mixing, no trends
+4. **Assess Autocorrelation**: Thin if necessary
+5. **Validate**: Compare with known solutions when possible
+6. **Use Modern Software**: Stan, JAGS for complex problems
+
+## Common Pitfalls
+
+1. **Insufficient Burn-in**: Not allowing chain to reach stationary distribution
+2. **Poor Mixing**: Proposal distribution too narrow or wide
+3. **Ignoring Correlations**: Not accounting for parameter correlations
+4. **Label Switching**: In mixture models, modes may switch
+5. **Improper Priors**: Can lead to improper posteriors
+6. **IC Misinterpretation**: Treating IC differences as hypothesis tests
+7. **Model Selection Bias**: Using same data for selection and inference
+
+## Information Criteria Pitfalls
+
+### Common Mistakes
+
+**AIC Misuse:**
+- Comparing non-nested models inappropriately
+- Ignoring AICc correction for small samples
+- Using AIC for causal inference
+
+**BIC Limitations:**
+- Assumes one true model exists
+- Very sensitive to sample size
+- May be too conservative for prediction
+
+**DIC Problems:**
+- Negative effective parameters
+- Instability with mixture models
+- Assumes unimodal posteriors
+
+**General IC Issues:**
+- Model set dependence (adding bad models can change rankings)
+- Ignores model uncertainty
+- Not appropriate for causal inference
+
+```{r ic_pitfalls_demo}
+# Demonstrate model set dependence
+set.seed(555)
+n_demo <- 100
+x_demo <- runif(n_demo, 0, 10)
+y_demo <- 2 + 0.5 * x_demo + rnorm(n_demo, 0, 1)
+
+# Model set 1: Simple models
+models_set1 <- list(
+  "Intercept only" = lm(y_demo ~ 1),
+  "Linear" = lm(y_demo ~ x_demo),
+  "Quadratic" = lm(y_demo ~ x_demo + I(x_demo^2))
+)
+
+# Model set 2: Include bad complex model
+models_set2 <- list(
+  "Intercept only" = lm(y_demo ~ 1),
+  "Linear" = lm(y_demo ~ x_demo),
+  "Quadratic" = lm(y_demo ~ x_demo + I(x_demo^2)),
+  "High polynomial" = lm(y_demo ~ poly(x_demo, 8))
+)
+
+compute_model_ics <- function(model_list) {
+  results <- data.frame(
+    Model = names(model_list),
+    AIC = sapply(model_list, AIC),
+    BIC = sapply(model_list, BIC)
+  )
+  results$Delta_AIC <- results$AIC - min(results$AIC)
+  results$Delta_BIC <- results$BIC - min(results$BIC)
+  results$AIC_Weight <- exp(-0.5 * results$Delta_AIC)
+  results$AIC_Weight <- results$AIC_Weight / sum(results$AIC_Weight)
+  return(results)
+}
+
+cat("Model Set 1 (Simple models):\n")
+print(compute_model_ics(models_set1))
+
+cat("\nModel Set 2 (With complex model):\n") 
+print(compute_model_ics(models_set2))
+
+cat("\nNote how AIC weights change when bad model is added!\n")
+```
+
+## Computational Considerations
+
+- **Parallel Chains**: Run multiple chains in parallel
+- **Vectorization**: Use vectorized operations when possible  
+- **Memory Management**: Store only necessary samples
+- **Monitoring**: Track acceptance rates and ESS during sampling
+
+This comprehensive guide covers the essential aspects of Bayesian computation and MCMC methods. The key insight is that MCMC allows us to sample from complex posterior distributions without computing intractable normalizing constants, enabling sophisticated statistical inference in realistic problems.
+
+---
+
+**Further Reading:**
+- Gelman et al. "Bayesian Data Analysis" 
+- Robert & Casella "Monte Carlo Statistical Methods"
+- Neal "MCMC Using Hamiltonian Dynamics"
+- Stan User's Guide and Reference Manual

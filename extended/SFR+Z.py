@@ -95,6 +95,26 @@ Changes (2025-09-17)
 * Implemented b/a = sqrt((1-q₀²)*cos²(i) + q₀²) correction where q₀ = 0.2 (intrinsic disc thickness).
 * Updated logging to report inclination angle, cos(θ), b/a factor, and adopted q₀ parameter.
 
+Changes (2025-09-23)
+-----------------------
+* Implemented dual BPT classification system for comparative analysis:
+  - Classification 1 (Liberal): SF = HII + Composite regions (existing approach)
+  - Classification 2 (Conservative): SF = HII regions only (new conservative approach)
+* Enhanced choose_BPT() function with classification parameter (classification=1/2):
+  - Returns both log and regular SFR surface density maps for each classification
+  - Maintains complete parallel outputs for direct comparison between approaches
+* Added comprehensive Classification 2 outputs:
+  - Complete mask hierarchy: mask_classified2_N2_HII, mask_classified2_N2_Comp_AGN, etc.
+  - HII-specific FITS outputs: LOGSFR_SURFACE_DENSITY_HII, Halpha_SFR_corr_HII, etc.
+  - Full metallicity analysis for HII regions: O_H_D16_HII, O_H_PG16_HII, all M13/PP04/C20 methods
+  - Metallicity error maps for HII regions: O_H_O3N2_C20_HII_ERR, O_H_COMBINED_C20_HII_ERR, etc.
+  - Line flux maps for HII regions: HB4861_FLUX_corr_HII, HA6562_FLUX_corr_HII, etc.
+* Added missing LOGSFR_SURFACE_DENSITY_UNCLASSIFIED2 for complete Classification 2 coverage
+* Enhanced terminal output with parallel reporting for both classifications:
+  - Total Halpha SFR from SF region vs HII region comparison
+  - Complete metallicity totals for both SF and HII regions using all calibration methods
+* Maintained backwards compatibility while providing new conservative analysis option
+* Updated variable naming convention: '_classified' → '_classified1', '_unclassified' → '_unclassified1'
 """
 
 # ------------------------------------------------------------------
@@ -1520,25 +1540,47 @@ mask_S2_right_HII, mask_S2_right_LINER, mask_S2_right_Seyfert = mask_S2_right
 mask_S2_down_HII, mask_S2_down_LINER, mask_S2_down_Seyfert = mask_S2_down
 mask_S2_up_HII, mask_S2_up_LINER, mask_S2_up_Seyfert = mask_S2_up
 
-mask_classified_N2_HII_Comp = ((mask_N2_left_HII | mask_N2_left_Comp) & 
+# ====== Classification 1: SF = HII + Comp ======
+mask_classified1_N2_HII_Comp = ((mask_N2_left_HII | mask_N2_left_Comp) & 
                                (mask_N2_right_HII | mask_N2_right_Comp) & 
                                  (mask_N2_down_HII | mask_N2_down_Comp) &
                                  (mask_N2_up_HII | mask_N2_up_Comp))
-mask_classified_N2_AGN = (mask_N2_left_AGN & mask_N2_right_AGN &
+mask_classified1_N2_AGN = (mask_N2_left_AGN & mask_N2_right_AGN &
                           mask_N2_down_AGN & mask_N2_up_AGN)
-mask_classified_S2_HII = (mask_S2_left_HII & mask_S2_right_HII &
+mask_classified1_S2_HII = (mask_S2_left_HII & mask_S2_right_HII &
                           mask_S2_down_HII & mask_S2_up_HII)
-mask_classified_S2_LINER = (mask_S2_left_LINER & mask_S2_right_LINER &
+mask_classified1_S2_LINER = (mask_S2_left_LINER & mask_S2_right_LINER &
                             mask_S2_down_LINER & mask_S2_up_LINER)
-mask_classified_S2_Seyfert = (mask_S2_left_Seyfert & mask_S2_right_Seyfert &
+mask_classified1_S2_Seyfert = (mask_S2_left_Seyfert & mask_S2_right_Seyfert &
                              mask_S2_down_Seyfert & mask_S2_up_Seyfert)
 
-# NII classified and unclassified masks
-mask_N2_classified = (mask_classified_N2_HII_Comp | mask_classified_N2_AGN)
-mask_N2_unclassified = ~mask_N2_classified
-# SII classified and unclassified masks
-mask_S2_classified = (mask_classified_S2_HII | mask_classified_S2_LINER | mask_classified_S2_Seyfert)
-mask_S2_unclassified = ~mask_S2_classified
+# NII classified1 and unclassified1 masks
+mask_N2_classified1 = (mask_classified1_N2_HII_Comp | mask_classified1_N2_AGN)
+mask_N2_unclassified1 = ~mask_N2_classified1
+# SII classified1 and unclassified1 masks
+mask_S2_classified1 = (mask_classified1_S2_HII | mask_classified1_S2_LINER | mask_classified1_S2_Seyfert)
+mask_S2_unclassified1 = ~mask_S2_classified1
+
+# ====== Classification 2: SF = HII only ======
+# For Classification 2, we need separate HII and Comp+AGN masks from Classification 1
+mask_classified2_N2_HII = mask_classified1_N2_HII_Comp & mask_N2_HII  # Only HII part from HII_Comp
+mask_classified2_N2_Comp_AGN = (mask_classified1_N2_HII_Comp & mask_N2_Comp) | mask_classified1_N2_AGN  # Comp + AGN
+
+# NII classified2 and unclassified2 masks
+mask_classified2_N2 = (mask_classified2_N2_HII | mask_classified2_N2_Comp_AGN)
+mask_unclassified2_N2 = ~mask_classified2_N2  # Same as unclassified1 since detection criteria unchanged
+mask_classified2_N2_SF = mask_classified2_N2_HII  # Only HII is SF in Classification 2
+mask_classified2_N2_nonSF = mask_classified2_N2_Comp_AGN  # Comp + AGN are non-SF
+
+# For S2 BPT, Classification 2 is same as Classification 1 since S2 only has HII as SF anyway
+mask_classified2_S2_HII = mask_classified1_S2_HII
+mask_classified2_S2_LINER_Seyfert = (mask_classified1_S2_LINER | mask_classified1_S2_Seyfert)
+
+# SII classified2 and unclassified2 masks  
+mask_classified2_S2 = (mask_classified2_S2_HII | mask_classified2_S2_LINER_Seyfert)
+mask_unclassified2_S2 = ~mask_classified2_S2  # Same as unclassified1
+mask_classified2_S2_SF = mask_classified2_S2_HII  # Only HII is SF
+mask_classified2_S2_nonSF = mask_classified2_S2_LINER_Seyfert  # LINER + Seyfert are non-SF
 
 # ------------------------------------------------------------------
 # 6.  Masks: for [NII] BPT
@@ -1582,30 +1624,50 @@ HA_detected_HB_detected_NII_not_detected_OIII_not_detected = (HA6562_QC_good &
                                                               OIII5006_QC_bad)
 
 
-# Flag 4 final cases that we want to track
+# ------------------------------------------------------------------
+# 7.  Final Masks: Track 4 cases for each classification
+# ------------------------------------------------------------------
 
-# definite SF spaxels: or HA_detected_HB_detected & mask_N2_classified & mask_N2_SF
-mask_SF_N2 = ((HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_classified & mask_N2_SF) | 
-                    (HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_classified & mask_N2_SF) | 
-                    (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_classified & mask_N2_SF) | 
-                    (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_classified & mask_N2_SF))
-# get SFR as non-SF: : or HA_detected_HB_detected & mask_N2_classified & mask_N2_nonSF
-mask_nonSF_N2 = ((HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_classified & mask_N2_nonSF) |
-              (HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_classified & mask_N2_nonSF) |
-              (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_classified & mask_N2_nonSF) |
-              (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_classified & mask_N2_nonSF))
-# all the unclassified spaxels: : or HA_detected_HB_detected & mask_N2_unclassified
-mask_unclassified_N2 = ((HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_unclassified) | 
-                       (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_unclassified) | 
-                       (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_unclassified) | 
-                       (HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_unclassified))
-# the rest are upper spaxels: 
+# ====== Classification 1: SF = HII + Comp (current default) ======
+# definite SF spaxels: or HA_detected_HB_detected & mask_N2_classified1 & mask_N2_SF
+mask_SF_N2 = ((HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_classified1 & mask_N2_SF) | 
+                    (HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_classified1 & mask_N2_SF) | 
+                    (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_classified1 & mask_N2_SF) | 
+                    (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_classified1 & mask_N2_SF))
+# get SFR as non-SF: : or HA_detected_HB_detected & mask_N2_classified1 & mask_N2_nonSF
+mask_nonSF_N2 = ((HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_classified1 & mask_N2_nonSF) |
+              (HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_classified1 & mask_N2_nonSF) |
+              (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_classified1 & mask_N2_nonSF) |
+              (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_classified1 & mask_N2_nonSF))
+# all the unclassified1 spaxels: : or HA_detected_HB_detected & mask_N2_unclassified1
+mask_unclassified1_N2_final = ((HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_unclassified1) | 
+                       (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_unclassified1) | 
+                       (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_unclassified1) | 
+                       (HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_unclassified1))
+
+# ====== Classification 2: SF = HII only (more conservative) ======
+# HII spaxels only in N2 BPT
+mask_SF_N2_class2 = ((HA_detected_HB_detected_NII_detected_OIII_detected & mask_classified2_N2 & mask_classified2_N2_SF) | 
+                    (HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_classified2_N2 & mask_classified2_N2_SF) | 
+                    (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_classified2_N2 & mask_classified2_N2_SF) | 
+                    (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_classified2_N2 & mask_classified2_N2_SF))
+# Comp + AGN as non-SF in classification 2
+mask_nonSF_N2_class2 = ((HA_detected_HB_detected_NII_detected_OIII_detected & mask_classified2_N2 & mask_classified2_N2_nonSF) |
+                  (HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_classified2_N2 & mask_classified2_N2_nonSF) |
+                  (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_classified2_N2 & mask_classified2_N2_nonSF) |
+                  (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_classified2_N2 & mask_classified2_N2_nonSF))
+# all the unclassified2 spaxels (same as unclassified1)
+mask_unclassified2_N2_final = ((HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_unclassified2_N2) | 
+                       (HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_unclassified2_N2) | 
+                       (HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_unclassified2_N2) | 
+                       (HA_detected_HB_detected_NII_detected_OIII_detected & mask_unclassified2_N2))
+# the rest are upper-limit spaxels: 
 mask_upper = (HA_not_detected | HA_detected_HB_not_detected)
 
 # Something else might be useful
 
-# all the classified spaxels
-mask_classified_N2 = mask_SF_N2 | mask_nonSF_N2
+# all the classified1 spaxels
+mask_classified1_N2 = mask_SF_N2 | mask_nonSF_N2
 
 # ------------------------------------------------------------------
 # 7.  Masks: for [SII] BPT
@@ -1649,111 +1711,174 @@ HA_detected_HB_detected_SII_not_detected_OIII_not_detected = (HA6562_QC_good &
                                                               OIII5006_QC_bad)
 
 
-# Flag 4 final cases that we want to track for [SII] BPT
+# ====== Classification 1: SF = HII (S2 BPT only has HII as SF anyway) ======
+# definite SF spaxels: or HA_detected_HB_detected & mask_S2_classified1 & mask_S2_SF
+mask_SF_S2 = ((HA_detected_HB_detected_SII_detected_OIII_detected & mask_S2_classified1 & mask_S2_SF) | 
+              (HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_S2_classified1 & mask_S2_SF) | 
+              (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_S2_classified1 & mask_S2_SF) | 
+              (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_S2_classified1 & mask_S2_SF))
+# get SFR as non-SF: or HA_detected_HB_detected & mask_S2_classified1 & mask_S2_nonSF
+mask_nonSF_S2 = ((HA_detected_HB_detected_SII_detected_OIII_detected & mask_S2_classified1 & mask_S2_nonSF) |
+                  (HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_S2_classified1 & mask_S2_nonSF) |
+                  (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_S2_classified1 & mask_S2_nonSF) |
+                  (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_S2_classified1 & mask_S2_nonSF))
+# all the unconstrained spaxels: or HA_detected_HB_detected & mask_S2_unclassified1
+mask_unclassified1_S2_final = ((HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_S2_unclassified1) | 
+                           (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_S2_unclassified1) | 
+                           (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_S2_unclassified1) | 
+                           (HA_detected_HB_detected_SII_detected_OIII_detected & mask_S2_unclassified1))
 
-# definite SF spaxels: or HA_detected_HB_detected & mask_S2_classified & mask_S2_SF
-mask_SF_S2 = ((HA_detected_HB_detected_SII_detected_OIII_detected & mask_S2_classified & mask_S2_SF) | 
-              (HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_S2_classified & mask_S2_SF) | 
-              (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_S2_classified & mask_S2_SF) | 
-              (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_S2_classified & mask_S2_SF))
-# get SFR as non-SF: or HA_detected_HB_detected & mask_S2_classified & mask_S2_nonSF
-mask_nonSF_S2 = ((HA_detected_HB_detected_SII_detected_OIII_detected & mask_S2_classified & mask_S2_nonSF) |
-                  (HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_S2_classified & mask_S2_nonSF) |
-                  (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_S2_classified & mask_S2_nonSF) |
-                  (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_S2_classified & mask_S2_nonSF))
-# all the unconstrained spaxels: or HA_detected_HB_detected & mask_S2_unclassified
-mask_unclassified_S2 = ((HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_S2_unclassified) | 
-                           (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_S2_unclassified) | 
-                           (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_S2_unclassified) | 
-                           (HA_detected_HB_detected_SII_detected_OIII_detected & mask_S2_unclassified))
+# ====== Classification 2: SF = HII only (same as Classification 1 for S2 BPT) ======
+# HII spaxels only in S2 BPT 
+mask_SF_S2_class2 = ((HA_detected_HB_detected_SII_detected_OIII_detected & mask_classified2_S2 & mask_classified2_S2_SF) | 
+                    (HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_classified2_S2 & mask_classified2_S2_SF) | 
+                    (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_classified2_S2 & mask_classified2_S2_SF) | 
+                    (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_classified2_S2 & mask_classified2_S2_SF))
+# LINER + Seyfert as non-SF in classification 2
+mask_nonSF_S2_class2 = ((HA_detected_HB_detected_SII_detected_OIII_detected & mask_classified2_S2 & mask_classified2_S2_nonSF) |
+                       (HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_classified2_S2 & mask_classified2_S2_nonSF) |
+                       (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_classified2_S2 & mask_classified2_S2_nonSF) |
+                       (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_classified2_S2 & mask_classified2_S2_nonSF))
+# all the unclassified2 spaxels (same as unclassified1)
+mask_unclassified2_S2_final = ((HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_unclassified2_S2) | 
+                           (HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_unclassified2_S2) | 
+                           (HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_unclassified2_S2) | 
+                           (HA_detected_HB_detected_SII_detected_OIII_detected & mask_unclassified2_S2))
 # # the rest are upper spaxels: 
 # mask_upper = (HA_not_detected | HA_detected_HB_not_detected)
 
 # Something else might be useful
 
 # all the constrained spaxels
-mask_classified_S2 = mask_SF_S2 | mask_nonSF_S2
+mask_classified1_S2 = mask_SF_S2 | mask_nonSF_S2
 
 # ------------------------------------------------------------------
 # 8.  Masks: Combine two BPT
 # ------------------------------------------------------------------
 
-# both:
+# ====== Classification 1: both (SF = HII + Comp in N2, HII in S2) ======
 
 # SF: SF in both N2 and S2 BPT diagrams:
 mask_SF_both = mask_SF_N2 & mask_SF_S2
 # non-SF: constrained in both N2 and S2 BPT diagrams, but not SF in either or both:
-mask_nonSF_both = ((mask_classified_N2 & mask_classified_S2) & ~mask_SF_both)
-# Unclassified: unconstrained in either N2 or S2 BPT diagrams: or 
-# mask_unclassified_both = (mask_unclassified_N2 | mask_unclassified_S2)
-mask_unclassified_both = ((~(mask_classified_N2 & mask_classified_S2)) & HA_detected_HB_detected)
-# # Upper: the rest are upper spaxels:
-# mask_upper = (HA_not_detected | HA_detected_HB_not_detected)
+mask_nonSF_both = ((mask_classified1_N2 & mask_classified1_S2) & ~mask_SF_both)
+# Unclassified1: unconstrained in either N2 or S2 BPT diagrams:
+mask_unclassified1_both = ((~(mask_classified1_N2 & mask_classified1_S2)) & HA_detected_HB_detected)
+# all the constrained spaxels:
+mask_classified1_both = (mask_classified1_N2 & mask_classified1_S2)
 
-# Something else might be useful
-# all the constrained spaxels: or mask_classified_both = ~mask_unclassified_both
-mask_classified_both = (mask_classified_N2 & mask_classified_S2)
-
-# either:
+# ====== Classification 1: either (SF = HII + Comp in N2, HII in S2) ======
 
 # SF: SF in either N2 or S2 BPT diagrams:
 mask_SF_either = mask_SF_N2 | mask_SF_S2
 # non-SF: constrained in either N2 or S2 BPT diagrams, but not SF in either or both:
-mask_nonSF_either = ((mask_classified_N2 | mask_classified_S2) & ~mask_SF_either)
-# Unclassified: unconstrained in either N2 or S2 BPT diagrams: or 
-# mask_unclassified_either = (mask_unclassified_N2 & mask_unclassified_S2)
-mask_unclassified_either = ((~(mask_classified_N2 | mask_classified_S2)) & HA_detected_HB_detected)
-# # Upper: the rest are upper spaxels:
-# mask_upper = (HA_not_detected | HA_detected_HB_not_detected)
+mask_nonSF_either = ((mask_classified1_N2 | mask_classified1_S2) & ~mask_SF_either)
+# Unclassified1: unconstrained in either N2 or S2 BPT diagrams:
+mask_unclassified1_either = ((~(mask_classified1_N2 | mask_classified1_S2)) & HA_detected_HB_detected)
+# all the constrained spaxels:
+mask_classified1_either = (mask_classified1_N2 | mask_classified1_S2)
 
-# Something else might be useful
-# all the constrained spaxels: or mask_classified_either = ~mask_unclassified_either
-mask_classified_either = (mask_classified_N2 | mask_classified_S2)
+# ====== Classification 2: both (SF = HII only in both N2 and S2) ======
+
+# SF: SF in both N2 and S2 BPT diagrams (HII only):
+mask_SF_both_class2 = mask_SF_N2_class2 & mask_SF_S2_class2
+# non-SF: constrained in both N2 and S2 BPT diagrams, but not SF:
+mask_nonSF_both_class2 = ((mask_classified2_N2 & mask_classified2_S2) & ~mask_SF_both_class2)
+# Unclassified2: unconstrained in either N2 or S2 BPT diagrams (same as unclassified1):
+mask_unclassified2_both = ((~(mask_classified2_N2 & mask_classified2_S2)) & HA_detected_HB_detected)
+# all the constrained spaxels:
+mask_classified2_both = (mask_classified2_N2 & mask_classified2_S2)
+
+# ====== Classification 2: either (SF = HII only in either N2 or S2) ======
+
+# SF: SF in either N2 or S2 BPT diagrams (HII only):
+mask_SF_either_class2 = mask_SF_N2_class2 | mask_SF_S2_class2
+# non-SF: constrained in either N2 or S2 BPT diagrams, but not SF:
+mask_nonSF_either_class2 = ((mask_classified2_N2 | mask_classified2_S2) & ~mask_SF_either_class2)
+# Unclassified2: unconstrained in either N2 or S2 BPT diagrams (same as unclassified1):
+mask_unclassified2_either = ((~(mask_classified2_N2 | mask_classified2_S2)) & HA_detected_HB_detected)
+# all the constrained spaxels:
+mask_classified2_either = (mask_classified2_N2 | mask_classified2_S2)
+
+# Upper limit spaxels (same for both classifications):
+mask_upper = (HA_not_detected | HA_detected_HB_not_detected)
 
 # ------------------------------------------------------------------
 # 9.  Append Σ_SFR layers (choose 'both' for now, but can be changed to 'either' or just fall back to 'N2' or 'S2')
 # ------------------------------------------------------------------
 
-def choose_BPT(choice='both'):
+def choose_BPT(choice='both', classification=1):
     """
     Choose BPT classification method and return SFR surface density maps, metallicity maps, line maps, and masks.
     
     Parameters:
     choice : str, optional
         BPT classification choice. Options: 'both', 'either', 'N2', 'S2' (default: 'both')
+    classification : int, optional
+        Classification scheme: 1 = SF includes HII+Comp, 2 = SF includes HII only (default: 1)
         
     Returns:
     tuple : (SFR_maps, metallicity_maps, line_maps, masks) where:
-        - SFR_maps: tuple of four arrays (SF, nonSF, unconstrained, upper) for the chosen BPT method
-        - metallicity_maps: tuple of thirteen arrays (O_H_D16_SF, O_H_PG16_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF) for SF regions only
-        - line_maps: tuple of six arrays (HB4861, HA6562, OIII5006, NII6583, SII6716, SII6730) for SF regions only
-        - masks: tuple of four boolean arrays (mask_SF, mask_nonSF, mask_unclassified, mask_upper)
+        - SFR_maps: tuple of four arrays (SF/HII, nonSF/nonHII, unconstrained, upper) for the chosen method
+        - metallicity_maps: tuple of thirteen arrays for SF/HII regions only
+        - line_maps: tuple of six arrays for SF/HII regions only
+        - masks: tuple of four boolean arrays (mask_SF/HII, mask_nonSF/nonHII, mask_unclassified1, mask_upper)
     """
-    # Get the appropriate masks based on choice
-    if choice == 'both':
-        mask_SF = mask_SF_both
-        mask_nonSF = mask_nonSF_both
-        mask_unclassified = mask_unclassified_both
-    elif choice == 'either':
-        mask_SF = mask_SF_either
-        mask_nonSF = mask_nonSF_either
-        mask_unclassified = mask_unclassified_either
-    elif choice == 'N2':
-        mask_SF = mask_SF_N2
-        mask_nonSF = mask_nonSF_N2
-        mask_unclassified = mask_unclassified_N2
-    elif choice == 'S2':
-        mask_SF = mask_SF_S2
-        mask_nonSF = mask_nonSF_S2
-        mask_unclassified = mask_unclassified_S2
+    # Get the appropriate masks based on choice and classification
+    if classification == 1:
+        # Classification 1: SF = HII + Comp in N2, HII in S2
+        if choice == 'both':
+            mask_SF = mask_SF_both
+            mask_nonSF = mask_nonSF_both
+            mask_unclassified1 = mask_unclassified1_both
+        elif choice == 'either':
+            mask_SF = mask_SF_either
+            mask_nonSF = mask_nonSF_either
+            mask_unclassified1 = mask_unclassified1_either
+        elif choice == 'N2':
+            mask_SF = mask_SF_N2
+            mask_nonSF = mask_nonSF_N2
+            mask_unclassified1 = mask_unclassified1_N2_final
+        elif choice == 'S2':
+            mask_SF = mask_SF_S2
+            mask_nonSF = mask_nonSF_S2
+            mask_unclassified1 = mask_unclassified1_S2_final
+        else:
+            raise ValueError(f"Invalid choice '{choice}'. Options: 'both', 'either', 'N2', 'S2'")
+    elif classification == 2:
+        # Classification 2: SF = HII only in both N2 and S2
+        if choice == 'both':
+            mask_SF = mask_SF_both_class2
+            mask_nonSF = mask_nonSF_both_class2
+            mask_unclassified1 = mask_unclassified2_both
+        elif choice == 'either':
+            mask_SF = mask_SF_either_class2
+            mask_nonSF = mask_nonSF_either_class2
+            mask_unclassified1 = mask_unclassified2_either
+        elif choice == 'N2':
+            mask_SF = mask_SF_N2_class2
+            mask_nonSF = mask_nonSF_N2_class2
+            mask_unclassified1 = mask_unclassified2_N2_final
+        elif choice == 'S2':
+            mask_SF = mask_SF_S2_class2
+            mask_nonSF = mask_nonSF_S2_class2
+            mask_unclassified1 = mask_unclassified2_S2_final
+        else:
+            raise ValueError(f"Invalid choice '{choice}'. Options: 'both', 'either', 'N2', 'S2'")
     else:
-        raise ValueError(f"Invalid choice '{choice}'. Options: 'both', 'either', 'N2', 'S2'")
+        raise ValueError(f"Invalid classification '{classification}'. Options: 1, 2")
     
     # Apply masks to create SFR surface density maps
     LOG_SFR_surface_density_map_SF = np.where(mask_SF, LOG_SFR_surface_density_map, np.nan)
     LOG_SFR_surface_density_map_nonSF = np.where(mask_nonSF, LOG_SFR_surface_density_map, np.nan)
-    LOG_SFR_surface_density_map_unclassified = np.where(mask_unclassified, LOG_SFR_surface_density_map, np.nan)
+    LOG_SFR_surface_density_map_unclassified1 = np.where(mask_unclassified1, LOG_SFR_surface_density_map, np.nan)
     LOG_SFR_surface_density_map_upper = np.where(mask_upper, LOG_SFR_surface_density_map, np.nan)
+    
+    # Apply masks to create SFR maps (not log)
+    SFR_map_SF = np.where(mask_SF, SFR_map, np.nan)
+    SFR_map_nonSF = np.where(mask_nonSF, SFR_map, np.nan)
+    SFR_map_unclassified1 = np.where(mask_unclassified1, SFR_map, np.nan)
+    SFR_map_upper = np.where(mask_upper, SFR_map, np.nan)
     
     # Apply SF mask to create metallicity maps (only for SF regions)
     O_H_D16_SF = np.where(mask_SF, O_H_D16, np.nan)
@@ -1797,21 +1922,27 @@ def choose_BPT(choice='both'):
 
     # Return SFR maps, metallicity maps, metallicity error maps, line maps, and masks
     sfr_maps = (LOG_SFR_surface_density_map_SF, LOG_SFR_surface_density_map_nonSF, 
-                LOG_SFR_surface_density_map_unclassified, LOG_SFR_surface_density_map_upper)
+                LOG_SFR_surface_density_map_unclassified1, LOG_SFR_surface_density_map_upper)
+    sfr_maps_regular = (SFR_map_SF, SFR_map_nonSF, SFR_map_unclassified1, SFR_map_upper)
     metallicity_maps = (O_H_D16_SF, O_H_PG16_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF)
     metallicity_error_maps = (O_H_O3N2_C20_SF_ERR, O_H_O3S2_C20_SF_ERR, O_H_RS32_C20_SF_ERR, O_H_R3_C20_SF_ERR, O_H_N2_C20_SF_ERR, O_H_S2_C20_SF_ERR, O_H_COMBINED_C20_SF_ERR)
     line_maps = (HB4861_FLUX_corr_SF, HA6562_FLUX_corr_SF, OIII5006_FLUX_corr_SF, 
                  NII6583_FLUX_corr_SF, SII6716_FLUX_corr_SF, SII6730_FLUX_corr_SF)
-    masks = (mask_SF, mask_nonSF, mask_unclassified, mask_upper)
+    masks = (mask_SF, mask_nonSF, mask_unclassified1, mask_upper)
     
-    return sfr_maps, metallicity_maps, metallicity_error_maps, line_maps, masks
+    return sfr_maps, sfr_maps_regular, metallicity_maps, metallicity_error_maps, line_maps, masks
 
 # Get the SFR surface density maps, metallicity maps, metallicity error maps, line maps, and masks using the default 'both' choice
+# Classification 1: SF = HII + Comp
 (LOG_SFR_surface_density_map_SF, LOG_SFR_surface_density_map_nonSF, 
- LOG_SFR_surface_density_map_unclassified, LOG_SFR_surface_density_map_upper), (O_H_D16_SF, O_H_PG16_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF), (O_H_O3N2_C20_SF_ERR, O_H_O3S2_C20_SF_ERR, O_H_RS32_C20_SF_ERR, O_H_R3_C20_SF_ERR, O_H_N2_C20_SF_ERR, O_H_S2_C20_SF_ERR, O_H_COMBINED_C20_SF_ERR), (HB4861_FLUX_corr_SF, HA6562_FLUX_corr_SF, OIII5006_FLUX_corr_SF, NII6583_FLUX_corr_SF, SII6716_FLUX_corr_SF, SII6730_FLUX_corr_SF), (mask_SF, mask_nonSF, mask_unclassified, mask_upper) = choose_BPT()
+ LOG_SFR_surface_density_map_unclassified1, LOG_SFR_surface_density_map_upper), (SFR_map_SF, SFR_map_nonSF, SFR_map_unclassified1, SFR_map_upper), (O_H_D16_SF, O_H_PG16_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF), (O_H_O3N2_C20_SF_ERR, O_H_O3S2_C20_SF_ERR, O_H_RS32_C20_SF_ERR, O_H_R3_C20_SF_ERR, O_H_N2_C20_SF_ERR, O_H_S2_C20_SF_ERR, O_H_COMBINED_C20_SF_ERR), (HB4861_FLUX_corr_SF, HA6562_FLUX_corr_SF, OIII5006_FLUX_corr_SF, NII6583_FLUX_corr_SF, SII6716_FLUX_corr_SF, SII6730_FLUX_corr_SF), (mask_SF, mask_nonSF, mask_unclassified1, mask_upper) = choose_BPT()
+
+# Classification 2: HII only
+(LOG_SFR_surface_density_map_HII, LOG_SFR_surface_density_map_nonHII, 
+ LOG_SFR_surface_density_map_unclassified2, LOG_SFR_surface_density_map_upper_HII), (SFR_map_HII, SFR_map_nonHII, SFR_map_unclassified2, SFR_map_upper_HII), (O_H_D16_HII, O_H_PG16_HII, O_H_O3N2_M13_HII, O_H_N2_M13_HII, O_H_O3N2_PP04_HII, O_H_N2_PP04_HII, O_H_O3N2_C20_HII, O_H_O3S2_C20_HII, O_H_RS32_C20_HII, O_H_R3_C20_HII, O_H_N2_C20_HII, O_H_S2_C20_HII, O_H_COMBINED_C20_HII), (O_H_O3N2_C20_HII_ERR, O_H_O3S2_C20_HII_ERR, O_H_RS32_C20_HII_ERR, O_H_R3_C20_HII_ERR, O_H_N2_C20_HII_ERR, O_H_S2_C20_HII_ERR, O_H_COMBINED_C20_HII_ERR), (HB4861_FLUX_corr_HII, HA6562_FLUX_corr_HII, OIII5006_FLUX_corr_HII, NII6583_FLUX_corr_HII, SII6716_FLUX_corr_HII, SII6730_FLUX_corr_HII), (mask_HII, mask_nonHII, mask_unclassified2, mask_upper_HII) = choose_BPT(classification=2)
 
 # ------------------------------------------------------------------
-# 10.  Calculate the total Metallicity in SF regions
+# 10.  Calculate the total Metallicity in SF regions (Classification 1)
 # ------------------------------------------------------------------
 
 # nansum the line maps in SF regions
@@ -1821,6 +1952,18 @@ OIII5006_FLUX_corr_SF_total = np.nansum(OIII5006_FLUX_corr_SF)
 NII6583_FLUX_corr_SF_total = np.nansum(NII6583_FLUX_corr_SF)
 SII6716_FLUX_corr_SF_total = np.nansum(SII6716_FLUX_corr_SF)
 SII6730_FLUX_corr_SF_total = np.nansum(SII6730_FLUX_corr_SF)
+
+# ------------------------------------------------------------------
+# 10a. Calculate the total Metallicity in HII regions (Classification 2)
+# ------------------------------------------------------------------
+
+# nansum the line maps in HII regions
+HB4861_FLUX_corr_HII_total = np.nansum(HB4861_FLUX_corr_HII)
+HA6562_FLUX_corr_HII_total = np.nansum(HA6562_FLUX_corr_HII)
+OIII5006_FLUX_corr_HII_total = np.nansum(OIII5006_FLUX_corr_HII)
+NII6583_FLUX_corr_HII_total = np.nansum(NII6583_FLUX_corr_HII)
+SII6716_FLUX_corr_HII_total = np.nansum(SII6716_FLUX_corr_HII)
+SII6730_FLUX_corr_HII_total = np.nansum(SII6730_FLUX_corr_HII)
 
 # Dopita et al. (2016) metallicity calculation (total)
 y_SF_total = np.log10(NII6583_FLUX_corr_SF_total / (SII6716_FLUX_corr_SF_total + SII6730_FLUX_corr_SF_total)) + 0.264*np.log10(NII6583_FLUX_corr_SF_total / HA6562_FLUX_corr_SF_total)
@@ -2337,6 +2480,122 @@ if np.any(np.isfinite(O_H_COMBINED_C20_SF)):
         O_H_COMBINED_C20_SF_total = np.nan
 else:
     O_H_COMBINED_C20_SF_total = np.nan
+
+# Dopita et al. (2016) metallicity calculation (HII total)
+y_HII_total = np.log10(NII6583_FLUX_corr_HII_total / (SII6716_FLUX_corr_HII_total + SII6730_FLUX_corr_HII_total)) + 0.264*np.log10(NII6583_FLUX_corr_HII_total / HA6562_FLUX_corr_HII_total)
+O_H_D16_HII_total = 8.77 + y_HII_total + 0.45*(y_HII_total + 0.3)**5
+
+# Pilyugin & Grebel (2016) metallicity calculation (HII total)
+OIII_scaled_HII_total = 1.33 * OIII5006_FLUX_corr_HII_total
+NII_scaled_HII_total = 1.34 * NII6583_FLUX_corr_HII_total
+N2_HII_total = NII_scaled_HII_total / HB4861_FLUX_corr_HII_total
+S2_HII_total = (SII6716_FLUX_corr_HII_total + SII6730_FLUX_corr_HII_total) / HB4861_FLUX_corr_HII_total
+R3_HII_total = OIII_scaled_HII_total / HB4861_FLUX_corr_HII_total
+log_R3_S2_HII_total = np.log10(R3_HII_total/S2_HII_total)
+log_N2_HII_total = np.log10(N2_HII_total)
+log_S2_HII_total = np.log10(S2_HII_total)
+O_H_PG16_HII_total = []
+if log_N2_HII_total >= -0.6:
+    O_H_PG16_HII_total = (a1_upper + a2_upper * log_R3_S2_HII_total + a3_upper * log_N2_HII_total + 
+                      (a4_upper + a5_upper * log_R3_S2_HII_total + a6_upper * log_N2_HII_total) * log_S2_HII_total)
+else:
+    O_H_PG16_HII_total = (a1_lower + a2_lower * log_R3_S2_HII_total + a3_lower * log_N2_HII_total +
+                        (a4_lower + a5_lower * log_R3_S2_HII_total + a6_lower * log_N2_HII_total) * log_S2_HII_total)
+
+# Other metallicity calculations for HII total
+oiii_hb_HII_total = OIII5006_FLUX_corr_HII_total / HB4861_FLUX_corr_HII_total
+nii_ha_HII_total = NII6583_FLUX_corr_HII_total / HA6562_FLUX_corr_HII_total
+o3n2_ratio_HII_total = np.log10(oiii_hb_HII_total / nii_ha_HII_total)
+
+# O3N2-M13 (Marino et al. 2013) metallicity calculation (HII total)
+O_H_O3N2_M13_HII_total = 8.533 - 0.214 * o3n2_ratio_HII_total
+
+# N2-M13 (Marino et al. 2013) metallicity calculation (HII total)
+n2_ratio_HII_total = np.log10(NII6583_FLUX_corr_HII_total / HA6562_FLUX_corr_HII_total)
+O_H_N2_M13_HII_total = 8.743 + 0.462 * n2_ratio_HII_total
+
+# O3N2-PP04 (Pettini & Pagel 2004) metallicity calculation (HII total)
+O_H_O3N2_PP04_HII_total = 8.73 - 0.32 * o3n2_ratio_HII_total
+
+# N2-PP04 (Pettini & Pagel 2004) metallicity calculation (HII total)
+O_H_N2_PP04_HII_total = (9.37 + 2.03 * n2_ratio_HII_total + 
+                       1.26 * n2_ratio_HII_total**2 + 
+                       0.32 * n2_ratio_HII_total**3)
+
+# C20 metallicity calculations for HII total (same logic as SF total but using HII fluxes)
+y_O3N2_HII_total = np.log10(OIII5006_FLUX_corr_HII_total/HB4861_FLUX_corr_HII_total) - np.log10(NII6583_FLUX_corr_HII_total/HA6562_FLUX_corr_HII_total)
+y_O3S2_HII_total = np.log10(OIII5006_FLUX_corr_HII_total/HB4861_FLUX_corr_HII_total) - np.log10((SII6716_FLUX_corr_HII_total+SII6730_FLUX_corr_HII_total)/HA6562_FLUX_corr_HII_total)
+y_RS32_HII_total = np.log10(R3_HII_total/S2_HII_total)
+y_R3_HII_total = np.log10(R3_HII_total)
+y_N2_HII_total = np.log10(N2_HII_total)
+y_S2_HII_total = np.log10(S2_HII_total)
+
+# C20 calibration coefficients (same as before)
+a_O3N2 = 8.533; b_O3N2 = -0.214
+a_O3S2 = 8.424; b_O3S2 = -0.030
+a_RS32 = 8.072; b_RS32 = 0.789
+a_R3 = 8.678; b_R3 = -0.372
+a_N2 = 8.743; b_N2 = 0.462
+a_S2 = 8.816; b_S2 = 0.447
+
+# Calculate C20 metallicities for HII total
+if np.isfinite(y_O3N2_HII_total):
+    O_H_O3N2_C20_HII_total = a_O3N2 + b_O3N2 * y_O3N2_HII_total
+else:
+    O_H_O3N2_C20_HII_total = np.nan
+    
+if np.isfinite(y_O3S2_HII_total):
+    O_H_O3S2_C20_HII_total = a_O3S2 + b_O3S2 * y_O3S2_HII_total
+else:
+    O_H_O3S2_C20_HII_total = np.nan
+    
+if np.isfinite(y_RS32_HII_total):
+    O_H_RS32_C20_HII_total = a_RS32 + b_RS32 * y_RS32_HII_total
+else:
+    O_H_RS32_C20_HII_total = np.nan
+    
+if np.isfinite(y_R3_HII_total):
+    O_H_R3_C20_HII_total = a_R3 + b_R3 * y_R3_HII_total
+else:
+    O_H_R3_C20_HII_total = np.nan
+    
+if np.isfinite(y_N2_HII_total):
+    O_H_N2_C20_HII_total = a_N2 + b_N2 * y_N2_HII_total
+else:
+    O_H_N2_C20_HII_total = np.nan
+    
+if np.isfinite(y_S2_HII_total):
+    O_H_S2_C20_HII_total = a_S2 + b_S2 * y_S2_HII_total
+else:
+    O_H_S2_C20_HII_total = np.nan
+
+# Combined C20 metallicity for HII total (select best method with minimum error)
+valid_methods_HII = []
+valid_values_HII = []
+if np.isfinite(O_H_O3N2_C20_HII_total):
+    valid_methods_HII.append('O3N2')
+    valid_values_HII.append(O_H_O3N2_C20_HII_total)
+if np.isfinite(O_H_O3S2_C20_HII_total):
+    valid_methods_HII.append('O3S2')
+    valid_values_HII.append(O_H_O3S2_C20_HII_total)
+if np.isfinite(O_H_RS32_C20_HII_total):
+    valid_methods_HII.append('RS32')
+    valid_values_HII.append(O_H_RS32_C20_HII_total)
+if np.isfinite(O_H_R3_C20_HII_total):
+    valid_methods_HII.append('R3')
+    valid_values_HII.append(O_H_R3_C20_HII_total)
+if np.isfinite(O_H_N2_C20_HII_total):
+    valid_methods_HII.append('N2')
+    valid_values_HII.append(O_H_N2_C20_HII_total)
+if np.isfinite(O_H_S2_C20_HII_total):
+    valid_methods_HII.append('S2')
+    valid_values_HII.append(O_H_S2_C20_HII_total)
+
+if len(valid_values_HII) > 0:
+    # For simplicity, use the first valid method (could implement error-based selection)
+    O_H_COMBINED_C20_HII_total = valid_values_HII[0]
+else:
+    O_H_COMBINED_C20_HII_total = np.nan
 
 # ------------------------------------------------------------------
 # 11.  Calculate the total Metallicity in total available regions
@@ -2870,6 +3129,70 @@ hdu_SII6730_FLUX_corr = fits.ImageHDU(SII6730_FLUX_corr.astype(np.float64),
                                       header=gas_header, name="SII6730_FLUX_corr")
 hdu_SII6730_FLUX_corr.header['BUNIT'] = '1e-20 erg s-1 cm-2'
 new_hdul.append(hdu_SII6730_FLUX_corr)
+
+# Line flux maps for SF regions (Classification 1)
+hdu_HB4861_FLUX_corr_SF = fits.ImageHDU(HB4861_FLUX_corr_SF.astype(np.float64),
+                                        header=gas_header, name="HB4861_FLUX_corr_SF")
+hdu_HB4861_FLUX_corr_SF.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_HB4861_FLUX_corr_SF.header['COMMENT'] = 'H-beta flux in SF regions (Classification 1)'
+new_hdul.append(hdu_HB4861_FLUX_corr_SF)
+hdu_HA6562_FLUX_corr_SF = fits.ImageHDU(HA6562_FLUX_corr_SF.astype(np.float64),
+                                       header=gas_header, name="HA6562_FLUX_corr_SF")
+hdu_HA6562_FLUX_corr_SF.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_HA6562_FLUX_corr_SF.header['COMMENT'] = 'H-alpha flux in SF regions (Classification 1)'
+new_hdul.append(hdu_HA6562_FLUX_corr_SF)
+hdu_OIII5006_FLUX_corr_SF = fits.ImageHDU(OIII5006_FLUX_corr_SF.astype(np.float64),
+                                         header=gas_header, name="OIII5006_FLUX_corr_SF")
+hdu_OIII5006_FLUX_corr_SF.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_OIII5006_FLUX_corr_SF.header['COMMENT'] = '[OIII]5007 flux in SF regions (Classification 1)'
+new_hdul.append(hdu_OIII5006_FLUX_corr_SF)
+hdu_NII6583_FLUX_corr_SF = fits.ImageHDU(NII6583_FLUX_corr_SF.astype(np.float64),
+                                        header=gas_header, name="NII6583_FLUX_corr_SF")
+hdu_NII6583_FLUX_corr_SF.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_NII6583_FLUX_corr_SF.header['COMMENT'] = '[NII]6583 flux in SF regions (Classification 1)'
+new_hdul.append(hdu_NII6583_FLUX_corr_SF)
+hdu_SII6716_FLUX_corr_SF = fits.ImageHDU(SII6716_FLUX_corr_SF.astype(np.float64),
+                                        header=gas_header, name="SII6716_FLUX_corr_SF")
+hdu_SII6716_FLUX_corr_SF.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_SII6716_FLUX_corr_SF.header['COMMENT'] = '[SII]6716 flux in SF regions (Classification 1)'
+new_hdul.append(hdu_SII6716_FLUX_corr_SF)
+hdu_SII6730_FLUX_corr_SF = fits.ImageHDU(SII6730_FLUX_corr_SF.astype(np.float64),
+                                        header=gas_header, name="SII6730_FLUX_corr_SF")
+hdu_SII6730_FLUX_corr_SF.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_SII6730_FLUX_corr_SF.header['COMMENT'] = '[SII]6730 flux in SF regions (Classification 1)'
+new_hdul.append(hdu_SII6730_FLUX_corr_SF)
+
+# Line flux maps for HII regions (Classification 2)
+hdu_HB4861_FLUX_corr_HII = fits.ImageHDU(HB4861_FLUX_corr_HII.astype(np.float64),
+                                         header=gas_header, name="HB4861_FLUX_corr_HII")
+hdu_HB4861_FLUX_corr_HII.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_HB4861_FLUX_corr_HII.header['COMMENT'] = 'H-beta flux in HII regions (Classification 2)'
+new_hdul.append(hdu_HB4861_FLUX_corr_HII)
+hdu_HA6562_FLUX_corr_HII = fits.ImageHDU(HA6562_FLUX_corr_HII.astype(np.float64),
+                                        header=gas_header, name="HA6562_FLUX_corr_HII")
+hdu_HA6562_FLUX_corr_HII.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_HA6562_FLUX_corr_HII.header['COMMENT'] = 'H-alpha flux in HII regions (Classification 2)'
+new_hdul.append(hdu_HA6562_FLUX_corr_HII)
+hdu_OIII5006_FLUX_corr_HII = fits.ImageHDU(OIII5006_FLUX_corr_HII.astype(np.float64),
+                                          header=gas_header, name="OIII5006_FLUX_corr_HII")
+hdu_OIII5006_FLUX_corr_HII.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_OIII5006_FLUX_corr_HII.header['COMMENT'] = '[OIII]5007 flux in HII regions (Classification 2)'
+new_hdul.append(hdu_OIII5006_FLUX_corr_HII)
+hdu_NII6583_FLUX_corr_HII = fits.ImageHDU(NII6583_FLUX_corr_HII.astype(np.float64),
+                                         header=gas_header, name="NII6583_FLUX_corr_HII")
+hdu_NII6583_FLUX_corr_HII.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_NII6583_FLUX_corr_HII.header['COMMENT'] = '[NII]6583 flux in HII regions (Classification 2)'
+new_hdul.append(hdu_NII6583_FLUX_corr_HII)
+hdu_SII6716_FLUX_corr_HII = fits.ImageHDU(SII6716_FLUX_corr_HII.astype(np.float64),
+                                         header=gas_header, name="SII6716_FLUX_corr_HII")
+hdu_SII6716_FLUX_corr_HII.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_SII6716_FLUX_corr_HII.header['COMMENT'] = '[SII]6716 flux in HII regions (Classification 2)'
+new_hdul.append(hdu_SII6716_FLUX_corr_HII)
+hdu_SII6730_FLUX_corr_HII = fits.ImageHDU(SII6730_FLUX_corr_HII.astype(np.float64),
+                                         header=gas_header, name="SII6730_FLUX_corr_HII")
+hdu_SII6730_FLUX_corr_HII.header['BUNIT'] = '1e-20 erg s-1 cm-2'
+hdu_SII6730_FLUX_corr_HII.header['COMMENT'] = '[SII]6730 flux in HII regions (Classification 2)'
+new_hdul.append(hdu_SII6730_FLUX_corr_HII)
 # Corrected Hα luminosity
 hdu_halpha_lum = fits.ImageHDU(HA6562_LUM.astype(np.float64),
                                header=gas_header, name="Halpha_Luminosity_corr")
@@ -2893,14 +3216,66 @@ hdu_logsfr_nonSF = fits.ImageHDU(LOG_SFR_surface_density_map_nonSF.astype(np.flo
                                  header=gas_header, name="LOGSFR_SURFACE_DENSITY_NONSF")
 hdu_logsfr_nonSF.header['BUNIT'] = 'log(M_sun/yr/kpc2)'
 new_hdul.append(hdu_logsfr_nonSF)
-hdu_logsfr_unclassified = fits.ImageHDU(LOG_SFR_surface_density_map_unclassified.astype(np.float64),
-                                           header=gas_header, name="LOGSFR_SURFACE_DENSITY_UNCLASSIFIED")
-hdu_logsfr_unclassified.header['BUNIT'] = 'log(M_sun/yr/kpc2)'
-new_hdul.append(hdu_logsfr_unclassified)
+hdu_logsfr_unclassified1 = fits.ImageHDU(LOG_SFR_surface_density_map_unclassified1.astype(np.float64),
+                                           header=gas_header, name="LOGSFR_SURFACE_DENSITY_UNCLASSIFIED1")
+hdu_logsfr_unclassified1.header['BUNIT'] = 'log(M_sun/yr/kpc2)'
+new_hdul.append(hdu_logsfr_unclassified1)
+
+# HII-specific SFR maps (Classification 2)
+hdu_logsfr_hii = fits.ImageHDU(LOG_SFR_surface_density_map_HII.astype(np.float64),
+                              header=gas_header, name="LOGSFR_SURFACE_DENSITY_HII")
+hdu_logsfr_hii.header['BUNIT'] = 'log(M_sun/yr/kpc2)'
+hdu_logsfr_hii.header['COMMENT'] = 'SFR surface density in HII regions only (Classification 2)'
+new_hdul.append(hdu_logsfr_hii)
+hdu_logsfr_nonhii = fits.ImageHDU(LOG_SFR_surface_density_map_nonHII.astype(np.float64),
+                                 header=gas_header, name="LOGSFR_SURFACE_DENSITY_NONHII")
+hdu_logsfr_nonhii.header['BUNIT'] = 'log(M_sun/yr/kpc2)'
+hdu_logsfr_nonhii.header['COMMENT'] = 'SFR surface density in non-HII regions (Classification 2)'
+new_hdul.append(hdu_logsfr_nonhii)
+hdu_logsfr_unclassified2 = fits.ImageHDU(LOG_SFR_surface_density_map_unclassified2.astype(np.float64),
+                                        header=gas_header, name="LOGSFR_SURFACE_DENSITY_UNCLASSIFIED2")
+hdu_logsfr_unclassified2.header['BUNIT'] = 'log(M_sun/yr/kpc2)'
+hdu_logsfr_unclassified2.header['COMMENT'] = 'SFR surface density in unclassified regions (Classification 2)'
+new_hdul.append(hdu_logsfr_unclassified2)
 hdu_logsfr_upper = fits.ImageHDU(LOG_SFR_surface_density_map_upper.astype(np.float64),
                                    header=gas_header, name="LOGSFR_SURFACE_DENSITY_UPPER")
 hdu_logsfr_upper.header['BUNIT'] = 'log(M_sun/yr/kpc2)'
 new_hdul.append(hdu_logsfr_upper)
+
+# Regular SFR maps (not log) - SF regions (Classification 1)
+hdu_sfr_sf = fits.ImageHDU(SFR_map_SF.astype(np.float64),
+                          header=gas_header, name="Halpha_SFR_corr_SF")
+hdu_sfr_sf.header['BUNIT'] = 'M_sun/yr/kpc2'
+hdu_sfr_sf.header['COMMENT'] = 'SFR surface density in SF regions (Classification 1)'
+new_hdul.append(hdu_sfr_sf)
+hdu_sfr_nonsf = fits.ImageHDU(SFR_map_nonSF.astype(np.float64),
+                             header=gas_header, name="Halpha_SFR_corr_nonSF")
+hdu_sfr_nonsf.header['BUNIT'] = 'M_sun/yr/kpc2'
+hdu_sfr_nonsf.header['COMMENT'] = 'SFR surface density in non-SF regions (Classification 1)'
+new_hdul.append(hdu_sfr_nonsf)
+hdu_sfr_unclassified1 = fits.ImageHDU(SFR_map_unclassified1.astype(np.float64),
+                                     header=gas_header, name="Halpha_SFR_corr_unclassified1")
+hdu_sfr_unclassified1.header['BUNIT'] = 'M_sun/yr/kpc2'
+hdu_sfr_unclassified1.header['COMMENT'] = 'SFR surface density in unclassified regions (Classification 1)'
+new_hdul.append(hdu_sfr_unclassified1)
+
+# Regular SFR maps (not log) - HII regions (Classification 2)
+hdu_sfr_hii = fits.ImageHDU(SFR_map_HII.astype(np.float64),
+                           header=gas_header, name="Halpha_SFR_corr_HII")
+hdu_sfr_hii.header['BUNIT'] = 'M_sun/yr/kpc2'
+hdu_sfr_hii.header['COMMENT'] = 'SFR surface density in HII regions only (Classification 2)'
+new_hdul.append(hdu_sfr_hii)
+hdu_sfr_nonhii = fits.ImageHDU(SFR_map_nonHII.astype(np.float64),
+                              header=gas_header, name="Halpha_SFR_corr_nonHII")
+hdu_sfr_nonhii.header['BUNIT'] = 'M_sun/yr/kpc2'
+hdu_sfr_nonhii.header['COMMENT'] = 'SFR surface density in non-HII regions (Classification 2)'
+new_hdul.append(hdu_sfr_nonhii)
+hdu_sfr_unclassified2 = fits.ImageHDU(SFR_map_unclassified2.astype(np.float64),
+                                     header=gas_header, name="Halpha_SFR_corr_unclassified2")
+hdu_sfr_unclassified2.header['BUNIT'] = 'M_sun/yr/kpc2'
+hdu_sfr_unclassified2.header['COMMENT'] = 'SFR surface density in unclassified regions (Classification 2)'
+new_hdul.append(hdu_sfr_unclassified2)
+
 # [O/H]
 hdu_O_H_D16_SF = fits.ImageHDU(O_H_D16_SF.astype(np.float64),
                              header=gas_header, name="O_H_D16_SF")
@@ -2973,6 +3348,147 @@ hdu_COMBINED_C20_METHOD.header['BUNIT'] = 'method_index'
 hdu_COMBINED_C20_METHOD.header['COMMENT'] = 'Method used for Combined C20: 0=O3N2, 1=O3S2, 2=RS32, 3=R3, 4=N2, 5=S2'
 new_hdul.append(hdu_COMBINED_C20_METHOD)
 
+# Metallicity error maps for SF regions (Classification 1)
+hdu_O_H_O3N2_C20_SF_ERR = fits.ImageHDU(O_H_O3N2_C20_SF_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_O3N2_C20_SF_ERR")
+hdu_O_H_O3N2_C20_SF_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3N2_C20_SF_ERR.header['COMMENT'] = 'O3N2-C20 metallicity error in SF regions'
+new_hdul.append(hdu_O_H_O3N2_C20_SF_ERR)
+hdu_O_H_O3S2_C20_SF_ERR = fits.ImageHDU(O_H_O3S2_C20_SF_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_O3S2_C20_SF_ERR")
+hdu_O_H_O3S2_C20_SF_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3S2_C20_SF_ERR.header['COMMENT'] = 'O3S2-C20 metallicity error in SF regions'
+new_hdul.append(hdu_O_H_O3S2_C20_SF_ERR)
+hdu_O_H_RS32_C20_SF_ERR = fits.ImageHDU(O_H_RS32_C20_SF_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_RS32_C20_SF_ERR")
+hdu_O_H_RS32_C20_SF_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_RS32_C20_SF_ERR.header['COMMENT'] = 'RS32-C20 metallicity error in SF regions'
+new_hdul.append(hdu_O_H_RS32_C20_SF_ERR)
+hdu_O_H_R3_C20_SF_ERR = fits.ImageHDU(O_H_R3_C20_SF_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_R3_C20_SF_ERR")
+hdu_O_H_R3_C20_SF_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_R3_C20_SF_ERR.header['COMMENT'] = 'R3-C20 metallicity error in SF regions'
+new_hdul.append(hdu_O_H_R3_C20_SF_ERR)
+hdu_O_H_N2_C20_SF_ERR = fits.ImageHDU(O_H_N2_C20_SF_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_N2_C20_SF_ERR")
+hdu_O_H_N2_C20_SF_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_N2_C20_SF_ERR.header['COMMENT'] = 'N2-C20 metallicity error in SF regions'
+new_hdul.append(hdu_O_H_N2_C20_SF_ERR)
+hdu_O_H_S2_C20_SF_ERR = fits.ImageHDU(O_H_S2_C20_SF_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_S2_C20_SF_ERR")
+hdu_O_H_S2_C20_SF_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_S2_C20_SF_ERR.header['COMMENT'] = 'S2-C20 metallicity error in SF regions'
+new_hdul.append(hdu_O_H_S2_C20_SF_ERR)
+hdu_O_H_COMBINED_C20_SF_ERR = fits.ImageHDU(O_H_COMBINED_C20_SF_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_COMBINED_C20_SF_ERR")
+hdu_O_H_COMBINED_C20_SF_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_COMBINED_C20_SF_ERR.header['COMMENT'] = 'Combined C20 metallicity error in SF regions'
+new_hdul.append(hdu_O_H_COMBINED_C20_SF_ERR)
+
+# HII-specific metallicity maps (Classification 2)
+hdu_O_H_D16_HII = fits.ImageHDU(O_H_D16_HII.astype(np.float64),
+                             header=gas_header, name="O_H_D16_HII")
+hdu_O_H_D16_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_D16_HII.header['COMMENT'] = 'D16 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_D16_HII)
+hdu_O_H_PG16_HII = fits.ImageHDU(O_H_PG16_HII.astype(np.float64),
+                             header=gas_header, name="O_H_PG16_HII")
+hdu_O_H_PG16_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_PG16_HII.header['COMMENT'] = 'PG16 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_PG16_HII)
+hdu_O_H_O3N2_M13_HII = fits.ImageHDU(O_H_O3N2_M13_HII.astype(np.float64),
+                             header=gas_header, name="O_H_O3N2_M13_HII")
+hdu_O_H_O3N2_M13_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3N2_M13_HII.header['COMMENT'] = 'O3N2-M13 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_O3N2_M13_HII)
+hdu_O_H_N2_M13_HII = fits.ImageHDU(O_H_N2_M13_HII.astype(np.float64),
+                             header=gas_header, name="O_H_N2_M13_HII")
+hdu_O_H_N2_M13_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_N2_M13_HII.header['COMMENT'] = 'N2-M13 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_N2_M13_HII)
+hdu_O_H_O3N2_PP04_HII = fits.ImageHDU(O_H_O3N2_PP04_HII.astype(np.float64),
+                             header=gas_header, name="O_H_O3N2_PP04_HII")
+hdu_O_H_O3N2_PP04_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3N2_PP04_HII.header['COMMENT'] = 'O3N2-PP04 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_O3N2_PP04_HII)
+hdu_O_H_N2_PP04_HII = fits.ImageHDU(O_H_N2_PP04_HII.astype(np.float64),
+                             header=gas_header, name="O_H_N2_PP04_HII")
+hdu_O_H_N2_PP04_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_N2_PP04_HII.header['COMMENT'] = 'N2-PP04 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_N2_PP04_HII)
+hdu_O_H_O3N2_C20_HII = fits.ImageHDU(O_H_O3N2_C20_HII.astype(np.float64),
+                             header=gas_header, name="O_H_O3N2_C20_HII")
+hdu_O_H_O3N2_C20_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3N2_C20_HII.header['COMMENT'] = 'O3N2-C20 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_O3N2_C20_HII)
+hdu_O_H_O3S2_C20_HII = fits.ImageHDU(O_H_O3S2_C20_HII.astype(np.float64),
+                             header=gas_header, name="O_H_O3S2_C20_HII")
+hdu_O_H_O3S2_C20_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3S2_C20_HII.header['COMMENT'] = 'O3S2-C20 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_O3S2_C20_HII)
+hdu_O_H_RS32_C20_HII = fits.ImageHDU(O_H_RS32_C20_HII.astype(np.float64),
+                             header=gas_header, name="O_H_RS32_C20_HII")
+hdu_O_H_RS32_C20_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_RS32_C20_HII.header['COMMENT'] = 'RS32-C20 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_RS32_C20_HII)
+hdu_O_H_R3_C20_HII = fits.ImageHDU(O_H_R3_C20_HII.astype(np.float64),
+                             header=gas_header, name="O_H_R3_C20_HII")
+hdu_O_H_R3_C20_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_R3_C20_HII.header['COMMENT'] = 'R3-C20 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_R3_C20_HII)
+hdu_O_H_N2_C20_HII = fits.ImageHDU(O_H_N2_C20_HII.astype(np.float64),
+                             header=gas_header, name="O_H_N2_C20_HII")
+hdu_O_H_N2_C20_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_N2_C20_HII.header['COMMENT'] = 'N2-C20 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_N2_C20_HII)
+hdu_O_H_S2_C20_HII = fits.ImageHDU(O_H_S2_C20_HII.astype(np.float64),
+                             header=gas_header, name="O_H_S2_C20_HII")
+hdu_O_H_S2_C20_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_S2_C20_HII.header['COMMENT'] = 'S2-C20 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_S2_C20_HII)
+hdu_O_H_COMBINED_C20_HII = fits.ImageHDU(O_H_COMBINED_C20_HII.astype(np.float64),
+                             header=gas_header, name="O_H_COMBINED_C20_HII")
+hdu_O_H_COMBINED_C20_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_COMBINED_C20_HII.header['COMMENT'] = 'Combined C20 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_COMBINED_C20_HII)
+
+# Metallicity error maps for HII regions (Classification 2)
+hdu_O_H_O3N2_C20_HII_ERR = fits.ImageHDU(O_H_O3N2_C20_HII_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_O3N2_C20_HII_ERR")
+hdu_O_H_O3N2_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3N2_C20_HII_ERR.header['COMMENT'] = 'O3N2-C20 metallicity error in HII regions (Classification 2)'
+new_hdul.append(hdu_O_H_O3N2_C20_HII_ERR)
+hdu_O_H_O3S2_C20_HII_ERR = fits.ImageHDU(O_H_O3S2_C20_HII_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_O3S2_C20_HII_ERR")
+hdu_O_H_O3S2_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_O3S2_C20_HII_ERR.header['COMMENT'] = 'O3S2-C20 metallicity error in HII regions (Classification 2)'
+new_hdul.append(hdu_O_H_O3S2_C20_HII_ERR)
+hdu_O_H_RS32_C20_HII_ERR = fits.ImageHDU(O_H_RS32_C20_HII_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_RS32_C20_HII_ERR")
+hdu_O_H_RS32_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_RS32_C20_HII_ERR.header['COMMENT'] = 'RS32-C20 metallicity error in HII regions (Classification 2)'
+new_hdul.append(hdu_O_H_RS32_C20_HII_ERR)
+hdu_O_H_R3_C20_HII_ERR = fits.ImageHDU(O_H_R3_C20_HII_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_R3_C20_HII_ERR")
+hdu_O_H_R3_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_R3_C20_HII_ERR.header['COMMENT'] = 'R3-C20 metallicity error in HII regions (Classification 2)'
+new_hdul.append(hdu_O_H_R3_C20_HII_ERR)
+hdu_O_H_N2_C20_HII_ERR = fits.ImageHDU(O_H_N2_C20_HII_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_N2_C20_HII_ERR")
+hdu_O_H_N2_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_N2_C20_HII_ERR.header['COMMENT'] = 'N2-C20 metallicity error in HII regions (Classification 2)'
+new_hdul.append(hdu_O_H_N2_C20_HII_ERR)
+hdu_O_H_S2_C20_HII_ERR = fits.ImageHDU(O_H_S2_C20_HII_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_S2_C20_HII_ERR")
+hdu_O_H_S2_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_S2_C20_HII_ERR.header['COMMENT'] = 'S2-C20 metallicity error in HII regions (Classification 2)'
+new_hdul.append(hdu_O_H_S2_C20_HII_ERR)
+hdu_O_H_COMBINED_C20_HII_ERR = fits.ImageHDU(O_H_COMBINED_C20_HII_ERR.astype(np.float64),
+                             header=gas_header, name="O_H_COMBINED_C20_HII_ERR")
+hdu_O_H_COMBINED_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_COMBINED_C20_HII_ERR.header['COMMENT'] = 'Combined C20 metallicity error in HII regions (Classification 2)'
+new_hdul.append(hdu_O_H_COMBINED_C20_HII_ERR)
+
 new_hdul.writeto(out_path, overwrite=True)
 print("Extended file written ➜", out_path.resolve())
 
@@ -2987,27 +3503,28 @@ print("Total non-nan spaxels:", total_spaxels)
 # Print the number of 6 cases that need number, 2 upper cases, and 4 unclassified cases
 print("Number of pixels with Halpha not detected:", np.sum(HA_not_detected))
 print("Number of pixels with Halpha detected, Hbeta not detected:", np.sum(HA_detected_HB_not_detected))
-print("Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII not detected and unclassified:", 
-      np.sum(HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_unclassified))
-print("Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII detected and unclassified:",
-      np.sum(HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_unclassified))
-print("Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII not detected and unclassified:",
-      np.sum(HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_unclassified))
-print("Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII detected and unclassified:",
-      np.sum(HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_unclassified))
-print("Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII not detected and unclassified:", 
-      np.sum(HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_N2_unclassified))
-print("Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII detected and unclassified:",
-      np.sum(HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_N2_unclassified))
-print("Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII not detected and unclassified:",
-      np.sum(HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_N2_unclassified))
-print("Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII detected and unclassified:",
-      np.sum(HA_detected_HB_detected_SII_detected_OIII_detected & mask_N2_unclassified))
+print("Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII not detected and unclassified1:", 
+      np.sum(HA_detected_HB_detected_NII_not_detected_OIII_not_detected & mask_N2_unclassified1))
+print("Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII detected and unclassified1:",
+      np.sum(HA_detected_HB_detected_NII_not_detected_OIII_detected & mask_N2_unclassified1))
+print("Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII not detected and unclassified1:",
+      np.sum(HA_detected_HB_detected_NII_detected_OIII_not_detected & mask_N2_unclassified1))
+print("Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII detected and unclassified1:",
+      np.sum(HA_detected_HB_detected_NII_detected_OIII_detected & mask_N2_unclassified1))
+print("Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII not detected and unclassified1:", 
+      np.sum(HA_detected_HB_detected_SII_not_detected_OIII_not_detected & mask_N2_unclassified1))
+print("Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII detected and unclassified1:",
+      np.sum(HA_detected_HB_detected_SII_not_detected_OIII_detected & mask_N2_unclassified1))
+print("Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII not detected and unclassified1:",
+      np.sum(HA_detected_HB_detected_SII_detected_OIII_not_detected & mask_N2_unclassified1))
+print("Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII detected and unclassified1:",
+      np.sum(HA_detected_HB_detected_SII_detected_OIII_detected & mask_N2_unclassified1))
 print("--------------------------------------------------------------")
 print(f"Total corrected Halpha luminosity: {np.nansum(HA6562_LUM):.2e} erg/s")
 print(f"Total corrected Halpha luminosity from SF region: {np.nansum(HA6562_LUM[mask_SF]):.2e} erg/s")
 print(f"Total Halpha SFR: {np.nansum(SFR_map):.2f} M☉/yr or in log10 scale: {np.log10(np.nansum(SFR_map)):.2f} log(M☉/yr)")
 print(f"Total Halpha SFR from SF region: {np.nansum(SFR_map[mask_SF]):.2f} M☉/yr or in log10 scale: {np.log10(np.nansum(SFR_map[mask_SF])):.2f} log(M☉/yr)")
+print(f"Total Halpha SFR from HII region: {np.nansum(SFR_map[mask_HII]):.2f} M☉/yr or in log10 scale: {np.log10(np.nansum(SFR_map[mask_HII])):.2f} log(M☉/yr)")
 print("--------------------------------------------------------------")
 print("[O/H] D16 SF: Total metallicity in SF region: ", O_H_D16_SF_total)
 print("[O/H] PG16 SF: Total metallicity in SF region: ", O_H_PG16_SF_total)
@@ -3022,6 +3539,20 @@ print("[O/H] R3-C20 SF: Total metallicity in SF region: ", O_H_R3_C20_SF_total)
 print("[O/H] N2-C20 SF: Total metallicity in SF region: ", O_H_N2_C20_SF_total)
 print("[O/H] S2-C20 SF: Total metallicity in SF region: ", O_H_S2_C20_SF_total)
 print("[O/H] Combined-C20 SF: Total metallicity in SF region: ", O_H_COMBINED_C20_SF_total)
+print("--------------------------------------------------------------")
+print("[O/H] D16 HII: Total metallicity in HII region: ", O_H_D16_HII_total)
+print("[O/H] PG16 HII: Total metallicity in HII region: ", O_H_PG16_HII_total)
+print("[O/H] O3N2-M13 HII: Total metallicity in HII region: ", O_H_O3N2_M13_HII_total)
+print("[O/H] N2-M13 HII: Total metallicity in HII region: ", O_H_N2_M13_HII_total)
+print("[O/H] O3N2-PP04 HII: Total metallicity in HII region: ", O_H_O3N2_PP04_HII_total)
+print("[O/H] N2-PP04 HII: Total metallicity in HII region: ", O_H_N2_PP04_HII_total)
+print("[O/H] O3N2-C20 HII: Total metallicity in HII region: ", O_H_O3N2_C20_HII_total)
+print("[O/H] O3S2-C20 HII: Total metallicity in HII region: ", O_H_O3S2_C20_HII_total)
+print("[O/H] RS32-C20 HII: Total metallicity in HII region: ", O_H_RS32_C20_HII_total)
+print("[O/H] R3-C20 HII: Total metallicity in HII region: ", O_H_R3_C20_HII_total)
+print("[O/H] N2-C20 HII: Total metallicity in HII region: ", O_H_N2_C20_HII_total)
+print("[O/H] S2-C20 HII: Total metallicity in HII region: ", O_H_S2_C20_HII_total)
+print("[O/H] Combined-C20 HII: Total metallicity in HII region: ", O_H_COMBINED_C20_HII_total)
 print("--------------------------------------------------------------")
 print("[O/H] D16: Total metallicity in total region: ", O_H_D16_total)
 print("[O/H] PG16: Total metallicity in total region: ", O_H_PG16_total)
