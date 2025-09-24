@@ -115,6 +115,23 @@ Changes (2025-09-23)
   - Complete metallicity totals for both SF and HII regions using all calibration methods
 * Maintained backwards compatibility while providing new conservative analysis option
 * Updated variable naming convention: '_classified' → '_classified1', '_unclassified' → '_unclassified1'
+
+Changes (2025-09-24)
+-----------------------
+* Added N2S2-N06 metallicity calibration (Nakajima & Ouchi 2014) positioned between PG16 and O3N2-M13:
+  - Implemented calculate_n2s2_n06_metallicity() function with cubic polynomial equation
+  - Equation: log([N II]λ6584/([S II]λ6716+λ6731)) = -0.25214 + 0.74100·x + 0.58181·x² + 0.17963·x³
+  - Valid range: 7.05 < 12+log(O/H) < 9.25 with automatic range validation
+  - Uses numpy.roots() for accurate 3rd-order polynomial root solving
+* Complete integration across dual BPT classification systems:
+  - Added O_H_N2S2_N06_SF and O_H_N2S2_N06_HII maps for both classifications
+  - Integrated total region calculations: O_H_N2S2_N06_SF_total, O_H_N2S2_N06_HII_total, O_H_N2S2_N06_total
+  - Added FITS HDU extensions with descriptive headers and metadata
+  - Enhanced terminal reporting with N2S2-N06 metallicity summaries for all regions
+* Robust implementation features:
+  - Comprehensive error handling for invalid flux data (NaN, negative, zero values)
+  - Automatic masking and range validation within calibration limits
+  - Maintains full backward compatibility with existing analysis pipeline
 """
 
 # ------------------------------------------------------------------
@@ -186,7 +203,7 @@ gal  = args.galaxy.upper()
 root = Path(args.root)
 
 gas_path = root / "products" / "v0.6" / gal / f"{gal}_gas_BIN_maps.fits" # For CANFAR
-# gas_path = Path(f"{gal}_gas_BIN_maps.fits") # For local testing
+gas_path = Path(f"{gal}_gas_BIN_maps.fits") # For local testing
 out_path = Path(f"{gal}_gas_BIN_maps_extended.fits")
 kin_path = Path(f"{gal}_KIN_maps_extended.fits")          # foreground + stellar V
 
@@ -413,6 +430,61 @@ O_H_PG16[lower_mask] = (a1_lower + a2_lower * log_R3_S2[lower_mask] + a3_lower *
                         (a4_lower + a5_lower * log_R3_S2[lower_mask] + a6_lower * log_N2[lower_mask]) * log_S2[lower_mask])
 # Set O_H_PG16 to be nan if outside the range of 7.63 and 9.23
 O_H_PG16 = np.where((O_H_PG16 < 7.63) | (O_H_PG16 > 9.23), np.nan, O_H_PG16)
+
+# N2S2-N06 metallicity calculation function
+def calculate_n2s2_n06_metallicity(nii6583_flux, ha6562_flux, sii6716_flux, sii6730_flux):
+    """Calculate [O/H] using N2S2-N06 calibration:
+    log(N2S2) = log([NII]λ6584 / ([SII]λ6716+λ6731)) = -0.25214 + 0.74100*x + 0.58181*x² + 0.17963*x³
+    where x = 12+log(O/H) - 8.69 = log(Z/Z☉), valid range: 7.05 < 12+log(O/H) < 9.25
+    """
+    # Use basic finite checks on emission lines
+    good_mask = (np.isfinite(nii6583_flux) & np.isfinite(ha6562_flux) &
+                np.isfinite(sii6716_flux) & np.isfinite(sii6730_flux) &
+                (nii6583_flux > 0) & (ha6562_flux > 0) &
+                (sii6716_flux > 0) & (sii6730_flux > 0))
+    
+    # Initialize output arrays
+    oh_n2s2_n06 = np.full_like(nii6583_flux, np.nan)
+    
+    # Calculate N2S2 ratio
+    sii_total = sii6716_flux + sii6730_flux  # [SII] λ6716+λ6731
+    n2s2_ratio = np.log10(nii6583_flux / sii_total)
+    
+    # Apply N2S2-N06 calibration - solve cubic polynomial for x
+    # log(N2S2) = -0.25214 + 0.74100*x + 0.58181*x² + 0.17963*x³
+    # Rearrange to: 0.17963*x³ + 0.58181*x² + 0.74100*x + (-0.25214 - log(N2S2)) = 0
+    c3 = 0.17963
+    c2 = 0.58181
+    c1 = 0.74100
+    c0 = -0.25214
+    
+    if np.any(good_mask):
+        valid_indices = np.where(good_mask)
+        for i in range(len(valid_indices[0])):
+            idx_y, idx_x = valid_indices[0][i], valid_indices[1][i]
+            n2s2_val = n2s2_ratio[idx_y, idx_x]
+            
+            # Solve cubic equation: c3*x³ + c2*x² + c1*x + (c0 - n2s2_val) = 0
+            poly_coeffs = [c3, c2, c1, (c0 - n2s2_val)]
+            roots = np.roots(poly_coeffs)
+            
+            # Select the real root that gives reasonable metallicity values
+            real_roots = roots[np.isreal(roots)].real
+            if len(real_roots) > 0:
+                # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
+                # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
+                valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
+                if len(valid_roots) > 0:
+                    x_final = valid_roots[0]  # Take first valid root
+                    oh_n2s2_n06[idx_y, idx_x] = x_final + 8.69
+    
+    return oh_n2s2_n06, good_mask
+
+# Calculate N2S2-N06 metallicity
+O_H_N2S2_N06, n2s2_n06_good_mask = calculate_n2s2_n06_metallicity(
+    NII6583_FLUX_corr, HA6562_FLUX_corr, SII6716_FLUX_corr, SII6730_FLUX_corr)
+# Set O_H_N2S2_N06 to be nan if outside the range of 7.05 and 9.25 (calibration valid range)
+O_H_N2S2_N06 = np.where((O_H_N2S2_N06 < 7.05) | (O_H_N2S2_N06 > 9.25), np.nan, O_H_N2S2_N06)
 
 # O3N2-M13 (Marino et al. 2013) metallicity calculation function
 def calculate_o3n2_m13_metallicity(hb4861_flux, oiii5006_flux, nii6583_flux, ha6562_flux, oh_d16_sf):
@@ -1883,6 +1955,7 @@ def choose_BPT(choice='both', classification=1):
     # Apply SF mask to create metallicity maps (only for SF regions)
     O_H_D16_SF = np.where(mask_SF, O_H_D16, np.nan)
     O_H_PG16_SF = np.where(mask_SF, O_H_PG16, np.nan)
+    O_H_N2S2_N06_SF = np.where(mask_SF, O_H_N2S2_N06, np.nan)
     O_H_O3N2_M13_SF = np.where(mask_SF, O_H_O3N2_M13, np.nan)
     O_H_N2_M13_SF = np.where(mask_SF, O_H_N2_M13, np.nan)
     O_H_O3N2_PP04_SF = np.where(mask_SF, O_H_O3N2_PP04, np.nan)
@@ -1924,7 +1997,7 @@ def choose_BPT(choice='both', classification=1):
     sfr_maps = (LOG_SFR_surface_density_map_SF, LOG_SFR_surface_density_map_nonSF, 
                 LOG_SFR_surface_density_map_unclassified1, LOG_SFR_surface_density_map_upper)
     sfr_maps_regular = (SFR_map_SF, SFR_map_nonSF, SFR_map_unclassified1, SFR_map_upper)
-    metallicity_maps = (O_H_D16_SF, O_H_PG16_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF)
+    metallicity_maps = (O_H_D16_SF, O_H_PG16_SF, O_H_N2S2_N06_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF)
     metallicity_error_maps = (O_H_O3N2_C20_SF_ERR, O_H_O3S2_C20_SF_ERR, O_H_RS32_C20_SF_ERR, O_H_R3_C20_SF_ERR, O_H_N2_C20_SF_ERR, O_H_S2_C20_SF_ERR, O_H_COMBINED_C20_SF_ERR)
     line_maps = (HB4861_FLUX_corr_SF, HA6562_FLUX_corr_SF, OIII5006_FLUX_corr_SF, 
                  NII6583_FLUX_corr_SF, SII6716_FLUX_corr_SF, SII6730_FLUX_corr_SF)
@@ -1935,11 +2008,11 @@ def choose_BPT(choice='both', classification=1):
 # Get the SFR surface density maps, metallicity maps, metallicity error maps, line maps, and masks using the default 'both' choice
 # Classification 1: SF = HII + Comp
 (LOG_SFR_surface_density_map_SF, LOG_SFR_surface_density_map_nonSF, 
- LOG_SFR_surface_density_map_unclassified1, LOG_SFR_surface_density_map_upper), (SFR_map_SF, SFR_map_nonSF, SFR_map_unclassified1, SFR_map_upper), (O_H_D16_SF, O_H_PG16_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF), (O_H_O3N2_C20_SF_ERR, O_H_O3S2_C20_SF_ERR, O_H_RS32_C20_SF_ERR, O_H_R3_C20_SF_ERR, O_H_N2_C20_SF_ERR, O_H_S2_C20_SF_ERR, O_H_COMBINED_C20_SF_ERR), (HB4861_FLUX_corr_SF, HA6562_FLUX_corr_SF, OIII5006_FLUX_corr_SF, NII6583_FLUX_corr_SF, SII6716_FLUX_corr_SF, SII6730_FLUX_corr_SF), (mask_SF, mask_nonSF, mask_unclassified1, mask_upper) = choose_BPT()
+ LOG_SFR_surface_density_map_unclassified1, LOG_SFR_surface_density_map_upper), (SFR_map_SF, SFR_map_nonSF, SFR_map_unclassified1, SFR_map_upper), (O_H_D16_SF, O_H_PG16_SF, O_H_N2S2_N06_SF, O_H_O3N2_M13_SF, O_H_N2_M13_SF, O_H_O3N2_PP04_SF, O_H_N2_PP04_SF, O_H_O3N2_C20_SF, O_H_O3S2_C20_SF, O_H_RS32_C20_SF, O_H_R3_C20_SF, O_H_N2_C20_SF, O_H_S2_C20_SF, O_H_COMBINED_C20_SF), (O_H_O3N2_C20_SF_ERR, O_H_O3S2_C20_SF_ERR, O_H_RS32_C20_SF_ERR, O_H_R3_C20_SF_ERR, O_H_N2_C20_SF_ERR, O_H_S2_C20_SF_ERR, O_H_COMBINED_C20_SF_ERR), (HB4861_FLUX_corr_SF, HA6562_FLUX_corr_SF, OIII5006_FLUX_corr_SF, NII6583_FLUX_corr_SF, SII6716_FLUX_corr_SF, SII6730_FLUX_corr_SF), (mask_SF, mask_nonSF, mask_unclassified1, mask_upper) = choose_BPT()
 
 # Classification 2: HII only
 (LOG_SFR_surface_density_map_HII, LOG_SFR_surface_density_map_nonHII, 
- LOG_SFR_surface_density_map_unclassified2, LOG_SFR_surface_density_map_upper_HII), (SFR_map_HII, SFR_map_nonHII, SFR_map_unclassified2, SFR_map_upper_HII), (O_H_D16_HII, O_H_PG16_HII, O_H_O3N2_M13_HII, O_H_N2_M13_HII, O_H_O3N2_PP04_HII, O_H_N2_PP04_HII, O_H_O3N2_C20_HII, O_H_O3S2_C20_HII, O_H_RS32_C20_HII, O_H_R3_C20_HII, O_H_N2_C20_HII, O_H_S2_C20_HII, O_H_COMBINED_C20_HII), (O_H_O3N2_C20_HII_ERR, O_H_O3S2_C20_HII_ERR, O_H_RS32_C20_HII_ERR, O_H_R3_C20_HII_ERR, O_H_N2_C20_HII_ERR, O_H_S2_C20_HII_ERR, O_H_COMBINED_C20_HII_ERR), (HB4861_FLUX_corr_HII, HA6562_FLUX_corr_HII, OIII5006_FLUX_corr_HII, NII6583_FLUX_corr_HII, SII6716_FLUX_corr_HII, SII6730_FLUX_corr_HII), (mask_HII, mask_nonHII, mask_unclassified2, mask_upper_HII) = choose_BPT(classification=2)
+ LOG_SFR_surface_density_map_unclassified2, LOG_SFR_surface_density_map_upper_HII), (SFR_map_HII, SFR_map_nonHII, SFR_map_unclassified2, SFR_map_upper_HII), (O_H_D16_HII, O_H_PG16_HII, O_H_N2S2_N06_HII, O_H_O3N2_M13_HII, O_H_N2_M13_HII, O_H_O3N2_PP04_HII, O_H_N2_PP04_HII, O_H_O3N2_C20_HII, O_H_O3S2_C20_HII, O_H_RS32_C20_HII, O_H_R3_C20_HII, O_H_N2_C20_HII, O_H_S2_C20_HII, O_H_COMBINED_C20_HII), (O_H_O3N2_C20_HII_ERR, O_H_O3S2_C20_HII_ERR, O_H_RS32_C20_HII_ERR, O_H_R3_C20_HII_ERR, O_H_N2_C20_HII_ERR, O_H_S2_C20_HII_ERR, O_H_COMBINED_C20_HII_ERR), (HB4861_FLUX_corr_HII, HA6562_FLUX_corr_HII, OIII5006_FLUX_corr_HII, NII6583_FLUX_corr_HII, SII6716_FLUX_corr_HII, SII6730_FLUX_corr_HII), (mask_HII, mask_nonHII, mask_unclassified2, mask_upper_HII) = choose_BPT(classification=2)
 
 # ------------------------------------------------------------------
 # 10.  Calculate the total Metallicity in SF regions (Classification 1)
@@ -1989,6 +2062,44 @@ O_H_PG16_SF_total = []
 if log_N2_SF_total >= -0.6:
     O_H_PG16_SF_total = (a1_upper + a2_upper * log_R3_S2_SF_total + a3_upper * log_N2_SF_total + 
                       (a4_upper + a5_upper * log_R3_S2_SF_total + a6_upper * log_N2_SF_total) * log_S2_SF_total)
+else:
+    O_H_PG16_SF_total = (a1_lower + a2_lower * log_R3_S2_SF_total + a3_lower * log_N2_SF_total + 
+                      (a4_lower + a5_lower * log_R3_S2_SF_total + a6_lower * log_N2_SF_total) * log_S2_SF_total)
+
+# N2S2-N06 metallicity calculation for SF total region
+# Calculate N2S2 ratio for total SF region using N2S2-N06 calibration
+if (np.isfinite(NII6583_FLUX_corr_SF_total) and np.isfinite(SII6716_FLUX_corr_SF_total) and
+    np.isfinite(SII6730_FLUX_corr_SF_total) and 
+    NII6583_FLUX_corr_SF_total > 0 and SII6716_FLUX_corr_SF_total > 0 and SII6730_FLUX_corr_SF_total > 0):
+    
+    sii_total_sf = SII6716_FLUX_corr_SF_total + SII6730_FLUX_corr_SF_total
+    n2s2_ratio_sf_total = np.log10(NII6583_FLUX_corr_SF_total / sii_total_sf)
+    
+    # Solve cubic equation: 0.17963*x³ + 0.58181*x² + 0.74100*x + (-0.25214 - n2s2_ratio_sf_total) = 0
+    c3 = 0.17963
+    c2 = 0.58181
+    c1 = 0.74100
+    c0 = -0.25214
+    
+    poly_coeffs = [c3, c2, c1, (c0 - n2s2_ratio_sf_total)]
+    roots = np.roots(poly_coeffs)
+    
+    # Select the real root that gives reasonable metallicity values
+    real_roots = roots[np.isreal(roots)].real
+    if len(real_roots) > 0:
+        # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
+        # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
+        valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
+        if len(valid_roots) > 0:
+            x_final = valid_roots[0]  # Take first valid root
+            O_H_N2S2_N06_SF_total = x_final + 8.69
+        else:
+            O_H_N2S2_N06_SF_total = np.nan
+    else:
+        O_H_N2S2_N06_SF_total = np.nan
+else:
+    O_H_N2S2_N06_SF_total = np.nan
+
 # O3N2-M13 (Marino et al. 2013) metallicity calculation (total)
 # Calculate O3N2 ratio for total SF region using M13 calibration
 oiii_hb_SF_total = OIII5006_FLUX_corr_SF_total / HB4861_FLUX_corr_SF_total
@@ -2502,6 +2613,39 @@ else:
     O_H_PG16_HII_total = (a1_lower + a2_lower * log_R3_S2_HII_total + a3_lower * log_N2_HII_total +
                         (a4_lower + a5_lower * log_R3_S2_HII_total + a6_lower * log_N2_HII_total) * log_S2_HII_total)
 
+# N2S2-N06 metallicity calculation for HII total region
+if (np.isfinite(NII6583_FLUX_corr_HII_total) and np.isfinite(SII6716_FLUX_corr_HII_total) and
+    np.isfinite(SII6730_FLUX_corr_HII_total) and 
+    NII6583_FLUX_corr_HII_total > 0 and SII6716_FLUX_corr_HII_total > 0 and SII6730_FLUX_corr_HII_total > 0):
+    
+    sii_total_hii = SII6716_FLUX_corr_HII_total + SII6730_FLUX_corr_HII_total
+    n2s2_ratio_hii_total = np.log10(NII6583_FLUX_corr_HII_total / sii_total_hii)
+    
+    # Solve cubic equation: 0.17963*x³ + 0.58181*x² + 0.74100*x + (-0.25214 - n2s2_ratio_hii_total) = 0
+    c3 = 0.17963
+    c2 = 0.58181
+    c1 = 0.74100
+    c0 = -0.25214
+    
+    poly_coeffs = [c3, c2, c1, (c0 - n2s2_ratio_hii_total)]
+    roots = np.roots(poly_coeffs)
+    
+    # Select the real root that gives reasonable metallicity values
+    real_roots = roots[np.isreal(roots)].real
+    if len(real_roots) > 0:
+        # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
+        # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
+        valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
+        if len(valid_roots) > 0:
+            x_final = valid_roots[0]  # Take first valid root
+            O_H_N2S2_N06_HII_total = x_final + 8.69
+        else:
+            O_H_N2S2_N06_HII_total = np.nan
+    else:
+        O_H_N2S2_N06_HII_total = np.nan
+else:
+    O_H_N2S2_N06_HII_total = np.nan
+
 # Other metallicity calculations for HII total
 oiii_hb_HII_total = OIII5006_FLUX_corr_HII_total / HB4861_FLUX_corr_HII_total
 nii_ha_HII_total = NII6583_FLUX_corr_HII_total / HA6562_FLUX_corr_HII_total
@@ -2653,6 +2797,39 @@ if log_N2_total >= -0.6:
 else:
     O_H_PG16_total = (a1_lower + a2_lower * log_R3_S2_total + a3_lower * log_N2_total +
                         (a4_lower + a5_lower * log_R3_S2_total + a6_lower * log_N2_total) * log_S2_total)
+
+# N2S2-N06 metallicity calculation for total available regions
+if (np.isfinite(NII6583_FLUX_corr_total) and np.isfinite(SII6716_FLUX_corr_total) and
+    np.isfinite(SII6730_FLUX_corr_total) and 
+    NII6583_FLUX_corr_total > 0 and SII6716_FLUX_corr_total > 0 and SII6730_FLUX_corr_total > 0):
+    
+    sii_total_region = SII6716_FLUX_corr_total + SII6730_FLUX_corr_total
+    n2s2_ratio_total = np.log10(NII6583_FLUX_corr_total / sii_total_region)
+    
+    # Solve cubic equation: 0.17963*x³ + 0.58181*x² + 0.74100*x + (-0.25214 - n2s2_ratio_total) = 0
+    c3 = 0.17963
+    c2 = 0.58181
+    c1 = 0.74100
+    c0 = -0.25214
+    
+    poly_coeffs = [c3, c2, c1, (c0 - n2s2_ratio_total)]
+    roots = np.roots(poly_coeffs)
+    
+    # Select the real root that gives reasonable metallicity values
+    real_roots = roots[np.isreal(roots)].real
+    if len(real_roots) > 0:
+        # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
+        # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
+        valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
+        if len(valid_roots) > 0:
+            x_final = valid_roots[0]  # Take first valid root
+            O_H_N2S2_N06_total = x_final + 8.69
+        else:
+            O_H_N2S2_N06_total = np.nan
+    else:
+        O_H_N2S2_N06_total = np.nan
+else:
+    O_H_N2S2_N06_total = np.nan
 
 # O3N2-M13 (Marino et al. 2013) metallicity calculation (total)
 # Calculate O3N2 ratio for total SF region using M13 calibration
@@ -3285,6 +3462,11 @@ hdu_O_H_PG16_SF = fits.ImageHDU(O_H_PG16_SF.astype(np.float64),
                              header=gas_header, name="O_H_PG16_SF")
 hdu_O_H_PG16_SF.header['BUNIT'] = '12+log(O/H)'
 new_hdul.append(hdu_O_H_PG16_SF)
+hdu_O_H_N2S2_N06_SF = fits.ImageHDU(O_H_N2S2_N06_SF.astype(np.float64),
+                             header=gas_header, name="O_H_N2S2_N06_SF")
+hdu_O_H_N2S2_N06_SF.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_N2S2_N06_SF.header['COMMENT'] = 'N2S2-N06 metallicity calibration in SF regions'
+new_hdul.append(hdu_O_H_N2S2_N06_SF)
 hdu_O_H_O3N2_M13_SF = fits.ImageHDU(O_H_O3N2_M13_SF.astype(np.float64),
                              header=gas_header, name="O_H_O3N2_M13_SF")
 hdu_O_H_O3N2_M13_SF.header['BUNIT'] = '12+log(O/H)'
@@ -3396,6 +3578,11 @@ hdu_O_H_PG16_HII = fits.ImageHDU(O_H_PG16_HII.astype(np.float64),
 hdu_O_H_PG16_HII.header['BUNIT'] = '12+log(O/H)'
 hdu_O_H_PG16_HII.header['COMMENT'] = 'PG16 metallicity in HII regions only (Classification 2)'
 new_hdul.append(hdu_O_H_PG16_HII)
+hdu_O_H_N2S2_N06_HII = fits.ImageHDU(O_H_N2S2_N06_HII.astype(np.float64),
+                             header=gas_header, name="O_H_N2S2_N06_HII")
+hdu_O_H_N2S2_N06_HII.header['BUNIT'] = '12+log(O/H)'
+hdu_O_H_N2S2_N06_HII.header['COMMENT'] = 'N2S2-N06 metallicity in HII regions only (Classification 2)'
+new_hdul.append(hdu_O_H_N2S2_N06_HII)
 hdu_O_H_O3N2_M13_HII = fits.ImageHDU(O_H_O3N2_M13_HII.astype(np.float64),
                              header=gas_header, name="O_H_O3N2_M13_HII")
 hdu_O_H_O3N2_M13_HII.header['BUNIT'] = '12+log(O/H)'
@@ -3528,6 +3715,7 @@ print(f"Total Halpha SFR from HII region: {np.nansum(SFR_map[mask_HII]):.2f} M�
 print("--------------------------------------------------------------")
 print("[O/H] D16 SF: Total metallicity in SF region: ", O_H_D16_SF_total)
 print("[O/H] PG16 SF: Total metallicity in SF region: ", O_H_PG16_SF_total)
+print("[O/H] N2S2-N06 SF: Total metallicity in SF region: ", O_H_N2S2_N06_SF_total)
 print("[O/H] O3N2-M13 SF: Total metallicity in SF region: ", O_H_O3N2_M13_SF_total)
 print("[O/H] N2-M13 SF: Total metallicity in SF region: ", O_H_N2_M13_SF_total)
 print("[O/H] O3N2-PP04 SF: Total metallicity in SF region: ", O_H_O3N2_PP04_SF_total)
@@ -3542,6 +3730,7 @@ print("[O/H] Combined-C20 SF: Total metallicity in SF region: ", O_H_COMBINED_C2
 print("--------------------------------------------------------------")
 print("[O/H] D16 HII: Total metallicity in HII region: ", O_H_D16_HII_total)
 print("[O/H] PG16 HII: Total metallicity in HII region: ", O_H_PG16_HII_total)
+print("[O/H] N2S2-N06 HII: Total metallicity in HII region: ", O_H_N2S2_N06_HII_total)
 print("[O/H] O3N2-M13 HII: Total metallicity in HII region: ", O_H_O3N2_M13_HII_total)
 print("[O/H] N2-M13 HII: Total metallicity in HII region: ", O_H_N2_M13_HII_total)
 print("[O/H] O3N2-PP04 HII: Total metallicity in HII region: ", O_H_O3N2_PP04_HII_total)
@@ -3556,6 +3745,7 @@ print("[O/H] Combined-C20 HII: Total metallicity in HII region: ", O_H_COMBINED_
 print("--------------------------------------------------------------")
 print("[O/H] D16: Total metallicity in total region: ", O_H_D16_total)
 print("[O/H] PG16: Total metallicity in total region: ", O_H_PG16_total)
+print("[O/H] N2S2-N06: Total metallicity in total region: ", O_H_N2S2_N06_total)
 print("[O/H] O3N2-M13: Total metallicity in total region: ", O_H_O3N2_M13_total)
 print("[O/H] N2-M13: Total metallicity in total region: ", O_H_N2_M13_total)
 print("[O/H] O3N2-PP04: Total metallicity in total region: ", O_H_O3N2_PP04_total)
