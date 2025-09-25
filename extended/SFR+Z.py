@@ -116,12 +116,11 @@ Changes (2025-09-23)
 * Maintained backwards compatibility while providing new conservative analysis option
 * Updated variable naming convention: '_classified' → '_classified1', '_unclassified' → '_unclassified1'
 
-Changes (2025-09-24)
+Changes (2025-09-24 & 2025-09-25)
 -----------------------
 * Added N2S2-N06 metallicity calibration (Nakajima & Ouchi 2014) positioned between PG16 and O3N2-M13:
   - Implemented calculate_n2s2_n06_metallicity() function with cubic polynomial equation
   - Equation: log([N II]λ6584/([S II]λ6716+λ6731)) = -0.25214 + 0.74100·x + 0.58181·x² + 0.17963·x³
-  - Valid range: 7.05 < 12+log(O/H) < 9.25 with automatic range validation
   - Uses numpy.roots() for accurate 3rd-order polynomial root solving
 * Complete integration across dual BPT classification systems:
   - Added O_H_N2S2_N06_SF and O_H_N2S2_N06_HII maps for both classifications
@@ -130,7 +129,6 @@ Changes (2025-09-24)
   - Enhanced terminal reporting with N2S2-N06 metallicity summaries for all regions
 * Robust implementation features:
   - Comprehensive error handling for invalid flux data (NaN, negative, zero values)
-  - Automatic masking and range validation within calibration limits
   - Maintains full backward compatibility with existing analysis pipeline
 """
 
@@ -435,7 +433,7 @@ O_H_PG16 = np.where((O_H_PG16 < 7.63) | (O_H_PG16 > 9.23), np.nan, O_H_PG16)
 def calculate_n2s2_n06_metallicity(nii6583_flux, ha6562_flux, sii6716_flux, sii6730_flux):
     """Calculate [O/H] using N2S2-N06 calibration:
     log(N2S2) = log([NII]λ6584 / ([SII]λ6716+λ6731)) = -0.25214 + 0.74100*x + 0.58181*x² + 0.17963*x³
-    where x = 12+log(O/H) - 8.69 = log(Z/Z☉), valid range: 7.05 < 12+log(O/H) < 9.25
+    where x = 12+log(O/H) - 8.69 = log(Z/Z☉) 
     """
     # Use basic finite checks on emission lines
     good_mask = (np.isfinite(nii6583_flux) & np.isfinite(ha6562_flux) &
@@ -468,23 +466,19 @@ def calculate_n2s2_n06_metallicity(nii6583_flux, ha6562_flux, sii6716_flux, sii6
             poly_coeffs = [c3, c2, c1, (c0 - n2s2_val)]
             roots = np.roots(poly_coeffs)
             
-            # Select the real root that gives reasonable metallicity values
+            # Select the real root (use first real root found)
             real_roots = roots[np.isreal(roots)].real
             if len(real_roots) > 0:
-                # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
-                # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
-                valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
-                if len(valid_roots) > 0:
-                    x_final = valid_roots[0]  # Take first valid root
-                    oh_n2s2_n06[idx_y, idx_x] = x_final + 8.69
+                # Take the first real root without range restrictions
+                x_final = real_roots[0]
+                oh_n2s2_n06[idx_y, idx_x] = x_final + 8.69
     
     return oh_n2s2_n06, good_mask
 
 # Calculate N2S2-N06 metallicity
 O_H_N2S2_N06, n2s2_n06_good_mask = calculate_n2s2_n06_metallicity(
     NII6583_FLUX_corr, HA6562_FLUX_corr, SII6716_FLUX_corr, SII6730_FLUX_corr)
-# Set O_H_N2S2_N06 to be nan if outside the range of 7.05 and 9.25 (calibration valid range)
-O_H_N2S2_N06 = np.where((O_H_N2S2_N06 < 7.05) | (O_H_N2S2_N06 > 9.25), np.nan, O_H_N2S2_N06)
+# N2S2-N06 metallicity calculated without range restrictions
 
 # O3N2-M13 (Marino et al. 2013) metallicity calculation function
 def calculate_o3n2_m13_metallicity(hb4861_flux, oiii5006_flux, nii6583_flux, ha6562_flux, oh_d16_sf):
@@ -2084,17 +2078,12 @@ if (np.isfinite(NII6583_FLUX_corr_SF_total) and np.isfinite(SII6716_FLUX_corr_SF
     poly_coeffs = [c3, c2, c1, (c0 - n2s2_ratio_sf_total)]
     roots = np.roots(poly_coeffs)
     
-    # Select the real root that gives reasonable metallicity values
+    # Select the real root (use first real root found)
     real_roots = roots[np.isreal(roots)].real
     if len(real_roots) > 0:
-        # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
-        # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
-        valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
-        if len(valid_roots) > 0:
-            x_final = valid_roots[0]  # Take first valid root
-            O_H_N2S2_N06_SF_total = x_final + 8.69
-        else:
-            O_H_N2S2_N06_SF_total = np.nan
+        # Take the first real root without range restrictions
+        x_final = real_roots[0]
+        O_H_N2S2_N06_SF_total = x_final + 8.69
     else:
         O_H_N2S2_N06_SF_total = np.nan
 else:
@@ -2630,17 +2619,12 @@ if (np.isfinite(NII6583_FLUX_corr_HII_total) and np.isfinite(SII6716_FLUX_corr_H
     poly_coeffs = [c3, c2, c1, (c0 - n2s2_ratio_hii_total)]
     roots = np.roots(poly_coeffs)
     
-    # Select the real root that gives reasonable metallicity values
+    # Select the real root (use first real root found)
     real_roots = roots[np.isreal(roots)].real
     if len(real_roots) > 0:
-        # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
-        # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
-        valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
-        if len(valid_roots) > 0:
-            x_final = valid_roots[0]  # Take first valid root
-            O_H_N2S2_N06_HII_total = x_final + 8.69
-        else:
-            O_H_N2S2_N06_HII_total = np.nan
+        # Take the first real root without range restrictions
+        x_final = real_roots[0]
+        O_H_N2S2_N06_HII_total = x_final + 8.69
     else:
         O_H_N2S2_N06_HII_total = np.nan
 else:
@@ -2815,17 +2799,12 @@ if (np.isfinite(NII6583_FLUX_corr_total) and np.isfinite(SII6716_FLUX_corr_total
     poly_coeffs = [c3, c2, c1, (c0 - n2s2_ratio_total)]
     roots = np.roots(poly_coeffs)
     
-    # Select the real root that gives reasonable metallicity values
+    # Select the real root (use first real root found)
     real_roots = roots[np.isreal(roots)].real
     if len(real_roots) > 0:
-        # Choose root that gives 12+log(O/H) in the valid range: 7.05 < 12+log(O/H) < 9.25
-        # This corresponds to x = (12+log(O/H)) - 8.69, so: -1.64 < x < 0.56
-        valid_roots = real_roots[(real_roots >= -1.64) & (real_roots <= 0.56)]
-        if len(valid_roots) > 0:
-            x_final = valid_roots[0]  # Take first valid root
-            O_H_N2S2_N06_total = x_final + 8.69
-        else:
-            O_H_N2S2_N06_total = np.nan
+        # Take the first real root without range restrictions
+        x_final = real_roots[0]
+        O_H_N2S2_N06_total = x_final + 8.69
     else:
         O_H_N2S2_N06_total = np.nan
 else:
