@@ -1,0 +1,867 @@
+---
+title: "Correlation Functions in Physics and Beyond"
+author: ""
+date: "2025-10-09"
+output:
+	html_document:
+		toc: true
+		toc_depth: 3
+		number_sections: true
+---
+
+# Overview
+
+Correlation functions sit at the heart of statistical descriptions of complex systems. This tutorial walks through the development from the classic two-point correlation function to the fully general $N$-point hierarchy, emphasizing derivations, historical context, applications in physics, computer vision, astrophysics, and cosmology, and hands-on code examples that you can run directly.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(gridExtra)
+
+theme_set(theme_minimal(base_size = 13))
+set.seed(5513)
+```
+
+# Historical Background
+
+The idea of correlation functions emerged in the early 20th century as physicists sought statistical descriptions of many-body systems. Norbert Wiener and A.N. Kolmogorov formalized autocorrelation in the context of stochastic processes during the 1930s, providing tools for noise analysis and signal prediction. In condensed matter, Hendrik Ornstein and Leonard Zernike introduced correlation functions to describe density fluctuations, culminating in the Ornstein–Zernike equation (1914).
+
+In cosmology, the two-point correlation function gained prominence in the 1970s with the work of Peebles, Groth, and Totsuji, among others, interpreting galaxy clustering. Computer vision began adopting spatial correlation functions in the 1980s and 1990s for texture analysis and feature detection. Today, correlation functions form a lingua franca across disciplines where spatial or temporal structure matters.
+
+# Two-Point Correlation Function
+
+## Definition
+
+For a stationary random field $f(\mathbf{x})$ with ensemble mean $\mu = \langle f(\mathbf{x}) \rangle$, the two-point correlation function (2PCF) is defined as
+
+$$
+\xi(\mathbf{r}) = \langle \delta f(\mathbf{x}) \; \delta f(\mathbf{x} + \mathbf{r}) \rangle,
+$$
+
+where $\delta f(\mathbf{x}) = f(\mathbf{x}) - \mu$, and the angle brackets denote either an ensemble average or, for ergodic fields, a spatial average over $\mathbf{x}$. When the system is isotropic, $\xi(\mathbf{r})$ reduces to a function of $r = \lVert \mathbf{r} \rVert$.
+
+For point processes, particularly in cosmology and materials science, we work with number density fluctuations. If $n(\mathbf{x})$ is the local number density and $\bar{n}$ the mean density, we define the overdensity field $\delta(\mathbf{x}) = \frac{n(\mathbf{x}) - \bar{n}}{\bar{n}}$. The 2PCF is then
+
+$$
+\xi(\mathbf{r}) = \langle \delta(\mathbf{x}) \; \delta(\mathbf{x} + \mathbf{r}) \rangle.
+$$
+
+In Fourier space, $\xi$ and the power spectrum $P(\mathbf{k})$ are related through the Wiener–Khinchin theorem:
+
+$$
+\xi(\mathbf{r}) = \int \frac{d^3\mathbf{k}}{(2\pi)^3} \, P(\mathbf{k}) \, e^{i\mathbf{k}\cdot\mathbf{r}},
+$$
+
+with $P(\mathbf{k}) = \langle \tilde{\delta}(\mathbf{k}) \tilde{\delta}^\ast(\mathbf{k}) \rangle$ and $\tilde{\delta}$ the Fourier transform of $\delta$.
+
+## Derivation from Joint Probabilities
+
+Consider a point process described by the probability of finding particles within differential volume elements. The joint probability of finding a pair in volumes $dV_1$ and $dV_2$ separated by $\mathbf{r}$ is
+
+$$
+P_{2}(\mathbf{x}_1, \mathbf{x}_2) dV_1 dV_2 = \bar{n}^2 \left[1 + \xi(\mathbf{r})\right] dV_1 dV_2.
+$$
+
+To derive this, start with the definition of the microscopic density $n(\mathbf{x}) = \sum_i \delta_D(\mathbf{x} - \mathbf{x}_i)$, where $\delta_D$ is the Dirac delta. The covariance of the density field is
+
+$$
+\langle n(\mathbf{x}_1) n(\mathbf{x}_2) \rangle - \bar{n}^2 = \bar{n}^2 \xi(\mathbf{r}).
+$$
+
+Integrating the joint probability density over the volumes recovers the expression for $P_2$. This highlights the two-point function as the first non-trivial statistic beyond the mean density.
+
+## Alternative Derivation via Power Spectrum
+
+Begin with the Parseval relation for Fourier modes of the overdensity:
+
+$$
+\delta(\mathbf{x}) = \int \frac{d^3\mathbf{k}}{(2\pi)^3} \, \tilde{\delta}(\mathbf{k}) e^{i\mathbf{k}\cdot\mathbf{x}}.
+$$
+
+The two-point correlation becomes
+
+$$
+\xi(\mathbf{r}) = \langle \delta(\mathbf{x}) \delta(\mathbf{x} + \mathbf{r}) \rangle = \int \frac{d^3\mathbf{k}}{(2\pi)^3} \int \frac{d^3\mathbf{k}'}{(2\pi)^3} \langle \tilde{\delta}(\mathbf{k}) \tilde{\delta}(\mathbf{k}') \rangle e^{i(\mathbf{k}\cdot\mathbf{x} + \mathbf{k}'\cdot(\mathbf{x} + \mathbf{r}))}.
+$$
+
+Statistical homogeneity implies $\langle \tilde{\delta}(\mathbf{k}) \tilde{\delta}(\mathbf{k}') \rangle = (2\pi)^3 \delta_D(\mathbf{k} + \mathbf{k}') P(\mathbf{k})$, yielding
+
+$$
+\xi(\mathbf{r}) = \int \frac{d^3\mathbf{k}}{(2\pi)^3} P(\mathbf{k}) e^{i\mathbf{k}\cdot\mathbf{r}}.
+$$
+
+This duality between configuration and Fourier space underpins many estimation techniques.
+
+## Applications
+
+Below you will find domain-specific worked examples with code and visualizations. Each example uses synthetic data so you can run it without external files.
+
+### Physics and Statistical Mechanics
+
+* **Liquid-state theory:** The radial distribution function $g(r)$ is related to the 2PCF by $g(r) = 1 + \xi(r)$. It captures short-range order in dense fluids and underlies integral equation closures such as Percus–Yevick.
+* **Critical phenomena:** Near phase transitions, $\xi(r)$ exhibits power-law decay $\xi(r) \sim r^{- (d-2+\eta)}$, where $d$ is dimension and $\eta$ the anomalous dimension, revealing universal scaling.
+
+#### Worked example: exponentially correlated 1D field
+
+```{r two-point-physics}
+n <- 512
+phi <- 0.9
+field <- arima.sim(model = list(ar = phi), n = n)
+delta <- field - mean(field)
+
+max_lag <- 80
+xi_est <- map_dfr(0:max_lag, function(r) {
+	values <- delta[seq_len(n - r)] * delta[(seq_len(n - r)) + r]
+	tibble(separation = r, xi = mean(values))
+})
+
+acf_df <- tibble(index = 1:n, delta = delta)
+
+p_signal <- ggplot(acf_df, aes(index, delta)) +
+	geom_line(color = "steelblue") +
+	labs(title = "Simulated 1D field with exponential correlations",
+			```{r bao-sdss}
+			H0 <- 67.66   # km/s/Mpc, Planck 2018
+			h <- H0 / 100
+			Omega_m <- 0.3111
+			Omega_L <- 1 - Omega_m
+			c_light <- 299792.458
+
+			E_z <- function(z) sqrt(Omega_m * (1 + z)^3 + Omega_L)
+			deg2rad <- function(deg) deg * pi / 180
+
+			z_grid <- seq(0, 2.5, length.out = 700)
+			chi_grid <- map_dbl(z_grid, ~ (c_light / H0) * integrate(function(zp) 1 / E_z(zp), 0, ., rel.tol = 1e-6)$value)
+			chi_of_z_fun <- approxfun(z_grid, chi_grid, rule = 2)
+			z_of_chi_fun <- approxfun(chi_grid, z_grid, rule = 2)
+
+			chi_of_z <- function(z) chi_of_z_fun(z)
+			z_of_chi <- function(chi) pmax(z_of_chi_fun(chi), 0)
+
+			simulate_sdss_mock <- function(n_centers = 240, shell_points = 3,
+																		 bao_scale_mpc = 100 / h,
+																		 shell_sigma = 8,
+																		 ra_range = c(150, 210),
+																		 dec_range = c(-2, 20),
+																		 chi_range = c(900, 1800),
+																		 background_factor = 0.5) {
+
+				centers_ra <- runif(n_centers, ra_range[1], ra_range[2])
+				centers_dec <- runif(n_centers, dec_range[1], dec_range[2])
+				centers_chi <- runif(n_centers, chi_range[1], chi_range[2])
+
+				ra_rad <- deg2rad(centers_ra)
+				dec_rad <- deg2rad(centers_dec)
+				center_dirs <- cbind(cos(dec_rad) * cos(ra_rad),
+														 cos(dec_rad) * sin(ra_rad),
+														 sin(dec_rad))
+				centers_xyz <- center_dirs * centers_chi
+
+					shells <- map_dfr(seq_len(n_centers), function(i) {
+						dirs <- matrix(rnorm(shell_points * 3), ncol = 3)
+							norms <- sqrt(rowSums(dirs^2))
+							norms[norms == 0] <- 1
+							dirs <- dirs / norms
+						radii <- pmax(rnorm(shell_points, mean = bao_scale_mpc, sd = shell_sigma), bao_scale_mpc * 0.6)
+						coords <- matrix(rep(centers_xyz[i, ], shell_points), ncol = 3, byrow = TRUE) + dirs * radii
+						tibble(x = coords[, 1], y = coords[, 2], z = coords[, 3])
+				})
+
+				centers_tbl <- tibble(x = centers_xyz[, 1], y = centers_xyz[, 2], z = centers_xyz[, 3])
+
+				n_background <- round(n_centers * shell_points * background_factor)
+				background_ra <- runif(n_background, ra_range[1], ra_range[2])
+				background_dec <- runif(n_background, dec_range[1], dec_range[2])
+				background_chi <- runif(n_background, chi_range[1], chi_range[2])
+				b_ra_rad <- deg2rad(background_ra)
+				b_dec_rad <- deg2rad(background_dec)
+				background_dirs <- cbind(cos(b_dec_rad) * cos(b_ra_rad),
+																 cos(b_dec_rad) * sin(b_ra_rad),
+																 sin(b_dec_rad))
+				background_xyz <- background_dirs * background_chi
+				background_tbl <- tibble(x = background_xyz[, 1], y = background_xyz[, 2], z = background_xyz[, 3])
+
+				combined <- bind_rows(centers_tbl, shells, background_tbl)
+
+				chi_vals <- sqrt(rowSums(as.matrix(combined)^2))
+				ra_vals <- (atan2(combined$y, combined$x) * 180 / pi) %% 360
+				dec_vals <- asin(combined$z / chi_vals) * 180 / pi
+
+				valid <- ra_vals >= ra_range[1] & ra_vals <= ra_range[2] &
+					dec_vals >= dec_range[1] & dec_vals <= dec_range[2] &
+					chi_vals > 0 & chi_vals <= max(chi_grid)
+
+				tibble(
+					ra = ra_vals[valid],
+					dec = dec_vals[valid],
+					chi = chi_vals[valid]
+				) %>%
+					mutate(
+						z = z_of_chi(chi),
+						ra_rad = deg2rad(ra),
+						dec_rad = deg2rad(dec),
+						nx = cos(dec_rad) * cos(ra_rad),
+						ny = cos(dec_rad) * sin(ra_rad),
+						nz = sin(dec_rad),
+						x = chi * nx,
+						y = chi * ny,
+						z_comoving = chi * nz
+					)
+			}
+
+			bao_scale_h <- 100
+			bao_scale_mpc <- bao_scale_h / h
+			sdss_mock <- simulate_sdss_mock(bao_scale_mpc = bao_scale_mpc)
+
+			sdss_random <- tibble(
+				ra = runif(nrow(sdss_mock) * 6, min(sdss_mock$ra), max(sdss_mock$ra)),
+				dec = runif(nrow(sdss_mock) * 6, min(sdss_mock$dec), max(sdss_mock$dec)),
+				chi = sample(sdss_mock$chi, nrow(sdss_mock) * 6, replace = TRUE)
+			) %>%
+				mutate(
+					z = z_of_chi(chi),
+					ra_rad = deg2rad(ra),
+					dec_rad = deg2rad(dec),
+					nx = cos(dec_rad) * cos(ra_rad),
+					ny = cos(dec_rad) * sin(ra_rad),
+					nz = sin(dec_rad),
+					x = chi * nx,
+					y = chi * ny,
+					z_comoving = chi * nz
+				)
+
+			pair_counts_general <- function(points, bins) {
+				if (nrow(points) < 2) return(rep(0, length(bins) - 1))
+				dists <- as.numeric(stats::dist(points))
+				hist(dists, breaks = bins, plot = FALSE, include.lowest = TRUE)$counts
+			}
+
+			cross_counts_general <- function(A, B, bins) {
+				if (nrow(A) == 0 || nrow(B) == 0) return(rep(0, length(bins) - 1))
+				idx_A <- rep(seq_len(nrow(A)), each = nrow(B))
+				idx_B <- rep(seq_len(nrow(B)), times = nrow(A))
+				diff_mat <- A[idx_A, , drop = FALSE] - B[idx_B, , drop = FALSE]
+				dists <- sqrt(rowSums(diff_mat^2))
+				hist(dists, breaks = bins, plot = FALSE, include.lowest = TRUE)$counts
+			}
+
+			landy_szalay_general <- function(data, random, bins) {
+				DD_counts <- pair_counts_general(data, bins)
+				RR_counts <- pair_counts_general(random, bins)
+				DR_counts <- cross_counts_general(data, random, bins)
+				norm_DD <- nrow(data) * (nrow(data) - 1) / 2
+				norm_RR <- nrow(random) * (nrow(random) - 1) / 2
+				norm_DR <- nrow(data) * nrow(random)
+				DD <- DD_counts / norm_DD
+				RR <- RR_counts / norm_RR
+				DR <- DR_counts / norm_DR
+				tibble(
+					s = sqrt(bins[-length(bins)] * bins[-1]),
+					DD = DD,
+					DR = DR,
+					RR = RR,
+					xi = (DD - 2 * DR + RR) / RR
+				)
+			}
+
+			sdss_coords <- sdss_mock %>% select(x, y, z_comoving)
+			sdss_rand_coords <- sdss_random %>% select(x, y, z_comoving)
+			max_sdss_sep <- max(dist(rbind(sdss_coords, sdss_rand_coords)))
+			sdss_bins <- seq(0, max_sdss_sep * 1.05, length.out = 40)
+
+			sdss_xi <- landy_szalay_general(sdss_coords, sdss_rand_coords, sdss_bins) %>%
+				filter(is.finite(xi), RR > 0) %>%
+				mutate(s_h = s * h)
+
+			sdss_pairs <- combn(nrow(sdss_mock), 2)
+			chi1 <- sdss_mock$chi[sdss_pairs[1, ]]
+			chi2 <- sdss_mock$chi[sdss_pairs[2, ]]
+			dir_mat <- sdss_mock %>% select(nx, ny, nz) %>% as.matrix()
+			dot_prod <- rowSums(dir_mat[sdss_pairs[1, ], , drop = FALSE] * dir_mat[sdss_pairs[2, ], , drop = FALSE])
+			theta <- acos(pmin(pmax(dot_prod, -1), 1))
+			separation <- sqrt(chi1^2 + chi2^2 - 2 * chi1 * chi2 * cos(theta))
+			radial_sep <- abs(chi1 - chi2)
+			trans_sep <- sqrt(pmax(separation^2 - radial_sep^2, 0))
+
+			rt_df <- tibble(
+				radial = radial_sep,
+				transverse = trans_sep,
+				radial_h = radial_sep * h,
+				transverse_h = trans_sep * h
+			)
+
+			list(
+				correlation = sdss_xi %>% slice_head(n = 6) %>% mutate(across(c(DD, DR, RR, xi), round, 4), s = round(s, 1), s_h = round(s_h, 1)),
+				separations = rt_df %>% slice_sample(n = 6) %>% mutate(across(everything(), ~ round(., 1)))
+			)
+			```
+#### Worked example: Landy–Szalay estimator on mock galaxy catalog
+
+```{r two-point-cosmology}
+simulate_clustered_catalog <- function(n_clusters = 10, points_per_cluster = 40,
+																			 cluster_sigma = 0.03, boxsize = 1) {
+	centers <- matrix(runif(n_clusters * 2, min = 0, max = boxsize), ncol = 2)
+	catalog <- map_dfr(seq_len(n_clusters), function(i) {
+		tibble(
+			x = rnorm(points_per_cluster, mean = centers[i, 1], sd = cluster_sigma),
+			y = rnorm(points_per_cluster, mean = centers[i, 2], sd = cluster_sigma)
+		)
+	}) %>%
+		filter(dplyr::between(x, 0, boxsize) & dplyr::between(y, 0, boxsize))
+	catalog
+}
+
+pair_counts <- function(points, bins) {
+	if (nrow(points) < 2) return(rep(0, length(bins) - 1))
+	dists <- as.numeric(dist(points))
+	hist(dists, breaks = bins, plot = FALSE, include.lowest = TRUE)$counts
+}
+
+cross_pair_counts <- function(data, random, bins) {
+	if (nrow(data) == 0 || nrow(random) == 0) return(rep(0, length(bins) - 1))
+	dx <- rep(data[, 1], each = nrow(random)) - rep(random[, 1], times = nrow(data))
+	dy <- rep(data[, 2], each = nrow(random)) - rep(random[, 2], times = nrow(data))
+	dists <- sqrt(dx^2 + dy^2)
+	hist(dists, breaks = bins, plot = FALSE, include.lowest = TRUE)$counts
+}
+
+landy_szalay <- function(data, random, bins) {
+	data_mat <- as.matrix(data)
+	random_mat <- as.matrix(random)
+	DD_counts <- pair_counts(data_mat, bins)
+	RR_counts <- pair_counts(random_mat, bins)
+	DR_counts <- cross_pair_counts(data_mat, random_mat, bins)
+	data_pairs <- nrow(data_mat) * (nrow(data_mat) - 1) / 2
+	random_pairs <- nrow(random_mat) * (nrow(random_mat) - 1) / 2
+	cross_pairs <- nrow(data_mat) * nrow(random_mat)
+	DD <- DD_counts / data_pairs
+	RR <- RR_counts / random_pairs
+	DR <- DR_counts / cross_pairs
+	tibble(
+		r = sqrt(bins[-length(bins)] * bins[-1]),
+		DD = DD,
+		DR = DR,
+		RR = RR,
+		xi = (DD - 2 * DR + RR) / RR
+	)
+}
+
+mock_data <- simulate_clustered_catalog()
+random_catalog <- tibble(x = runif(nrow(mock_data) * 5),
+												 y = runif(nrow(mock_data) * 5))
+
+max_sep <- max(dist(rbind(as.matrix(mock_data), as.matrix(random_catalog))))
+bins <- seq(0, max_sep * 1.05, length.out = 25)
+
+xi_df <- landy_szalay(mock_data, random_catalog, bins) %>%
+	filter(is.finite(xi), RR > 0)
+
+xi_df %>%
+	select(r, DD, DR, RR, xi) %>%
+	slice_head(n = 6) %>%
+	mutate(across(-r, round, digits = 4))
+
+p_catalog <- ggplot() +
+	geom_point(data = random_catalog, aes(x, y), color = "grey80", size = 0.5) +
+	geom_point(data = mock_data, aes(x, y), color = "midnightblue", size = 1, alpha = 0.8) +
+	coord_equal(xlim = c(0, 1), ylim = c(0, 1)) +
+	labs(title = "Mock galaxy catalog", x = "x", y = "y")
+
+p_xi <- ggplot(xi_df, aes(r, xi)) +
+	geom_line(color = "darkorange") +
+	geom_point(color = "darkorange") +
+	labs(title = "Landy–Szalay two-point correlation",
+			 x = "Separation r", y = expression(hat(xi)(r)))
+
+grid.arrange(p_catalog, p_xi, ncol = 2)
+```
+
+**Takeaways:** Even with a toy catalog, the estimator recovers clustering at $r \lesssim 0.1$. Replace the synthetic data with survey catalogs (e.g., from SDSS) for realistic analyses.
+
+#### Worked example: anisotropic correlation for BAO (radial vs transverse)
+
+```{r bao-anisotropy}
+simulate_bao_catalog <- function(n_gal = 3000, bao_radius = 1, f_aniso = 0.6,
+																 boxsize = 3, sigma = 0.05) {
+	centers <- matrix(runif(n_gal * 3, min = -boxsize / 2, max = boxsize / 2), ncol = 3)
+	# imprint shell-like excess probability at radius ~ bao_radius along transverse direction
+	offsets <- matrix(rnorm(n_gal * 3, sd = sigma), ncol = 3)
+	shell <- matrix(runif(n_gal * 2, min = 0, max = 2*pi), ncol = 2)
+	radial_dir <- cbind(cos(shell[, 1]), sin(shell[, 1]), rnorm(n_gal))
+	radial_dir <- radial_dir / sqrt(rowSums(radial_dir^2))
+	bao_points <- centers + bao_radius * radial_dir + offsets
+	weights <- runif(n_gal)
+	mix <- weights < f_aniso
+	data.frame(
+		x = ifelse(mix, bao_points[, 1], centers[, 1]),
+		y = ifelse(mix, bao_points[, 2], centers[, 2]),
+		z = ifelse(mix, bao_points[, 3], centers[, 3])
+	)
+}
+
+bin_pairs_mu <- function(points, s_bins, mu_bins) {
+	if (nrow(points) < 2) {
+		return(array(0, dim = c(length(s_bins) - 1, length(mu_bins) - 1)))
+	}
+	comb <- combn(nrow(points), 2)
+	vec <- points[comb[1, ], ] - points[comb[2, ], ]
+	s <- sqrt(rowSums(vec^2))
+	mu <- ifelse(s > 0, abs(vec[, 3]) / s, NA_real_)
+	histcounts <- hist2d(s, mu, s_bins, mu_bins)
+	histcounts
+}
+
+hist2d <- function(x, y, x_breaks, y_breaks) {
+	ok <- is.finite(x) & is.finite(y)
+	ix <- cut(x[ok], breaks = x_breaks, include.lowest = TRUE)
+	iy <- cut(y[ok], breaks = y_breaks, include.lowest = TRUE)
+	tab <- table(ix, iy)
+	counts <- matrix(0, nrow = length(x_breaks) - 1, ncol = length(y_breaks) - 1)
+	storage.mode(counts) <- "numeric"
+	if (length(tab) > 0) {
+		counts[seq_len(nrow(tab)), seq_len(ncol(tab))] <- as.matrix(tab)
+	}
+	counts
+}
+
+anisotropic_ls <- function(data, random, s_bins, mu_bins) {
+	DD <- bin_pairs_mu(as.matrix(data), s_bins, mu_bins)
+	RR <- bin_pairs_mu(as.matrix(random), s_bins, mu_bins)
+	DR <- bin_pairs_cross(as.matrix(data), as.matrix(random), s_bins, mu_bins)
+	norm_DD <- nrow(data) * (nrow(data) - 1) / 2
+	norm_RR <- nrow(random) * (nrow(random) - 1) / 2
+	norm_DR <- nrow(data) * nrow(random)
+	DDn <- DD / norm_DD
+	RRn <- RR / norm_RR
+	DRn <- DR / norm_DR
+	xi <- (DDn - 2 * DRn + RRn) / RRn
+	list(xi = xi, DD = DDn, DR = DRn, RR = RRn)
+}
+
+bin_pairs_cross <- function(data, random, s_bins, mu_bins) {
+	if (nrow(data) == 0 || nrow(random) == 0) {
+		return(array(0, dim = c(length(s_bins) - 1, length(mu_bins) - 1)))
+	}
+	idx_data <- rep(seq_len(nrow(data)), each = nrow(random))
+	idx_rand <- rep(seq_len(nrow(random)), times = nrow(data))
+	vec <- data[idx_data, ] - random[idx_rand, ]
+	s <- sqrt(rowSums(vec^2))
+	mu <- ifelse(s > 0, abs(vec[, 3]) / s, NA_real_)
+	hist2d(s, mu, s_bins, mu_bins)
+}
+
+legendre_P2 <- function(mu) 0.5 * (3 * mu^2 - 1)
+
+bao_data <- simulate_bao_catalog()
+bao_random <- data.frame(
+	x = runif(nrow(bao_data) * 3, min = -1.5, max = 1.5),
+	y = runif(nrow(bao_data) * 3, min = -1.5, max = 1.5),
+	z = runif(nrow(bao_data) * 3, min = -1.5, max = 1.5)
+)
+
+s_bins <- seq(0, 2, length.out = 25)
+mu_bins <- seq(0, 1, length.out = 10)
+
+bao_res <- anisotropic_ls(bao_data, bao_random, s_bins, mu_bins)
+
+mu_mid <- (mu_bins[-1] + mu_bins[-length(mu_bins)]) / 2
+P2_mid <- legendre_P2(mu_mid)
+
+monopole <- apply(bao_res$xi, 1, function(row) {
+	if (all(is.na(row))) NA_real_ else mean(row, na.rm = TRUE)
+})
+quadrupole <- apply(bao_res$xi, 1, function(row) {
+	if (all(is.na(row))) NA_real_ else mean(row * P2_mid, na.rm = TRUE)
+}) * 5 / 2
+
+bao_df <- tibble(
+	s = sqrt(s_bins[-length(s_bins)] * s_bins[-1]),
+	monopole = monopole,
+	quadrupole = quadrupole
+)
+
+ggplot(bao_df, aes(s, monopole)) +
+	geom_line(color = "darkgreen") +
+	geom_point(color = "darkgreen") +
+	labs(title = "BAO-like monopole signal",
+			 x = "Separation s (mock units)",
+			 y = expression(xi[0](s)))
+```
+
+```{r bao-heatmap}
+mu_centers <- (mu_bins[-1] + mu_bins[-length(mu_bins)]) / 2
+s_centers <- sqrt(s_bins[-length(s_bins)] * s_bins[-1])
+
+bao_heat <- expand_grid(s = s_centers, mu = mu_centers) %>%
+	mutate(xi = as.vector(bao_res$xi))
+
+ggplot(bao_heat, aes(s, mu, fill = xi)) +
+	geom_tile() +
+	scale_fill_viridis_c(option = "C", limits = range(bao_heat$xi, finite = TRUE)) +
+	labs(title = "Anisotropic correlation function",
+			 subtitle = "Radial (mu ~ 1) vs transverse (mu ~ 0) BAO signal",
+			 x = "Separation s", y = expression(mu))
+```
+
+**Takeaways:** The simulated shell induces a feature in the monopole around the imposed BAO scale and anisotropy between radial ($\mu \approx 1$) and transverse ($\mu \approx 0$) directions. In real analyses, $s$ is measured in $h^{-1}\mathrm{Mpc}$ and multipoles are compared against theoretical models to infer cosmic expansion.
+
+#### Worked example: galaxy–galaxy correlation with comoving distances (SDSS-style)
+
+```{r bao-sdss}
+H0 <- 67.66   # km/s/Mpc, Planck 2018
+Omega_m <- 0.3111
+Omega_L <- 1 - Omega_m
+c_light <- 299792.458
+
+E_z <- function(z) sqrt(Omega_m * (1 + z)^3 + Omega_L)
+chi_of_z <- Vectorize(function(z) (c_light / H0) * integrate(function(zp) 1 / E_z(zp), 0, z)$value)
+deg2rad <- function(deg) deg * pi / 180
+
+n_gal <- 400
+sdss_mock <- tibble(
+	ra = runif(n_gal, 150, 210),                     # degrees
+	dec = runif(n_gal, -2, 20),
+	z = rbeta(n_gal, shape1 = 2.5, shape2 = 6) * 0.4 + 0.2
+) %>%
+	mutate(
+		chi = chi_of_z(z),
+		ra_rad = deg2rad(ra),
+		dec_rad = deg2rad(dec),
+		nx = cos(dec_rad) * cos(ra_rad),
+		ny = cos(dec_rad) * sin(ra_rad),
+		nz = sin(dec_rad),
+		x = chi * nx,
+		y = chi * ny,
+		z_comoving = chi * nz
+	)
+
+sdss_random <- tibble(
+	ra = runif(n_gal * 5, min(sdss_mock$ra), max(sdss_mock$ra)),
+	dec = runif(n_gal * 5, min(sdss_mock$dec), max(sdss_mock$dec)),
+	z = sample(sdss_mock$z, n_gal * 5, replace = TRUE)
+) %>%
+	mutate(
+		chi = chi_of_z(z),
+		ra_rad = deg2rad(ra),
+		dec_rad = deg2rad(dec),
+		nx = cos(dec_rad) * cos(ra_rad),
+		ny = cos(dec_rad) * sin(ra_rad),
+		nz = sin(dec_rad),
+		x = chi * nx,
+		y = chi * ny,
+		z_comoving = chi * nz
+	)
+
+pair_counts_general <- function(points, bins) {
+	if (nrow(points) < 2) return(rep(0, length(bins) - 1))
+	dists <- as.numeric(stats::dist(points))
+	hist(dists, breaks = bins, plot = FALSE, include.lowest = TRUE)$counts
+}
+
+cross_counts_general <- function(A, B, bins) {
+	if (nrow(A) == 0 || nrow(B) == 0) return(rep(0, length(bins) - 1))
+	idx_A <- rep(seq_len(nrow(A)), each = nrow(B))
+	idx_B <- rep(seq_len(nrow(B)), times = nrow(A))
+	diff_mat <- A[idx_A, , drop = FALSE] - B[idx_B, , drop = FALSE]
+	dists <- sqrt(rowSums(diff_mat^2))
+	hist(dists, breaks = bins, plot = FALSE, include.lowest = TRUE)$counts
+}
+
+landy_szalay_general <- function(data, random, bins) {
+	DD_counts <- pair_counts_general(data, bins)
+	RR_counts <- pair_counts_general(random, bins)
+	DR_counts <- cross_counts_general(data, random, bins)
+	norm_DD <- nrow(data) * (nrow(data) - 1) / 2
+	norm_RR <- nrow(random) * (nrow(random) - 1) / 2
+	norm_DR <- nrow(data) * nrow(random)
+	DD <- DD_counts / norm_DD
+	RR <- RR_counts / norm_RR
+	DR <- DR_counts / norm_DR
+	tibble(
+		s = sqrt(bins[-length(bins)] * bins[-1]),
+		DD = DD,
+		DR = DR,
+		RR = RR,
+		xi = (DD - 2 * DR + RR) / RR
+	)
+}
+
+max_sdss_sep <- max(dist(rbind(sdss_coords, sdss_rand_coords)))
+sdss_bins <- seq(0, max_sdss_sep * 1.05, length.out = 35)
+sdss_coords <- sdss_mock %>% select(x, y, z_comoving)
+sdss_rand_coords <- sdss_random %>% select(x, y, z_comoving)
+
+sdss_xi <- landy_szalay_general(sdss_coords, sdss_rand_coords, sdss_bins) %>%
+	filter(is.finite(xi), RR > 0)
+
+sdss_pairs <- combn(nrow(sdss_mock), 2)
+chi1 <- sdss_mock$chi[sdss_pairs[1, ]]
+chi2 <- sdss_mock$chi[sdss_pairs[2, ]]
+dir1 <- sdss_mock %>% select(nx, ny, nz) %>% as.matrix()
+dir2 <- dir1
+dot_prod <- rowSums(dir1[sdss_pairs[1, ], , drop = FALSE] * dir2[sdss_pairs[2, ], , drop = FALSE])
+theta <- acos(pmin(pmax(dot_prod, -1), 1))
+separation <- sqrt(chi1^2 + chi2^2 - 2 * chi1 * chi2 * cos(theta))
+radial_sep <- abs(chi1 - chi2)
+trans_sep <- sqrt(pmax(separation^2 - radial_sep^2, 0))
+
+rt_df <- tibble(radial = radial_sep, transverse = trans_sep)
+
+list(
+	correlation = sdss_xi %>% slice_head(n = 6) %>% mutate(across(-s, round, 4)),
+	separations = rt_df %>% slice_sample(n = 6) %>% mutate(across(everything(), round, 2))
+)
+```
+
+```{r bao-sdss-plots}
+ggplot(sdss_xi, aes(s_h, xi)) +
+	geom_hline(yintercept = 0, color = "grey70", linewidth = 0.3) +
+	geom_line(color = "#2f4b7c", linewidth = 0.9) +
+	geom_point(color = "#2f4b7c", size = 2) +
+	geom_vline(xintercept = 100, linetype = 3, color = "firebrick") +
+	annotate("text", x = 100, y = max(sdss_xi$xi, na.rm = TRUE), label = "BAO scale", vjust = -0.5, color = "firebrick") +
+	labs(title = "Galaxy–galaxy correlation (mock SDSS sample)",
+		 x = expression(paste("Comoving separation  ", s, "  [Mpc/"*h*"]")),
+			 y = expression(hat(xi)(s)))
+```
+
+```{r bao-sdss-rt}
+ggplot(rt_df, aes(transverse_h, radial_h)) +
+	geom_bin2d(bins = 40) +
+	scale_fill_viridis_c(option = "B") +
+	geom_abline(slope = 0, intercept = bao_scale_h, color = "firebrick", linetype = 3, linewidth = 0.6) +
+	labs(title = "Radial vs transverse separations",
+		 subtitle = "Shell-like excess near the BAO standard ruler",
+		 x = expression(paste("Transverse separation [Mpc/"*h*"]")),
+		 y = expression(paste("Radial separation [Mpc/"*h*"]")))
+```
+
+**Takeaways:** Converting observed $(\mathrm{RA},\mathrm{Dec},z)$ to comoving coordinates enables direct use of the Landy–Szalay estimator. The mock SDSS-style catalog now exhibits a clear BAO bump near $100\,\mathrm{Mpc}/h$ (roughly $150\,\mathrm{Mpc}$) and highlights how radial ($\Delta\chi$) and transverse separations probe the Hubble parameter $H(z)$ and angular diameter distance $D_A(z)$, respectively.
+
+### Practical Estimation Steps
+
+1. Construct random catalogs to model survey windows.
+2. Bin pair separations logarithmically to capture clustering over decades.
+3. Apply integral constraint corrections when survey area is finite.
+4. Estimate uncertainties using jackknife or bootstrap resampling over spatial sub-volumes.
+
+## Edge Cases and Considerations
+
+* **Shot noise:** Finite sampling introduces Poisson noise, requiring subtraction or modeling in power-spectrum space.
+* **Anisotropy:** Redshift-space distortions in cosmology or directional textures in computer vision necessitate multipole decompositions (monopole, quadrupole, hexadecapole).
+* **Non-stationarity:** In inhomogeneous scenes, local correlation measures or detrending pre-processing improve robustness.
+
+# N-Point Correlation Functions
+
+## Definition
+
+The $N$-point correlation function generalizes the 2PCF to $N$ locations:
+
+$$
+\xi^{(N)}(\mathbf{x}_1, \ldots, \mathbf{x}_N) = \langle \delta(\mathbf{x}_1) \, \delta(\mathbf{x}_2) \cdots \delta(\mathbf{x}_N) \rangle.
+$$
+
+For homogeneous and isotropic fields, the function depends only on relative separations, often parameterized by $N-1$ independent vectors or invariants such as triangle side lengths (for $N=3$). The Fourier counterpart involves polyspectra; for example, the bispectrum $B(\mathbf{k}_1, \mathbf{k}_2, \mathbf{k}_3)$ satisfies
+
+$$
+\langle \tilde{\delta}(\mathbf{k}_1) \tilde{\delta}(\mathbf{k}_2) \tilde{\delta}(\mathbf{k}_3) \rangle = (2\pi)^3 \delta_D(\mathbf{k}_1 + \mathbf{k}_2 + \mathbf{k}_3) B(\mathbf{k}_1, \mathbf{k}_2, \mathbf{k}_3).
+$$
+
+## Derivation from Probability Hierarchies
+
+Starting from the $N$-point joint probability density $P_N(\mathbf{x}_1, \ldots, \mathbf{x}_N)$, we write
+
+$$
+P_N(\mathbf{x}_1, \ldots, \mathbf{x}_N) = \bar{n}^N \left[ 1 + \sum_{i<j} \xi^{(2)}_{ij} + \sum_{i<j<k} \zeta_{ijk} + \cdots + \xi^{(N)}(\mathbf{x}_1, \ldots, \mathbf{x}_N) \right],
+$$
+
+where $\xi^{(2)}_{ij}$ are pair correlations and $\zeta_{ijk}$ the three-point function. This hierarchy emerges naturally from cumulant expansions; $\xi^{(N)}$ corresponds to the $N$th-order connected correlation function (cumulant). Using generating functionals,
+
+$$
+\mathcal{Z}[J] = \left\langle \exp\left(\int d^3\mathbf{x} \, J(\mathbf{x}) \delta(\mathbf{x}) \right) \right\rangle,
+$$
+
+the $N$-point function is obtained via functional differentiation:
+
+$$
+\xi^{(N)}(\mathbf{x}_1, \ldots, \mathbf{x}_N) = \left. \frac{\delta^N \ln \mathcal{Z}[J]}{\delta J(\mathbf{x}_1) \cdots \delta J(\mathbf{x}_N)} \right|_{J=0}.
+$$
+
+## Historical Milestones
+
+* **BBGKY hierarchy:** In kinetic theory, Bogoliubov, Born, Green, Kirkwood, and Yvon developed equations relating $N$-particle distribution functions, motivating connected correlators.
+* **Cosmological perturbation theory:** Fry (1984) and Bernardeau et al. (2002) advanced the understanding of higher-order correlations as probes of non-Gaussianity in large-scale structure.
+* **Computer vision:** Higher-order correlations surfaced in the analysis of textures and shapes through triplet and quadruplet statistics (e.g., moment invariants).
+
+## Applications
+
+### Physics
+
+* **Turbulence:** The third-order structure function relates to the energy cascade via the Kolmogorov 4/5 law, essentially a specific three-point correlation of velocity increments.
+* **Nonlinear optics:** Four-wave mixing intensities depend on four-point field correlations, informing coherence and quantum properties.
+
+#### Worked example: third-order correlations in a 1D field
+
+```{r three-point-physics}
+three_point_equilateral <- function(delta, r, s) {
+	n <- length(delta)
+	max_shift <- max(r, s)
+	if (n <= max_shift) return(NA_real_)
+	prod_vals <- delta[seq_len(n - max_shift)] *
+		delta[seq_len(n - max_shift) + r] *
+		delta[seq_len(n - max_shift) + s]
+	mean(prod_vals)
+}
+
+r_values <- 1:20
+n_values <- expand_grid(r1 = r_values, r2 = r_values) %>%
+	mutate(xi3 = map2_dbl(r1, r2, ~ three_point_equilateral(delta, .x, .y)))
+
+ggplot(n_values, aes(r1, r2, fill = xi3)) +
+	geom_tile() +
+	scale_fill_viridis_c(option = "B", na.value = "grey90") +
+	labs(title = "Three-point correlation heatmap",
+			 subtitle = "Simulated 1D field with exponential correlations",
+			 x = expression(r[1]), y = expression(r[2]), fill = expression(hat(xi)^{(3)}))
+```
+
+**Takeaways:** For a nearly Gaussian process, the third-order correlator is close to zero. Deviations hint at skewness or non-linear coupling—key diagnostics in turbulence and condensed-matter experiments.
+
+### Computer Vision
+
+* **Shape descriptors:** Triplet-based point correlation functions capture geometric invariants robust to translation and rotation (e.g., 3D point-cloud recognition).
+* **Texture synthesis:** Non-Gaussian textures require matching higher-order statistics; third- and fourth-order correlations guide exemplar-based synthesis.
+
+#### Worked example: triplet correlations for point-based shape signatures
+
+```{r three-point-cv}
+triangle_signature <- function(points, sample_size = 3000, bin_width = 0.1) {
+	idx <- combn(seq_len(nrow(points)), 3)
+	if (ncol(idx) > sample_size) {
+		idx <- idx[, sample(seq_len(ncol(idx)), sample_size)]
+	}
+	sides <- apply(idx, 2, function(id) {
+		tri <- points[id, , drop = FALSE]
+		d <- as.numeric(dist(tri))
+		sort(d)
+	})
+	sides <- t(sides)
+	tibble(a = sides[, 1], b = sides[, 2], c = sides[, 3]) %>%
+		mutate(perimeter = a + b + c,
+					 aspect = b / a) %>%
+		filter(is.finite(perimeter), perimeter > 0) %>%
+		mutate(bin = cut(perimeter, breaks = seq(0, max(perimeter) + bin_width, by = bin_width))) %>%
+		count(bin, aspect_bin = cut(aspect, breaks = seq(1, max(aspect) + 0.1, by = 0.1))) %>%
+		drop_na()
+}
+
+shape <- tibble(
+	x = c(runif(200, 0, 1), 0.5 + 0.2 * cos(seq(0, 2*pi, length.out = 200))),
+	y = c(runif(200, 0, 0.3), 0.5 + 0.2 * sin(seq(0, 2*pi, length.out = 200)))
+)
+
+sig_df <- triangle_signature(shape)
+
+ggplot(sig_df, aes(aspect_bin, bin, fill = n)) +
+	geom_tile() +
+	scale_fill_viridis_c(option = "C") +
+	labs(title = "Triplet-based shape signature",
+			 x = "Aspect ratio bin",
+			 y = "Perimeter bin",
+			 fill = "Count") +
+	theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+**Takeaways:** Triplet statistics separate compact clusters (small aspect ratio) from elongated contours. Extend this to 3D point clouds for object retrieval pipelines.
+
+### Astrophysics and Cosmology
+
+* **Bispectrum and trispectrum:** The three-point function (bispectrum) constrains primordial non-Gaussianity ($f_{\mathrm{NL}}$ parameters) in the cosmic microwave background and large-scale structure.
+* **Halo models:** The $N$-point hierarchy decomposes into one-halo, two-halo, and multi-halo terms, revealing how matter clusters within and across halos.
+* **Weak lensing:** Higher-order shear correlations tighten constraints on cosmological parameters and intrinsic alignments.
+
+#### Worked example: bispectrum of a discretized density field
+
+```{r three-point-cosmology}
+create_density_field <- function(n = 128, k0 = 4, noise = 0.2) {
+	x <- matrix(rep(seq(0, 2*pi, length.out = n), each = n), nrow = n)
+	y <- matrix(rep(seq(0, 2*pi, length.out = n), times = n), nrow = n)
+	base <- sin(k0 * x) + cos(k0 * y)
+	noisy <- base + noise * matrix(rnorm(n * n), nrow = n)
+	noisy - mean(noisy)
+}
+
+compute_bispectrum <- function(field, k_modes) {
+	ft <- fft(field)
+	n <- nrow(field)
+	freq <- expand_grid(kx = 0:(n - 1), ky = 0:(n - 1)) %>%
+		mutate(kx = if_else(kx > n / 2, kx - n, kx),
+					 ky = if_else(ky > n / 2, ky - n, ky),
+					 k = sqrt(kx^2 + ky^2),
+					 phase = atan2(ky, kx))
+	ft_df <- freq %>% mutate(value = as.vector(ft))
+
+	combos <- expand_grid(k1 = k_modes, k2 = k_modes, k3 = k_modes) %>%
+		filter(abs(k1 + k2 + k3) < 1e-6)
+
+	combos %>%
+		rowwise() %>%
+		mutate(bispec = {
+			idx1 <- which.min(abs(ft_df$k - abs(k1)))
+			idx2 <- which.min(abs(ft_df$k - abs(k2)))
+			idx3 <- which.min(abs(ft_df$k - abs(k3)))
+			ft_df$value[idx1] * ft_df$value[idx2] * ft_df$value[idx3]
+		}) %>%
+		ungroup() %>%
+		mutate(b_amp = Re(bispec))
+}
+
+field <- create_density_field()
+k_modes <- c(-4, 4)
+
+bispec_df <- compute_bispectrum(field, k_modes)
+
+ggplot(bispec_df, aes(k1, b_amp, color = factor(k2))) +
+	geom_point(size = 3) +
+	labs(title = "Bispectrum amplitudes for resonant modes",
+			 x = expression(k[1]), y = "Re(B)", color = expression(k[2])) +
+	theme(legend.position = "bottom")
+```
+
+**Takeaways:** This toy bispectrum highlights mode coupling introduced by non-linear structure. In real surveys, you would sample many $(k_1, k_2, k_3)$ triplets fulfilling the triangle condition to constrain non-Gaussianity.
+
+## Calculation Strategies
+
+* **Tree-level perturbation theory:** In the mildly nonlinear regime, kernels $F_n$ relate the $N$-point function to the linear power spectrum.
+* **Diagrammatic approaches:** Feynman-like diagrams organize contributions in statistical field theory and cosmological perturbation expansions.
+* **Fast estimators:** Algorithms such as the Szapudi–Szalay estimator and FFT-based bispectrum estimators reduce computational cost from $\mathcal{O}(N^3)$ to $\mathcal{O}(N^2 \log N)$ or better.
+
+## Edge Cases and Challenges
+
+1. **Gaussian fields:** All cumulants beyond second order vanish; hence, non-zero $N>2$ correlators signal departures from Gaussianity.
+2. **Survey geometry:** Irregular masks bias higher-order statistics more severely than 2PCF, requiring sophisticated window-function deconvolutions.
+3. **Noise propagation:** Instrumental and shot noise become increasingly coupled at higher order, demanding careful covariance modeling.
+
+# Connecting the Hierarchy
+
+The correlation hierarchy encodes complete statistical information for many processes. Moment hierarchies often demand closure approximations (e.g., hierarchical ansatz in cosmology, Kirkwood superposition in liquids). One powerful tool is the cumulant generating function, which reorganizes the hierarchy into connected pieces, simplifying physical interpretation.
+
+In practice, truncated hierarchies (keeping up to three- or four-point functions) balance physical insight with computational feasibility. Machine-learning methods increasingly leverage these statistics as features, especially when raw data dimensionality is prohibitive.
+
+# Summary and Outlook
+
+* The two-point correlation function quantifies pairwise clustering and links directly to the power spectrum.
+* $N$-point correlators extend this view to higher-order structure, revealing non-Gaussian signatures crucial across physics, computer vision, astrophysics, and cosmology.
+* Efficient estimators and theoretical models are active areas of research, particularly for next-generation surveys and high-dimensional data.
+
+```{r session-info, echo=FALSE}
+sessionInfo()
+```
+
+# Further Reading
+
+* Peebles, P.J.E. (1980). *The Large-Scale Structure of the Universe*.
+* Bernardeau, F., Colombi, S., Gaztañaga, E., & Scoccimarro, R. (2002). "Large-scale structure of the Universe and cosmological perturbation theory." *Physics Reports*.
+* Haralick, R.M., Shanmugam, K., & Dinstein, I. (1973). "Textural features for image classification." *IEEE Transactions on Systems, Man, and Cybernetics*.
+* Szapudi, I. & Szalay, A.S. (1998). "A new class of estimators for the N-point correlations." *The Astrophysical Journal*.
+* Coles, P. & Lucchin, F. (2002). *Cosmology: The Origin and Evolution of Cosmic Structure*.
+

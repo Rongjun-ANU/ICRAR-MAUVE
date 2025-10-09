@@ -1,0 +1,373 @@
+## Fourier Analysis for Computer Vision and Astrophysics
+
+### Learning Objectives
+
+- Build geometric intuition for Fourier analysis as a change of basis into sinusoidal modes.
+- Derive the main Fourier formulae in continuous, discrete, and multi-dimensional settings.
+- Practice core computational workflows (Fourier series, DFT/FFT, windowing) in R/Python.
+- Apply frequency-domain reasoning to two high-impact domains: computer vision (CV) and astrophysics.
+
+### Prerequisites and Checklist
+
+- Comfortable with complex numbers, linear algebra inner products, and basic calculus.
+- Familiarity with sampling theory and convolution (or be ready for a quick refresher below).
+- Software stack: base R (with `ggplot2`), optional Python chunks via `reticulate`, and domain libraries (`opencv`, `astropy`) when running the examples.
+
+#### Convolution Refresher
+
+- **Continuous convolution (integral form):**
+	$$ (f * g)(x) = \int_{-\infty}^{\infty} f(\tau)\, g(x - \tau)\, d\tau $$
+	Describes how $g$ (often a filter/impulse response) accumulates weighted copies of $f$. Linear time-invariant systems act via convolution.
+- **Discrete convolution (sum form):**
+	$$ (f * g)[n] = \sum_{m=-\infty}^{\infty} f[m]\, g[n - m] $$
+	For finite-length sequences, limits match the support of $f$ and $g$; in image processing, extend to 2D by summing over both indices.
+- **Key properties:** commutativity, associativity, distributivity, and (critically) the Fourier convolution theorem $\mathcal{F}\{f * g\} = \mathcal{F}\{f\}\cdot \mathcal{F}\{g\}$. This duality is why Fourier analysis enables efficient filtering.
+
+---
+
+### 1. Intuition, Geometry, and Historical Context
+
+Joseph Fourier observed that heat flow equations simplify dramatically when solutions are expressed as sums of harmonics. That insight generalizes: any sufficiently well-behaved signal can be seen as a weighted combination of sine and cosine waves of different frequencies.
+
+- **Change of coordinates:** Fourier analysis is a basis change from the standard (time/space) domain to the frequency domain. Each coefficient $c_k$ measures “how much” oscillation at frequency $k$ exists in the signal.
+- **Orthogonality:** Sine and cosine functions are orthogonal under the $L^2$ inner product. Orthogonality guarantees unique coefficients and energy preservation.
+- **Physical relevance:** Many linear PDEs (heat, wave, Schroedinger) diagonalize in the Fourier basis, turning derivatives into algebraic multipliers.
+
+> **Mental model:** Imagine shining white light (all frequencies) through a prism; Fourier transforms perform an analogous spectral decomposition for general signals.
+
+---
+
+### 2. Fourier Series on Finite Domains
+
+For a periodic function $f(x)$ with period $T$, the real Fourier series reads
+
+$$
+f(x) = \frac{a_0}{2} + \sum_{n=1}^{\infty} \Bigl[a_n \cos\Bigl(\frac{2\pi n x}{T}\Bigr) + b_n \sin\Bigl(\frac{2\pi n x}{T}\Bigr)\Bigr],
+$$
+
+with coefficients (dot products against basis functions)
+
+$$
+a_n = \frac{2}{T} \int_{x_0}^{x_0+T} f(x) \cos\Bigl(\frac{2\pi n x}{T}\Bigr) dx,
+\quad
+b_n = \frac{2}{T} \int_{x_0}^{x_0+T} f(x) \sin\Bigl(\frac{2\pi n x}{T}\Bigr) dx.
+$$
+
+#### Complex exponential shorthand
+
+$$ f(x) = \sum_{n=-\infty}^{\infty} c_n e^{i 2\pi n x/T},\quad c_n = \frac{1}{T} \int_{x_0}^{x_0+T} f(x) e^{-i 2\pi n x/T} dx.$$
+
+#### Convergence reminders
+
+- Absolutely convergent for smooth $f$. Piecewise smooth functions converge pointwise except at discontinuities (Gibbs overshoot \~9%).
+- Fourier coefficients decay at rates tied to smoothness: $C^k$ functions yield $|c_n| = O(n^{-(k+1)})$.
+
+#### Worked example: square wave reconstruction in R
+
+```{r square-wave, message=FALSE, warning=FALSE}
+library(ggplot2)
+
+square_wave <- function(x) ifelse(x %% (2*pi) < pi, 1, -1)
+
+fourier_square <- function(x, n_terms) {
+	a0 <- 0
+	partial <- rep(a0/2, length(x))
+	for (n in seq_len(n_terms)) {
+		bn <- 4 / (pi * (2 * n - 1))
+		partial <- partial + bn * sin((2 * n - 1) * x)
+	}
+	partial
+}
+
+x <- seq(0, 2*pi, length.out = 500)
+df <- data.frame(
+	x = rep(x, 4),
+	approx = c(
+		square_wave(x),
+		fourier_square(x, 1),
+		fourier_square(x, 3),
+		fourier_square(x, 10)
+	),
+	series = factor(rep(c("Original", "1 term", "3 terms", "10 terms"), each = length(x)))
+)
+
+ggplot(df, aes(x, approx, colour = series)) +
+	geom_line(linewidth = 1) +
+	labs(title = "Fourier Series Approximation of a Square Wave", y = "Amplitude") +
+	theme_minimal()
+```
+
+---
+
+### 3. Fourier Transform on Infinite Domains
+
+For non-periodic $f(x)$, the Fourier transform $F(\omega)$ is
+
+$$
+F(\omega) = \int_{-\infty}^{\infty} f(x) e^{-i \omega x} dx,
+\quad
+f(x) = \frac{1}{2\pi} \int_{-\infty}^{\infty} F(\omega) e^{i \omega x} d\omega.
+$$
+
+#### Key properties
+
+| Property | Time/space domain | Frequency domain |
+|---|---|---|
+| Linearity | $a f + b g$ | $a F + b G$ |
+| Shift | $f(x - x_0)$ | $e^{-i \omega x_0} F(\omega)$ |
+| Modulation | $e^{i \omega_0 x} f(x)$ | $F(\omega - \omega_0)$ |
+| Scaling | $f(ax)$ | $\tfrac{1}{|a|}F(\omega/a)$ |
+| Convolution | $(f * g)(x)$ | $F(\omega) G(\omega)$ |
+| Parseval | $\int |f|^2 dx$ | $\tfrac{1}{2\pi} \int |F|^2 d\omega$ |
+
+> **Energy perspective:** The squared magnitude $|F(\omega)|^2$ measures how much energy is present near frequency $\omega$.
+
+#### Common transform pairs
+
+- Gaussian $f(x) = e^{-x^2/(2\sigma^2)} \Rightarrow F(\omega) = \sigma\sqrt{2\pi} e^{-\sigma^2 \omega^2/2}$.
+- Rectangular pulse $\Pi(x/T) \Rightarrow F(\omega) = T \operatorname{sinc}(\omega T / 2)$ (source of spectral leakage sinc tails).
+
+---
+
+### 4. Discrete Fourier Transform (DFT) and FFT
+
+For $N$ uniformly sampled points $x_n = f(n \Delta t)$:
+
+$$ X_k = \sum_{n=0}^{N-1} x_n e^{-i 2\pi k n/N}, \quad k=0,\dots,N-1. $$
+
+The inverse recovers samples:
+
+$$ x_n = \frac{1}{N} \sum_{k=0}^{N-1} X_k e^{i 2\pi k n/N}. $$
+
+#### Practical guidance
+
+- **Sampling/Nyquist:** Highest recoverable frequency $f_{\text{Nyq}} = f_s/2$. Pre-filter analog signals to prevent aliasing.
+- **Zero padding:** Append zeros to refine spectral interpolation (helps locate peaks but doesn’t add information).
+- **FFT:** Algorithms like Cooley–Tukey reduce cost to $O(N \log N)$ by recursively exploiting symmetries.
+
+```python
+import numpy as np
+from numpy.fft import fft, fftfreq
+
+fs = 1024
+t = np.arange(fs) / fs
+signal = np.sin(2 * np.pi * 5 * t) + 0.6 * np.sin(2 * np.pi * 40 * t) + 0.3 * np.random.randn(fs)
+
+freqs = fftfreq(signal.size, d=1/fs)
+fft_vals = fft(signal)
+
+dominant = freqs[np.argmax(np.abs(fft_vals[: len(freqs)//2]))]
+print(f"Dominant frequency ≈ {dominant:.2f} Hz")
+```
+
+---
+
+### 5. Multi-dimensional and Structured Transforms
+
+- **2D/3D DFTs:** For images, $F(u,v) = \sum_{x=0}^{M-1}\sum_{y=0}^{N-1} f(x,y) e^{-2\pi i (ux/M + vy/N)}$. Extends to volumes with additional summation.
+- **Phase vs magnitude:** Magnitude encodes texture strength/orientation; phase captures geometry. Replacing magnitude with white noise while keeping phase preserves recognizable outlines.
+- **Spherical harmonics ($Y_{\ell m}$):** Fourier analogy on the sphere. Used extensively to describe CMB temperature anisotropies and gravitational potential fields.
+
+---
+
+### 6. Implementation Patterns: Windowing and Leakage
+
+Finite records behave like a true signal multiplied by a rectangular window, whose transform introduces sinc sidelobes.
+
+- **Windows:** Hanning, Hamming, Blackman, and Tukey reduce leakage by tapering edges. Trade-off: broader main lobe (lower resolution).
+- **Overlap-add / overlap-save:** Efficient methods for streaming convolution using FFTs on windowed blocks.
+- **Numerical precision:** Use double precision for astrophysical dynamic ranges; consider dithering when quantizing.
+
+```{r window-demo, message=FALSE, warning=FALSE}
+library(signal)
+N <- 256
+window_types <- list(
+	Rectangular = rep(1, N),
+	Hamming = hamming(N),
+	Hanning = hanning(N)
+)
+
+spectra <- lapply(window_types, function(w) {
+	mag <- abs(fft(w))
+	data.frame(bin = 0:(N-1), magnitude = mag / max(mag))
+})
+
+spectra_df <- dplyr::bind_rows(Map(cbind, spectra, window = names(spectra)))
+
+ggplot(subset(spectra_df, bin <= 64), aes(bin, magnitude, colour = window)) +
+	geom_line() +
+	scale_y_log10() +
+	labs(title = "Window Spectra (log scale)", x = "Frequency bin", y = "Normalized magnitude") +
+	theme_minimal()
+```
+
+---
+
+### 7. Fourier in Computer Vision (CV)
+
+#### 7.1 Filtering Pipelines
+
+1. **Transform:** Apply 2D FFT (usually after centering via $(-1)^{x+y}$ multiplication to shift zero-frequency to the image center).
+2. **Masking:** Multiply by a designed filter (Gaussian LPF, Butterworth HPF, band-pass ring, notch filters for periodic noise). In grayscale, operate per channel; for RGB, either transform each channel or convert to luminance-chrominance spaces.
+3. **Inverse transform:** Apply inverse FFT and take the real part. Re-normalize intensity range.
+
+```python
+import numpy as np
+import cv2
+
+def fourier_lowpass(image_path, cutoff=30):
+		img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+		f = np.fft.fft2(img)
+		fshift = np.fft.fftshift(f)
+
+		rows, cols = img.shape
+		crow, ccol = rows // 2, cols // 2
+		mask = np.zeros_like(img, dtype=float)
+		y, x = np.ogrid[:rows, :cols]
+		mask[(y - crow)**2 + (x - ccol)**2 <= cutoff**2] = 1
+
+		filtered = fshift * mask
+		f_ishift = np.fft.ifftshift(filtered)
+		img_back = np.fft.ifft2(f_ishift)
+		img_back = np.abs(img_back)
+		return (img, img_back)
+```
+
+#### 7.2 Texture and Feature Descriptors
+
+- **Radial power spectrum:** Average $|F(u,v)|^2$ over circles to obtain rotation-invariant texture features. Useful in fabric inspection, biomedical imaging, terrain classification.
+- **Fourier-Mellin (log-polar) transform:** Converts rotation/scale changes to translations, enabling template matching under similarity transforms.
+- **Phase correlation:** Compute $\frac{F_1(u,v)F_2^*(u,v)}{|F_1 F_2^*|}$; the inverse transform’s peak gives translation offset. Sub-pixel accuracy via parabolic fitting around the peak.
+
+```python
+def phase_correlation(img_a, img_b):
+		Fa = np.fft.fft2(img_a)
+		Fb = np.fft.fft2(img_b)
+		cross_power = Fa * np.conj(Fb)
+		denominator = np.abs(cross_power)
+		cross_power /= np.where(denominator == 0, 1, denominator)
+		corr = np.fft.ifft2(cross_power)
+		max_loc = np.unravel_index(np.argmax(np.abs(corr)), corr.shape)
+		return max_loc, np.abs(corr[max_loc])
+```
+
+#### 7.3 CV Case Study: Denoising Astronomical CCD Frames
+
+- **Problem:** Remove periodic readout noise without erasing faint sources.
+- **Approach:** (i) Take FFT, (ii) Identify spikes at known noise frequencies, (iii) Apply notch filters, (iv) Inverse FFT.
+- **Validation:** Compare background RMS and point-spread function (PSF) metrics before/after filtering.
+
+#### 7.4 Edge Detection and Enhancement
+
+- **High-pass filters:** Multiply spectrum by high-frequency emphasis (e.g., $H(u,v) = 1 + k \cdot [1 - e^{-D(u,v)^2/(2\sigma^2)}]$) to amplify edges while retaining some original content.
+- **Unsharp masking:** Blur (LPF) and subtract from original. Implemented efficiently via Fourier filtering for large kernels.
+
+---
+
+### 8. Fourier in Astrophysics
+
+#### 8.1 Fourier Transform Spectroscopy (FTS)
+
+- Interferometers measure intensity $I(\tau)$ as a function of optical path delay $\tau$. Spectrum $S(\nu)$ emerges from the Fourier transform of the interferogram.
+- **Resolution**: $\Delta \nu = 1/\tau_{\max}$, so longer scan lengths yield finer spectral bins.
+- **Apodization:** Multiplying $I(\tau)$ by windows (Hanning, Blackman) trades resolution for sidelobe suppression—crucial to resolve weak spectral lines beside bright ones.
+
+#### 8.2 Time-Series Photometry & Lomb–Scargle
+
+Astronomical observations are seldom evenly sampled. The Lomb–Scargle periodogram fits sinusoidal models in the Fourier sense, producing unbiased power spectra for irregular cadences.
+
+```python
+import numpy as np
+from astropy.timeseries import LombScargle
+
+np.random.seed(42)
+time = np.sort(10 * np.random.rand(400))
+true_period = 1.37
+flux = 0.015 * np.sin(2 * np.pi * time / true_period + 0.3) + 0.003 * np.random.randn(time.size)
+
+ls = LombScargle(time, flux)
+frequency, power = ls.autopower()
+best_period = 1 / frequency[np.argmax(power)]
+print(f"Recovered period ≈ {best_period:.3f} days")
+```
+
+- **False-alarm probability (FAP):** Evaluate significance of peaks via bootstrap resampling or analytic FAP approximations.
+- **Pre-whitening:** Iteratively subtract detected periodic components to uncover additional modes (stellar seismology, RR Lyrae pulsations).
+
+#### 8.3 Spatial Power Spectra & Large-Scale Structure
+
+- Galaxy surveys measure overdensity field $\delta(\mathbf{x})$. Fourier transform to $\delta(\mathbf{k})$ and estimate power spectrum $P(k) = \langle |\delta(\mathbf{k})|^2 \rangle$.
+- Correct for survey mask via convolution with window function $|W(\mathbf{k})|^2$. Implement using FFT on gridded data (e.g., Cloud-in-Cell mass assignment).
+- **Baryon Acoustic Oscillations (BAO):** Appear as wiggles in $P(k)$ around $k \approx 0.1~h\ \text{Mpc}^{-1}$, providing standard rulers.
+
+#### 8.4 Radio Interferometry Imaging
+
+- **Visibility equation:** $V(u,v,w) = \int I(l,m) e^{-2\pi i (ul + vm + w(n-1))} dl dm$, with $(u,v,w)$ baseline coordinates in wavelengths.
+- **Imaging:** Invert visibilities via gridded FFT (w-projection/w-stacking correct for non-coplanar baselines).
+- **Deconvolution:** CLEAN iteratively subtracts synthesized beam sidelobes from bright components; multiscale CLEAN handles diffuse emission. Fourier-domain calibration solutions adjust phase/amplitude to maximize image fidelity.
+
+#### 8.5 Astrophysical Case Study: Power Spectrum of HI Intensity Maps
+
+1. Grid brightness-temperature cube $T(\theta_x, \theta_y, \nu)$.
+2. Apply 3D FFT to obtain $T(k_x, k_y, k_\nu)$.
+3. Average in cylindrical shells to estimate $P(k_\perp, k_\parallel)$.
+4. Interpret anisotropy as evidence of redshift-space distortions.
+
+---
+
+### 9. End-to-End Workflow Cheat Sheet
+
+| Step | CV focus | Astrophysics focus |
+|---|---|---|
+| 1. Acquire data | Images (CCD, hyperspectral) | Light curves, interferograms, sky maps |
+| 2. Preprocess | Denoise, normalize, pad | Detrend, window, calibrate |
+| 3. Transform | 2D/3D FFT | 1D, 2D, 3D FFT, spherical harmonics |
+| 4. Operate | Mask, multiply, filter | Periodograms, power spectra, CLEAN |
+| 5. Inverse/interpret | Recover filtered image | Physical inference (redshift, period, structure) |
+| 6. Validate | SNR, PSNR, structural similarity | Residuals, chi-square, simulated injections |
+
+---
+
+### 10. Practical Tips & Edge Cases
+
+- **Aliasing:** Always check frequency content relative to Nyquist. In imaging, aliasing manifests as Moiré patterns; in astrophysics, as spurious periodicities.
+- **Boundary conditions:** Periodicity assumptions can cause wrap-around artifacts. Use reflective padding or windowing to mitigate.
+- **Numerical stability:** For large dynamic range spectra (quasars, pulsars), work in logarithmic units or apply whitening.
+- **GPU acceleration:** Libraries like cuFFT, clFFT, or OpenCV GPU modules offer 10–100× speed-ups for large transforms.
+- **Precision:** Double precision recommended for interferometric visibilities; single precision may suffice for real-time CV tasks.
+
+---
+
+### 11. Beyond Fourier: When to Switch Tools
+
+- **STFT / spectrograms:** $\text{STFT}\{f\}(\tau,\omega) = \int f(t) w(t-\tau) e^{-i \omega t} dt$ for non-stationary signals (e.g., transient events, chirps).
+- **Wavelets:** Multiresolution; detect localized transients (supernova light curves, lensing arcs) better than pure Fourier.
+- **Compressed sensing:** Reconstruct sparse Fourier spectra from undersampled measurements (MRI, radio interferometry with sparse baselines).
+
+---
+
+### 12. Recommended Software & Datasets
+
+- **R:** `signal`, `pracma`, `waveslim` for transforms; `EBImage` for CV tasks.
+- **Python:** `numpy.fft`, `scipy.fft`, `opencv`, `scikit-image`, `astropy`, `radio_beam`.
+- **Datasets:**
+	- CV: BSD500 (natural images), COCO (textures, objects).
+	- Astrophysics: Kepler/K2 light curves, LOFAR visibilities, Planck CMB maps, HI4PI neutral hydrogen survey.
+
+---
+
+### 13. Further Reading
+
+- Bracewell, **The Fourier Transform and Its Applications**.
+- Oppenheim & Schafer, **Discrete-Time Signal Processing**.
+- Mallat, **A Wavelet Tour of Signal Processing** (for extensions).
+- Cornwell, **Radio Interferometry: Theory, Techniques, and Applications**.
+- Gonzalez & Woods, **Digital Image Processing** (frequency-domain CV).
+
+---
+
+### 14. Summary and Next Steps
+
+Fourier analysis provides a unifying language for decomposing signals, enabling efficient filtering, compression, and inference across disciplines. In computer vision it powers noise removal, alignment, and descriptors; in astrophysics it underpins spectroscopy, period detection, and cosmic structure analyses. Master the core transform, understand the practical pitfalls (windowing, aliasing, numerical precision), and you gain a powerful toolkit for both earthly images and cosmic data alike.
+
+**Where to go next:** implement the provided code snippets on real datasets, experiment with different windows/filters, and explore hybrid approaches (Fourier + wavelets) for non-stationary signals.
