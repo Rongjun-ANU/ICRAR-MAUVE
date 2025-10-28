@@ -1,0 +1,582 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.3' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[     24190,        572]
+NotebookOptionsPosition[     23586,        553]
+NotebookOutlinePosition[     24003,        570]
+CellTagsIndexPosition[     23960,        567]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", "Clear", "*)"}], 
+  RowBox[{
+   RowBox[{"ClearAll", "[", "\"\<Global`*\>\"", "]"}], "\n", 
+   "\[IndentingNewLine]", 
+   RowBox[{"(*", 
+    RowBox[{"Model", " ", "definitions"}], "*)"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"mu", "[", 
+      RowBox[{"psi_", ",", "eps_", ",", "Mstar_", ",", "w_", ",", "a_"}], 
+      "]"}], ":=", 
+     RowBox[{"psi", "/", 
+      RowBox[{"(", 
+       RowBox[{"eps", "*", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"Mstar", "*", 
+           RowBox[{"(", 
+            RowBox[{"1", "+", "w", "-", "a"}], ")"}]}], "+", 
+          RowBox[{"psi", "/", "eps"}]}], ")"}]}], ")"}]}]}], ";"}], "\n", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"alpha", "[", 
+      RowBox[{"R_", ",", "a_", ",", "w_"}], "]"}], ":=", 
+     RowBox[{"a", "/", 
+      RowBox[{"(", 
+       RowBox[{"R", "-", "1", "+", "a", "-", "w"}], ")"}]}]}], ";"}], 
+   "\[IndentingNewLine]", "\n", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Xfun", "[", 
+      RowBox[{
+      "psi_", ",", "y_", ",", "R_", ",", "a_", ",", "w_", ",", "Mstar_", ",", 
+       "eps_"}], "]"}], ":=", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"m", "=", 
+          RowBox[{"mu", "[", 
+           RowBox[{"psi", ",", "eps", ",", "Mstar", ",", "w", ",", "a"}], 
+           "]"}]}], ",", 
+         RowBox[{"al", "=", 
+          RowBox[{"alpha", "[", 
+           RowBox[{"R", ",", "a", ",", "w"}], "]"}]}]}], "}"}], ",", 
+       RowBox[{"If", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"a", "<=", "0"}], "||", 
+          RowBox[{"!", 
+           RowBox[{"NumericQ", "[", "m", "]"}]}], "||", 
+          RowBox[{"!", 
+           RowBox[{"NumericQ", "[", "al", "]"}]}]}], ",", "Indeterminate", ",", 
+         RowBox[{"y", "*", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "-", "R"}], ")"}], "/", "a"}], "*", 
+          RowBox[{"(", 
+           RowBox[{"1", "-", 
+            RowBox[{"m", "^", 
+             RowBox[{"-", "al"}]}]}], ")"}]}]}], "]"}]}], "]"}]}], ";"}], 
+   "\[IndentingNewLine]", "\n", 
+   RowBox[{"Manipulate", "[", 
+    RowBox[{
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"ms", "=", 
+          RowBox[{"10", "^", "logM"}]}], ",", 
+         RowBox[{"ep", "=", 
+          RowBox[{"10", "^", "logE"}]}], ",", 
+         RowBox[{"psiProbe", "=", 
+          RowBox[{"10", "^", "logPsi0"}]}], ",", 
+         RowBox[{"al", "=", 
+          RowBox[{"alpha", "[", 
+           RowBox[{"R", ",", "a", ",", "w"}], "]"}]}], ",", "mProbe", ",", 
+         "xProbe", ",", "oh12Probe"}], "}"}], ",", 
+       RowBox[{
+        RowBox[{"mProbe", "=", 
+         RowBox[{"mu", "[", 
+          RowBox[{"psiProbe", ",", "ep", ",", "ms", ",", "w", ",", "a"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"xProbe", "=", 
+         RowBox[{"Xfun", "[", 
+          RowBox[{
+          "psiProbe", ",", "y", ",", "R", ",", "a", ",", "w", ",", "ms", ",", 
+           "ep"}], "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"oh12Probe", "=", 
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"NumberQ", "[", "xProbe", "]"}], "&&", 
+            RowBox[{"xProbe", ">", "0"}]}], ",", 
+           RowBox[{"8.69", "+", 
+            RowBox[{"Log10", "[", "xProbe", "]"}]}], ",", "Indeterminate"}], 
+          "]"}]}], ";", "\[IndentingNewLine]", 
+        RowBox[{"Column", "[", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"Style", "[", 
+            RowBox[{
+             RowBox[{"Row", "[", 
+              RowBox[{"{", 
+               RowBox[{"\"\<M* = \>\"", ",", 
+                RowBox[{"ScientificForm", "[", 
+                 RowBox[{"ms", ",", "3"}], "]"}], ",", "\"\<   |   \>\"", 
+                ",", "\"\<\[Epsilon] = \>\"", ",", 
+                RowBox[{"ScientificForm", "[", 
+                 RowBox[{"ep", ",", "3"}], "]"}], ",", "\"\<   |   \>\"", 
+                ",", "\"\<\[Alpha] = \>\"", ",", 
+                RowBox[{"If", "[", 
+                 RowBox[{
+                  RowBox[{"NumberQ", "[", "al", "]"}], ",", 
+                  RowBox[{"NumberForm", "[", 
+                   RowBox[{"al", ",", 
+                    RowBox[{"{", 
+                    RowBox[{"6", ",", "4"}], "}"}]}], "]"}], 
+                  ",", "\"\<undefined\>\""}], "]"}]}], "}"}], "]"}], ",", 
+             "12"}], "]"}], ",", 
+           RowBox[{"Grid", "[", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"{", 
+                
+                RowBox[{"\"\<Probe at \\!\\(\\*SuperscriptBox[\\(\[Psi]\\), \
+\\(0\\)]\\) =\>\"", ",", 
+                 RowBox[{"ScientificForm", "[", 
+                  RowBox[{"psiProbe", ",", "4"}], "]"}]}], "}"}], ",", 
+               RowBox[{"{", 
+                
+                RowBox[{"\"\<\[Mu](\\!\\(\\*SuperscriptBox[\\(\[Psi]\\), \\(0\
+\\)]\\)) =\>\"", ",", 
+                 RowBox[{"If", "[", 
+                  RowBox[{
+                   RowBox[{"NumberQ", "[", "mProbe", "]"}], ",", 
+                   RowBox[{"ScientificForm", "[", 
+                    RowBox[{"mProbe", ",", "5"}], "]"}], ",", 
+                   RowBox[{"Style", "[", 
+                    RowBox[{"\"\<undefined\>\"", ",", "Red"}], "]"}]}], 
+                  "]"}]}], "}"}], ",", 
+               RowBox[{"{", 
+                
+                RowBox[{"\"\<X(\\!\\(\\*SuperscriptBox[\\(\[Psi]\\), \\(0\\)]\
+\\)) =\>\"", ",", 
+                 RowBox[{"If", "[", 
+                  RowBox[{
+                   RowBox[{"NumberQ", "[", "xProbe", "]"}], ",", 
+                   RowBox[{"ScientificForm", "[", 
+                    RowBox[{"xProbe", ",", "5"}], "]"}], ",", 
+                   RowBox[{"Style", "[", 
+                    RowBox[{"\"\<undefined\>\"", ",", "Red"}], "]"}]}], 
+                  "]"}]}], "}"}], ",", 
+               RowBox[{"{", 
+                RowBox[{"\"\<12 + log10(O/H) =\>\"", ",", 
+                 RowBox[{"If", "[", 
+                  RowBox[{
+                   RowBox[{"NumberQ", "[", "oh12Probe", "]"}], ",", 
+                   RowBox[{"NumberForm", "[", 
+                    RowBox[{"oh12Probe", ",", 
+                    RowBox[{"{", 
+                    RowBox[{"6", ",", "4"}], "}"}]}], "]"}], ",", 
+                   RowBox[{"Style", "[", 
+                    RowBox[{"\"\<undefined\>\"", ",", "Red"}], "]"}]}], 
+                  "]"}]}], "}"}]}], "}"}], ",", 
+             RowBox[{"Alignment", "->", "Left"}], ",", 
+             RowBox[{"Spacings", "->", 
+              RowBox[{"{", 
+               RowBox[{"2", ",", "1"}], "}"}]}]}], "]"}], ",", 
+           RowBox[{"Row", "[", 
+            RowBox[{"{", 
+             RowBox[{"(*", 
+              RowBox[{
+               RowBox[{"Panel", " ", "1"}], ":", 
+               RowBox[{"X", 
+                RowBox[{"(", "\[Psi]", ")"}], " ", "vs", " ", "\[Psi]", " ", 
+                RowBox[{"(", 
+                 RowBox[{"log", " ", "x"}], ")"}]}]}], "*)"}], 
+             RowBox[{
+              RowBox[{"LogLinearPlot", "[", 
+               RowBox[{
+                RowBox[{"Xfun", "[", 
+                 RowBox[{
+                 "\[Psi]", ",", "y", ",", "R", ",", "a", ",", "w", ",", "ms", 
+                  ",", "ep"}], "]"}], ",", 
+                RowBox[{"{", 
+                 RowBox[{"\[Psi]", ",", "0.01", ",", "100"}], "}"}], ",", 
+                RowBox[{"PlotRange", "->", "All"}], ",", 
+                RowBox[{"Frame", "->", "True"}], ",", 
+                RowBox[{"FrameLabel", "->", 
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{
+                    RowBox[{"Style", "[", 
+                    RowBox[{"#", ",", "12"}], "]"}], "&"}], "/@", 
+                   RowBox[{"{", 
+                    RowBox[{"\"\<\[Psi]\>\"", ",", "\"\<X(\[Psi])\>\""}], 
+                    "}"}]}], ")"}]}], ",", 
+                RowBox[{"GridLines", "->", "Automatic"}], ",", 
+                RowBox[{"ImageSize", "->", "520"}], ",", 
+                RowBox[{"Epilog", "->", 
+                 RowBox[{"If", "[", 
+                  RowBox[{
+                   RowBox[{"NumberQ", "[", "xProbe", "]"}], ",", 
+                   RowBox[{"{", 
+                    RowBox[{
+                    RowBox[{"PointSize", "[", "Medium", "]"}], ",", 
+                    RowBox[{"Point", "[", 
+                    RowBox[{"{", 
+                    RowBox[{"psiProbe", ",", "xProbe"}], "}"}], "]"}]}], 
+                    "}"}], ",", 
+                   RowBox[{"{", "}"}]}], "]"}]}]}], "]"}], ",", 
+              RowBox[{"Spacer", "[", "20", "]"}], ",", 
+              RowBox[{"(*", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"Panel", " ", "2"}], ":", 
+                 RowBox[{"12", "+", 
+                  RowBox[{"log10", 
+                   RowBox[{"(", 
+                    RowBox[{"O", "/", "H"}], ")"}]}]}]}], "=", 
+                RowBox[{"8.69", "+", 
+                 RowBox[{"log10", 
+                  RowBox[{"(", "X", ")"}], " ", "vs", " ", "log10", 
+                  RowBox[{"(", "\[Psi]", ")"}]}]}]}], "*)"}], 
+              RowBox[{"Plot", "[", 
+               RowBox[{
+                RowBox[{"With", "[", 
+                 RowBox[{
+                  RowBox[{"{", 
+                   RowBox[{"psi", "=", 
+                    RowBox[{"10", "^", "lpsi"}]}], "}"}], ",", 
+                  RowBox[{"With", "[", 
+                   RowBox[{
+                    RowBox[{"{", 
+                    RowBox[{"xx", "=", 
+                    RowBox[{"Xfun", "[", 
+                    RowBox[{
+                    "psi", ",", "y", ",", "R", ",", "a", ",", "w", ",", "ms", 
+                    ",", "ep"}], "]"}]}], "}"}], ",", 
+                    RowBox[{"If", "[", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"NumberQ", "[", "xx", "]"}], "&&", 
+                    RowBox[{"xx", ">", "0"}]}], ",", 
+                    RowBox[{"8.69", "+", 
+                    RowBox[{"Log10", "[", "xx", "]"}]}], ",", 
+                    "Indeterminate"}], "]"}]}], "]"}]}], "]"}], ",", 
+                RowBox[{"{", 
+                 RowBox[{"lpsi", ",", 
+                  RowBox[{"-", "2"}], ",", "2"}], "}"}], ",", 
+                RowBox[{"PlotRange", "->", "All"}], ",", 
+                RowBox[{"Frame", "->", "True"}], ",", 
+                RowBox[{"FrameLabel", "->", 
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{
+                    RowBox[{"Style", "[", 
+                    RowBox[{"#", ",", "12"}], "]"}], "&"}], "/@", 
+                   RowBox[{"{", 
+                    
+                    RowBox[{"\"\<log10(\[Psi])\>\"", 
+                    ",", "\"\<12 + log10(O/H)\>\""}], "}"}]}], ")"}]}], ",", 
+                RowBox[{"GridLines", "->", "Automatic"}], ",", 
+                RowBox[{"ImageSize", "->", "520"}], ",", 
+                RowBox[{"Epilog", "->", 
+                 RowBox[{"If", "[", 
+                  RowBox[{
+                   RowBox[{"NumberQ", "[", "oh12Probe", "]"}], ",", 
+                   RowBox[{"{", 
+                    RowBox[{
+                    RowBox[{"PointSize", "[", "Medium", "]"}], ",", 
+                    RowBox[{"Point", "[", 
+                    RowBox[{"{", 
+                    RowBox[{"logPsi0", ",", "oh12Probe"}], "}"}], "]"}]}], 
+                    "}"}], ",", 
+                   RowBox[{"{", "}"}]}], "]"}]}]}], "]"}]}], "}"}], "]"}]}], 
+          "}"}], "]"}]}]}], "]"}], ",", 
+     RowBox[{"(*", "Sliders", "*)"}], 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"y", ",", "0.087", ",", "\"\<y\>\""}], "}"}], ",", "0.01", ",",
+        "0.2", ",", 
+       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"R", ",", "0.79", ",", "\"\<R\>\""}], "}"}], ",", "0.4", ",", 
+       "0.8", ",", 
+       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"a", ",", "0.3", ",", "\"\<a\>\""}], "}"}], ",", "0.", ",", 
+       "3.", ",", 
+       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"w", ",", "1.5", ",", "\"\<w\>\""}], "}"}], ",", "0.", ",", 
+       "3.", ",", 
+       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"logM", ",", "10", ",", "\"\<log10 M*\>\""}], "}"}], ",", "9",
+        ",", "11", ",", 
+       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"logE", ",", 
+         RowBox[{"-", "9"}], ",", "\"\<log10 \[Epsilon]\>\""}], "}"}], ",", 
+       RowBox[{"-", "10"}], ",", 
+       RowBox[{"-", "8"}], ",", 
+       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "logPsi0", ",", "0", 
+         ",", "\"\<log10 \\!\\(\\*SuperscriptBox[\\(\[Psi]\\), \
+\\(0\\)]\\)\>\""}], "}"}], ",", 
+       RowBox[{"-", "2"}], ",", "2", ",", 
+       RowBox[{"Appearance", "->", "\"\<Labeled\>\""}]}], "}"}], ",", 
+     RowBox[{"TrackedSymbols", ":>", "True"}], ",", 
+     RowBox[{"SaveDefinitions", "->", "True"}]}], "]"}], "\n", "\n", "\n", 
+   "\n", "\n"}]}]], "Input",
+ CellChangeTimes->{{3.970646774998988*^9, 3.970646775001637*^9}, 
+   3.97064781830054*^9, 3.970648533408922*^9, {3.9706486388494997`*^9, 
+   3.970648654879204*^9}, {3.970649265116846*^9, 3.970649296332511*^9}, 
+   3.970649445467696*^9, 3.9706496169353657`*^9, {3.970649697669005*^9, 
+   3.970649717422368*^9}, {3.970649821829069*^9, 3.9706498232520742`*^9}, 
+   3.970649958919716*^9, 3.970650046756526*^9},
+ CellLabel->"In[1]:=",ExpressionUUID->"b7e37c56-c26a-4ab7-b083-fe84c05a16e3"],
+
+Cell[BoxData[
+ TagBox[
+  StyleBox[
+   DynamicModuleBox[{$CellContext`a$$ = 
+    0.3, $CellContext`logE$$ = -9, $CellContext`logM$$ = 
+    10, $CellContext`logPsi0$$ = 0, $CellContext`R$$ = 
+    0.79, $CellContext`w$$ = 1.5, $CellContext`y$$ = 0.087, Typeset`show$$ = 
+    True, Typeset`bookmarkList$$ = {}, Typeset`bookmarkMode$$ = "Menu", 
+    Typeset`animator$$, Typeset`animvar$$ = 1, Typeset`name$$ = 
+    "\"untitled\"", Typeset`specs$$ = {{{
+       Hold[$CellContext`y$$], 0.087, "y"}, 0.01, 0.2, ControlType -> 
+      Manipulator}, {{
+       Hold[$CellContext`R$$], 0.79, "R"}, 0.4, 0.8, ControlType -> 
+      Manipulator}, {{
+       Hold[$CellContext`a$$], 0.3, "a"}, 0., 3., ControlType -> 
+      Manipulator}, {{
+       Hold[$CellContext`w$$], 1.5, "w"}, 0., 3., ControlType -> 
+      Manipulator}, {{
+       Hold[$CellContext`logM$$], 10, "log10 M*"}, 9, 11, ControlType -> 
+      Manipulator}, {{
+       Hold[$CellContext`logE$$], -9, "log10 \[Epsilon]"}, -10, -8, 
+      ControlType -> Manipulator}, {{
+       Hold[$CellContext`logPsi0$$], 0, 
+       "log10 \!\(\*SuperscriptBox[\(\[Psi]\), \(0\)]\)"}, -2, 2, ControlType -> 
+      Manipulator}}, Typeset`size$$ = {
+    1590., {335.71396381425666`, 344.31186420488166`}}, Typeset`update$$ = 0, 
+    Typeset`initDone$$, Typeset`skipInitDone$$ = False, 
+    Typeset`keyframeActionsQ$$ = False, Typeset`keyframeList$$ = {}}, 
+    DynamicBox[Manipulate`ManipulateBoxes[
+     1, StandardForm, 
+      "Variables" :> {$CellContext`a$$ = 
+        0.3, $CellContext`logE$$ = -9, $CellContext`logM$$ = 
+        10, $CellContext`logPsi0$$ = 0, $CellContext`R$$ = 
+        0.79, $CellContext`w$$ = 1.5, $CellContext`y$$ = 0.087}, 
+      "ControllerVariables" :> {}, 
+      "OtherVariables" :> {
+       Typeset`show$$, Typeset`bookmarkList$$, Typeset`bookmarkMode$$, 
+        Typeset`animator$$, Typeset`animvar$$, Typeset`name$$, 
+        Typeset`specs$$, Typeset`size$$, Typeset`update$$, Typeset`initDone$$,
+         Typeset`skipInitDone$$, Typeset`keyframeActionsQ$$, 
+        Typeset`keyframeList$$}, "Body" :> 
+      Module[{$CellContext`ms$ = 10^$CellContext`logM$$, $CellContext`ep$ = 
+         10^$CellContext`logE$$, $CellContext`psiProbe$ = 
+         10^$CellContext`logPsi0$$, $CellContext`al$ = \
+$CellContext`alpha[$CellContext`R$$, $CellContext`a$$, $CellContext`w$$], \
+$CellContext`mProbe$, $CellContext`xProbe$, $CellContext`oh12Probe$}, \
+$CellContext`mProbe$ = $CellContext`mu[$CellContext`psiProbe$, \
+$CellContext`ep$, $CellContext`ms$, $CellContext`w$$, $CellContext`a$$]; \
+$CellContext`xProbe$ = $CellContext`Xfun[$CellContext`psiProbe$, \
+$CellContext`y$$, $CellContext`R$$, $CellContext`a$$, $CellContext`w$$, \
+$CellContext`ms$, $CellContext`ep$]; $CellContext`oh12Probe$ = If[
+           And[
+            NumberQ[$CellContext`xProbe$], $CellContext`xProbe$ > 0], 8.69 + 
+           Log10[$CellContext`xProbe$], Indeterminate]; Column[{
+           Style[
+            Row[{"M* = ", 
+              ScientificForm[$CellContext`ms$, 3], "   |   ", "\[Epsilon] = ", 
+              ScientificForm[$CellContext`ep$, 3], "   |   ", "\[Alpha] = ", 
+              If[
+               NumberQ[$CellContext`al$], 
+               NumberForm[$CellContext`al$, {6, 4}], "undefined"]}], 12], 
+           Grid[{{"Probe at \!\(\*SuperscriptBox[\(\[Psi]\), \(0\)]\) =", 
+              ScientificForm[$CellContext`psiProbe$, 4]}, {
+             "\[Mu](\!\(\*SuperscriptBox[\(\[Psi]\), \(0\)]\)) =", 
+              If[
+               NumberQ[$CellContext`mProbe$], 
+               ScientificForm[$CellContext`mProbe$, 5], 
+               Style["undefined", Red]]}, {
+             "X(\!\(\*SuperscriptBox[\(\[Psi]\), \(0\)]\)) =", 
+              If[
+               NumberQ[$CellContext`xProbe$], 
+               ScientificForm[$CellContext`xProbe$, 5], 
+               Style["undefined", Red]]}, {"12 + log10(O/H) =", 
+              If[
+               NumberQ[$CellContext`oh12Probe$], 
+               NumberForm[$CellContext`oh12Probe$, {6, 4}], 
+               Style["undefined", Red]]}}, Alignment -> Left, 
+            Spacings -> {2, 1}], 
+           Row[{
+             LogLinearPlot[
+              $CellContext`Xfun[$CellContext`\[Psi], $CellContext`y$$, \
+$CellContext`R$$, $CellContext`a$$, $CellContext`w$$, $CellContext`ms$, \
+$CellContext`ep$], {$CellContext`\[Psi], 0.01, 100}, PlotRange -> All, Frame -> 
+              True, FrameLabel -> 
+              Map[Style[#, 12]& , {"\[Psi]", "X(\[Psi])"}], GridLines -> 
+              Automatic, ImageSize -> 520, Epilog -> If[
+                NumberQ[$CellContext`xProbe$], {
+                 PointSize[Medium], 
+                 Point[{$CellContext`psiProbe$, $CellContext`xProbe$}]}, {}]], 
+             Spacer[20], 
+             Plot[
+              With[{$CellContext`psi$ = 10^$CellContext`lpsi}, 
+               
+               With[{$CellContext`xx = $CellContext`Xfun[$CellContext`psi$, \
+$CellContext`y$$, $CellContext`R$$, $CellContext`a$$, $CellContext`w$$, \
+$CellContext`ms$, $CellContext`ep$]}, 
+                If[
+                 And[
+                  NumberQ[$CellContext`xx], $CellContext`xx > 0], 8.69 + 
+                 Log10[$CellContext`xx], 
+                 Indeterminate]]], {$CellContext`lpsi, -2, 2}, PlotRange -> 
+              All, Frame -> True, FrameLabel -> 
+              Map[Style[#, 12]& , {"log10(\[Psi])", "12 + log10(O/H)"}], 
+              GridLines -> Automatic, ImageSize -> 520, Epilog -> If[
+                NumberQ[$CellContext`oh12Probe$], {
+                 PointSize[Medium], 
+                 
+                 Point[{$CellContext`logPsi0$$, $CellContext`oh12Probe$}]}, \
+{}]]}]}]], 
+      "Specifications" :> {{{$CellContext`y$$, 0.087, "y"}, 0.01, 0.2, 
+         Appearance -> "Labeled"}, {{$CellContext`R$$, 0.79, "R"}, 0.4, 0.8, 
+         Appearance -> "Labeled"}, {{$CellContext`a$$, 0.3, "a"}, 0., 3., 
+         Appearance -> "Labeled"}, {{$CellContext`w$$, 1.5, "w"}, 0., 3., 
+         Appearance -> "Labeled"}, {{$CellContext`logM$$, 10, "log10 M*"}, 9, 
+         11, Appearance -> 
+         "Labeled"}, {{$CellContext`logE$$, -9, "log10 \[Epsilon]"}, -10, -8, 
+         Appearance -> 
+         "Labeled"}, {{$CellContext`logPsi0$$, 0, 
+          "log10 \!\(\*SuperscriptBox[\(\[Psi]\), \(0\)]\)"}, -2, 2, 
+         Appearance -> "Labeled"}}, "Options" :> {TrackedSymbols :> True}, 
+      "DefaultOptions" :> {}],
+     ImageSizeCache->{1659.65, {538.4196019368153, 547.0175023274403}},
+     SingleEvaluation->True],
+    Deinitialization:>None,
+    DynamicModuleValues:>{},
+    Initialization:>({$CellContext`alpha[
+         Pattern[$CellContext`R, 
+          Blank[]], 
+         Pattern[$CellContext`a, 
+          Blank[]], 
+         Pattern[$CellContext`w, 
+          Blank[]]] := $CellContext`a/($CellContext`R - 
+        1 + $CellContext`a - $CellContext`w), $CellContext`mu[
+         Pattern[$CellContext`psi, 
+          Blank[]], 
+         Pattern[$CellContext`eps, 
+          Blank[]], 
+         Pattern[$CellContext`Mstar, 
+          Blank[]], 
+         Pattern[$CellContext`w, 
+          Blank[]], 
+         Pattern[$CellContext`a, 
+          
+          Blank[]]] := $CellContext`psi/($CellContext`eps ($CellContext`Mstar \
+(1 + $CellContext`w - $CellContext`a) + $CellContext`psi/$CellContext`eps)), \
+$CellContext`Xfun[
+         Pattern[$CellContext`psi, 
+          Blank[]], 
+         Pattern[$CellContext`y, 
+          Blank[]], 
+         Pattern[$CellContext`R, 
+          Blank[]], 
+         Pattern[$CellContext`a, 
+          Blank[]], 
+         Pattern[$CellContext`w, 
+          Blank[]], 
+         Pattern[$CellContext`Mstar, 
+          Blank[]], 
+         Pattern[$CellContext`eps, 
+          Blank[]]] := 
+       Module[{$CellContext`m = $CellContext`mu[$CellContext`psi, \
+$CellContext`eps, $CellContext`Mstar, $CellContext`w, $CellContext`a], \
+$CellContext`al = $CellContext`alpha[$CellContext`R, $CellContext`a, \
+$CellContext`w]}, 
+         If[
+          Or[$CellContext`a <= 0, 
+           Not[
+            NumericQ[$CellContext`m]], 
+           Not[
+            NumericQ[$CellContext`al]]], 
+          Indeterminate, $CellContext`y ((
+            1 - $CellContext`R)/$CellContext`a) (
+           1 - $CellContext`m^(-$CellContext`al))]]}; 
+     Typeset`initDone$$ = True),
+    SynchronousInitialization->True,
+    UndoTrackedVariables:>{Typeset`show$$, Typeset`bookmarkMode$$},
+    UnsavedVariables:>{Typeset`initDone$$},
+    UntrackedVariables:>{Typeset`size$$}], "Manipulate",
+   Deployed->True,
+   StripOnInput->False],
+  Manipulate`InterpretManipulate[1]]], "Output",
+ CellChangeTimes->{3.9706496182145348`*^9, 3.970649718036983*^9, 
+  3.970649823878847*^9, 3.970649960654928*^9, 3.970650047868331*^9, 
+  3.970650362208592*^9},
+ CellLabel->"Out[5]=",ExpressionUUID->"fdedecfb-dee5-4ab7-b12f-1eddbb8fa2da"]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{3.970648655707788*^9, 3.9706490932004023`*^9},
+ CellLabel->"In[6]:=",ExpressionUUID->"8ed1d923-fbe5-4c25-b493-ea1be2cc681e"]
+},
+WindowSize->{1972, 1297},
+WindowMargins->{{Automatic, -4893}, {60, Automatic}},
+Magnification->1.5,
+FrontEndVersion->"14.3 for Mac OS X ARM (64-bit) (July 8, 2025)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"3c953966-ceac-4097-b259-b5badd784961"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[576, 22, 14012, 338, 1024, "Input",ExpressionUUID->"b7e37c56-c26a-4ab7-b083-fe84c05a16e3"],
+Cell[14591, 362, 8806, 184, 1110, "Output",ExpressionUUID->"fdedecfb-dee5-4ab7-b12f-1eddbb8fa2da"]
+}, Open  ]],
+Cell[23412, 549, 170, 2, 44, "Input",ExpressionUUID->"8ed1d923-fbe5-4c25-b493-ea1be2cc681e"]
+}
+]
+*)
+
+(* End of internal cache information *)
+

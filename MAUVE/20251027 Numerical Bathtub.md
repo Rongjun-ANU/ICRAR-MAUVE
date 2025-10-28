@@ -183,4 +183,3 @@ Z[t_{i+1}] &= \frac{\Sigma_Z[t_{i+1}]}{\Sigma_\mathrm{g}[t_{i+1}]} \\
 \right.
 $$
 
-

@@ -43,6 +43,7 @@ cat > .gitignore << 'EOF'
 !*.jpg
 !*.jpeg
 !*.gif
+!*.nb
 
 # Keep these metadata files tracked too
 !.gitignore
