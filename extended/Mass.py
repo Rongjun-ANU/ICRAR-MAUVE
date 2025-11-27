@@ -37,6 +37,13 @@ Changes (2025-09-17)
 * Implemented b/a = sqrt((1-q₀²)*cos²(i) + q₀²) correction where q₀ = 0.2 (intrinsic disc thickness).
 * Updated logging to report inclination angle, cos(θ), b/a factor, and adopted q₀ parameter.
 
+Changes (2025-11-26)
+-----------------------
+* Updated solar absolute magnitude values from Willmer (2018, ApJS, 236, 47):
+  - Bessell R-band: M_r_sun = 4.61 (AB magnitude)
+  - SDSS r-band: M_r_sun = 4.65 (AB magnitude)
+* Reference: https://iopscience.iop.org/article/10.3847/1538-4365/aabfdf (Table 3)
+
 """
 
 # ------------------------------------------------------------------
@@ -342,10 +349,10 @@ EBV = fits.getdata(sfh_path, "EBV").astype(np.float32)
 # Choose extinction coefficient based on your filter choice:
 if 'bessell' in f_r.name.lower():
     A_r = 2.32 * EBV  # Bessell R-band coefficient (Fitzpatrick 1999)
-    M_r_sun = 4.65    # Solar absolute magnitude in Bessell R (AB magnitude), https://mips.as.arizona.edu/~cnaw/sun_2006.html
+    M_r_sun = 4.61    # Solar absolute magnitude in Bessell R (AB magnitude), table 3 of https://iopscience.iop.org/article/10.3847/1538-4365/aabfdf
 elif 'sdss' in f_r.name.lower():
     A_r = 2.285 * EBV  # SDSS r-band coefficient (Schlafly & Finkbeiner 2011)
-    M_r_sun = 4.65     # Solar absolute magnitude in SDSS r (AB magnitude), https://mips.as.arizona.edu/~cnaw/sun_2006.html
+    M_r_sun = 4.65     # Solar absolute magnitude in SDSS r (AB magnitude), table 3 of https://iopscience.iop.org/article/10.3847/1538-4365/aabfdf
 else:
     print(f"Warning: Unknown filter {f_r.name}, using SDSS coefficients")
     A_r = 2.285 * EBV
