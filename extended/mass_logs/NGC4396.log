@@ -53,8 +53,8 @@ Filter used: bessell-R
 Magnitude range: 17.83 to 26.63
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 12.377 mag (AB)
-Total R-band luminosity  : 9.448 log10(L☉)
-Total stellar mass (R)   : 9.396 log10(M☉)
+Total R-band luminosity  : 9.432 log10(L☉)
+Total stellar mass (R)   : 9.380 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4396_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4396_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4396_SPATIAL_BINNING_maps_extended.fits
@@ -63,4 +63,4 @@ Inclination correction ENABLED: applying b/a = 0.233 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4396_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4396_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4396_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4396 finished in 9m4s
+✅  NGC4396 finished in 6m47s

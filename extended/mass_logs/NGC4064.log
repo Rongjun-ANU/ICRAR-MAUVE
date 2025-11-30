@@ -49,8 +49,8 @@ Filter used: bessell-R
 Magnitude range: 17.91 to 25.81
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 11.454 mag (AB)
-Total R-band luminosity  : 9.869 log10(L☉)
-Total stellar mass (R)   : 9.923 log10(M☉)
+Total R-band luminosity  : 9.853 log10(L☉)
+Total stellar mass (R)   : 9.907 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
@@ -59,4 +59,4 @@ Inclination correction ENABLED: applying b/a = 0.390 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4064 finished in 4m12s
+✅  NGC4064 finished in 3m55s

@@ -44,8 +44,8 @@ Filter used: bessell-R
 Magnitude range: 21.12 to 26.07
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 12.305 mag (AB)
-Total R-band luminosity  : 9.489 log10(L☉)
-Total stellar mass (R)   : 9.643 log10(M☉)
+Total R-band luminosity  : 9.473 log10(L☉)
+Total stellar mass (R)   : 9.627 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
@@ -54,4 +54,4 @@ Inclination correction ENABLED: applying b/a = 0.418 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
-✅  IC3392 finished in 3m10s
+✅  IC3392 finished in 3m56s

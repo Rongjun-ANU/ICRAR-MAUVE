@@ -61,8 +61,8 @@ Filter used: bessell-R
 Magnitude range: 19.10 to 26.31
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 10.529 mag (AB)
-Total R-band luminosity  : 10.140 log10(L☉)
-Total stellar mass (R)   : 10.595 log10(M☉)
+Total R-band luminosity  : 10.124 log10(L☉)
+Total stellar mass (R)   : 10.579 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
@@ -71,4 +71,4 @@ Inclination correction ENABLED: applying b/a = 0.446 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4698_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4698 finished in 10m16s
+✅  NGC4698 finished in 7m33s

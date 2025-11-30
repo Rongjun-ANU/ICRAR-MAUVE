@@ -53,8 +53,8 @@ Filter used: bessell-R
 Magnitude range: 22.32 to 26.81
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 12.398 mag (AB)
-Total R-band luminosity  : 9.470 log10(L☉)
-Total stellar mass (R)   : 9.540 log10(M☉)
+Total R-band luminosity  : 9.454 log10(L☉)
+Total stellar mass (R)   : 9.524 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
@@ -63,4 +63,4 @@ Inclination correction ENABLED: applying b/a = 0.200 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4330_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4330 finished in 8m37s
+✅  NGC4330 finished in 6m53s

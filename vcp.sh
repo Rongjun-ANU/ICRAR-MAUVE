@@ -17,4 +17,7 @@
 # vcp arc:home/RongjunHuang/ICRAR/extended/*gas*extended.fits /Users/Igniz/Desktop/ICRAR/extended/
 # vcp arc:home/RongjunHuang/ICRAR/extended/*BINNING*extended.fits /Users/Igniz/Desktop/ICRAR/extended/
 
+cadc-get-cert -u RongjunHuang
+
 vcp -v arc:projects/mauve/extended /Users/Igniz/Desktop/ICRAR/
+vcp -v arc:projects/mauve/alma/products/v0.3/ /Users/Igniz/Desktop/ICRAR/CO/products_v0.3

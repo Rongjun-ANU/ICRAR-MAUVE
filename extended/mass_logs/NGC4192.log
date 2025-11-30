@@ -68,8 +68,8 @@ Filter used: bessell-R
 Magnitude range: 17.29 to 25.64
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 10.043 mag (AB)
-Total R-band luminosity  : 10.433 log10(L☉)
-Total stellar mass (R)   : 10.761 log10(M☉)
+Total R-band luminosity  : 10.417 log10(L☉)
+Total stellar mass (R)   : 10.745 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4192_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4192_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4192_SPATIAL_BINNING_maps_extended.fits
@@ -78,4 +78,4 @@ Inclination correction ENABLED: applying b/a = 0.233 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4192_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4192_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4192_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4192 finished in 17m47s
+✅  NGC4192 finished in 20m44s

@@ -62,8 +62,8 @@ Filter used: bessell-R
 Magnitude range: 18.24 to 25.60
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 9.371 mag (AB)
-Total R-band luminosity  : 10.718 log10(L☉)
-Total stellar mass (R)   : 11.026 log10(M☉)
+Total R-band luminosity  : 10.702 log10(L☉)
+Total stellar mass (R)   : 11.010 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
@@ -72,4 +72,4 @@ Inclination correction ENABLED: applying b/a = 0.460 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4501_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4501 finished in 24m17s
+✅  NGC4501 finished in 16m31s

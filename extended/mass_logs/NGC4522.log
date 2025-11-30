@@ -51,8 +51,8 @@ Filter used: bessell-R
 Magnitude range: 21.49 to 26.41
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 12.414 mag (AB)
-Total R-band luminosity  : 9.523 log10(L☉)
-Total stellar mass (R)   : 9.298 log10(M☉)
+Total R-band luminosity  : 9.507 log10(L☉)
+Total stellar mass (R)   : 9.282 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
@@ -61,4 +61,4 @@ Inclination correction ENABLED: applying b/a = 0.242 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4522_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4522 finished in 6m2s
+✅  NGC4522 finished in 4m24s
