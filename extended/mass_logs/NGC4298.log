@@ -26,7 +26,7 @@ No.    Name      Ver    Type      Cards   Dimensions   Format
   2  GRID          1 BinTableHDU     31   477R x 3C   [D, D, D]   
 /arc/home/RongjunHuang/.conda/envs/ICRAR/lib/python3.13/site-packages/speclite/filters.py:1119: RuntimeWarning: invalid value encountered in log10
   return -2.5 * np.log10(maggies)
-/arc/home/RongjunHuang/ICRAR/extended/Mass.py:308: RuntimeWarning: invalid value encountered in cast
+/arc/home/RongjunHuang/ICRAR/extended/Mass.py:337: RuntimeWarning: invalid value encountered in cast
   BINID   = BINID_f32.astype(np.int32)   # safe: all finite →
 None
 Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
@@ -54,11 +54,11 @@ Processing row 900/995
 Processing row 950/995
 R-band magnitude calculation completed!
 Filter used: bessell-R
-Magnitude range: 16.51 to 26.56
+Magnitude range: 16.07 to 26.56
 Distance modulus: 31.09 mag
 Total R-band magnitude   : 10.951 mag (AB)
-Total R-band luminosity  : 10.018 log10(L☉)
-Total stellar mass (R)   : 10.052 log10(M☉)
+Total R-band luminosity  : 10.079 log10(L☉)
+Total stellar mass (R)   : 10.112 log10(M☉)
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4298_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4298_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4298_SPATIAL_BINNING_maps_extended.fits
@@ -67,4 +67,4 @@ Inclination correction ENABLED: applying b/a = 0.636 (adopting intrinsic thickne
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4298_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4298_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4298_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4298 finished in 10m52s
+✅  NGC4298 finished in 12m10s

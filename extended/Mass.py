@@ -44,6 +44,13 @@ Changes (2025-11-26)
   - SDSS r-band: M_r_sun = 4.65 (AB magnitude)
 * Reference: https://iopscience.iop.org/article/10.3847/1538-4365/aabfdf (Table 3)
 
+Changes (2025-12-02)
+-----------------------
+* Switched extinction correction to use the Calzetti (2000) attenuation curve.
+* Added `calzetti_k(w_um)` helper function to calculate k(λ).
+* Updated internal attenuation calculation: A_r = k_r_calz * EBV_star.
+* Effective wavelengths used: Bessell R ~ 0.64 µm, SDSS r ~ 0.623 µm.
+
 """
 
 # ------------------------------------------------------------------
@@ -157,6 +164,21 @@ def read_galaxy_inclination(galaxy_name, inclination_file="MAUVE_Inclination.dat
     except Exception as e:
         print(f"Warning: Error reading inclination file: {e}")
         return None
+
+# Calzetti (2000) curve
+def calzetti_k(w_um):
+    """Return k(λ) = A(λ)/E(B−V) for Calzetti (2000); wavelengths in microns."""
+    import numpy as np
+    w = np.asarray(w_um, dtype=float)
+    Rv = 4.05
+    k = np.empty_like(w, dtype=float)
+
+    short = (w >= 0.12) & (w < 0.63)
+    long  = (w >= 0.63) & (w <= 2.2)
+
+    k[short] = 2.659 * (-2.156 + 1.509/w[short] - 0.198/w[short]**2 + 0.011/w[short]**3) + Rv
+    k[long]  = 2.659 * (-1.857 + 1.040/w[long]) + Rv
+    return k.item() if k.ndim == 1 and k.size == 1 else k
 
 # ------------------------------------------------------------------
 # 4.  Begin main workflow 
@@ -342,24 +364,32 @@ m_r_binned[nan_mask] = np.nan  # Keep NaNs where needed
 flux_map_binned = F0_ref * 10**(-0.4 * m_r_binned)  # Convert mag to flux
 
 # ---------------------------------------------------------------------
-# 3.  Galactic-extinction correction
+# 3.  Galactic-extinction correction (Calzetti 2000)
 # ---------------------------------------------------------------------
+# 1) Read the stellar EBV map from nGIST (internal dust for stars)
 EBV = fits.getdata(sfh_path, "EBV").astype(np.float32)
 
-# Choose extinction coefficient based on your filter choice:
+# 2) Effective wavelength of your R-band filter, in microns
+#    (rough numbers: Bessell R ~ 0.64 µm, SDSS r ~ 0.623 µm)
 if 'bessell' in f_r.name.lower():
-    A_r = 2.32 * EBV  # Bessell R-band coefficient (Fitzpatrick 1999)
-    M_r_sun = 4.61    # Solar absolute magnitude in Bessell R (AB magnitude), table 3 of https://iopscience.iop.org/article/10.3847/1538-4365/aabfdf
+    lam_eff_um = 0.64
+    M_r_sun = 4.61    # Solar absolute magnitude in Bessell R (AB magnitude)
 elif 'sdss' in f_r.name.lower():
-    A_r = 2.285 * EBV  # SDSS r-band coefficient (Schlafly & Finkbeiner 2011)
-    M_r_sun = 4.65     # Solar absolute magnitude in SDSS r (AB magnitude), table 3 of https://iopscience.iop.org/article/10.3847/1538-4365/aabfdf
+    lam_eff_um = 0.623
+    M_r_sun = 4.65    # Solar absolute magnitude in SDSS r (AB magnitude)
 else:
     print(f"Warning: Unknown filter {f_r.name}, using SDSS coefficients")
-    A_r = 2.285 * EBV
+    lam_eff_um = 0.623
     M_r_sun = 4.65
 
-# Apply extinction correction to magnitudes (subtract extinction)
-m_r_corr = m_r_binned - A_r  # Magnitude correction
+# 3) Calzetti k(λ) for that band
+k_r_calz = calzetti_k(lam_eff_um)
+
+# 4) Internal attenuation of the stellar continuum
+A_r = k_r_calz * EBV
+
+# 5) Correct magnitudes for *internal* attenuation
+m_r_corr = m_r_binned - A_r
 m_r_corr[nan_mask] = np.nan
 
 # magnitude back to nanomaggies in Legacy survey format
