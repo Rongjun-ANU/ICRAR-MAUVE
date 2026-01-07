@@ -1,0 +1,36 @@
+[Wed Jan  7 13:57:31 AWST 2026] Starting pipeline in: /Users/Igniz/Desktop/ICRAR/v3tk_to_R
+[Wed Jan  7 13:57:31 AWST 2026] NCPU=10
+[Wed Jan  7 13:57:31 AWST 2026] MAX_DL=2
+[Wed Jan  7 13:57:31 AWST 2026] Log: v3tk_R_image_20260107_135731.log
+
+[Wed Jan  7 13:57:33 AWST 2026] Step 1/3: observed R images
+Found 25 file(s)
+Workers: 10
+Pattern: *_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits
+OK  IC3392 -> IC3392_observed_R.png, IC3392_observed_R.pdf
+OK  NGC4351 -> NGC4351_observed_R.png, NGC4351_observed_R.pdf
+OK  NGC4189 -> NGC4189_observed_R.png, NGC4189_observed_R.pdf
+OK  NGC4294 -> NGC4294_observed_R.png, NGC4294_observed_R.pdf
+OK  NGC4064 -> NGC4064_observed_R.png, NGC4064_observed_R.pdf
+OK  NGC4293 -> NGC4293_observed_R.png, NGC4293_observed_R.pdf
+OK  NGC4302 -> NGC4302_observed_R.png, NGC4302_observed_R.pdf
+OK  NGC4330 -> NGC4330_observed_R.png, NGC4330_observed_R.pdf
+OK  NGC4298 -> NGC4298_observed_R.png, NGC4298_observed_R.pdf
+OK  NGC4388 -> NGC4388_observed_R.png, NGC4388_observed_R.pdf
+OK  NGC4394 -> NGC4394_observed_R.png, NGC4394_observed_R.pdf
+OK  NGC4192 -> NGC4192_observed_R.png, NGC4192_observed_R.pdf
+OK  NGC4383 -> NGC4383_observed_R.png, NGC4383_observed_R.pdf
+OK  NGC4405 -> NGC4405_observed_R.png, NGC4405_observed_R.pdf
+OK  NGC4402 -> NGC4402_observed_R.png, NGC4402_observed_R.pdf
+OK  NGC4419 -> NGC4419_observed_R.png, NGC4419_observed_R.pdf
+OK  NGC4457 -> NGC4457_observed_R.png, NGC4457_observed_R.pdf
+OK  NGC4396 -> NGC4396_observed_R.png, NGC4396_observed_R.pdf
+OK  NGC4522 -> NGC4522_observed_R.png, NGC4522_observed_R.pdf
+OK  NGC4606 -> NGC4606_observed_R.png, NGC4606_observed_R.pdf
+OK  NGC4580 -> NGC4580_observed_R.png, NGC4580_observed_R.pdf
+OK  NGC4694 -> NGC4694_observed_R.png, NGC4694_observed_R.pdf
+OK  NGC4698 -> NGC4698_observed_R.png, NGC4698_observed_R.pdf
+OK  NGC4567_8 -> NGC4567_8_observed_R.png, NGC4567_8_observed_R.pdf
+OK  NGC4501 -> NGC4501_observed_R.png, NGC4501_observed_R.pdf
+Done. ok=25 fail=0 runtime=6.02s
+
