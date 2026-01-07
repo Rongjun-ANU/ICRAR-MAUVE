@@ -22,3 +22,4 @@ cadc-get-cert -u RongjunHuang
 vcp -v arc:projects/mauve/extended /Users/Igniz/Desktop/ICRAR/
 vcp -v arc:projects/mauve/alma/products/v0.3/ /Users/Igniz/Desktop/ICRAR/CO/products_v0.3/
 vcp -v arc:projects/mauve/nGIST_dev_7.6.4/ /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/
+vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_9300_KIN /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_9300_KIN
