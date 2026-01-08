@@ -1,0 +1,17 @@
+=== v3tk masking run start: 2026-01-08T19:36:28 ===
+[FOV] NGC4419: nx=629 ny=643 pixscale=0.2000"/pix rad=1.663 arcmin
+INFO: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3933275253757002752 (GAIA J122655.71+150349.7) ra=186.732122 dec=15.063801 RA=12:26:55.71 DEC=+15:03:49.69 GaiaG=20.69 r_arcsec=2.50 | plx=-0.403±1.815 mas (SNR=-0.2) | pm=31.99±1.84 mas/yr (SNR=17.4) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3933268553608397184 (GAIA J122654.51+150207.4) ra=186.727134 dec=15.035400 RA=12:26:54.51 DEC=+15:02:07.44 GaiaG=16.45 r_arcsec=3.56 | plx=0.334±0.063 mas (SNR=5.3) | pm=2.67±0.10 mas/yr (SNR=25.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3933268514953504640 (GAIA J122653.82+150157.9) ra=186.724253 dec=15.032744 RA=12:26:53.82 DEC=+15:01:57.88 GaiaG=20.02 r_arcsec=2.50 | plx=0.574±0.579 mas (SNR=1.0) | pm=13.84±1.02 mas/yr (SNR=13.5) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=151 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=2 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J122658.88+150258.8) ra=186.745339 dec=15.049665 RA=12:26:58.88 DEC=+15:02:58.79 r_arcsec=3.00 ext=1.153 Nr=20 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4419_mask.fits (shape=(643, 629), masked=2684 px; stars=3, galaxies=1)
+[OK] Wrote NGC4419_combined_R_mask.png
+[TIME] ./NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=15.05
+[TIME] total runtime_s=15.05
+=== v3tk masking run end:   2026-01-08T19:36:43 ===

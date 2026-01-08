@@ -12,6 +12,7 @@ Outputs:
 
 Notes:
   - Gaia query: foreground stars (uses Gaia DR3 via astroquery.gaia)
+    - `G`/`GaiaG` in logs is Gaia DR3 `phot_g_mean_mag` (Gaia broad-band G magnitude).
   - Galaxies: Pan-STARRS (MAST) if Dec >= -30 deg; otherwise tries SkyMapper DR4 (Vizier).
   - You will probably still need to manually add a few artefact regions.
 
@@ -24,8 +25,11 @@ from __future__ import annotations
 import glob
 import os
 import sys
+import traceback
 from dataclasses import dataclass
 import numpy as np
+from datetime import datetime
+from time import perf_counter
 
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -65,6 +69,11 @@ except Exception:
     except Exception:
         Ned = None
 
+try:
+    from astroquery.sdss import SDSS
+except Exception:
+    SDSS = None
+
 
 @dataclass
 class Config:
@@ -88,9 +97,9 @@ class Config:
     # Gaia kinematics thresholds used in "foreground" mode
     # Require either significant positive parallax OR significant proper motion.
     gaia_parallax_snr_min: float = 3.0
-    gaia_parallax_min_mas: float = 0.2
-    gaia_pm_snr_min: float = 5.0
-    gaia_pm_min_masyr: float = 2.0
+    gaia_parallax_min_mas: float = 0.02
+    gaia_pm_snr_min: float = 3.0
+    gaia_pm_min_masyr: float = 0.2
 
     # NOTE: We intentionally do NOT exclude the inner galaxy by default, because
     # you may still want to mask true foreground stars/background galaxies there.
@@ -120,7 +129,7 @@ class Config:
     # Optional very-strict color cuts to reduce contamination from compact blue
     # sources in the target galaxy (HII regions / some PNe). This will also drop
     # some real blue background galaxies.
-    ps1_enable_color_cuts: bool = True
+    ps1_enable_color_cuts: bool = False
     ps1_g_r_min: float = 0.2
     ps1_r_i_min: float = 0.0
 
@@ -168,11 +177,66 @@ class Config:
     use_png_background: bool = True         # if False, uses FITS as background for overlay
     output_dpi: int = 200
 
+    # SDSS integration (supplemental; footprint-limited)
+    enable_sdss: bool = True
+    sdss_data_release: int = 18
+    log_sdss_colnames: bool = True
+    # Legacy (kept for compatibility): older versions used petroRad_* × scale.
+    # The current SDSS masking uses morphology-aware sizing (psfMag-modelMag) and
+    # prefers petroR90/petroR50/model radii, so this is typically unused.
+    sdss_petro_scale: float = 2.5
+    # SDSS morphology proxy: point-like if (psfMag_r - modelMag_r) < threshold
+    sdss_pointlike_dmag_max: float = 0.145
+    # SDSS extended-object sizing factors (arcsec)
+    sdss_petro_r90_scale: float = 1.2
+    sdss_petro_r50_scale: float = 1.8
+    sdss_model_radius_scale: float = 3.0
+
+    # If a candidate has a confirmed high redshift, it is typically PSF-limited at MUSE resolution.
+    # In that case, ignore SDSS size proxies and use a seeing-based radius.
+    highz_psf_override_zmin: float = 0.3
+    highz_psf_k_fwhm: float = 1.5
+    # <=0 disables the cap
+    highz_psf_rmax_arcsec: float = 3.0
+    # Reject SDSS "galaxies" near good Gaia sources to avoid stellar contamination
+    sdss_reject_if_near_gaia_arcsec: float = 0.8
+    # Only use SDSS stars if Gaia returns no stars (fallback classifier)
+    sdss_star_fallback: bool = True
+
+    # === Evidence-based galaxy masking ===
+    # Only mask galaxies when spectroscopic redshift confirms they are NOT at Virgo distance
+    require_nonvirgo_confirmation_for_galaxy_mask: bool = True
+    # Treat as "possible Virgo/nearby" (do NOT mask) if cz <= this
+    virgo_keep_cz_max_kms: float = 3500.0
+    # Treat as "definitely background" (mask) if cz >= this
+    background_mask_cz_min_kms: float = 5000.0
+    # Matching radii for redshift catalogs
+    sdss_spec_match_arcsec: float = 1.0
+    ned_match_arcsec: float = 1.0
+
 
 def safe_base_id(rfits_path: str) -> str:
     # From XXX_DATACUBE..._R.fits => XXX
     bn = os.path.basename(rfits_path)
     return bn.split("_DATACUBE")[0]
+
+
+def format_radec_hmsdms(sc: SkyCoord, precision: int = 2) -> tuple[str, str]:
+    """Return RA/Dec strings in sexagesimal format (NED-friendly).
+
+    RA:  hh:mm:ss.ss
+    Dec: ±dd:mm:ss.ss
+    """
+    ra_hms = sc.ra.to_string(unit=u.hour, sep=":", precision=precision, pad=True)
+    dec_dms = sc.dec.to_string(unit=u.deg, sep=":", precision=precision, pad=True, alwayssign=True)
+    return ra_hms, dec_dms
+
+
+def iau_coord_name(prefix: str, sc: SkyCoord, ra_precision: int = 2, dec_precision: int = 1) -> str:
+    """Return an IAU-style coordinate name like: SDSS J122544.87+123947.6"""
+    ra = sc.ra.to_string(unit=u.hour, sep="", precision=ra_precision, pad=True)
+    dec = sc.dec.to_string(unit=u.deg, sep="", precision=dec_precision, pad=True, alwayssign=True)
+    return f"{prefix} J{ra}{dec}"
 
 
 def load_r_image_and_wcs(rfits_path: str):
@@ -240,13 +304,21 @@ def fov_center_and_radius(w: WCS, nx: int, ny: int):
 
 
 def star_radius_arcsec_from_g(cfg: Config, gmag: float) -> float:
-    r = cfg.star_r_ref_arcsec * (10.0 ** (-0.2 * (gmag - cfg.star_g_ref)))
-    r = max(cfg.star_r_min_arcsec, r)
-    r = min(cfg.star_r_max_arcsec, r)
-    # also ensure at least ~1 FWHM
-    r = max(r, 1.0 * cfg.fwhm_arcsec)
-    # margin
-    r += cfg.gaia_margin_arcsec
+    # sanitize
+    try:
+        g = float(gmag)
+    except Exception:
+        g = float("nan")
+    if (not np.isfinite(g)) or (g < -5.0) or (g > 40.0):
+        g = 18.0  # safe fallback
+
+    exp = -0.2 * (g - float(cfg.star_g_ref))
+    exp = float(np.clip(exp, -10.0, 10.0))  # hard overflow guard
+
+    r = float(cfg.star_r_ref_arcsec) * (10.0 ** exp)
+    r = max(float(cfg.star_r_min_arcsec), min(float(cfg.star_r_max_arcsec), float(r)))
+    r = max(float(r), 1.0 * float(cfg.fwhm_arcsec))
+    r += float(cfg.gaia_margin_arcsec)
     return float(r)
 
 
@@ -337,6 +409,63 @@ def _gaia_row_is_foreground_by_kinematics(row, cfg: Config) -> bool:
     return bool(is_fg_parallax or is_fg_pm)
 
 
+def gaia_foreground_reason(row, cfg: Config) -> str:
+    """Return a human-readable explanation of the Gaia foreground selection."""
+
+    def gf(name: str) -> float:
+        try:
+            v = row[name]
+            if v is None or getattr(v, "mask", False):
+                return float("nan")
+            return float(v)
+        except Exception:
+            return float("nan")
+
+    plx = gf("parallax")
+    eplx = gf("parallax_error")
+    pmra = gf("pmra")
+    epmra = gf("pmra_error")
+    pmdec = gf("pmdec")
+    epmdec = gf("pmdec_error")
+
+    plx_snr = plx / eplx if (np.isfinite(plx) and np.isfinite(eplx) and eplx > 0) else float("nan")
+    pm = np.hypot(pmra, pmdec) if (np.isfinite(pmra) and np.isfinite(pmdec)) else float("nan")
+    pm_err = np.hypot(epmra, epmdec) if (np.isfinite(epmra) and np.isfinite(epmdec)) else float("nan")
+    pm_snr = pm / pm_err if (np.isfinite(pm) and np.isfinite(pm_err) and pm_err > 0) else float("nan")
+
+    is_fg_parallax = (
+        np.isfinite(plx_snr)
+        and plx_snr >= float(cfg.gaia_parallax_snr_min)
+        and np.isfinite(plx)
+        and plx >= float(cfg.gaia_parallax_min_mas)
+    )
+    is_fg_pm = (
+        np.isfinite(pm_snr)
+        and pm_snr >= float(cfg.gaia_pm_snr_min)
+        and np.isfinite(pm)
+        and pm >= float(cfg.gaia_pm_min_masyr)
+    )
+
+    parts = []
+    parts.append(f"plx={plx:.3f}±{eplx:.3f} mas (SNR={plx_snr:.1f})")
+    parts.append(f"pm={pm:.2f}±{pm_err:.2f} mas/yr (SNR={pm_snr:.1f})")
+
+    triggers: list[str] = []
+    if is_fg_parallax:
+        triggers.append(
+            f"PARALLAX: plx≥{cfg.gaia_parallax_min_mas} mas and SNR≥{cfg.gaia_parallax_snr_min}"
+        )
+    if is_fg_pm:
+        triggers.append(f"PM: pm≥{cfg.gaia_pm_min_masyr} mas/yr and SNR≥{cfg.gaia_pm_snr_min}")
+
+    if len(triggers) == 0:
+        triggers_str = "NOT foreground by kinematics thresholds"
+    else:
+        triggers_str = "foreground because " + " OR ".join(triggers)
+
+    return " | ".join(parts) + " | " + triggers_str
+
+
 def _virgo_velocity_range_kms(cfg: Config) -> tuple[float, float]:
     d0 = float(cfg.virgo_distance_mpc)
     dd = float(cfg.virgo_distance_tolerance_mpc)
@@ -394,7 +523,19 @@ def query_ps1_vizier(center: SkyCoord, radius: u.Quantity, cfg: Config):
         return None
 
     # VizieR Pan-STARRS1 catalog (provides PSF mags and Kron-like mags as *Kmag*)
-    v = Vizier(columns=["**"], row_limit=-1)
+    cols = [
+        "RAJ2000", "DEJ2000", "Nr", "Qual",
+        "gmag", "rmag", "imag", "gKmag", "rKmag", "iKmag",
+        "e_gmag", "e_rmag", "e_imag", "e_gKmag", "e_rKmag", "e_iKmag",
+    ]
+    v = Vizier(
+        columns=cols,
+        row_limit=300000,
+        column_filters={
+            "rmag": f"<{cfg.ps1_rmag_max}",
+            "Nr": f">={cfg.ps1_min_Nr}",
+        },
+    )
     try:
         res = v.query_region(center, radius=radius, catalog="II/349/ps1")
         if len(res) == 0:
@@ -403,14 +544,275 @@ def query_ps1_vizier(center: SkyCoord, radius: u.Quantity, cfg: Config):
     except Exception as e:
         print(f"WARNING: Pan-STARRS (VizieR) query failed; skipping. ({e})")
         return None
+    return tab
 
-    # Optional magnitude cut to keep table sizes reasonable
-    if "rmag" in tab.colnames:
+
+def query_sdss_photoobj(center: SkyCoord, radius: u.Quantity, cfg: Config):
+    """Query SDSS photometric objects in the field (supplemental; footprint-limited)."""
+    if SDSS is None:
+        return None
+    # SDSS query_region enforces radius <= 3 arcmin
+    r = radius.to(u.arcmin)
+    if r > 3.0 * u.arcmin:
+        r = 3.0 * u.arcmin
+    try:
+        # Try a richer set of fields (morphology proxy + robust radii).
+        # If SDSS rejects any field name (schema/DR differences), fall back.
+        photo_fields_full = [
+            "ra", "dec", "objid", "type",
+            "psfMag_r", "modelMag_r",
+            "petroR50_r", "petroR90_r",
+            "expRad_r", "deVRad_r",
+            "petroRad_r",
+        ]
         try:
-            tab = tab[tab["rmag"] < cfg.ps1_rmag_max]
+            tab = SDSS.query_region(
+                center,
+                radius=r,
+                spectro=False,
+                photoobj_fields=photo_fields_full,
+                data_release=int(getattr(cfg, "sdss_data_release", 17)),
+            )
+            return tab
+        except Exception:
+            photo_fields_fallback = [
+                "ra", "dec", "objid", "type",
+                "petroRad_r", "petroRad_g", "petroRad_i",
+                "psfMag_r", "modelMag_r",
+            ]
+            tab = SDSS.query_region(
+                center,
+                radius=r,
+                spectro=False,
+                photoobj_fields=photo_fields_fallback,
+                data_release=int(getattr(cfg, "sdss_data_release", 17)),
+            )
+            return tab
+    except Exception:
+        return None
+
+
+def query_sdss_spectro(center: SkyCoord, radius: u.Quantity, cfg: Config):
+    """Get SDSS spectroscopic objects (with z) within the field, if SDSS is available."""
+    if SDSS is None:
+        return None
+    r = radius.to(u.arcmin)
+    if r > 3.0 * u.arcmin:
+        r = 3.0 * u.arcmin
+    try:
+        tab = SDSS.query_region(
+            center,
+            radius=r,
+            spectro=True,
+            data_release=int(getattr(cfg, "sdss_data_release", 17)),
+        )
+        return tab
+    except Exception:
+        return None
+
+
+def _cz_from_z(z: float) -> float:
+    return 299792.458 * float(z)
+
+
+def _get_col_float(row, name: str):
+    try:
+        v = row[name]
+        if v is None or getattr(v, "mask", False):
+            return None
+
+        # Some astroquery/astropy tables can yield 0-d numpy scalars, masked
+        # scalars, or (rarely) 1-element arrays; normalize those to a Python float.
+        if isinstance(v, np.ma.MaskedArray):
+            if v is np.ma.masked or np.any(getattr(v, "mask", False)):
+                return None
+            v = v.data
+        if isinstance(v, np.ndarray) and v.ndim > 0:
+            if v.size != 1:
+                return None
+            v = v.reshape(-1)[0]
+
+        vf = float(v)
+        return vf if np.isfinite(vf) else None
+    except Exception:
+        return None
+
+
+def sdss_is_pointlike(row, cfg: Config) -> bool:
+    psf = _get_col_float(row, "psfMag_r")
+    mod = _get_col_float(row, "modelMag_r")
+    if psf is None or mod is None:
+        return False
+    if (not np.isfinite(psf)) or (not np.isfinite(mod)):
+        return False
+    # SDSS can use sentinel/unphysical magnitudes; don't let those drive morphology.
+    if (psf < -5.0) or (psf > 40.0) or (mod < -5.0) or (mod > 40.0):
+        return False
+    return bool((float(psf) - float(mod)) < float(getattr(cfg, "sdss_pointlike_dmag_max", 0.145)))
+
+
+def sdss_mask_radius_arcsec(row, cfg: Config) -> float | None:
+    # If point-like (star/QSO), mask like a star using r-band magnitude as a proxy.
+    if sdss_is_pointlike(row, cfg):
+        mag = _get_col_float(row, "psfMag_r")
+        if mag is None:
+            mag = _get_col_float(row, "modelMag_r")
+        if mag is None:
+            mag = 18.0
+        return star_radius_arcsec_from_g(cfg, float(mag))
+
+    # Extended: prefer petroR90, then petroR50, then model radii.
+    r90 = _get_col_float(row, "petroR90_r")
+    if r90 is not None:
+        return float(getattr(cfg, "sdss_petro_r90_scale", 1.2)) * float(r90) + float(cfg.gaia_margin_arcsec)
+
+    r50 = _get_col_float(row, "petroR50_r")
+    if r50 is not None:
+        return float(getattr(cfg, "sdss_petro_r50_scale", 1.8)) * float(r50) + float(cfg.gaia_margin_arcsec)
+
+    dev = _get_col_float(row, "deVRad_r")
+    exp = _get_col_float(row, "expRad_r")
+    model_rad = None
+    if dev is not None and exp is not None:
+        model_rad = max(float(dev), float(exp))
+    elif dev is not None:
+        model_rad = float(dev)
+    elif exp is not None:
+        model_rad = float(exp)
+    if model_rad is not None:
+        return float(getattr(cfg, "sdss_model_radius_scale", 3.0)) * float(model_rad) + float(cfg.gaia_margin_arcsec)
+
+    return None
+
+
+def _extract_cz_kms_from_sdss_specrow(row):
+    z = _get_col_float(row, "z") or _get_col_float(row, "Z")
+    if z is None:
+        return None
+    return _cz_from_z(z)
+
+
+def _extract_cz_kms_from_ned_row(row):
+    def _ned_is_spec(r) -> bool:
+        # NED includes a "Redshift Flag" column for many entries.
+        # We only trust spectroscopic redshifts for definitive masking.
+        try:
+            if "Redshift Flag" not in r.colnames:
+                return False
+            flag = r["Redshift Flag"]
+            flag = flag.decode() if isinstance(flag, (bytes, bytearray)) else str(flag)
+            flag = flag.upper()
+            return "SPEC" in flag
+        except Exception:
+            return False
+
+    if not _ned_is_spec(row):
+        return None
+
+    v = None
+    for vname in ["Velocity", "cz", "Vel", "V"]:
+        v = _get_col_float(row, vname)
+        if v is not None:
+            return float(v)
+    z = None
+    for zname in ["Redshift", "z", "Z"]:
+        z = _get_col_float(row, zname)
+        if z is not None:
+            return _cz_from_z(z)
+    return None
+
+
+def is_definitely_background(
+    sc: SkyCoord,
+    cfg: Config,
+    sdss_spec_sky: SkyCoord | None,
+    sdss_spec_tab,
+    ned_sky: SkyCoord | None,
+    ned_tab,
+) -> bool | None:
+    """
+    Returns:
+      True  -> definitely background (mask)
+      False -> definitely Virgo/nearby or uncertain (do not mask)
+      None  -> no distance info available (do not mask, for safety)
+    """
+    # 1) SDSS spectroscopy (preferred)
+    if sdss_spec_sky is not None and sdss_spec_tab is not None and len(sdss_spec_tab) > 0:
+        try:
+            idx, sep2d, _ = sc.match_to_catalog_sky(sdss_spec_sky)
+            if sep2d < (float(cfg.sdss_spec_match_arcsec) * u.arcsec):
+                cz = _extract_cz_kms_from_sdss_specrow(sdss_spec_tab[idx])
+                if cz is None:
+                    return None
+                if cz <= float(cfg.virgo_keep_cz_max_kms):
+                    return False
+                if cz >= float(cfg.background_mask_cz_min_kms):
+                    return True
+                return False
         except Exception:
             pass
-    return tab
+    # 2) NED (fallback)
+    if ned_sky is not None and ned_tab is not None and len(ned_tab) > 0:
+        try:
+            idx, sep2d, _ = sc.match_to_catalog_sky(ned_sky)
+            if sep2d < (float(cfg.ned_match_arcsec) * u.arcsec):
+                cz = _extract_cz_kms_from_ned_row(ned_tab[idx])
+                if cz is None:
+                    return None
+                if cz <= float(cfg.virgo_keep_cz_max_kms):
+                    return False
+                if cz >= float(cfg.background_mask_cz_min_kms):
+                    return True
+                return False
+        except Exception:
+            pass
+    return None
+
+
+def get_best_cz_info(
+    sc: SkyCoord,
+    cfg: Config,
+    sdss_spec_sky: SkyCoord | None,
+    sdss_spec_tab,
+    ned_sky: SkyCoord | None,
+    ned_tab,
+):
+    """
+    Returns (cz_kms, z, source, sep_arcsec) or (None, None, None, None)
+    """
+    # SDSS spectroscopy first
+    if sdss_spec_sky is not None and sdss_spec_tab is not None and len(sdss_spec_tab) > 0:
+        try:
+            idx, sep2d, _ = sc.match_to_catalog_sky(sdss_spec_sky)
+            if sep2d < (float(cfg.sdss_spec_match_arcsec) * u.arcsec):
+                cz = _extract_cz_kms_from_sdss_specrow(sdss_spec_tab[idx])
+                if cz is not None:
+                    z = float(cz) / 299792.458
+                    sep_arcsec = sep2d.to_value(u.arcsec)
+                    if isinstance(sep_arcsec, np.ndarray) and sep_arcsec.ndim > 0:
+                        if sep_arcsec.size == 1:
+                            sep_arcsec = sep_arcsec.reshape(-1)[0]
+                    return float(cz), z, "SDSS(spec)", float(sep_arcsec)
+        except Exception:
+            pass
+
+    # NED fallback
+    if ned_sky is not None and ned_tab is not None and len(ned_tab) > 0:
+        try:
+            idx, sep2d, _ = sc.match_to_catalog_sky(ned_sky)
+            if sep2d < (float(cfg.ned_match_arcsec) * u.arcsec):
+                cz = _extract_cz_kms_from_ned_row(ned_tab[idx])
+                if cz is not None:
+                    z = float(cz) / 299792.458
+                    sep_arcsec = sep2d.to_value(u.arcsec)
+                    if isinstance(sep_arcsec, np.ndarray) and sep_arcsec.ndim > 0:
+                        if sep_arcsec.size == 1:
+                            sep_arcsec = sep_arcsec.reshape(-1)[0]
+                    return float(cz), z, "NED(spec)", float(sep_arcsec)
+        except Exception:
+            pass
+
+    return None, None, None, None
 
 
 def query_skymapper(center: SkyCoord, radius: u.Quantity):
@@ -418,13 +820,17 @@ def query_skymapper(center: SkyCoord, radius: u.Quantity):
         print("WARNING: astroquery.vizier not available; skipping SkyMapper query.")
         return None
 
-    v = Vizier(columns=["**"], row_limit=-1)
-    # SkyMapper DR4 Vizier table
-    # II/379/smssdr4 (very large table; cone searches are OK but can be slower)
-    res = v.query_region(center, radius=radius, catalog="II/379/smssdr4")
-    if len(res) == 0:
+    v = Vizier(columns=["**"], row_limit=200000)
+    try:
+        # SkyMapper DR4 Vizier table
+        # II/379/smssdr4 (very large table; cone searches are OK but can be slower)
+        res = v.query_region(center, radius=radius, catalog="II/379/smssdr4")
+        if len(res) == 0:
+            return None
+        return res[0]
+    except Exception as e:
+        print(f"WARNING: SkyMapper (VizieR) query failed; skipping. ({e})")
         return None
-    return res[0]
 
 
 def pick_first_existing_col(table, candidates):
@@ -459,6 +865,23 @@ def rasterize_circle(mask: np.ndarray, xi: float, yi: float, r_pix: float) -> No
     yy, xx = np.ogrid[y0 : y1 + 1, x0 : x1 + 1]
     rr2 = (xx - xi) ** 2 + (yy - yi) ** 2
     mask[y0 : y1 + 1, x0 : x1 + 1][rr2 <= (r_pix**2)] = 1
+
+
+def circle_intersects_fov(xi: float, yi: float, r_pix: float, nx: int, ny: int) -> bool:
+    """True if the circle overlaps the image rectangle, even partially."""
+    if not (np.isfinite(xi) and np.isfinite(yi) and np.isfinite(r_pix)) or r_pix <= 0:
+        return False
+    # Use pixel-edge coordinates [-0.5, nx-0.5] etc. for correct partial overlap logic
+    return not (
+        (xi + r_pix) < -0.5 or (xi - r_pix) > (nx - 0.5) or
+        (yi + r_pix) < -0.5 or (yi - r_pix) > (ny - 0.5)
+    )
+
+
+def ellipse_intersects_fov(xi: float, yi: float, a_pix: float, b_pix: float, nx: int, ny: int) -> bool:
+    """Conservative overlap test using the ellipse bounding circle."""
+    r = float(max(a_pix, b_pix))
+    return circle_intersects_fov(xi, yi, r, nx, ny)
 
 
 def rasterize_ellipse(mask: np.ndarray, xi: float, yi: float, a_pix: float, b_pix: float, angle_deg: float) -> None:
@@ -501,6 +924,11 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     # small padding so we don't miss edge objects
     rad = rad + (10.0 * u.arcsec)
 
+    try:
+        print(f"[FOV] {base}: nx={nx} ny={ny} pixscale={pixscale:.4f}\"/pix rad={rad.to(u.arcmin).value:.3f} arcmin")
+    except Exception:
+        pass
+
     mask = np.zeros((ny, nx), dtype=np.uint8)
     exclude_center = cfg.exclude_center_arcsec * u.arcsec
 
@@ -536,6 +964,13 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 
         mode = str(getattr(cfg, "gaia_star_mode", "strict")).lower().strip()
 
+        if cfg.log_each_star:
+            print(
+                f"[Gaia] mode={mode} (foreground thresholds: "
+                f"plx≥{cfg.gaia_parallax_min_mas} mas & SNR≥{cfg.gaia_parallax_snr_min} "
+                f"OR pm≥{cfg.gaia_pm_min_masyr} mas/yr & SNR≥{cfg.gaia_pm_snr_min})"
+            )
+
         for row, xi, yi, gi, sc in zip(gaia, x, y, gmag, gaia_sky):
             if not np.isfinite(xi) or not np.isfinite(yi):
                 continue
@@ -555,14 +990,28 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             r_arcsec = star_radius_arcsec_from_g(cfg, float(gi))
             r_pix = r_arcsec / pixscale
 
+            # Skip if it does not touch the FITS image at all
+            if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
+                continue
+
             # rasterize into mask
             rasterize_circle(mask, xi, yi, r_pix)
 
             sid = row["source_id"] if "source_id" in row.colnames else "?"
             if cfg.log_each_star:
+                ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
+                gaia_name = f"Gaia DR3 {sid}"
+                gaia_iau = iau_coord_name("GAIA", sc, ra_precision=2, dec_precision=1)
+                reason = ""
+                if mode == "foreground":
+                    try:
+                        reason = " | " + gaia_foreground_reason(row, cfg)
+                    except Exception:
+                        reason = ""
                 print(
-                    f"[STAR] Gaia {sid} ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
-                    f"G={float(gi):.2f} r_arcsec={r_arcsec:.2f}"
+                    f"[STAR] {gaia_name} ({gaia_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                    f"RA={ra_hms} DEC={dec_dms} "
+                    f"GaiaG={float(gi):.2f} r_arcsec={r_arcsec:.2f}{reason}"
                 )
             n_star_masked += 1
 
@@ -574,12 +1023,13 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     # ---------- Background galaxies (Pan-STARRS preferred) ----------
     gal_patches = []
     gal_tab = None
+    gal_catalog = None
     n_gal_masked = 0
 
-    # Optional: NED crossmatch for Virgo-distance veto (only used when enabled and available)
+    # Optional: NED crossmatch for redshift-based background determination
     ned_tab = None
     ned_sky = None
-    if bool(getattr(cfg, "enable_virgo_distance_veto", False)):
+    if bool(getattr(cfg, "enable_virgo_distance_veto", False)) or bool(getattr(cfg, "require_nonvirgo_confirmation_for_galaxy_mask", False)):
         ned_tab = query_ned_redshifts(center, rad)
         try:
             if ned_tab is not None and len(ned_tab) > 0 and "RA" in ned_tab.colnames and "DEC" in ned_tab.colnames:
@@ -587,12 +1037,42 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
         except Exception:
             ned_sky = None
 
+    try:
+        print(f"[NED] N={0 if ned_tab is None else len(ned_tab)} cols={None if ned_tab is None else ned_tab.colnames}")
+    except Exception:
+        pass
+
+    # SDSS spectroscopy table (has redshifts; preferred for evidence-based masking)
+    sdss_spec_tab = query_sdss_spectro(center, rad, cfg) if bool(getattr(cfg, "enable_sdss", True)) else None
+    sdss_spec_sky = None
+    if sdss_spec_tab is not None and len(sdss_spec_tab) > 0:
+        ra_c = pick_first_existing_col(sdss_spec_tab, ["ra", "RA"])
+        dec_c = pick_first_existing_col(sdss_spec_tab, ["dec", "DEC"])
+        if ra_c and dec_c:
+            sdss_spec_sky = SkyCoord(
+                ra=np.array(sdss_spec_tab[ra_c]) * u.deg,
+                dec=np.array(sdss_spec_tab[dec_c]) * u.deg,
+                frame="icrs",
+            )
+
+    try:
+        print(f"[SDSS-spec] N={0 if sdss_spec_tab is None else len(sdss_spec_tab)} cols={None if sdss_spec_tab is None else sdss_spec_tab.colnames}")
+    except Exception:
+        pass
+
     if center.dec.deg >= -30:
         gal_tab = query_ps1_galaxy_like(center, rad, cfg)
+        if gal_tab is not None and len(gal_tab) > 0:
+            gal_catalog = "PS1"
 
     # If PS1 failed/empty and SkyMapper is available, try SkyMapper (useful mainly in the south)
     if (gal_tab is None or len(gal_tab) == 0) and center.dec.deg <= +28:
         gal_tab = query_skymapper(center, rad)
+        if gal_tab is not None and len(gal_tab) > 0:
+            gal_catalog = "SkyMapper"
+
+    if gal_catalog is None:
+        gal_catalog = "CAT"
 
     if gal_tab is not None and len(gal_tab) > 0:
         # Dynamic column picking (PS1 and SkyMapper differ)
@@ -673,6 +1153,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     continue
 
                 sc = sky[i]
+                cat_iau = iau_coord_name(gal_catalog, sc, ra_precision=2, dec_precision=1)
                 if exclude_center.value > 0 and sc.separation(center) < exclude_center:
                     continue
 
@@ -686,15 +1167,39 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     except Exception:
                         pass
 
-                # If this candidate is likely at Virgo distance (using NED z/velocity when available),
-                # do NOT mask it.
-                if ned_sky is not None and cfg.virgo_match_arcsec > 0:
+                # Evidence-based masking: only mask if we have definitive redshift proof it's background
+                if cfg.require_nonvirgo_confirmation_for_galaxy_mask:
+                    bg = is_definitely_background(
+                        sc=sc,
+                        cfg=cfg,
+                        sdss_spec_sky=sdss_spec_sky,
+                        sdss_spec_tab=sdss_spec_tab,
+                        ned_sky=ned_sky,
+                        ned_tab=ned_tab,
+                    )
+                    if bg is True:
+                        pass  # mask
+                    else:
+                        # --- fallback for unknown distance: mask only VERY extended and bright ---
+                        # (tune these to taste)
+                        if psf_col and kron_col:
+                            psf = _to_float_or_nan(gal_tab[psf_col][i])
+                            kron = _to_float_or_nan(gal_tab[kron_col][i])
+                            ext = (psf - kron) if (np.isfinite(psf) and np.isfinite(kron)) else -np.inf
+                        else:
+                            ext = -np.inf
+
+                        rmag = _to_float_or_nan(gal_tab[r_psf_col][i]) if r_psf_col else np.inf
+
+                        if not (float(ext) > 0.8 and float(rmag) < 20.0):
+                            continue
+                # Fallback: old Virgo-distance veto (kept for compatibility if new flag is disabled)
+                elif ned_sky is not None and cfg.virgo_match_arcsec > 0:
                     try:
                         nidx, nsep, _ = sc.match_to_catalog_sky(ned_sky)
                         if nsep < (float(cfg.virgo_match_arcsec) * u.arcsec):
                             z = None
                             v_kms = None
-                            # NED column names vary; try common ones.
                             for zname in ["Redshift", "z", "Z"]:
                                 if zname in ned_tab.colnames:
                                     try:
@@ -860,6 +1365,10 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     if pa_col and np.isfinite(gal_tab[pa_col][i]):
                         angle = float(gal_tab[pa_col][i])
 
+                    # Skip if ellipse does not touch the FITS image at all
+                    if not ellipse_intersects_fov(float(xi), float(yi), float(a_pix), float(b_pix), nx, ny):
+                        continue
+
                     # Plot coords (only affects overlay, not the FITS mask)
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
                     angle_plot = (-angle) if use_png_bg else angle
@@ -867,33 +1376,96 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     # rasterize ellipse (local cutout)
                     rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle)
 
+                    # Get cz info for logging
+                    cz, zval, zsrc, zsep = get_best_cz_info(sc, cfg, sdss_spec_sky, sdss_spec_tab, ned_sky, ned_tab)
+                    d_mpc = (cz / float(cfg.hubble_km_s_mpc)) if (cz is not None) else None
+
+                    if cz is None and cfg.log_each_galaxy and (gal_log_limit <= 0 or gal_logged < gal_log_limit):
+                        # optional: show nearest-match separations for debugging
+                        if sdss_spec_sky is not None and len(sdss_spec_sky) > 0:
+                            try:
+                                idx, sep2d, _ = sc.match_to_catalog_sky(sdss_spec_sky)
+                                print(f"[DBG] nearest SDSS(spec) sep={sep2d.to_value(u.arcsec):.2f}\"")
+                            except Exception:
+                                pass
+                        if ned_sky is not None and len(ned_sky) > 0:
+                            try:
+                                idx, sep2d, _ = sc.match_to_catalog_sky(ned_sky)
+                                print(f"[DBG] nearest NED sep={sep2d.to_value(u.arcsec):.2f}\"")
+                            except Exception:
+                                pass
+
                     if cfg.log_each_galaxy and (gal_log_limit <= 0 or gal_logged < gal_log_limit):
+                        ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
                         qv = gal_tab["Qual"][i] if "Qual" in gal_tab.colnames else "?"
-                        print(
-                            f"[GAL] {objid} ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
-                            f"a_arcsec={a_arcsec:.2f} b_arcsec={b_arcsec:.2f} pa={angle:.1f} Qual={qv}"
-                        )
+                        if cz is not None:
+                            print(
+                                f"[GAL] {objid} ({cat_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                                f"RA={ra_hms} DEC={dec_dms} "
+                                f"cz={cz:.0f}km/s z={zval:.5f} D~{d_mpc:.1f}Mpc ({zsrc}) "
+                                f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" pa={angle:.1f}"
+                            )
+                        else:
+                            print(
+                                f"[GAL] {objid} ({cat_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                                f"RA={ra_hms} DEC={dec_dms} "
+                                f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" pa={angle:.1f} Qual={qv}"
+                            )
                         gal_logged += 1
                     n_gal_masked += 1
 
                     gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
                 else:
+                    # Skip if circle does not touch the FITS image at all
+                    if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
+                        continue
+
                     # rasterize circle
                     rasterize_circle(mask, xi, yi, r_pix)
+
+                    # Get cz info for logging
+                    cz, zval, zsrc, zsep = get_best_cz_info(sc, cfg, sdss_spec_sky, sdss_spec_tab, ned_sky, ned_tab)
+                    d_mpc = (cz / float(cfg.hubble_km_s_mpc)) if (cz is not None) else None
+
+                    if cz is None and cfg.log_each_galaxy and (gal_log_limit <= 0 or gal_logged < gal_log_limit):
+                        # optional: show nearest-match separations for debugging
+                        if sdss_spec_sky is not None and len(sdss_spec_sky) > 0:
+                            try:
+                                idx, sep2d, _ = sc.match_to_catalog_sky(sdss_spec_sky)
+                                print(f"[DBG] nearest SDSS(spec) sep={sep2d.to_value(u.arcsec):.2f}\"")
+                            except Exception:
+                                pass
+                        if ned_sky is not None and len(ned_sky) > 0:
+                            try:
+                                idx, sep2d, _ = sc.match_to_catalog_sky(ned_sky)
+                                print(f"[DBG] nearest NED sep={sep2d.to_value(u.arcsec):.2f}\"")
+                            except Exception:
+                                pass
+
                     if cfg.log_each_galaxy and (gal_log_limit <= 0 or gal_logged < gal_log_limit):
+                        ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
                         qv = gal_tab["Qual"][i] if "Qual" in gal_tab.colnames else "?"
-                        # if PSF/Kron mags available, print extendedness for debugging
-                        ext = "?"
-                        if psf_col and kron_col:
-                            psf = _to_float_or_nan(gal_tab[psf_col][i])
-                            kron = _to_float_or_nan(gal_tab[kron_col][i])
-                            if np.isfinite(psf) and np.isfinite(kron):
-                                ext = f"{(psf-kron):.3f}"
-                        nr = gal_tab["Nr"][i] if "Nr" in gal_tab.colnames else "?"
-                        print(
-                            f"[GAL] {objid} ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
-                            f"r_arcsec={r_arcsec:.2f} ext={ext} Nr={nr} Qual={qv}"
-                        )
+                        if cz is not None:
+                            print(
+                                f"[GAL] {objid} ({cat_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                                f"RA={ra_hms} DEC={dec_dms} "
+                                f"cz={cz:.0f}km/s z={zval:.5f} D~{d_mpc:.1f}Mpc ({zsrc}) "
+                                f"r_arcsec={r_arcsec:.2f}"
+                            )
+                        else:
+                            # if PSF/Kron mags available, print extendedness for debugging
+                            ext = "?"
+                            if psf_col and kron_col:
+                                psf = _to_float_or_nan(gal_tab[psf_col][i])
+                                kron = _to_float_or_nan(gal_tab[kron_col][i])
+                                if np.isfinite(psf) and np.isfinite(kron):
+                                    ext = f"{(psf-kron):.3f}"
+                            nr = gal_tab["Nr"][i] if "Nr" in gal_tab.colnames else "?"
+                            print(
+                                f"[GAL] {objid} ({cat_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                                f"RA={ra_hms} DEC={dec_dms} "
+                                f"r_arcsec={r_arcsec:.2f} ext={ext} Nr={nr} Qual={qv}"
+                            )
                         gal_logged += 1
                     n_gal_masked += 1
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
@@ -901,6 +1473,232 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 
             if cfg.log_each_galaxy and gal_log_limit > 0 and n_gal_masked > gal_logged:
                 print(f"[GAL] ... suppressed {n_gal_masked - gal_logged} more galaxy logs")
+
+    # ---------- Supplemental galaxies from SDSS (if available) ----------
+    if bool(getattr(cfg, "enable_sdss", True)):
+        sdss_tab = query_sdss_photoobj(center, rad, cfg)
+        if sdss_tab is not None and len(sdss_tab) > 0:
+            if bool(getattr(cfg, "log_sdss_colnames", False)):
+                try:
+                    print(f"[SDSS] photo columns={list(sdss_tab.colnames)}")
+                except Exception:
+                    pass
+            # SDSS columns commonly available: 'ra', 'dec', 'type', 'petroRad_r', 'petroRadErr_r'
+            ra_col = pick_first_existing_col(sdss_tab, ["ra", "RA", "_RAJ2000"])
+            dec_col = pick_first_existing_col(sdss_tab, ["dec", "DEC", "_DEJ2000"])
+            type_col = pick_first_existing_col(sdss_tab, ["type", "Type"])
+
+            if ra_col and dec_col:
+                sdss_sky = SkyCoord(ra=np.array(sdss_tab[ra_col]) * u.deg,
+                                     dec=np.array(sdss_tab[dec_col]) * u.deg,
+                                     frame="icrs")
+                x_sdss, y_sdss = w.world_to_pixel(sdss_sky)
+                objid_col = pick_first_existing_col(sdss_tab, ["objid", "objID", "ObjID", "ID"])  # SDSS uses objid
+
+                gal_logged = 0
+                gal_log_limit = int(getattr(cfg, "log_max_galaxies", 0) or 0)
+
+                for i in range(len(sdss_tab)):
+                    xi, yi = float(x_sdss[i]), float(y_sdss[i])
+                    if not np.isfinite(xi) or not np.isfinite(yi):
+                        continue
+
+                    sc = sdss_sky[i]
+                    sdss_iau = iau_coord_name("SDSS", sc, ra_precision=2, dec_precision=1)
+                    if exclude_center.value > 0 and sc.separation(center) < exclude_center:
+                        continue
+
+                    # Only take SDSS photometric galaxies; skip stars
+                    if type_col and sdss_tab[type_col][i] is not None:
+                        t = sdss_tab[type_col][i]
+                        is_gal = False
+                        try:
+                            is_gal = (int(t) == 3)
+                        except Exception:
+                            ts = t.decode() if isinstance(t, (bytes, bytearray)) else str(t)
+                            is_gal = (ts.strip().upper() == "GALAXY")
+                        if not is_gal:
+                            continue
+
+                    # Reject near good Gaia sources (stellar contaminants)
+                    if gaia_sky_for_ps1_reject is not None and cfg.sdss_reject_if_near_gaia_arcsec > 0:
+                        try:
+                            idx, sep2d, _ = sc.match_to_catalog_sky(gaia_sky_for_ps1_reject)
+                            if sep2d < (cfg.sdss_reject_if_near_gaia_arcsec * u.arcsec):
+                                continue
+                        except Exception:
+                            pass
+
+                    # Get cz/z once (used both for sizing override and for logging).
+                    cz, zval, zsrc, zsep = get_best_cz_info(sc, cfg, sdss_spec_sky, sdss_spec_tab, ned_sky, ned_tab)
+                    d_mpc = (cz / float(cfg.hubble_km_s_mpc)) if (cz is not None) else None
+
+                    # High-z objects are expected to be PSF-limited in MUSE; apply this *before* any
+                    # SDSS morphology-based sizing to avoid sentinel-mag overflows.
+                    highz_psf_override = False
+                    r_arcsec = None
+                    try:
+                        zsrc_is_spec = isinstance(zsrc, str) and ("SDSS(spec)" in zsrc or "NED(spec)" in zsrc)
+                        if zsrc_is_spec and zval is not None and np.isfinite(zval) and float(zval) > float(cfg.highz_psf_override_zmin):
+                            r_arcsec = (float(cfg.highz_psf_k_fwhm) * float(cfg.fwhm_arcsec)) + float(cfg.gaia_margin_arcsec)
+                            if float(cfg.highz_psf_rmax_arcsec) > 0:
+                                r_arcsec = min(float(r_arcsec), float(cfg.highz_psf_rmax_arcsec))
+                            highz_psf_override = True
+                    except Exception:
+                        r_arcsec = None
+
+                    if r_arcsec is None:
+                        try:
+                            r_arcsec = sdss_mask_radius_arcsec(sdss_tab[i], cfg)
+                        except OverflowError:
+                            psf = _get_col_float(sdss_tab[i], "psfMag_r")
+                            mod = _get_col_float(sdss_tab[i], "modelMag_r")
+                            objid = str(sdss_tab[objid_col][i]) if objid_col else "?"
+                            print(f"[SDSS-OVERFLOW] objid={objid} psfMag_r={psf} modelMag_r={mod} -> using r_max")
+                            r_arcsec = float(cfg.star_r_max_arcsec + cfg.gaia_margin_arcsec)
+
+                    if r_arcsec is None or not np.isfinite(r_arcsec):
+                        continue
+
+                    r_arcsec = float(np.clip(float(r_arcsec), cfg.gal_r_min_arcsec, cfg.gal_r_max_arcsec))
+                    r_pix = r_arcsec / pixscale
+
+                    # Skip if circle does not touch the FITS image at all
+                    if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
+                        continue
+
+                    # Evidence-based masking for SDSS galaxies too
+                    if cfg.require_nonvirgo_confirmation_for_galaxy_mask:
+                        bg = is_definitely_background(
+                            sc=sc,
+                            cfg=cfg,
+                            sdss_spec_sky=sdss_spec_sky,
+                            sdss_spec_tab=sdss_spec_tab,
+                            ned_sky=ned_sky,
+                            ned_tab=ned_tab,
+                        )
+                        if bg is not True:
+                            continue
+                    # Fallback: old Virgo-distance veto
+                    elif ned_sky is not None and cfg.virgo_match_arcsec > 0:
+                        try:
+                            nidx, nsep, _ = sc.match_to_catalog_sky(ned_sky)
+                            if nsep < (float(cfg.virgo_match_arcsec) * u.arcsec):
+                                z = None
+                                v_kms = None
+                                for zname in ["Redshift", "z", "Z"]:
+                                    if zname in ned_tab.colnames:
+                                        try:
+                                            zv = ned_tab[zname][nidx]
+                                            z = None if (zv is None or getattr(zv, "mask", False)) else float(zv)
+                                        except Exception:
+                                            z = None
+                                        break
+                                for vname in ["Velocity", "cz", "Vel", "V"]:
+                                    if vname in ned_tab.colnames:
+                                        try:
+                                            vv = ned_tab[vname][nidx]
+                                            v_kms = None if (vv is None or getattr(vv, "mask", False)) else float(vv)
+                                        except Exception:
+                                            v_kms = None
+                                        break
+                                if _is_virgo_distance_from_z_or_v(cfg, z=z, v_kms=v_kms):
+                                    continue
+                        except Exception:
+                            pass
+
+                    # Rasterize circle
+                    rasterize_circle(mask, xi, yi, r_pix)
+
+                    objid = "?"
+                    if objid_col:
+                        try:
+                            objid = str(sdss_tab[objid_col][i])
+                        except Exception:
+                            objid = "?"
+
+                    if cfg.log_each_galaxy and (gal_log_limit <= 0 or gal_logged < gal_log_limit):
+                        ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
+                        dmag = None
+                        try:
+                            psf = _get_col_float(sdss_tab[i], "psfMag_r")
+                            mod = _get_col_float(sdss_tab[i], "modelMag_r")
+                            if psf is not None and mod is not None:
+                                dmag = float(psf) - float(mod)
+                        except Exception:
+                            dmag = None
+                        morph = "pt" if sdss_is_pointlike(sdss_tab[i], cfg) else "ext"
+                        morph_str = f" morph={morph}" + (f" dmag={dmag:.3f}" if dmag is not None else "")
+                        if highz_psf_override:
+                            morph_str += " highz_psf"
+                        if cz is not None:
+                            print(
+                                f"[GAL] SDSS {objid} ({sdss_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                                f"RA={ra_hms} DEC={dec_dms} "
+                                f"cz={cz:.0f}km/s z={zval:.5f} D~{d_mpc:.1f}Mpc ({zsrc}) "
+                                f"r_arcsec={r_arcsec:.2f}{morph_str}"
+                            )
+                        else:
+                            print(
+                                f"[GAL] SDSS {objid} ({sdss_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                                f"RA={ra_hms} DEC={dec_dms} r_arcsec={r_arcsec:.2f}{morph_str}"
+                            )
+                        gal_logged += 1
+                    n_gal_masked += 1
+                    y_plot = (ny - 1 - yi) if use_png_bg else yi
+                    gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
+
+            if cfg.log_each_galaxy and gal_log_limit > 0 and n_gal_masked > gal_logged:
+                print(f"[GAL] ... suppressed {n_gal_masked - gal_logged} more galaxy logs")
+
+    # ---------- SDSS star fallback (only if Gaia yielded none) ----------
+    if (gaia is None or len(gaia) == 0) and bool(getattr(cfg, "sdss_star_fallback", True)) and bool(getattr(cfg, "enable_sdss", True)):
+        sdss_tab = query_sdss_photoobj(center, rad, cfg)
+        if sdss_tab is not None and len(sdss_tab) > 0:
+            ra_col = pick_first_existing_col(sdss_tab, ["ra", "RA", "_RAJ2000"])
+            dec_col = pick_first_existing_col(sdss_tab, ["dec", "DEC", "_DEJ2000"])
+            type_col = pick_first_existing_col(sdss_tab, ["type", "Type"])
+            mag_col = pick_first_existing_col(sdss_tab, ["psfMag_r", "modelMag_r", "r"])
+            if ra_col and dec_col and type_col:
+                sdss_sky = SkyCoord(ra=np.array(sdss_tab[ra_col]) * u.deg,
+                                     dec=np.array(sdss_tab[dec_col]) * u.deg,
+                                     frame="icrs")
+                x_sdss, y_sdss = w.world_to_pixel(sdss_sky)
+                for i in range(len(sdss_tab)):
+                    t = sdss_tab[type_col][i]
+                    is_star = False
+                    try:
+                        is_star = (int(t) == 6)
+                    except Exception:
+                        ts = t.decode() if isinstance(t, (bytes, bytearray)) else str(t)
+                        is_star = (ts.strip().upper() == "STAR")
+                    if not is_star:
+                        continue
+                    xi, yi = float(x_sdss[i]), float(y_sdss[i])
+                    if not np.isfinite(xi) or not np.isfinite(yi):
+                        continue
+                    sc = sdss_sky[i]
+                    sdss_iau = iau_coord_name("SDSS", sc, ra_precision=2, dec_precision=1)
+                    if exclude_center.value > 0 and sc.separation(center) < exclude_center:
+                        continue
+                    g_like_mag = _to_float_or_nan(sdss_tab[mag_col][i]) if mag_col else np.nan
+                    r_arcsec = star_radius_arcsec_from_g(cfg, g_like_mag if np.isfinite(g_like_mag) else 18.0)
+                    r_pix = r_arcsec / pixscale
+
+                    # Skip if circle does not touch the FITS image at all
+                    if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
+                        continue
+
+                    rasterize_circle(mask, xi, yi, r_pix)
+                    if cfg.log_each_star:
+                        ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
+                        print(
+                            f"[STAR] SDSS ({sdss_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                            f"RA={ra_hms} DEC={dec_dms} r_arcsec={r_arcsec:.2f}"
+                        )
+                    n_star_masked += 1
+                    y_plot = (ny - 1 - yi) if use_png_bg else yi
+                    star_patches.append(Circle((xi, y_plot), r_pix, fill=False))
 
     # ---------- Write mask FITS (nGIST expects 0=unmasked, 1=masked) ----------
     # Same spatial dims as input image/cube. :contentReference[oaicite:1]{index=1}
@@ -910,32 +1708,52 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
         f"stars={n_star_masked}, galaxies={n_gal_masked})"
     )
 
-    # ---------- Overlay PNG ----------
-    fig, ax = plt.subplots(figsize=(6, 6))
-
+    # ---------- Overlay PNG (pixel-locked output size) ----------
     if use_png_bg:
         assert Image is not None
         im = np.asarray(Image.open(png_path))
-        ax.imshow(im, origin="upper")
-    else:
-        # Use FITS as background (more robust; ensures same orientation as WCS pixel coords)
-        v = np.nanpercentile(data2d, [2, 98])
-        ax.imshow(data2d, origin="upper", vmin=v[0], vmax=v[1])
+        H, W = im.shape[0], im.shape[1]
 
-    # Draw outlines
+        # Strong safety check: only use PNG if it matches the FITS pixel grid
+        # (otherwise your WCS->pixel coords (from FITS) won't align to PNG pixels).
+        if (H, W) != (ny, nx):
+            print(f"WARNING: {png_path} shape=({H}, {W}) != FITS shape=({ny}, {nx}); using FITS background instead.")
+            use_png_bg = False
+
+    dpi = int(cfg.output_dpi)
+
+    if use_png_bg:
+        # Output exactly matches the input PNG pixel dimensions
+        fig = plt.figure(figsize=(nx / dpi, ny / dpi), dpi=dpi)
+        ax = fig.add_axes([0, 0, 1, 1])
+        ax.imshow(im, origin="upper", interpolation="nearest")
+    else:
+        # Output exactly matches the FITS pixel dimensions
+        fig = plt.figure(figsize=(nx / dpi, ny / dpi), dpi=dpi)
+        ax = fig.add_axes([0, 0, 1, 1])
+        v = np.nanpercentile(data2d, [2, 98])
+        ax.imshow(data2d, origin="upper", vmin=v[0], vmax=v[1], interpolation="nearest")
+
+    # Fix axes limits to the image pixel grid
+    ax.set_xlim(-0.5, nx - 0.5)
+    ax.set_ylim(ny - 0.5, -0.5)
+    ax.set_axis_off()
+
+    # Draw outlines (clip to axes so nothing expands the saved canvas)
     for p in star_patches:
         p.set_edgecolor("green")
         p.set_linewidth(1.2)
+        p.set_clip_on(True)
         ax.add_patch(p)
 
     for p in gal_patches:
         p.set_edgecolor("brown")
         p.set_linewidth(1.2)
+        p.set_clip_on(True)
         ax.add_patch(p)
 
-    ax.set_axis_off()
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    fig.savefig(out_overlay_png, dpi=cfg.output_dpi, bbox_inches="tight", pad_inches=0)
+    # IMPORTANT: no bbox_inches="tight" here; it changes output size
+    fig.savefig(out_overlay_png, dpi=dpi)
     plt.close(fig)
     print(f"[OK] Wrote {out_overlay_png}")
 
@@ -945,23 +1763,70 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 def main():
     cfg = Config()
 
-    if len(sys.argv) > 1:
-        rfits_list: list[str] = []
-        for pat in sys.argv[1:]:
-            rfits_list.extend(sorted(glob.glob(pat)))
-        # de-dup while preserving order
-        seen = set()
-        rfits_list = [p for p in rfits_list if not (p in seen or seen.add(p))]
-    else:
-        rfits_list = sorted(glob.glob("*_DATACUBE*_R.fits"))
-    if len(rfits_list) == 0:
-        raise SystemExit("No *_DATACUBE*_R.fits files found in the current directory.")
+    # Force "all on-screen log" on (and unlimited per-object logging)
+    cfg.log_each_star = True
+    cfg.log_each_galaxy = True
+    cfg.log_sdss_colnames = True
+    cfg.log_max_galaxies = 0
 
-    for rfits in rfits_list:
-        try:
-            build_masks_for_one(rfits, cfg)
-        except Exception as e:
-            print(f"[FAIL] {rfits}: {e}")
+    # Tee ALL stdout/stderr to a log file as well as the console
+    log_path = "v3tk_masking.log"
+
+    class Tee:
+        def __init__(self, *streams):
+            self.streams = streams
+
+        def write(self, data):
+            for s in self.streams:
+                s.write(data)
+
+        def flush(self):
+            for s in self.streams:
+                s.flush()
+
+        def isatty(self):
+            return any(getattr(s, "isatty", lambda: False)() for s in self.streams)
+
+    logf = open(log_path, "w", buffering=1)
+    orig_stdout, orig_stderr = sys.stdout, sys.stderr
+    sys.stdout = Tee(orig_stdout, logf)
+    sys.stderr = Tee(orig_stderr, logf)
+    try:
+        print(f"=== v3tk masking run start: {datetime.now().isoformat(timespec='seconds')} ===")
+
+        t_total0 = perf_counter()
+
+        if len(sys.argv) > 1:
+            rfits_list: list[str] = []
+            for pat in sys.argv[1:]:
+                rfits_list.extend(sorted(glob.glob(pat)))
+            # de-dup while preserving order
+            seen = set()
+            rfits_list = [p for p in rfits_list if not (p in seen or seen.add(p))]
+        else:
+            rfits_list = sorted(glob.glob("*_DATACUBE*_R.fits"))
+        if len(rfits_list) == 0:
+            raise SystemExit("No *_DATACUBE*_R.fits files found in the current directory.")
+
+        for rfits in rfits_list:
+            t0 = perf_counter()
+            try:
+                build_masks_for_one(rfits, cfg)
+            except Exception as e:
+                print(f"[FAIL] {rfits}: {e}")
+                traceback.print_exc()
+            finally:
+                dt = perf_counter() - t0
+                print(f"[TIME] {rfits} runtime_s={dt:.2f}")
+
+        t_total = perf_counter() - t_total0
+        print(f"[TIME] total runtime_s={t_total:.2f}")
+
+        print(f"=== v3tk masking run end:   {datetime.now().isoformat(timespec='seconds')} ===")
+    finally:
+        sys.stdout = orig_stdout
+        sys.stderr = orig_stderr
+        logf.close()
 
 
 if __name__ == "__main__":
