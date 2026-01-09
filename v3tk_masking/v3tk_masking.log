@@ -1,10 +1,249 @@
-=== v3tk masking run start: 2026-01-08T19:36:28 ===
+=== v3tk masking run start: 2026-01-09T12:40:17 ===
+[FOV] IC3392: nx=437 ny=438 pixscale=0.2000"/pix rad=1.196 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3933244497497883904 (GAIA J122841.21+150012.1) ra=187.171708 dec=15.003350 RA=12:28:41.21 DEC=+15:00:12.06 GaiaG=20.42 r_arcsec=2.50 | plx=0.280±0.766 mas (SNR=0.4) | pm=6.87±1.23 mas/yr (SNR=5.6) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=75 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote IC3392_mask.fits (shape=(438, 437), masked=493 px; stars=1, galaxies=0)
+[OK] Wrote IC3392_combined_R_mask.png
+[TIME] IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=12.18
+[FOV] NGC4064: nx=566 ny=665 pixscale=0.2000"/pix rad=1.620 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3926786485886436608 (GAIA J120412.92+182748.3) ra=181.053853 dec=18.463424 RA=12:04:12.92 DEC=+18:27:48.33 GaiaG=15.63 r_arcsec=4.74 | plx=0.529±0.052 mas (SNR=10.2) | pm=2.92±0.06 mas/yr (SNR=47.3) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3926786107929314048 (GAIA J120411.98+182641.0) ra=181.049929 dec=18.444713 RA=12:04:11.98 DEC=+18:26:40.97 GaiaG=15.22 r_arcsec=5.51 | plx=0.311±0.039 mas (SNR=8.1) | pm=31.59±0.04 mas/yr (SNR=714.1) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3926785347719359488 (GAIA J120413.18+182559.4) ra=181.054925 dec=18.433166 RA=12:04:13.18 DEC=+18:25:59.40 GaiaG=18.00 r_arcsec=2.50 | plx=0.429±0.149 mas (SNR=2.9) | pm=10.26±0.18 mas/yr (SNR=57.0) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=144 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J120414.53+182609.2) ra=181.060542 dec=18.435898 RA=12:04:14.53 DEC=+18:26:09.23 r_arcsec=3.00 ext=1.355 Nr=16 Qual=53
+[GAL] ? (PS1 J120407.37+182721.0) ra=181.030728 dec=18.455838 RA=12:04:07.37 DEC=+18:27:21.02 r_arcsec=3.00 ext=1.144 Nr=14 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4064_mask.fits (shape=(665, 566), masked=5194 px; stars=3, galaxies=2)
+[OK] Wrote NGC4064_combined_R_mask.png
+[TIME] NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.79
+[FOV] NGC4189: nx=598 ny=319 pixscale=0.2000"/pix rad=1.294 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3920635989639582208 (GAIA J121350.07+132611.9) ra=183.458612 dec=13.436629 RA=12:13:50.07 DEC=+13:26:11.87 GaiaG=15.23 r_arcsec=5.51 | plx=0.607±0.030 mas (SNR=20.2) | pm=9.95±0.04 mas/yr (SNR=240.1) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3920635920920105216 (GAIA J121345.01+132545.1) ra=183.437558 dec=13.429199 RA=12:13:45.01 DEC=+13:25:45.12 GaiaG=17.47 r_arcsec=2.60 | plx=1.536±0.109 mas (SNR=14.0) | pm=23.48±0.15 mas/yr (SNR=153.9) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=131 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4189_mask.fits (shape=(319, 598), masked=528 px; stars=2, galaxies=0)
+[OK] Wrote NGC4189_combined_R_mask.png
+[TIME] NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.41
+[FOV] NGC4192: nx=1092 ny=1629 pixscale=0.2000"/pix rad=3.433 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3921364828409903744 (GAIA J121355.15+145522.2) ra=183.479805 dec=14.922827 RA=12:13:55.15 DEC=+14:55:22.18 GaiaG=19.36 r_arcsec=2.50 | plx=0.297±0.365 mas (SNR=0.8) | pm=8.05±0.44 mas/yr (SNR=18.3) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364995912733568 (GAIA J121354.81+145617.5) ra=183.478390 dec=14.938195 RA=12:13:54.81 DEC=+14:56:17.50 GaiaG=19.02 r_arcsec=2.50 | plx=1.612±0.290 mas (SNR=5.6) | pm=40.04±0.36 mas/yr (SNR=111.9) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361353780824320 (GAIA J121355.32+145223.9) ra=183.480485 dec=14.873304 RA=12:13:55.32 DEC=+14:52:23.90 GaiaG=18.94 r_arcsec=2.50 | plx=0.150±0.241 mas (SNR=0.6) | pm=17.13±0.29 mas/yr (SNR=58.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364995912734464 (GAIA J121355.26+145635.2) ra=183.480235 dec=14.943115 RA=12:13:55.26 DEC=+14:56:35.21 GaiaG=19.53 r_arcsec=2.50 | plx=-0.292±0.413 mas (SNR=-0.7) | pm=1.63±0.50 mas/yr (SNR=3.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361839111393536 (GAIA J121354.96+145421.2) ra=183.479010 dec=14.905892 RA=12:13:54.96 DEC=+14:54:21.21 GaiaG=19.70 r_arcsec=2.50 | plx=0.599±0.509 mas (SNR=1.2) | pm=20.77±0.67 mas/yr (SNR=31.0) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361151916609920 (GAIA J121355.07+145149.6) ra=183.479465 dec=14.863779 RA=12:13:55.07 DEC=+14:51:49.61 GaiaG=19.47 r_arcsec=2.50 | plx=1.581±0.358 mas (SNR=4.4) | pm=7.50±0.44 mas/yr (SNR=17.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364549239757824 (GAIA J121342.35+145407.3) ra=183.426461 dec=14.902030 RA=12:13:42.35 DEC=+14:54:07.31 GaiaG=19.35 r_arcsec=2.50 | plx=3.008±0.346 mas (SNR=8.7) | pm=11.79±0.45 mas/yr (SNR=26.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361250701572992 (GAIA J121352.25+145138.6) ra=183.467695 dec=14.860727 RA=12:13:52.25 DEC=+14:51:38.62 GaiaG=18.41 r_arcsec=2.50 | plx=1.789±0.196 mas (SNR=9.1) | pm=6.21±0.27 mas/yr (SNR=23.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921365103287811328 (GAIA J121350.70+145632.0) ra=183.461255 dec=14.942228 RA=12:13:50.70 DEC=+14:56:32.02 GaiaG=12.83 r_arcsec=14.58 | plx=4.198±0.019 mas (SNR=225.4) | pm=4.94±0.03 mas/yr (SNR=186.8) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364411797467904 (GAIA J121349.46+145422.8) ra=183.456097 dec=14.906330 RA=12:13:49.46 DEC=+14:54:22.79 GaiaG=18.34 r_arcsec=2.50 | plx=0.385±0.181 mas (SNR=2.1) | pm=4.98±0.24 mas/yr (SNR=21.1) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361151917897216 (GAIA J121355.99+145133.4) ra=183.483272 dec=14.859280 RA=12:13:55.99 DEC=+14:51:33.41 GaiaG=17.00 r_arcsec=2.99 | plx=0.241±0.076 mas (SNR=3.2) | pm=8.41±0.10 mas/yr (SNR=88.3) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364239998577152 (GAIA J121344.47+145230.3) ra=183.435276 dec=14.875096 RA=12:13:44.47 DEC=+14:52:30.35 GaiaG=20.39 r_arcsec=2.50 | plx=-1.373±0.832 mas (SNR=-1.7) | pm=9.09±0.97 mas/yr (SNR=9.3) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364862769641984 (GAIA J121352.84+145517.0) ra=183.470171 dec=14.921399 RA=12:13:52.84 DEC=+14:55:17.04 GaiaG=16.74 r_arcsec=3.24 | plx=3.435±0.068 mas (SNR=50.2) | pm=27.11±0.09 mas/yr (SNR=298.1) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921365098991947904 (GAIA J121350.31+145606.5) ra=183.459629 dec=14.935142 RA=12:13:50.31 DEC=+14:56:06.51 GaiaG=20.07 r_arcsec=2.50 | plx=2.998±0.546 mas (SNR=5.5) | pm=11.54±0.74 mas/yr (SNR=15.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361839112665344 (GAIA J121355.09+145420.9) ra=183.479542 dec=14.905797 RA=12:13:55.09 DEC=+14:54:20.87 GaiaG=15.45 r_arcsec=5.06 | plx=0.877±0.042 mas (SNR=21.1) | pm=21.93±0.06 mas/yr (SNR=398.1) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=348 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J121352.25+145138.6) ra=183.467696 dec=14.860727 RA=12:13:52.25 DEC=+14:51:38.62 r_arcsec=3.00 ext=1.113 Nr=18 Qual=63
+[GAL] ? (PS1 J121343.64+145430.3) ra=183.431844 dec=14.908430 RA=12:13:43.64 DEC=+14:54:30.35 r_arcsec=3.00 ext=1.437 Nr=7 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4192_mask.fits (shape=(1629, 1092), masked=24956 px; stars=15, galaxies=2)
+[OK] Wrote NGC4192_combined_R_mask.png
+[TIME] NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=12.16
+[FOV] NGC4293: nx=923 ny=532 pixscale=0.2000"/pix rad=1.940 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3947188954931954176 (GAIA J122114.65+182319.2) ra=185.311044 dec=18.388675 RA=12:21:14.65 DEC=+18:23:19.23 GaiaG=18.53 r_arcsec=2.50 | plx=0.031±0.186 mas (SNR=0.2) | pm=4.76±0.24 mas/yr (SNR=19.7) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=233 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4293_mask.fits (shape=(532, 923), masked=492 px; stars=1, galaxies=0)
+[OK] Wrote NGC4293_combined_R_mask.png
+[TIME] NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=12.83
+[FOV] NGC4294: nx=567 ny=663 pixscale=0.2000"/pix rad=1.618 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907393471594072448 (GAIA J122114.86+113129.4) ra=185.311935 dec=11.524823 RA=12:21:14.86 DEC=+11:31:29.36 GaiaG=14.56 r_arcsec=7.11 | plx=1.553±0.024 mas (SNR=65.0) | pm=24.09±0.03 mas/yr (SNR=721.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907394188852990976 (GAIA J122120.11+113137.1) ra=185.333797 dec=11.526971 RA=12:21:20.11 DEC=+11:31:37.10 GaiaG=18.60 r_arcsec=2.50 | plx=0.511±0.175 mas (SNR=2.9) | pm=19.33±0.27 mas/yr (SNR=72.7) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907393467299334272 (GAIA J122114.46+113126.0) ra=185.310246 dec=11.523899 RA=12:21:14.46 DEC=+11:31:26.04 GaiaG=19.67 r_arcsec=2.50 | plx=2.201±0.398 mas (SNR=5.5) | pm=24.15±0.58 mas/yr (SNR=41.9) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907392612600612864 (GAIA J122117.77+113014.5) ra=185.324062 dec=11.504021 RA=12:21:17.77 DEC=+11:30:14.48 GaiaG=17.22 r_arcsec=2.80 | plx=-0.008±0.085 mas (SNR=-0.1) | pm=1.75±0.13 mas/yr (SNR=13.9) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907392677024495744 (GAIA J122114.21+113058.6) ra=185.309191 dec=11.516286 RA=12:21:14.21 DEC=+11:30:58.63 GaiaG=19.19 r_arcsec=2.50 | plx=0.239±0.267 mas (SNR=0.9) | pm=1.81±0.39 mas/yr (SNR=4.6) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907392612599891456 (GAIA J122117.61+113003.6) ra=185.323387 dec=11.501004 RA=12:21:17.61 DEC=+11:30:03.61 GaiaG=20.09 r_arcsec=2.50 | plx=0.975±0.537 mas (SNR=1.8) | pm=16.90±0.82 mas/yr (SNR=20.6) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=182 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J122119.43+113108.0) ra=185.330941 dec=11.518876 RA=12:21:19.43 DEC=+11:31:07.95 r_arcsec=3.00 ext=0.854 Nr=11 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4294_mask.fits (shape=(663, 567), masked=6994 px; stars=6, galaxies=1)
+[OK] Wrote NGC4294_combined_R_mask.png
+[TIME] NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.53
+[FOV] NGC4298: nx=1042 ny=995 pixscale=0.2000"/pix rad=2.566 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3921151140900927488 (GAIA J122129.42+143506.3) ra=185.372586 dec=14.585071 RA=12:21:29.42 DEC=+14:35:06.25 GaiaG=19.67 r_arcsec=2.50 | plx=0.498±0.383 mas (SNR=1.3) | pm=4.00±0.55 mas/yr (SNR=7.3) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151042117775488 (GAIA J122128.49+143449.5) ra=185.368696 dec=14.580406 RA=12:21:28.49 DEC=+14:34:49.46 GaiaG=16.27 r_arcsec=3.78 | plx=1.473±0.054 mas (SNR=27.2) | pm=5.74±0.07 mas/yr (SNR=80.2) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151557513852160 (GAIA J122133.18+143632.0) ra=185.388250 dec=14.608897 RA=12:21:33.18 DEC=+14:36:32.03 GaiaG=17.09 r_arcsec=2.91 | plx=0.033±0.071 mas (SNR=0.5) | pm=1.23±0.09 mas/yr (SNR=13.3) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151557513852416 (GAIA J122135.85+143641.2) ra=185.399380 dec=14.611447 RA=12:21:35.85 DEC=+14:36:41.21 GaiaG=13.35 r_arcsec=11.67 | plx=1.423±0.016 mas (SNR=88.2) | pm=16.03±0.02 mas/yr (SNR=758.4) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151694952806272 (GAIA J122140.72+143754.2) ra=185.419669 dec=14.631712 RA=12:21:40.72 DEC=+14:37:54.16 GaiaG=13.99 r_arcsec=8.96 | plx=2.780±0.021 mas (SNR=130.9) | pm=59.97±0.03 mas/yr (SNR=2165.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151587577547008 (GAIA J122136.49+143718.3) ra=185.402031 dec=14.621739 RA=12:21:36.49 DEC=+14:37:18.26 GaiaG=18.10 r_arcsec=2.50 | plx=1.010±0.142 mas (SNR=7.1) | pm=1.21±0.19 mas/yr (SNR=6.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151076477513984 (GAIA J122132.21+143434.7) ra=185.384194 dec=14.576302 RA=12:21:32.21 DEC=+14:34:34.69 GaiaG=17.36 r_arcsec=2.69 | plx=0.752±0.090 mas (SNR=8.4) | pm=12.38±0.12 mas/yr (SNR=102.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151110836313856 (GAIA J122134.16+143511.9) ra=185.392346 dec=14.586634 RA=12:21:34.16 DEC=+14:35:11.88 GaiaG=20.56 r_arcsec=2.50 | plx=-0.444±1.013 mas (SNR=-0.4) | pm=5.65±1.28 mas/yr (SNR=4.4) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151072181447168 (GAIA J122132.51+143444.6) ra=185.385471 dec=14.579061 RA=12:21:32.51 DEC=+14:34:44.62 GaiaG=17.74 r_arcsec=2.50 | plx=2.427±0.109 mas (SNR=22.3) | pm=32.08±0.15 mas/yr (SNR=211.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=572 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=3 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J122133.26+143502.1) ra=185.388587 dec=14.583914 RA=12:21:33.26 DEC=+14:35:02.09 r_arcsec=3.00 ext=0.846 Nr=16 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4298_mask.fits (shape=(995, 1042), masked=15656 px; stars=9, galaxies=1)
+[OK] Wrote NGC4298_combined_R_mask.png
+[TIME] NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.98
+[FOV] NGC4302: nx=322 ny=1420 pixscale=0.2000"/pix rad=2.591 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3921151694952806272 (GAIA J122140.72+143754.2) ra=185.419669 dec=14.631712 RA=12:21:40.72 DEC=+14:37:54.16 GaiaG=13.99 r_arcsec=8.96 | plx=2.780±0.021 mas (SNR=130.9) | pm=59.97±0.03 mas/yr (SNR=2165.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151621939509120 (GAIA J122141.74+143717.3) ra=185.423930 dec=14.621464 RA=12:21:41.74 DEC=+14:37:17.27 GaiaG=20.47 r_arcsec=2.50 | plx=-0.325±0.757 mas (SNR=-0.4) | pm=5.62±1.03 mas/yr (SNR=5.5) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921139291087254272 (GAIA J122141.90+143431.2) ra=185.424592 dec=14.575347 RA=12:21:41.90 DEC=+14:34:31.25 GaiaG=19.82 r_arcsec=2.50 | plx=1.257±0.440 mas (SNR=2.9) | pm=19.56±0.63 mas/yr (SNR=30.9) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921139870908995840 (GAIA J122144.06+143628.4) ra=185.433581 dec=14.607896 RA=12:21:44.06 DEC=+14:36:28.42 GaiaG=19.60 r_arcsec=2.50 | plx=0.460±0.359 mas (SNR=1.3) | pm=4.62±0.51 mas/yr (SNR=9.1) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921139291087254016 (GAIA J122140.78+143415.0) ra=185.419913 dec=14.570839 RA=12:21:40.78 DEC=+14:34:15.02 GaiaG=18.14 r_arcsec=2.50 | plx=0.498±0.138 mas (SNR=3.6) | pm=8.64±0.20 mas/yr (SNR=42.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921139084928823936 (GAIA J122142.38+143418.9) ra=185.426595 dec=14.571924 RA=12:21:42.38 DEC=+14:34:18.93 GaiaG=16.23 r_arcsec=3.84 | plx=2.986±0.053 mas (SNR=56.4) | pm=50.09±0.08 mas/yr (SNR=632.8) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=592 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=5 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4302_mask.fits (shape=(1420, 322), masked=8919 px; stars=6, galaxies=0)
+[OK] Wrote NGC4302_combined_R_mask.png
+[TIME] NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.86
+[FOV] NGC4330: nx=881 ny=760 pixscale=0.2000"/pix rad=2.104 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907348627840247936 (GAIA J122322.30+112047.9) ra=185.842929 dec=11.346650 RA=12:23:22.30 DEC=+11:20:47.94 GaiaG=12.67 r_arcsec=15.60 | plx=3.075±0.020 mas (SNR=150.5) | pm=36.60±0.03 mas/yr (SNR=1203.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907348696559957760 (GAIA J122319.97+112136.6) ra=185.833228 dec=11.360179 RA=12:23:19.97 DEC=+11:21:36.64 GaiaG=20.32 r_arcsec=2.50 | plx=1.250±0.829 mas (SNR=1.5) | pm=7.69±1.38 mas/yr (SNR=5.6) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907348627840412416 (GAIA J122321.12+112051.1) ra=185.837994 dec=11.347520 RA=12:23:21.12 DEC=+11:20:51.07 GaiaG=18.40 r_arcsec=2.50 | plx=2.003±0.711 mas (SNR=2.8) | pm=30.15±0.99 mas/yr (SNR=30.3) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=184 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4330_mask.fits (shape=(760, 881), masked=10098 px; stars=3, galaxies=0)
+[OK] Wrote NGC4330_combined_R_mask.png
+[TIME] NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.74
+[FOV] NGC4351: nx=591 ny=323 pixscale=0.2000"/pix rad=1.287 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907820661925744768 (GAIA J122358.28+121247.0) ra=185.992851 dec=12.213046 RA=12:23:58.28 DEC=+12:12:46.96 GaiaG=18.44 r_arcsec=2.50 | plx=-0.247±0.171 mas (SNR=-1.4) | pm=2.54±0.23 mas/yr (SNR=11.1) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907820494422511616 (GAIA J122357.20+121202.5) ra=185.988349 dec=12.200684 RA=12:23:57.20 DEC=+12:12:02.46 GaiaG=17.52 r_arcsec=2.56 | plx=0.653±0.107 mas (SNR=6.1) | pm=6.74±0.14 mas/yr (SNR=47.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=106 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4351_mask.fits (shape=(323, 591), masked=545 px; stars=2, galaxies=0)
+[OK] Wrote NGC4351_combined_R_mask.png
+[TIME] NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.31
+[FOV] NGC4383: nx=633 ny=705 pixscale=0.2000"/pix rad=1.743 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3945999592588608000 (GAIA J122523.89+162732.4) ra=186.349522 dec=16.458988 RA=12:25:23.89 DEC=+16:27:32.36 GaiaG=16.68 r_arcsec=3.31 | plx=2.567±0.135 mas (SNR=19.0) | pm=51.77±0.15 mas/yr (SNR=344.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3946001413654742784 (GAIA J122529.75+162933.9) ra=186.373976 dec=16.492755 RA=12:25:29.75 DEC=+16:29:33.92 GaiaG=17.48 r_arcsec=2.60 | plx=1.108±0.121 mas (SNR=9.1) | pm=11.68±0.14 mas/yr (SNR=84.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945999519572947456 (GAIA J122525.38+162719.3) ra=186.355764 dec=16.455351 RA=12:25:25.38 DEC=+16:27:19.26 GaiaG=20.48 r_arcsec=2.50 | plx=1.282±0.952 mas (SNR=1.3) | pm=3.19±1.00 mas/yr (SNR=3.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3946001070056318464 (GAIA J122527.25+162812.0) ra=186.363547 dec=16.469999 RA=12:25:27.25 DEC=+16:28:12.00 GaiaG=20.38 r_arcsec=2.50 | plx=1.214±0.888 mas (SNR=1.4) | pm=3.51±0.86 mas/yr (SNR=4.1) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=152 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J122525.38+162719.3) ra=186.355760 dec=16.455352 RA=12:25:25.38 DEC=+16:27:19.27 r_arcsec=3.00 ext=0.810 Nr=8 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4383_mask.fits (shape=(705, 633), masked=2531 px; stars=4, galaxies=1)
+[OK] Wrote NGC4383_combined_R_mask.png
+[TIME] NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.44
+[FOV] NGC4388: nx=870 ny=323 pixscale=0.2000"/pix rad=1.711 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907951125852987008 (GAIA J122545.46+123911.7) ra=186.439415 dec=12.653255 RA=12:25:45.46 DEC=+12:39:11.72 GaiaG=18.64 r_arcsec=2.50 | plx=1.108±0.251 mas (SNR=4.4) | pm=20.18±0.35 mas/yr (SNR=58.4) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=176 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=3 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J122553.23+124012.8) ra=186.471793 dec=12.670212 RA=12:25:53.23 DEC=+12:40:12.76 r_arcsec=3.00 ext=0.705 Nr=10 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4388_mask.fits (shape=(323, 870), masked=995 px; stars=1, galaxies=1)
+[OK] Wrote NGC4388_combined_R_mask.png
+[TIME] NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.45
+[FOV] NGC4394: nx=624 ny=647 pixscale=0.2000"/pix rad=1.662 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3947041031962769024 (GAIA J122554.17+181346.3) ra=186.475692 dec=18.229537 RA=12:25:54.17 DEC=+18:13:46.33 GaiaG=18.99 r_arcsec=2.50 | plx=1.365±0.248 mas (SNR=5.5) | pm=15.74±0.31 mas/yr (SNR=50.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947042307567757184 (GAIA J122557.16+181333.6) ra=186.488147 dec=18.225989 RA=12:25:57.16 DEC=+18:13:33.56 GaiaG=19.51 r_arcsec=2.50 | plx=-0.075±0.378 mas (SNR=-0.2) | pm=17.45±0.45 mas/yr (SNR=38.9) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947041031964284288 (GAIA J122552.06+181344.1) ra=186.466916 dec=18.228913 RA=12:25:52.06 DEC=+18:13:44.09 GaiaG=20.63 r_arcsec=2.50 | plx=-0.191±1.147 mas (SNR=-0.2) | pm=23.05±1.42 mas/yr (SNR=16.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947040761380352640 (GAIA J122556.89+181238.3) ra=186.487051 dec=18.210635 RA=12:25:56.89 DEC=+18:12:38.28 GaiaG=17.92 r_arcsec=2.50 | plx=0.397±0.125 mas (SNR=3.2) | pm=9.52±0.16 mas/yr (SNR=61.2) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947042238848280064 (GAIA J122559.08+181305.3) ra=186.496169 dec=18.218139 RA=12:25:59.08 DEC=+18:13:05.30 GaiaG=19.81 r_arcsec=2.50 | plx=0.132±0.398 mas (SNR=0.3) | pm=12.13±0.51 mas/yr (SNR=23.6) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947040830099257728 (GAIA J122556.83+181315.6) ra=186.486809 dec=18.221011 RA=12:25:56.83 DEC=+18:13:15.64 GaiaG=20.38 r_arcsec=2.50 | plx=0.627±0.796 mas (SNR=0.8) | pm=7.85±1.14 mas/yr (SNR=6.9) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947040795740090752 (GAIA J122552.59+181303.5) ra=186.469111 dec=18.217650 RA=12:25:52.59 DEC=+18:13:03.54 GaiaG=17.40 r_arcsec=2.65 | plx=1.016±0.096 mas (SNR=10.6) | pm=44.08±0.11 mas/yr (SNR=386.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947041001898521728 (GAIA J122551.72+181327.9) ra=186.465492 dec=18.224406 RA=12:25:51.72 DEC=+18:13:27.86 GaiaG=18.87 r_arcsec=2.50 | plx=0.784±0.228 mas (SNR=3.4) | pm=16.82±0.28 mas/yr (SNR=60.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=156 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4394_mask.fits (shape=(647, 624), masked=3993 px; stars=8, galaxies=0)
+[OK] Wrote NGC4394_combined_R_mask.png
+[TIME] NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.49
+[FOV] NGC4396: nx=883 ny=755 pixscale=0.2000"/pix rad=2.101 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3945348819144380416 (GAIA J122555.27+154048.5) ra=186.480285 dec=15.680139 RA=12:25:55.27 DEC=+15:40:48.50 GaiaG=14.75 r_arcsec=6.60 | plx=0.914±0.028 mas (SNR=32.5) | pm=18.42±0.04 mas/yr (SNR=439.2) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945348338108054016 (GAIA J122553.19+153919.8) ra=186.471616 dec=15.655505 RA=12:25:53.19 DEC=+15:39:19.82 GaiaG=20.45 r_arcsec=2.50 | plx=0.631±1.296 mas (SNR=0.5) | pm=7.03±1.34 mas/yr (SNR=5.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945348780488113152 (GAIA J122554.68+154041.5) ra=186.477818 dec=15.678185 RA=12:25:54.68 DEC=+15:40:41.46 GaiaG=19.91 r_arcsec=2.50 | plx=0.040±0.493 mas (SNR=0.1) | pm=8.92±0.76 mas/yr (SNR=11.7) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945348883567093376 (GAIA J122600.93+154140.4) ra=186.503873 dec=15.694569 RA=12:26:00.93 DEC=+15:41:40.45 GaiaG=12.31 r_arcsec=18.26 | plx=2.643±0.020 mas (SNR=129.1) | pm=41.74±0.03 mas/yr (SNR=1492.2) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=515 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4396_mask.fits (shape=(755, 883), masked=9774 px; stars=4, galaxies=0)
+[OK] Wrote NGC4396_combined_R_mask.png
+[TIME] NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.47
+[FOV] NGC4402: nx=1152 ny=318 pixscale=0.2000"/pix rad=2.156 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3908743465714913664 (GAIA J122610.78+130704.5) ra=186.544929 dec=13.117904 RA=12:26:10.78 DEC=+13:07:04.45 GaiaG=19.53 r_arcsec=2.50 | plx=0.736±0.478 mas (SNR=1.5) | pm=10.10±0.71 mas/yr (SNR=14.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3908743396994711424 (GAIA J122612.13+130655.2) ra=186.550559 dec=13.115346 RA=12:26:12.13 DEC=+13:06:55.24 GaiaG=20.40 r_arcsec=2.50 | plx=-0.949±1.205 mas (SNR=-0.8) | pm=12.84±1.65 mas/yr (SNR=7.8) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=251 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=2 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J122605.21+130722.2) ra=186.521714 dec=13.122844 RA=12:26:05.21 DEC=+13:07:22.24 r_arcsec=3.00 ext=0.786 Nr=20 Qual=61
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4402_mask.fits (shape=(318, 1152), masked=1155 px; stars=2, galaxies=1)
+[OK] Wrote NGC4402_combined_R_mask.png
+[TIME] NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.66
+[FOV] NGC4405: nx=522 ny=663 pixscale=0.2000"/pix rad=1.571 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3945792403366552064 (GAIA J122607.14+161051.6) ra=186.529751 dec=16.181003 RA=12:26:07.14 DEC=+16:10:51.61 GaiaG=19.53 r_arcsec=2.50 | plx=-1.060±0.802 mas (SNR=-1.3) | pm=3.20±0.95 mas/yr (SNR=3.4) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945792158551844608 (GAIA J122608.87+160958.2) ra=186.536965 dec=16.166168 RA=12:26:08.87 DEC=+16:09:58.20 GaiaG=19.05 r_arcsec=2.50 | plx=0.277±0.303 mas (SNR=0.9) | pm=10.73±0.36 mas/yr (SNR=29.7) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945792399070019840 (GAIA J122609.19+161022.3) ra=186.538278 dec=16.172872 RA=12:26:09.19 DEC=+16:10:22.34 GaiaG=18.40 r_arcsec=2.50 | plx=-0.524±0.198 mas (SNR=-2.6) | pm=2.15±0.24 mas/yr (SNR=9.0) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=242 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4405_mask.fits (shape=(663, 522), masked=1475 px; stars=3, galaxies=0)
+[OK] Wrote NGC4405_combined_R_mask.png
+[TIME] NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.70
 [FOV] NGC4419: nx=629 ny=643 pixscale=0.2000"/pix rad=1.663 arcmin
-INFO: Query finished. [astroquery.utils.tap.core]
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
 [STAR] Gaia DR3 3933275253757002752 (GAIA J122655.71+150349.7) ra=186.732122 dec=15.063801 RA=12:26:55.71 DEC=+15:03:49.69 GaiaG=20.69 r_arcsec=2.50 | plx=-0.403±1.815 mas (SNR=-0.2) | pm=31.99±1.84 mas/yr (SNR=17.4) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
-[STAR] Gaia DR3 3933268553608397184 (GAIA J122654.51+150207.4) ra=186.727134 dec=15.035400 RA=12:26:54.51 DEC=+15:02:07.44 GaiaG=16.45 r_arcsec=3.56 | plx=0.334±0.063 mas (SNR=5.3) | pm=2.67±0.10 mas/yr (SNR=25.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
 [STAR] Gaia DR3 3933268514953504640 (GAIA J122653.82+150157.9) ra=186.724253 dec=15.032744 RA=12:26:53.82 DEC=+15:01:57.88 GaiaG=20.02 r_arcsec=2.50 | plx=0.574±0.579 mas (SNR=1.0) | pm=13.84±1.02 mas/yr (SNR=13.5) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3933268553608397184 (GAIA J122654.51+150207.4) ra=186.727134 dec=15.035400 RA=12:26:54.51 DEC=+15:02:07.44 GaiaG=16.45 r_arcsec=3.56 | plx=0.334±0.063 mas (SNR=5.3) | pm=2.67±0.10 mas/yr (SNR=25.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
 [NED] N=151 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
 [SDSS-spec] N=2 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
 WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
@@ -12,6 +251,134 @@ WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key 
 [SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
 [OK] Wrote NGC4419_mask.fits (shape=(643, 629), masked=2684 px; stars=3, galaxies=1)
 [OK] Wrote NGC4419_combined_R_mask.png
-[TIME] ./NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=15.05
-[TIME] total runtime_s=15.05
-=== v3tk masking run end:   2026-01-08T19:36:43 ===
+[TIME] NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.44
+[FOV] NGC4457: nx=725 ny=725 pixscale=0.2000"/pix rad=1.873 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3706835506942505600 (GAIA J122856.84+033417.9) ra=187.236825 dec=3.571632 RA=12:28:56.84 DEC=+03:34:17.87 GaiaG=17.06 r_arcsec=2.94 | plx=2.071±0.099 mas (SNR=20.8) | pm=23.18±0.18 mas/yr (SNR=131.7) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3706835541302245248 (GAIA J122856.91+033512.7) ra=187.237119 dec=3.586863 RA=12:28:56.91 DEC=+03:35:12.71 GaiaG=18.57 r_arcsec=2.50 | plx=-0.035±0.233 mas (SNR=-0.1) | pm=6.46±0.33 mas/yr (SNR=19.3) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3706835330847890816 (GAIA J122901.20+033424.8) ra=187.255008 dec=3.573564 RA=12:29:01.20 DEC=+03:34:24.83 GaiaG=19.41 r_arcsec=2.50 | plx=0.323±0.405 mas (SNR=0.8) | pm=5.19±0.60 mas/yr (SNR=8.7) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3706835433927109888 (GAIA J122902.72+033454.6) ra=187.261347 dec=3.581840 RA=12:29:02.72 DEC=+03:34:54.62 GaiaG=19.75 r_arcsec=2.50 | plx=-0.652±0.474 mas (SNR=-1.4) | pm=2.29±0.70 mas/yr (SNR=3.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=302 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J122903.75+033326.5) ra=187.265622 dec=3.557371 RA=12:29:03.75 DEC=+03:33:26.53 r_arcsec=3.00 ext=1.175 Nr=3 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4457_mask.fits (shape=(725, 725), masked=2851 px; stars=4, galaxies=1)
+[OK] Wrote NGC4457_combined_R_mask.png
+[TIME] NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.33
+[FOV] NGC4501: nx=1205 ny=1236 pixscale=0.2000"/pix rad=3.041 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3932950859178905216 (GAIA J123201.21+142337.0) ra=188.005046 dec=14.393613 RA=12:32:01.21 DEC=+14:23:37.01 GaiaG=20.04 r_arcsec=2.50 | plx=0.644±0.625 mas (SNR=1.0) | pm=10.43±0.99 mas/yr (SNR=10.5) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932952272216305920 (GAIA J123205.49+142335.5) ra=188.022858 dec=14.393198 RA=12:32:05.49 DEC=+14:23:35.51 GaiaG=20.62 r_arcsec=2.50 | plx=-2.034±2.138 mas (SNR=-1.0) | pm=18.95±2.62 mas/yr (SNR=7.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932952340935999872 (GAIA J123202.80+142342.2) ra=188.011677 dec=14.395067 RA=12:32:02.80 DEC=+14:23:42.24 GaiaG=20.56 r_arcsec=2.50 | plx=0.515±0.896 mas (SNR=0.6) | pm=19.14±1.35 mas/yr (SNR=14.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932952272216859648 (GAIA J123204.61+142315.4) ra=188.019225 dec=14.387615 RA=12:32:04.61 DEC=+14:23:15.41 GaiaG=16.19 r_arcsec=3.89 | plx=1.070±0.059 mas (SNR=18.3) | pm=2.70±0.10 mas/yr (SNR=27.2) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932952272216859776 (GAIA J123204.75+142315.8) ra=188.019782 dec=14.387735 RA=12:32:04.75 DEC=+14:23:15.84 GaiaG=15.16 r_arcsec=5.64 | plx=0.862±0.034 mas (SNR=25.5) | pm=2.91±0.06 mas/yr (SNR=52.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932964332485030656 (GAIA J123205.06+142708.6) ra=188.021088 dec=14.452400 RA=12:32:05.06 DEC=+14:27:08.64 GaiaG=18.89 r_arcsec=2.50 | plx=0.224±0.270 mas (SNR=0.8) | pm=10.77±0.40 mas/yr (SNR=27.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932964401203975040 (GAIA J123155.51+142613.4) ra=187.981275 dec=14.437048 RA=12:31:55.51 DEC=+14:26:13.37 GaiaG=18.43 r_arcsec=2.50 | plx=0.317±0.194 mas (SNR=1.6) | pm=9.47±0.28 mas/yr (SNR=33.5) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932964332485030528 (GAIA J123205.26+142700.0) ra=188.021905 dec=14.449998 RA=12:32:05.26 DEC=+14:27:00.00 GaiaG=19.04 r_arcsec=2.50 | plx=1.110±0.328 mas (SNR=3.4) | pm=28.67±0.47 mas/yr (SNR=61.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932962648857846400 (GAIA J123152.75+142351.7) ra=187.969795 dec=14.397685 RA=12:31:52.75 DEC=+14:23:51.67 GaiaG=19.12 r_arcsec=2.50 | plx=-0.264±0.294 mas (SNR=-0.9) | pm=8.39±0.42 mas/yr (SNR=20.0) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=608 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J123202.63+142652.0) ra=188.010966 dec=14.447781 RA=12:32:02.63 DEC=+14:26:52.01 r_arcsec=3.00 ext=0.731 Nr=10 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4501_mask.fits (shape=(1236, 1205), masked=6657 px; stars=9, galaxies=1)
+[OK] Wrote NGC4501_combined_R_mask.png
+[TIME] NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=12.06
+[FOV] NGC4522: nx=590 ny=659 pixscale=0.2000"/pix rad=1.639 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3902903718940838016 (GAIA J123338.29+091014.0) ra=188.409550 dec=9.170542 RA=12:33:38.29 DEC=+09:10:13.95 GaiaG=20.69 r_arcsec=2.50 | plx=1.379±0.970 mas (SNR=1.4) | pm=25.76±1.45 mas/yr (SNR=17.8) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3902903753300361600 (GAIA J123340.12+091039.4) ra=188.417170 dec=9.177608 RA=12:33:40.12 DEC=+09:10:39.39 GaiaG=19.60 r_arcsec=2.50 | plx=0.102±0.416 mas (SNR=0.2) | pm=5.98±0.65 mas/yr (SNR=9.2) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3902903783365171840 (GAIA J123336.33+091042.6) ra=188.401359 dec=9.178495 RA=12:33:36.33 DEC=+09:10:42.58 GaiaG=19.58 r_arcsec=2.50 | plx=0.361±0.441 mas (SNR=0.8) | pm=14.92±0.60 mas/yr (SNR=24.8) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=141 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J123339.14+091133.2) ra=188.413069 dec=9.192550 RA=12:33:39.14 DEC=+09:11:33.18 r_arcsec=3.00 ext=0.605 Nr=24 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4522_mask.fits (shape=(659, 590), masked=2181 px; stars=3, galaxies=1)
+[OK] Wrote NGC4522_combined_R_mask.png
+[TIME] NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.37
+[FOV] NGC4567_8: nx=971 ny=1059 pixscale=0.2000"/pix rad=2.559 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3904332701806127488 (GAIA J123635.52+111451.2) ra=189.147989 dec=11.247553 RA=12:36:35.52 DEC=+11:14:51.19 GaiaG=19.06 r_arcsec=2.50 | plx=0.606±0.316 mas (SNR=1.9) | pm=31.07±0.49 mas/yr (SNR=62.8) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332671739848192 (GAIA J123634.29+111419.8) ra=189.142866 dec=11.238829 RA=12:36:34.29 DEC=+11:14:19.78 GaiaG=17.94 r_arcsec=2.50 | plx=-0.660±0.237 mas (SNR=-2.8) | pm=2.00±0.45 mas/yr (SNR=4.5) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332667447448448 (GAIA J123632.81+111419.8) ra=189.136715 dec=11.238829 RA=12:36:32.81 DEC=+11:14:19.78 GaiaG=19.14 r_arcsec=2.50 | plx=0.482±0.331 mas (SNR=1.5) | pm=6.57±0.58 mas/yr (SNR=11.4) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332701806139776 (GAIA J123637.01+111437.4) ra=189.154219 dec=11.243717 RA=12:36:37.01 DEC=+11:14:37.38 GaiaG=18.75 r_arcsec=2.50 | plx=0.156±0.253 mas (SNR=0.6) | pm=12.95±0.39 mas/yr (SNR=32.8) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332465582135808 (GAIA J123636.79+111320.4) ra=189.153280 dec=11.222327 RA=12:36:36.79 DEC=+11:13:20.38 GaiaG=18.95 r_arcsec=2.50 | plx=1.226±0.272 mas (SNR=4.5) | pm=20.11±0.45 mas/yr (SNR=44.6) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332706099725184 (GAIA J123638.33+111443.3) ra=189.159693 dec=11.245370 RA=12:36:38.33 DEC=+11:14:43.33 GaiaG=20.51 r_arcsec=2.50 | plx=-0.108±0.991 mas (SNR=-0.1) | pm=14.33±1.66 mas/yr (SNR=8.7) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332499941367168 (GAIA J123638.29+111348.1) ra=189.159547 dec=11.230036 RA=12:36:38.29 DEC=+11:13:48.13 GaiaG=20.72 r_arcsec=2.50 | plx=0.420±1.778 mas (SNR=0.2) | pm=12.85±1.95 mas/yr (SNR=6.6) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332358208728576 (GAIA J123633.74+111328.1) ra=189.140564 dec=11.224485 RA=12:36:33.74 DEC=+11:13:28.15 GaiaG=18.97 r_arcsec=2.50 | plx=1.635±0.340 mas (SNR=4.8) | pm=36.44±0.57 mas/yr (SNR=63.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332495646225664 (GAIA J123638.19+111412.6) ra=189.159137 dec=11.236839 RA=12:36:38.19 DEC=+11:14:12.62 GaiaG=19.01 r_arcsec=2.50 | plx=1.730±0.313 mas (SNR=5.5) | pm=22.60±0.49 mas/yr (SNR=45.9) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=436 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=4 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J123635.65+111417.3) ra=189.148543 dec=11.238138 RA=12:36:35.65 DEC=+11:14:17.30 r_arcsec=3.00 ext=0.997 Nr=20 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4567_8_mask.fits (shape=(1059, 971), masked=5136 px; stars=9, galaxies=1)
+[OK] Wrote NGC4567_8_combined_R_mask.png
+[TIME] NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=12.00
+[FOV] NGC4580: nx=647 ny=619 pixscale=0.2000"/pix rad=1.657 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3707538575907257472 (GAIA J123751.50+052243.7) ra=189.464599 dec=5.378806 RA=12:37:51.50 DEC=+05:22:43.70 GaiaG=20.58 r_arcsec=2.50 | plx=-0.236±1.025 mas (SNR=-0.2) | pm=40.34±1.47 mas/yr (SNR=27.4) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3707538468533861376 (GAIA J123748.56+052217.4) ra=189.452331 dec=5.371487 RA=12:37:48.56 DEC=+05:22:17.35 GaiaG=18.82 r_arcsec=2.50 | plx=0.173±0.289 mas (SNR=0.6) | pm=16.26±0.43 mas/yr (SNR=37.7) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3707538571614801024 (GAIA J123750.56+052228.8) ra=189.460646 dec=5.374663 RA=12:37:50.56 DEC=+05:22:28.79 GaiaG=20.15 r_arcsec=2.50 | plx=0.239±0.746 mas (SNR=0.3) | pm=38.04±1.37 mas/yr (SNR=27.8) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3707538434175843200 (GAIA J123745.88+052159.8) ra=189.441154 dec=5.366601 RA=12:37:45.88 DEC=+05:21:59.76 GaiaG=20.38 r_arcsec=2.50 | plx=-0.718±0.917 mas (SNR=-0.8) | pm=5.46±1.61 mas/yr (SNR=3.4) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=360 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4580_mask.fits (shape=(619, 647), masked=1963 px; stars=4, galaxies=0)
+[OK] Wrote NGC4580_combined_R_mask.png
+[TIME] NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.39
+[FOV] NGC4606: nx=434 ny=435 pixscale=0.2000"/pix rad=1.188 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3928479699433087104 (GAIA J124056.75+115411.6) ra=190.236476 dec=11.903212 RA=12:40:56.75 DEC=+11:54:11.56 GaiaG=13.13 r_arcsec=12.83 | plx=1.487±0.038 mas (SNR=39.2) | pm=23.93±0.07 mas/yr (SNR=367.8) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3928479699433087360 (GAIA J124057.44+115424.8) ra=190.239349 dec=11.906892 RA=12:40:57.44 DEC=+11:54:24.81 GaiaG=18.30 r_arcsec=2.50 | plx=2.412±0.194 mas (SNR=12.5) | pm=35.19±0.33 mas/yr (SNR=106.8) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3928483028032866688 (GAIA J124055.55+115515.1) ra=190.231467 dec=11.920868 RA=12:40:55.55 DEC=+11:55:15.12 GaiaG=18.02 r_arcsec=2.50 | plx=0.414±0.145 mas (SNR=2.9) | pm=7.75±0.25 mas/yr (SNR=31.1) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3928483028033282688 (GAIA J124058.03+115516.5) ra=190.241798 dec=11.921242 RA=12:40:58.03 DEC=+11:55:16.47 GaiaG=20.58 r_arcsec=2.50 | plx=3.826±1.125 mas (SNR=3.4) | pm=21.98±2.20 mas/yr (SNR=10.0) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=93 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4606_mask.fits (shape=(435, 434), masked=14398 px; stars=4, galaxies=0)
+[OK] Wrote NGC4606_combined_R_mask.png
+[TIME] NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.19
+[FOV] NGC4694: nx=439 ny=441 pixscale=0.2000"/pix rad=1.201 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3927389155697596800 (GAIA J124816.55+105912.4) ra=192.068946 dec=10.986765 RA=12:48:16.55 DEC=+10:59:12.35 GaiaG=17.40 r_arcsec=2.66 | plx=0.483±0.093 mas (SNR=5.2) | pm=15.84±0.15 mas/yr (SNR=106.3) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=350 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J124817.63+105902.8) ra=192.073467 dec=10.984103 RA=12:48:17.63 DEC=+10:59:02.77 r_arcsec=3.00 ext=1.085 Nr=11 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4694_mask.fits (shape=(441, 439), masked=1259 px; stars=1, galaxies=1)
+[OK] Wrote NGC4694_combined_R_mask.png
+[TIME] NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.17
+[FOV] NGC4698: nx=608 ny=1189 pixscale=0.2000"/pix rad=2.390 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.02 mas & SNR≥3.0 OR pm≥0.2 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3710604800306419072 (GAIA J124825.20+082844.8) ra=192.105001 dec=8.479107 RA=12:48:25.20 DEC=+08:28:44.78 GaiaG=19.03 r_arcsec=2.50 | plx=0.324±0.243 mas (SNR=1.3) | pm=4.67±0.43 mas/yr (SNR=10.9) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710605212623288832 (GAIA J124826.68+083001.0) ra=192.111160 dec=8.500290 RA=12:48:26.68 DEC=+08:30:01.04 GaiaG=18.50 r_arcsec=2.50 | plx=0.082±0.157 mas (SNR=0.5) | pm=1.89±0.28 mas/yr (SNR=6.8) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710604598442517632 (GAIA J124826.91+082801.7) ra=192.112126 dec=8.467139 RA=12:48:26.91 DEC=+08:28:01.70 GaiaG=19.84 r_arcsec=2.50 | plx=0.360±0.390 mas (SNR=0.9) | pm=4.37±0.72 mas/yr (SNR=6.1) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710604559789059456 (GAIA J124823.61+082804.5) ra=192.098378 dec=8.467905 RA=12:48:23.61 DEC=+08:28:04.46 GaiaG=20.87 r_arcsec=2.50 | plx=-1.232±1.691 mas (SNR=-0.7) | pm=13.71±3.46 mas/yr (SNR=4.0) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710604800306390528 (GAIA J124821.76+082835.6) ra=192.090682 dec=8.476543 RA=12:48:21.76 DEC=+08:28:35.55 GaiaG=20.82 r_arcsec=2.50 | plx=2.671±1.585 mas (SNR=1.7) | pm=11.07±3.11 mas/yr (SNR=3.6) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710652285463135232 (GAIA J124821.10+083118.2) ra=192.087931 dec=8.521731 RA=12:48:21.10 DEC=+08:31:18.23 GaiaG=11.32 r_arcsec=26.00 | plx=4.070±0.079 mas (SNR=51.7) | pm=57.80±0.15 mas/yr (SNR=394.5) | foreground because PARALLAX: plx≥0.02 mas and SNR≥3.0 OR PM: pm≥0.2 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710605285636049920 (GAIA J124825.49+083005.7) ra=192.106211 dec=8.501580 RA=12:48:25.49 DEC=+08:30:05.69 GaiaG=20.31 r_arcsec=2.50 | plx=0.233±0.589 mas (SNR=0.4) | pm=4.38±1.11 mas/yr (SNR=3.9) | foreground because PM: pm≥0.2 mas/yr and SNR≥3.0
+[NED] N=712 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=0 cols=None
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[GAL] ? (PS1 J124826.35+082955.5) ra=192.109772 dec=8.498754 RA=12:48:26.35 DEC=+08:29:55.51 r_arcsec=3.00 ext=1.331 Nr=16 Qual=53
+[GAL] ? (PS1 J124825.87+083020.8) ra=192.107797 dec=8.505779 RA=12:48:25.87 DEC=+08:30:20.81 r_arcsec=3.00 ext=1.028 Nr=18 Qual=53
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4698_mask.fits (shape=(1189, 608), masked=18557 px; stars=7, galaxies=2)
+[OK] Wrote NGC4698_combined_R_mask.png
+[TIME] NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits runtime_s=11.49
+[TIME] total runtime_s=291.44
+=== v3tk masking run end:   2026-01-09T12:45:08 ===

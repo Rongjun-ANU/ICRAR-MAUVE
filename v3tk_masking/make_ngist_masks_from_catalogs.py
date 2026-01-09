@@ -107,10 +107,9 @@ class Config:
     exclude_center_arcsec: float = 0.0
 
     # PS1(VizieR) quality cuts (to avoid spurious detections / bad photometry).
-    # These are intentionally conservative; relax if you miss too many background galaxies.
-    # VERY STRICT preset (few galaxies, minimal false positives)
-    ps1_min_Nr: int = 3
-    ps1_e_mag_max: float = 0.10
+    # Defaults are "looser but still sane" (tune as needed).
+    ps1_min_Nr: int = 2
+    ps1_e_mag_max: float = 0.20
 
     # PS1(VizieR) qualityFlag (Qual) bitmask filtering (see II/349 ReadMe, Note 3)
     #  1: extended in our data
@@ -129,7 +128,7 @@ class Config:
     # Optional very-strict color cuts to reduce contamination from compact blue
     # sources in the target galaxy (HII regions / some PNe). This will also drop
     # some real blue background galaxies.
-    ps1_enable_color_cuts: bool = False
+    ps1_enable_color_cuts: bool = True
     ps1_g_r_min: float = 0.2
     ps1_r_i_min: float = 0.0
 
@@ -146,14 +145,19 @@ class Config:
     star_r_max_arcsec: float = 25.0
 
     # galaxy-like selection (Pan-STARRS): extended if (PSF - Kron) > threshold
-    ps1_ext_thresh: float = 0.40
+    ps1_ext_thresh: float = 0.25
     # Upper bound to guard against pathological photometry (blends/saturation can
     # produce huge PSF-Kron differences that are not real galaxies).
     ps1_ext_max: float = 1.5
     ps1_rmag_max: float = 22.0              # ignore very faint objects (optional)
-    ps1_require_ri_extended: bool = True    # if i-band mags exist, require extendedness in both r and i
+    ps1_require_ri_extended: bool = False    # if i-band mags exist, require extendedness in both r and i
     gal_r_min_arcsec: float = 2.0
     gal_r_max_arcsec: float = 30.0
+
+    # Photometric fallback when no cz/z evidence exists (PS1/SkyMapper)
+    ps1_allow_photometric_fallback: bool = True
+    ps1_fallback_ext_min: float = 0.6
+    ps1_fallback_rmag_max: float = 21.0
 
     # Reject PS1 objects that coincide with Gaia sources (usually stars / blends)
     # so we don't double-count stars as "background galaxies".
@@ -191,6 +195,13 @@ class Config:
     sdss_petro_r90_scale: float = 1.2
     sdss_petro_r50_scale: float = 1.8
     sdss_model_radius_scale: float = 3.0
+
+    # Photometric fallback when no cz/z evidence exists (SDSS)
+    sdss_allow_photometric_fallback: bool = False
+    sdss_fallback_dmag_min: float = 0.30
+    sdss_fallback_petroR90_min_arcsec: float = 2.0
+    sdss_fallback_petroR90_max_arcsec: float = 8.0
+    sdss_fallback_rmag_max: float = 21.0
 
     # If a candidate has a confirmed high redshift, it is typically PSF-limited at MUSE resolution.
     # In that case, ignore SDSS size proxies and use a seeing-based radius.
@@ -1179,7 +1190,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     )
                     if bg is True:
                         pass  # mask
-                    else:
+                    elif bg is None:
                         # --- fallback for unknown distance: mask only VERY extended and bright ---
                         # (tune these to taste)
                         if psf_col and kron_col:
@@ -1191,8 +1202,17 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 
                         rmag = _to_float_or_nan(gal_tab[r_psf_col][i]) if r_psf_col else np.inf
 
-                        if not (float(ext) > 0.8 and float(rmag) < 20.0):
+                        if not bool(getattr(cfg, "ps1_allow_photometric_fallback", True)):
                             continue
+
+                        if not (
+                            float(ext) > float(getattr(cfg, "ps1_fallback_ext_min", 0.8))
+                            and float(rmag) < float(getattr(cfg, "ps1_fallback_rmag_max", 20.0))
+                        ):
+                            continue
+                    else:
+                        # cz says Virgo/nearby (or otherwise not definitely background) -> do not mask
+                        continue
                 # Fallback: old Virgo-distance veto (kept for compatibility if new flag is disabled)
                 elif ned_sky is not None and cfg.virgo_match_arcsec > 0:
                     try:
@@ -1577,7 +1597,30 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                             ned_sky=ned_sky,
                             ned_tab=ned_tab,
                         )
-                        if bg is not True:
+                        if bg is True:
+                            pass
+                        elif bg is None:
+                            # Optional SDSS photometric fallback (parallel to PS1 fallback)
+                            if not bool(getattr(cfg, "sdss_allow_photometric_fallback", False)):
+                                continue
+
+                            psf = _get_col_float(sdss_tab[i], "psfMag_r")
+                            mod = _get_col_float(sdss_tab[i], "modelMag_r")
+                            dmag = (float(psf) - float(mod)) if (psf is not None and mod is not None) else None
+                            r90 = _get_col_float(sdss_tab[i], "petroR90_r")
+
+                            mag_ok = (mod is not None and float(mod) < float(getattr(cfg, "sdss_fallback_rmag_max", 21.0)))
+                            morph_ok = (dmag is not None and float(dmag) >= float(getattr(cfg, "sdss_fallback_dmag_min", 0.30)))
+                            size_ok = (
+                                r90 is not None
+                                and float(r90) >= float(getattr(cfg, "sdss_fallback_petroR90_min_arcsec", 2.0))
+                                and float(r90) <= float(getattr(cfg, "sdss_fallback_petroR90_max_arcsec", float("inf")))
+                            )
+
+                            if not (mag_ok and morph_ok and size_ok):
+                                continue
+                        else:
+                            # cz says Virgo/nearby (or otherwise not definitely background) -> do not mask
                             continue
                     # Fallback: old Virgo-distance veto
                     elif ned_sky is not None and cfg.virgo_match_arcsec > 0:
