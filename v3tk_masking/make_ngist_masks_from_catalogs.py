@@ -74,6 +74,12 @@ try:
 except Exception:
     SDSS = None
 
+# Optional: NOIRLab Astro Data Lab TAP queries (Legacy Surveys DR9)
+try:
+    import pyvo
+except Exception:
+    pyvo = None
+
 
 @dataclass
 class Config:
@@ -213,6 +219,31 @@ class Config:
     sdss_reject_if_near_gaia_arcsec: float = 0.8
     # Only use SDSS stars if Gaia returns no stars (fallback classifier)
     sdss_star_fallback: bool = True
+
+    # === Legacy Surveys DR9 background-galaxy masking (default first-pass) ===
+    enable_legacy: bool = True
+
+    # Photo-z gating: require lower 68% bound above this redshift
+    legacy_z_l68_min: float = 0.01
+
+    # Masking size model
+    # Legacy sizing policy:
+    # - Prefer Tractor intrinsic size (shape_r) when available.
+    # - Enforce a minimum (legacy_r_min_arcsec).
+    # - Only fall back to seeing when shape_r is missing/invalid.
+    legacy_use_ellipses: bool = True        # use shape_e1/e2 when available
+    legacy_r_min_arcsec: float = 1.0        # floor on Legacy semi-major/minor axes
+    legacy_shape_r_scale: float = 1.0       # "just use it" by default (shape_r is already angular)
+    legacy_reject_if_near_gaia_arcsec: float = 0.8
+    # Optional separate Legacy cap (independent from global gal_r_max_arcsec)
+    legacy_r_max_arcsec: float = 15.0
+    # Only used when shape_r is missing/invalid
+    legacy_seeing_scale: float = 1.0        # multiply fwhm_arcsec by this
+
+    # Data Lab TAP settings (table names may vary; keep configurable)
+    legacy_tap_url: str = "https://datalab.noirlab.edu/tap"
+    legacy_tractor_table: str = "ls_dr9.tractor"
+    legacy_photoz_table: str = "ls_dr9.photo_z"
 
     # === Evidence-based galaxy masking ===
     # Only mask galaxies when spectroscopic redshift confirms they are NOT at Virgo distance
@@ -649,6 +680,166 @@ def _get_col_float(row, name: str):
         return None
 
 
+def _as_str(x) -> str:
+    if x is None:
+        return ""
+    if isinstance(x, (bytes, bytearray)):
+        try:
+            return x.decode(errors="ignore")
+        except Exception:
+            return ""
+    return str(x)
+
+
+def query_legacy_dr9_tractor_and_photoz(center: SkyCoord, radius: u.Quantity, cfg: Config):
+    """Query Legacy Surveys DR9 via NOIRLab Data Lab TAP.
+
+        Returns an astropy Table joined via `ls_id` with columns:
+            ls_id, ra, dec, type, release, brickid, objid, z_phot_l68, z_phot_u68, z_phot_mean
+        and (optionally) shape_r, shape_e1, shape_e2 if present.
+
+    If TAP/pyvo/tables are unavailable, returns None.
+    """
+
+    if not bool(getattr(cfg, "enable_legacy", True)):
+        return None
+    if pyvo is None:
+        print("WARNING: pyvo not available; skipping Legacy DR9 TAP queries.")
+        return None
+
+    rad_deg = float(radius.to_value(u.deg))
+    ra0 = float(center.ra.deg)
+    dec0 = float(center.dec.deg)
+
+    def _tap_service():
+        # Reuse service across calls to reduce overhead.
+        if not hasattr(_tap_service, "svc"):
+            _tap_service.svc = pyvo.dal.TAPService(str(getattr(cfg, "legacy_tap_url", "https://datalab.noirlab.edu/tap")))
+        return _tap_service.svc
+
+    def _run_sync(query: str, maxrec: int | None = None):
+        # NOIRLab Data Lab TAP behaves like a SQL endpoint (JSQLParser + Postgres).
+        # `run_sync` provides a clean maxrec cap.
+        if maxrec is None:
+            return _tap_service().run_sync(query).to_table()
+        return _tap_service().run_sync(query, maxrec=int(maxrec)).to_table()
+
+    # 1) tractor-like table (morphology/type + potential sizes)
+    tractor_table = str(getattr(cfg, "legacy_tractor_table", "ls_dr9.tractor"))
+
+    # NOTE: This particular service supports `q3c_radial_query` but (in practice)
+    # does not accept ADQL POINT/CIRCLE geometry functions.
+    # Also, its SQL parser does not handle boolean literals well, so we compare
+    # the boolean-returning function to the Postgres-friendly string 't'.
+    tractor_q_with_shape = f"""
+    SELECT ls_id, ra, dec, type, release, brickid, objid,
+           shape_r, shape_e1, shape_e2
+    FROM {tractor_table}
+    WHERE q3c_radial_query(ra, dec, {ra0}, {dec0}, {rad_deg}) = 't'
+    """.strip()
+    tractor_q_min = f"""
+    SELECT ls_id, ra, dec, type, release, brickid, objid
+    FROM {tractor_table}
+    WHERE q3c_radial_query(ra, dec, {ra0}, {dec0}, {rad_deg}) = 't'
+    """.strip()
+
+    ttab = None
+    tractor_err = None
+    try:
+        try:
+            ttab = _run_sync(tractor_q_with_shape, maxrec=20000)
+        except Exception:
+            ttab = _run_sync(tractor_q_min, maxrec=20000)
+    except Exception as e:
+        tractor_err = e
+        ttab = None
+
+    if ttab is None:
+        print(f"WARNING: Legacy tractor TAP query failed: {tractor_err}")
+        return None
+
+    if ttab is None or len(ttab) == 0:
+        return None
+
+    # 2) photo-z table (z columns). NOTE: `ls_dr9.photo_z` does not expose ra/dec,
+    # so we join via `ls_id`.
+    photoz_table = str(getattr(cfg, "legacy_photoz_table", "ls_dr9.photo_z"))
+
+    ls_ids = []
+    for r in ttab:
+        try:
+            ls_ids.append(int(r["ls_id"]))
+        except Exception:
+            continue
+    if len(ls_ids) == 0:
+        return None
+
+    pkey = {}
+    last_err = None
+    # Chunk the IN-list to avoid overlong queries.
+    for i0 in range(0, len(ls_ids), 500):
+        chunk = ls_ids[i0 : i0 + 500]
+        in_list = ",".join(str(int(x)) for x in chunk)
+        q = f"""
+        SELECT ls_id,
+               z_phot_l68 AS z_phot_l68,
+               z_phot_u68 AS z_phot_u68,
+               z_phot_mean AS z_phot_mean
+        FROM {photoz_table}
+        WHERE ls_id IN ({in_list})
+        """.strip()
+        try:
+            ptab = _run_sync(q, maxrec=20000)
+            last_err = None
+        except Exception as e:
+            last_err = e
+            continue
+        for pr in ptab:
+            try:
+                pkey[int(pr["ls_id"])] = pr
+            except Exception:
+                continue
+
+    if len(pkey) == 0:
+        print(f"WARNING: Legacy photo-z TAP query failed: {last_err}")
+        return None
+
+    rows = []
+    for r in ttab:
+        try:
+            lid = int(r["ls_id"])
+        except Exception:
+            continue
+        pr = pkey.get(lid)
+        if pr is None:
+            continue
+        rows.append((r, pr))
+
+    if len(rows) == 0:
+        return None
+
+    from astropy.table import Table
+
+    out = Table()
+    out["ls_id"] = [int(r["ls_id"]) for r, _ in rows]
+    out["ra"] = [float(r["ra"]) for r, _ in rows]
+    out["dec"] = [float(r["dec"]) for r, _ in rows]
+    out["type"] = [_as_str(r["type"]).strip() for r, _ in rows]
+    out["release"] = [int(r["release"]) for r, _ in rows]
+    out["brickid"] = [int(r["brickid"]) for r, _ in rows]
+    out["objid"] = [int(r["objid"]) for r, _ in rows]
+
+    for c in ["shape_r", "shape_e1", "shape_e2"]:
+        if c in ttab.colnames:
+            out[c] = [r[c] for r, _ in rows]
+
+    out["z_phot_l68"] = [float(p["z_phot_l68"]) for _, p in rows]
+    out["z_phot_u68"] = [float(p["z_phot_u68"]) for _, p in rows]
+    out["z_phot_mean"] = [float(p["z_phot_mean"]) for _, p in rows]
+
+    return out
+
+
 def sdss_is_pointlike(row, cfg: Config) -> bool:
     psf = _get_col_float(row, "psfMag_r")
     mod = _get_col_float(row, "modelMag_r")
@@ -1036,11 +1227,129 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     gal_tab = None
     gal_catalog = None
     n_gal_masked = 0
+    legacy_success = False
+
+    # ---------- Legacy Surveys DR9 photo-z-gated background objects (DEFAULT first-pass) ----------
+    if bool(getattr(cfg, "enable_legacy", True)):
+        legacy = query_legacy_dr9_tractor_and_photoz(center, rad, cfg)
+        if legacy is not None and len(legacy) > 0:
+            n_gal_before_legacy = int(n_gal_masked)
+            try:
+                print(f"[LEGACY] N(joined)={len(legacy)} cols={list(legacy.colnames)}")
+            except Exception:
+                pass
+
+            legacy_sky = SkyCoord(
+                ra=np.array(legacy["ra"], dtype=float) * u.deg,
+                dec=np.array(legacy["dec"], dtype=float) * u.deg,
+                frame="icrs",
+            )
+            xL, yL = w.world_to_pixel(legacy_sky)
+
+            for row, xi, yi, sc in zip(legacy, xL, yL, legacy_sky):
+                if not (np.isfinite(xi) and np.isfinite(yi)):
+                    continue
+                if exclude_center.value > 0 and sc.separation(center) < exclude_center:
+                    continue
+
+                typ = _as_str(row["type"]).strip().upper() if "type" in row.colnames else ""
+                z_l68 = _get_col_float(row, "z_phot_l68")
+                if z_l68 is None or (not np.isfinite(z_l68)):
+                    continue
+
+                # Rule: non-PSF AND lower-68% bound > threshold
+                if typ == "PSF":
+                    continue
+                if float(z_l68) <= float(getattr(cfg, "legacy_z_l68_min", 0.01)):
+                    continue
+
+                # Optional: reject Legacy detections sitting on Gaia point sources
+                # (often star halos / bad fits misclassified as extended)
+                if gaia_sky_for_ps1_reject is not None and float(getattr(cfg, "legacy_reject_if_near_gaia_arcsec", 0.0)) > 0:
+                    try:
+                        _, sepg, _ = sc.match_to_catalog_sky(gaia_sky_for_ps1_reject)
+                        if sepg < (float(cfg.legacy_reject_if_near_gaia_arcsec) * u.arcsec):
+                            continue
+                    except Exception:
+                        pass
+
+                sr = _get_col_float(row, "shape_r")
+                e1 = _get_col_float(row, "shape_e1")
+                e2 = _get_col_float(row, "shape_e2")
+
+                # --- Choose intrinsic size ---
+                if sr is not None and np.isfinite(sr) and float(sr) > 0:
+                    a_arcsec = float(cfg.legacy_shape_r_scale) * float(sr)
+                    a_arcsec = max(float(cfg.legacy_r_min_arcsec), a_arcsec)
+
+                    if bool(getattr(cfg, "legacy_use_ellipses", False)) and (e1 is not None) and (e2 is not None) and np.isfinite(e1) and np.isfinite(e2):
+                        e = float(np.hypot(float(e1), float(e2)))
+                        e = float(np.clip(e, 0.0, 0.85))
+                        q = (1.0 - e) / (1.0 + e)  # axis ratio b/a
+                        q = float(np.clip(q, 0.2, 1.0))
+                        b_arcsec = max(float(cfg.legacy_r_min_arcsec), a_arcsec * q)
+                        angle_deg = float(np.degrees(0.5 * np.arctan2(float(e2), float(e1))))
+                    else:
+                        b_arcsec = a_arcsec
+                        angle_deg = 0.0
+                else:
+                    # No Tractor size -> fall back to seeing (but still respect the 1" floor)
+                    a_arcsec = float(getattr(cfg, "legacy_seeing_scale", 1.0)) * float(cfg.fwhm_arcsec)
+                    a_arcsec = max(float(cfg.legacy_r_min_arcsec), a_arcsec)
+                    b_arcsec = a_arcsec
+                    angle_deg = 0.0
+
+                # --- Apply caps (optional separate Legacy cap; otherwise use global) ---
+                rmax = float(getattr(cfg, "legacy_r_max_arcsec", cfg.gal_r_max_arcsec))
+                a_arcsec = float(np.clip(a_arcsec, float(cfg.legacy_r_min_arcsec), rmax))
+                b_arcsec = float(np.clip(b_arcsec, float(cfg.legacy_r_min_arcsec), rmax))
+
+                # --- Add padding margin ---
+                a_arcsec += float(cfg.gaia_margin_arcsec)
+                b_arcsec += float(cfg.gaia_margin_arcsec)
+
+                a_pix = a_arcsec / float(pixscale)
+                b_pix = b_arcsec / float(pixscale)
+
+                # Skip if it does not touch the FITS image at all
+                if bool(getattr(cfg, "legacy_use_ellipses", False)) and (abs(float(a_arcsec) - float(b_arcsec)) > 1e-6):
+                    if not ellipse_intersects_fov(float(xi), float(yi), float(a_pix), float(b_pix), nx, ny):
+                        continue
+                    rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg)
+                    y_plot = (ny - 1 - yi) if use_png_bg else yi
+                    angle_plot = (-angle_deg) if use_png_bg else angle_deg
+                    gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
+                else:
+                    r_pix = float(max(a_pix, b_pix))
+                    if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
+                        continue
+                    rasterize_circle(mask, xi, yi, r_pix)
+                    y_plot = (ny - 1 - yi) if use_png_bg else yi
+                    gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
+                n_gal_masked += 1
+
+                if cfg.log_each_galaxy:
+                    ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
+                    legacy_iau = iau_coord_name("LS", sc, ra_precision=2, dec_precision=1)
+                    print(
+                        f"[GAL][LEGACY] ({legacy_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                        f"RA={ra_hms} DEC={dec_dms} type={typ} z_l68={float(z_l68):.3f} "
+                        f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" pa={float(angle_deg):.1f}"
+                    )
+
+            legacy_success = bool(n_gal_masked > n_gal_before_legacy)
+            if legacy_success:
+                print("[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.")
+        else:
+            print("[LEGACY] No DR9 photo-z-gated objects found (or query unavailable).")
 
     # Optional: NED crossmatch for redshift-based background determination
     ned_tab = None
     ned_sky = None
-    if bool(getattr(cfg, "enable_virgo_distance_veto", False)) or bool(getattr(cfg, "require_nonvirgo_confirmation_for_galaxy_mask", False)):
+    if (not legacy_success) and (
+        bool(getattr(cfg, "enable_virgo_distance_veto", False))
+        or bool(getattr(cfg, "require_nonvirgo_confirmation_for_galaxy_mask", False))
+    ):
         ned_tab = query_ned_redshifts(center, rad)
         try:
             if ned_tab is not None and len(ned_tab) > 0 and "RA" in ned_tab.colnames and "DEC" in ned_tab.colnames:
@@ -1049,12 +1358,13 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             ned_sky = None
 
     try:
-        print(f"[NED] N={0 if ned_tab is None else len(ned_tab)} cols={None if ned_tab is None else ned_tab.colnames}")
+        if not legacy_success:
+            print(f"[NED] N={0 if ned_tab is None else len(ned_tab)} cols={None if ned_tab is None else ned_tab.colnames}")
     except Exception:
         pass
 
     # SDSS spectroscopy table (has redshifts; preferred for evidence-based masking)
-    sdss_spec_tab = query_sdss_spectro(center, rad, cfg) if bool(getattr(cfg, "enable_sdss", True)) else None
+    sdss_spec_tab = query_sdss_spectro(center, rad, cfg) if ((not legacy_success) and bool(getattr(cfg, "enable_sdss", True))) else None
     sdss_spec_sky = None
     if sdss_spec_tab is not None and len(sdss_spec_tab) > 0:
         ra_c = pick_first_existing_col(sdss_spec_tab, ["ra", "RA"])
@@ -1067,17 +1377,20 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             )
 
     try:
-        print(f"[SDSS-spec] N={0 if sdss_spec_tab is None else len(sdss_spec_tab)} cols={None if sdss_spec_tab is None else sdss_spec_tab.colnames}")
+        if not legacy_success:
+            print(
+                f"[SDSS-spec] N={0 if sdss_spec_tab is None else len(sdss_spec_tab)} cols={None if sdss_spec_tab is None else sdss_spec_tab.colnames}"
+            )
     except Exception:
         pass
 
-    if center.dec.deg >= -30:
+    if (not legacy_success) and center.dec.deg >= -30:
         gal_tab = query_ps1_galaxy_like(center, rad, cfg)
         if gal_tab is not None and len(gal_tab) > 0:
             gal_catalog = "PS1"
 
     # If PS1 failed/empty and SkyMapper is available, try SkyMapper (useful mainly in the south)
-    if (gal_tab is None or len(gal_tab) == 0) and center.dec.deg <= +28:
+    if (not legacy_success) and (gal_tab is None or len(gal_tab) == 0) and center.dec.deg <= +28:
         gal_tab = query_skymapper(center, rad)
         if gal_tab is not None and len(gal_tab) > 0:
             gal_catalog = "SkyMapper"
@@ -1495,7 +1808,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 print(f"[GAL] ... suppressed {n_gal_masked - gal_logged} more galaxy logs")
 
     # ---------- Supplemental galaxies from SDSS (if available) ----------
-    if bool(getattr(cfg, "enable_sdss", True)):
+    if (not legacy_success) and bool(getattr(cfg, "enable_sdss", True)):
         sdss_tab = query_sdss_photoobj(center, rad, cfg)
         if sdss_tab is not None and len(sdss_tab) > 0:
             if bool(getattr(cfg, "log_sdss_colnames", False)):
