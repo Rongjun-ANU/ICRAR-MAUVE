@@ -1,23 +1,140 @@
 #!/usr/bin/env python
+#!/usr/bin/env python
 """
-Create nGIST-compatible spatial masks from catalogs.
+nGIST-Compatible Spatial Masking Tool (v3tk)
 
-Inputs expected in the working directory (per galaxy XXX):
-  - XXX_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits   (2D image, WCS in HDU0)
-  - XXX_combined_R.png                               (optional, same pixel grid)
+This script generates binary spatial masks (FITS) and diagnostic overlays (PNG) for
+galaxy data cubes. It acts as a pre-processing step for nGIST or other analysis
+pipelines, automatically masking foreground stars and background galaxies while
+preserving the target galaxy structure.
+
+Usage:
+    python create_masks.py [pattern]
+    
+    If [pattern] is provided (e.g., "NGC*.fits"), it processes matching files.
+    Otherwise, it defaults to processing all "*_DATACUBE*_R.fits" files in the directory.
+
+--------------------------------------------------------------------------------
+I. FILE INPUTS & OUTPUTS
+--------------------------------------------------------------------------------
+Inputs (per galaxy XXX):
+  1. XXX_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_R.fits  (Required)
+     - 2D image or 3D cube (collapsed to 2D) used for WCS and dimensions.
+  2. XXX_combined_R.png                                (Optional)
+     - High-res visual reference. If present, used as background for diagnostic plots.
 
 Outputs:
-  - XXX_mask.fits                 (0=unmasked, 1=masked; same spatial dims as FITS)
-  - XXX_combined_R_mask.png       (overlay: green=Gaia stars, brown=galaxy-like)
+  1. XXX_mask.fits
+     - 0 = Unmasked (Target/Sky)
+     - 1 = Masked (Star/Background Galaxy)
+     - Same spatial WCS/dimensions as input FITS.
+  2. XXX_combined_R_mask.png
+     - Diagnostic overlay: Green circles = Stars, Brown ellipses/circles = Background objects.
+  3. v3tk_masking.log
+     - Detailed execution log capturing stdout/stderr.
 
-Notes:
-  - Gaia query: foreground stars (uses Gaia DR3 via astroquery.gaia)
-    - `G`/`GaiaG` in logs is Gaia DR3 `phot_g_mean_mag` (Gaia broad-band G magnitude).
-  - Galaxies: Pan-STARRS (MAST) if Dec >= -30 deg; otherwise tries SkyMapper DR4 (Vizier).
-  - You will probably still need to manually add a few artefact regions.
+--------------------------------------------------------------------------------
+II. MASKING ALGORITHM
+--------------------------------------------------------------------------------
+The script employs a hierarchical multi-catalog approach:
+
+1. FOREGROUND STARS (Gaia DR3)
+   - Library: astroquery.gaia
+   - Selection: "Foreground" mode by default.
+     - Uses Parallax and Proper Motion (PM) to identify Milky Way stars.
+     - Ignores stars lacking significant kinematic motion to avoid masking 
+       star clusters in the target galaxy (Virgo distance).
+   - Sizing: Power-law scaling based on Gaia G-magnitude.
+
+2. BACKGROUND GALAXIES (Layered Strategy)
+   The script attempts to mask background objects using the following priority:
+
+   A. Legacy Surveys DR9 (Preferred High-Fidelity Layer)
+      - Library: pyvo (NOIRLab Data Lab TAP)
+      - Selection: Objects with Photo-Z lower bound (z_l95) > 0.2.
+      - Sizing: Uses intrinsic Tractor elliptical shape measurements (shape_r/e1/e2).
+      - If found, subsequent fallbacks (C, D) are usually skipped.
+
+   B. Spectroscopic Confirmation (Evidence-Based Veto)
+      - Sources: SDSS SpecObj, NED.
+      - Logic: Checks spectroscopic redshift/velocity.
+        - If cz < 3500 km/s: Treated as Target/Virgo (NOT masked).
+        - If cz > 5000 km/s: Treated as Background (Masked).
+
+   C. Pan-STARRS (PS1) / SkyMapper (Photometric Fallback)
+      - Sources: MAST (PS1), VizieR (PS1 DR2 or SkyMapper DR4).
+      - Selection: "Galaxy-like" via morphology (PSF mag - Kron mag > threshold).
+      - Filters: Color cuts and Quality Flag checks applied to reduce false positives.
+
+   D. SDSS Photometry (Supplemental)
+      - Selection: SDSS morphological classification (Type=3/Galaxy).
+      - Sizing: Uses petroR90 or Model radii.
+
+--------------------------------------------------------------------------------
+III. CONFIGURATION PARAMETERS (Config Class)
+--------------------------------------------------------------------------------
+You can adjust these values in the `Config` dataclass within the script.
+
+[Global]
+  fwhm_arcsec .................... : 1.0   (Assumed seeing for point-source floors)
+  exclude_center_arcsec .......... : 0.0   (Radius from center to force UNMASKED)
+
+[Gaia Stars]
+  gaia_gmag_max .................. : 21.0  (Faintest stars to query)
+  gaia_margin_arcsec ............. : 1.0   (Padding added to star masks)
+  gaia_star_mode ................. : "foreground" (Options: "strict", "loose", "foreground")
+  
+  (Foreground Mode Kinematics Thresholds - identifying Milky Way stars)
+  gaia_parallax_snr_min .......... : 3.0
+  gaia_parallax_min_mas .......... : 0.002
+  gaia_pm_snr_min ................ : 3.0
+  gaia_pm_min_masyr .............. : 0.02
+  
+  (Sizing Model: r = max(min, ref * 10^(-0.2*(G - G_ref))))
+  star_r_min_arcsec .............. : 1.5
+  star_r_max_arcsec .............. : 25.0
+  star_r_ref_arcsec .............. : 5.0
+  star_g_ref ..................... : 15.0
+
+[Legacy Surveys DR9 (Background Galaxies)]
+  enable_legacy .................. : True
+  legacy_z_l95_min ............... : 0.2  (Min photo-z lower bound to mask)
+  legacy_use_ellipses ............ : True  (Use Tractor e1/e2 shapes)
+  legacy_r_min_arcsec ............ : 1.0
+  legacy_r_max_arcsec ............ : 15.0
+  legacy_reject_if_near_gaia ..... : 0.8   (Avoid masking artifacts around bright stars)
+
+[Evidence-Based Masking (Spec-z / NED)]
+  require_nonvirgo_confirmation .. : True  (For PS1/SDSS: require proof or strong fallback)
+  virgo_keep_cz_max_kms .......... : 3500.0 (Do NOT mask if v < this)
+  background_mask_cz_min_kms ..... : 5000.0 (DO mask if v > this)
+  virgo_distance_mpc ............. : 16.5
+  virgo_distance_tolerance_mpc ... : 5.0
+
+[Pan-STARRS / SkyMapper (Photometric Galaxies)]
+  ps1_min_Nr ..................... : 2     (Min detections)
+  ps1_ext_thresh ................. : 0.25  (Extended if PSF - Kron > this)
+  ps1_ext_max .................... : 1.5   (Sanity cap for extendedness)
+  ps1_rmag_max ................... : 22.0
+  ps1_allow_photometric_fallback . : True  (Mask without spec-z if very extended?)
+  ps1_fallback_ext_min ........... : 0.6   (Strict extension threshold for fallback)
+  ps1_enable_color_cuts .......... : True  (Enforce g-r, r-i cuts to remove HII regions)
+  gal_r_min_arcsec ............... : 2.0
+  gal_r_max_arcsec ............... : 30.0
+
+[SDSS Supplemental]
+  enable_sdss .................... : True
+  sdss_pointlike_dmag_max ........ : 0.145 (Morphology separator)
+  sdss_petro_r90_scale ........... : 1.2   (Scaling for Petrosian radii)
+  sdss_model_radius_scale ........ : 3.0   (Scaling for Model radii)
+  highz_psf_override_zmin ........ : 0.3   (Treat high-z objects as point sources)
+
+[Output]
+  use_png_background ............. : True  (Use .png for overlay if available)
+  output_dpi ..................... : 200
 
 Requirements:
-  pip install astropy astroquery matplotlib numpy pillow
+  pip install astropy astroquery matplotlib numpy pillow pyvo
 """
 
 from __future__ import annotations
@@ -38,7 +155,8 @@ import astropy.units as u
 from astropy.wcs.utils import proj_plane_pixel_scales
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, Ellipse
+from matplotlib.patches import Circle, Ellipse, Polygon
+from matplotlib.path import Path
 
 try:
     from PIL import Image
@@ -103,9 +221,9 @@ class Config:
     # Gaia kinematics thresholds used in "foreground" mode
     # Require either significant positive parallax OR significant proper motion.
     gaia_parallax_snr_min: float = 3.0
-    gaia_parallax_min_mas: float = 0.02
+    gaia_parallax_min_mas: float = 0.002
     gaia_pm_snr_min: float = 3.0
-    gaia_pm_min_masyr: float = 0.2
+    gaia_pm_min_masyr: float = 0.02
 
     # NOTE: We intentionally do NOT exclude the inner galaxy by default, because
     # you may still want to mask true foreground stars/background galaxies there.
@@ -211,7 +329,7 @@ class Config:
 
     # If a candidate has a confirmed high redshift, it is typically PSF-limited at MUSE resolution.
     # In that case, ignore SDSS size proxies and use a seeing-based radius.
-    highz_psf_override_zmin: float = 0.3
+    highz_psf_override_zmin: float = 0.1
     highz_psf_k_fwhm: float = 1.5
     # <=0 disables the cap
     highz_psf_rmax_arcsec: float = 3.0
@@ -223,8 +341,8 @@ class Config:
     # === Legacy Surveys DR9 background-galaxy masking (default first-pass) ===
     enable_legacy: bool = True
 
-    # Photo-z gating: require lower 68% bound above this redshift
-    legacy_z_l68_min: float = 0.01
+    # Photo-z gating: require lower 95% bound above this redshift
+    legacy_z_l95_min: float = 0.2
 
     # Masking size model
     # Legacy sizing policy:
@@ -232,6 +350,28 @@ class Config:
     # - Enforce a minimum (legacy_r_min_arcsec).
     # - Only fall back to seeing when shape_r is missing/invalid.
     legacy_use_ellipses: bool = True        # use shape_e1/e2 when available
+    # If True, ignore PA/axis ratio and mask Legacy detections as circles.
+    # This is the most robust option if you want to avoid all PA/parity conventions.
+    legacy_force_circles: bool = False
+    # If True, rasterize Tractor ellipses by sampling in the local sky tangent plane
+    # (east/north offsets) and transforming those points through the cube WCS.
+    # This is robust to WCS rotation/parity and prevents PA mismatches when the
+    # cube pixel axes are rotated relative to north/east.
+    legacy_wcs_sample_ellipses: bool = True
+    # Optional convention tweak:
+    # - Default assumes the (e1,e2)->angle half-angle is measured from +east toward +north.
+    # - If your reference overlay expects PA measured East of North, set this True.
+    legacy_pa_east_of_north: bool = True
+    # Additional fixed rotation to apply (degrees) after any convention conversion.
+    legacy_pa_offset_deg: float = 0.0
+    # Number of points used to approximate an ellipse polygon when sampling.
+    legacy_ellipse_npts: int = 96
+
+    # DS9 region export (for validating PA convention).
+    # Writes FK5 regions with ellipse(ra,dec,a",b",PA) where PA is degrees East of North.
+    legacy_write_ds9_regions: bool = False
+    # If True, include circular Legacy objects as DS9 circles as well.
+    legacy_ds9_include_circles: bool = False
     legacy_r_min_arcsec: float = 1.0        # floor on Legacy semi-major/minor axes
     legacy_shape_r_scale: float = 1.0       # "just use it" by default (shape_r is already angular)
     legacy_reject_if_near_gaia_arcsec: float = 0.8
@@ -360,6 +500,13 @@ def star_radius_arcsec_from_g(cfg: Config, gmag: float) -> float:
     r = float(cfg.star_r_ref_arcsec) * (10.0 ** exp)
     r = max(float(cfg.star_r_min_arcsec), min(float(cfg.star_r_max_arcsec), float(r)))
     r = max(float(r), 1.0 * float(cfg.fwhm_arcsec))
+
+    # --- NEW: bright-star boost ---
+    if g < 10.0:
+        r *= 1.5
+    elif g < 14.0:
+        r *= 1.25
+
     r += float(cfg.gaia_margin_arcsec)
     return float(r)
 
@@ -695,7 +842,7 @@ def query_legacy_dr9_tractor_and_photoz(center: SkyCoord, radius: u.Quantity, cf
     """Query Legacy Surveys DR9 via NOIRLab Data Lab TAP.
 
         Returns an astropy Table joined via `ls_id` with columns:
-            ls_id, ra, dec, type, release, brickid, objid, z_phot_l68, z_phot_u68, z_phot_mean
+            ls_id, ra, dec, type, release, brickid, objid, z_phot_l95, z_phot_u95, z_phot_mean
         and (optionally) shape_r, shape_e1, shape_e2 if present.
 
     If TAP/pyvo/tables are unavailable, returns None.
@@ -782,8 +929,8 @@ def query_legacy_dr9_tractor_and_photoz(center: SkyCoord, radius: u.Quantity, cf
         in_list = ",".join(str(int(x)) for x in chunk)
         q = f"""
         SELECT ls_id,
-               z_phot_l68 AS z_phot_l68,
-               z_phot_u68 AS z_phot_u68,
+               z_phot_l95 AS z_phot_l95,
+               z_phot_u95 AS z_phot_u95,
                z_phot_mean AS z_phot_mean
         FROM {photoz_table}
         WHERE ls_id IN ({in_list})
@@ -833,8 +980,8 @@ def query_legacy_dr9_tractor_and_photoz(center: SkyCoord, radius: u.Quantity, cf
         if c in ttab.colnames:
             out[c] = [r[c] for r, _ in rows]
 
-    out["z_phot_l68"] = [float(p["z_phot_l68"]) for _, p in rows]
-    out["z_phot_u68"] = [float(p["z_phot_u68"]) for _, p in rows]
+    out["z_phot_l95"] = [float(p["z_phot_l95"]) for _, p in rows]
+    out["z_phot_u95"] = [float(p["z_phot_u95"]) for _, p in rows]
     out["z_phot_mean"] = [float(p["z_phot_mean"]) for _, p in rows]
 
     return out
@@ -1112,6 +1259,110 @@ def rasterize_ellipse(mask: np.ndarray, xi: float, yi: float, a_pix: float, b_pi
     mask[y0 : y1 + 1, x0 : x1 + 1][inside] = 1
 
 
+def rasterize_polygon(mask: np.ndarray, xverts: np.ndarray, yverts: np.ndarray) -> None:
+    ny, nx = mask.shape
+    x = np.asarray(xverts, dtype=float)
+    y = np.asarray(yverts, dtype=float)
+    if x.size < 3 or y.size < 3:
+        return
+    if x.size != y.size:
+        return
+    if not (np.all(np.isfinite(x)) and np.all(np.isfinite(y))):
+        return
+
+    verts = np.column_stack([x, y])
+    if not np.allclose(verts[0], verts[-1]):
+        verts = np.vstack([verts, verts[0]])
+
+    x0 = max(0, int(np.floor(np.min(verts[:, 0]))))
+    x1 = min(nx - 1, int(np.ceil(np.max(verts[:, 0]))))
+    y0 = max(0, int(np.floor(np.min(verts[:, 1]))))
+    y1 = min(ny - 1, int(np.ceil(np.max(verts[:, 1]))))
+    if x1 < x0 or y1 < y0:
+        return
+
+    xx, yy = np.meshgrid(np.arange(x0, x1 + 1), np.arange(y0, y1 + 1))
+    pts = np.column_stack([xx.ravel(), yy.ravel()])
+    inside = np.asarray(Path(verts).contains_points(pts), dtype=bool)
+    inside = inside.reshape(yy.shape)
+    mask[y0 : y1 + 1, x0 : x1 + 1][inside] = 1
+
+
+def _ds9_region_header() -> list[str]:
+    return [
+        "# Region file format: DS9 version 4.1",
+        'global color=cyan dashlist=8 3 width=1 font="helvetica 10 normal" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1',
+        "fk5",
+    ]
+
+
+def _ds9_fmt_angle_deg(x: float) -> float:
+    # DS9 ellipses treat PA modulo 180 as equivalent.
+    a = float(x) % 180.0
+    if a < 0:
+        a += 180.0
+    return a
+
+
+def write_ds9_legacy_regions(
+    base: str,
+    entries: list[dict],
+    suffix: str,
+    *,
+    color: str = "cyan",
+) -> str:
+    """Write a DS9 FK5 region file for the given entries.
+
+    Each entry dict must contain: ra_deg, dec_deg, a_arcsec, b_arcsec, pa_deg.
+    """
+    out = f"{base}_legacy_{suffix}.reg"
+    lines = _ds9_region_header()
+    # Override color per file for quick visual A/B.
+    lines[1] = lines[1].replace("color=cyan", f"color={color}")
+    for e in entries:
+        ra = float(e["ra_deg"])
+        dec = float(e["dec_deg"])
+        a = float(e["a_arcsec"])
+        b = float(e["b_arcsec"])
+        pa = _ds9_fmt_angle_deg(float(e["pa_deg"]))
+        tag = str(e.get("tag", ""))
+        # DS9 expects a and b as semi-axes in arcsec.
+        s = f"ellipse({ra:.8f},{dec:.8f},{a:.4f}\",{b:.4f}\",{pa:.4f})"
+        if tag:
+            s += f" # text={{{tag}}}"
+        lines.append(s)
+    with open(out, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    return out
+
+
+def sample_ellipse_via_wcs(
+    w: WCS,
+    center: SkyCoord,
+    a_arcsec: float,
+    b_arcsec: float,
+    angle_deg: float,
+    npts: int = 96,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Sample an ellipse in the local tangent plane and map it through the WCS.
+
+    The tangent-plane basis is (east, north) about `center`. `angle_deg` is
+    interpreted as the major-axis angle measured CCW from +east toward +north.
+    """
+    n = int(max(16, npts))
+    t = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
+    x_maj = float(a_arcsec) * np.cos(t)
+    y_min = float(b_arcsec) * np.sin(t)
+    phi = np.deg2rad(float(angle_deg))
+
+    east = x_maj * np.cos(phi) - y_min * np.sin(phi)
+    north = x_maj * np.sin(phi) + y_min * np.cos(phi)
+
+    sky = center.spherical_offsets_by(east * u.arcsec, north * u.arcsec)
+    xp, yp = w.world_to_pixel(sky)
+    return np.asarray(xp, dtype=float), np.asarray(yp, dtype=float)
+
+
 def build_masks_for_one(rfits_path: str, cfg: Config):
     base = safe_base_id(rfits_path)
     png_path = f"{base}_combined_R.png"
@@ -1228,6 +1479,8 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     gal_catalog = None
     n_gal_masked = 0
     legacy_success = False
+    legacy_ds9_entries_pa_eofn: list[dict] = []
+    legacy_ds9_entries_phi_from_east: list[dict] = []
 
     # ---------- Legacy Surveys DR9 photo-z-gated background objects (DEFAULT first-pass) ----------
     if bool(getattr(cfg, "enable_legacy", True)):
@@ -1253,14 +1506,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     continue
 
                 typ = _as_str(row["type"]).strip().upper() if "type" in row.colnames else ""
-                z_l68 = _get_col_float(row, "z_phot_l68")
-                if z_l68 is None or (not np.isfinite(z_l68)):
+                z_l95 = _get_col_float(row, "z_phot_l95")
+                if z_l95 is None or (not np.isfinite(z_l95)):
                     continue
 
-                # Rule: non-PSF AND lower-68% bound > threshold
+                # Rule: non-PSF AND lower-95% bound > threshold
                 if typ == "PSF":
                     continue
-                if float(z_l68) <= float(getattr(cfg, "legacy_z_l68_min", 0.01)):
+                if float(z_l95) <= float(getattr(cfg, "legacy_z_l95_min", 0.01)):
                     continue
 
                 # Optional: reject Legacy detections sitting on Gaia point sources
@@ -1308,38 +1561,125 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 a_arcsec += float(cfg.gaia_margin_arcsec)
                 b_arcsec += float(cfg.gaia_margin_arcsec)
 
+                # --- DS9 region export (FK5; for PA convention validation) ---
+                # Tractor phi is commonly interpreted as angle CCW from +east toward +north.
+                # DS9 expects PA degrees East of North.
+                if bool(getattr(cfg, "legacy_write_ds9_regions", False)):
+                    try:
+                        tag = f"{typ} z_l95={float(z_l95):.3f}"
+                    except Exception:
+                        tag = f"{typ}"
+                    try:
+                        legacy_ds9_entries_phi_from_east.append(
+                            {
+                                "ra_deg": float(sc.ra.deg),
+                                "dec_deg": float(sc.dec.deg),
+                                "a_arcsec": float(a_arcsec),
+                                "b_arcsec": float(b_arcsec),
+                                "pa_deg": float(angle_deg),
+                                "tag": tag,
+                            }
+                        )
+                        pa_eofn = 90.0 - float(angle_deg)
+                        legacy_ds9_entries_pa_eofn.append(
+                            {
+                                "ra_deg": float(sc.ra.deg),
+                                "dec_deg": float(sc.dec.deg),
+                                "a_arcsec": float(a_arcsec),
+                                "b_arcsec": float(b_arcsec),
+                                "pa_deg": float(pa_eofn),
+                                "tag": tag,
+                            }
+                        )
+                    except Exception:
+                        pass
+
                 a_pix = a_arcsec / float(pixscale)
                 b_pix = b_arcsec / float(pixscale)
 
-                # Skip if it does not touch the FITS image at all
-                if bool(getattr(cfg, "legacy_use_ellipses", False)) and (abs(float(a_arcsec) - float(b_arcsec)) > 1e-6):
-                    if not ellipse_intersects_fov(float(xi), float(yi), float(a_pix), float(b_pix), nx, ny):
-                        continue
-                    rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg)
-                    y_plot = (ny - 1 - yi) if use_png_bg else yi
-                    angle_plot = (-angle_deg) if use_png_bg else angle_deg
-                    gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
-                else:
-                    r_pix = float(max(a_pix, b_pix))
+                # --- Force Legacy to circles (robust to PA convention issues) ---
+                if bool(getattr(cfg, "legacy_force_circles", True)):
+                    r_arcsec = float(max(a_arcsec, b_arcsec))
+                    r_pix = r_arcsec / float(pixscale)
                     if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
                         continue
                     rasterize_circle(mask, xi, yi, r_pix)
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
                     gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
+                else:
+                    # Original behavior: ellipses when available, otherwise circles.
+                    if bool(getattr(cfg, "legacy_use_ellipses", False)) and (abs(float(a_arcsec) - float(b_arcsec)) > 1e-6):
+                        if not ellipse_intersects_fov(float(xi), float(yi), float(a_pix), float(b_pix), nx, ny):
+                            continue
+                        use_wcs_sampling = bool(getattr(cfg, "legacy_wcs_sample_ellipses", True))
+                        if use_wcs_sampling:
+                            try:
+                                angle_for_sampling = float(angle_deg)
+                                if bool(getattr(cfg, "legacy_pa_east_of_north", False)):
+                                    angle_for_sampling = 90.0 - angle_for_sampling
+                                angle_for_sampling = angle_for_sampling + float(getattr(cfg, "legacy_pa_offset_deg", 0.0))
+                                xv, yv = sample_ellipse_via_wcs(
+                                    w,
+                                    sc,
+                                    float(a_arcsec),
+                                    float(b_arcsec),
+                                    float(angle_for_sampling),
+                                    npts=int(getattr(cfg, "legacy_ellipse_npts", 96)),
+                                )
+                                rasterize_polygon(mask, xv, yv)
+                                if use_png_bg:
+                                    yv_plot = (ny - 1) - yv
+                                else:
+                                    yv_plot = yv
+                                gal_patches.append(Polygon(np.column_stack([xv, yv_plot]), closed=True, fill=False))
+                            except Exception:
+                                rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg)
+                                y_plot = (ny - 1 - yi) if use_png_bg else yi
+                                angle_plot = (-angle_deg) if use_png_bg else angle_deg
+                                gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
+                        else:
+                            rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg)
+                            y_plot = (ny - 1 - yi) if use_png_bg else yi
+                            angle_plot = (-angle_deg) if use_png_bg else angle_deg
+                            gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
+                    else:
+                        r_pix = float(max(a_pix, b_pix))
+                        if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
+                            continue
+                        rasterize_circle(mask, xi, yi, r_pix)
+                        y_plot = (ny - 1 - yi) if use_png_bg else yi
+                        gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
                 n_gal_masked += 1
 
                 if cfg.log_each_galaxy:
                     ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
                     legacy_iau = iau_coord_name("LS", sc, ra_precision=2, dec_precision=1)
-                    print(
-                        f"[GAL][LEGACY] ({legacy_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
-                        f"RA={ra_hms} DEC={dec_dms} type={typ} z_l68={float(z_l68):.3f} "
-                        f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" pa={float(angle_deg):.1f}"
-                    )
+                    if bool(getattr(cfg, "legacy_force_circles", True)):
+                        r_arcsec = float(max(a_arcsec, b_arcsec))
+                        print(
+                            f"[GAL][LEGACY] ({legacy_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                            f"RA={ra_hms} DEC={dec_dms} type={typ} z_l95={float(z_l95):.3f} "
+                            f"r={r_arcsec:.2f}\" (circle from max axis)"
+                        )
+                    else:
+                        print(
+                            f"[GAL][LEGACY] ({legacy_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                            f"RA={ra_hms} DEC={dec_dms} type={typ} z_l95={float(z_l95):.3f} "
+                            f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" pa={float(angle_deg):.1f}"
+                        )
 
             legacy_success = bool(n_gal_masked > n_gal_before_legacy)
             if legacy_success:
                 print("[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.")
+                if bool(getattr(cfg, "legacy_write_ds9_regions", False)) and len(legacy_ds9_entries_pa_eofn) > 0:
+                    try:
+                        p1 = write_ds9_legacy_regions(base, legacy_ds9_entries_pa_eofn, "PA_EofN", color="cyan")
+                        p2 = write_ds9_legacy_regions(base, legacy_ds9_entries_phi_from_east, "phi_from_E", color="magenta")
+                        print(f"[DS9] Wrote {p1}")
+                        print(f"[DS9] Wrote {p2}")
+                        print("[DS9] Open in DS9 over the FITS; PA_EofN should match if the convention is correct.")
+                    except Exception as e:
+                        print(f"WARNING: failed to write DS9 region files: {e}")
         else:
             print("[LEGACY] No DR9 photo-z-gated objects found (or query unavailable).")
 
@@ -2124,6 +2464,9 @@ def main():
     cfg.log_each_galaxy = True
     cfg.log_sdss_colnames = True
     cfg.log_max_galaxies = 0
+
+    # Default: do not write DS9 region files (avoid clutter).
+    cfg.legacy_write_ds9_regions = False
 
     # Tee ALL stdout/stderr to a log file as well as the console
     log_path = "v3tk_masking.log"
