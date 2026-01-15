@@ -130,6 +130,12 @@ Changes (2025-09-24 & 2025-09-25)
 * Robust implementation features:
   - Comprehensive error handling for invalid flux data (NaN, negative, zero values)
   - Maintains full backward compatibility with existing analysis pipeline
+
+Changes (2026-01-15)
+-----------------------
+* Added Milky Way (CCM89; Cardelli, Clayton & Mathis 1989) extinction curve as k(λ)=A(λ)/E(B−V).
+* Set Milky Way (CCM89, R_V=3.1) as the default extinction law for k-values (Balmer-decrement dust correction).
+* Kept Calzetti (2000) curve intact and available via `extinction_k(..., law="calzetti")`.
 """
 
 # ------------------------------------------------------------------
@@ -139,6 +145,11 @@ Changes (2025-09-24 & 2025-09-25)
 # Inclination correction toggle
 # Set to True to apply cos(θ) inclination correction, False to disable
 apply_inclination_correction = True
+
+# Extinction-law configuration for k(λ)=A(λ)/E(B−V)
+# Supported: "mw" (CCM89 Milky Way; default), "calzetti" (Calzetti 2000)
+extinction_law = "mw"
+mw_rv = 3.1
 
 # ------------------------------------------------------------------
 # 0.  Command-line interface  (exactly as requested)
@@ -290,7 +301,7 @@ else:
 
 # Road map:
 # 1. Calculate the Balmer Decrement (BD) from Hβ and Hα
-# 2. Convert BD to gas E(B-V) using the Calzetti (2000) extinction curve
+# 2. Convert BD to gas E(B-V) using the selected extinction curve (default: Milky Way CCM89)
 # 3. Use E(B-V) to correct the fluxes of the gas lines, then use different methods to calculate the metallicity [O/H] (12+log(O/H))
 # 4. Convert the corrected Hα flux to luminosity
 # 5. Calculate the star formation rate (SFR) from the Hα luminosity using the Calzetti (2007) relation
@@ -324,12 +335,102 @@ def calzetti_k(w_um):
     k[long]  = 2.659 * (-1.857 + 1.040/w[long]) + Rv
     return k.item() if k.ndim == 1 and k.size == 1 else k
 
-k_HB4861  = calzetti_k(0.4861)  # ≈ 4.598
-k_HA6562  = calzetti_k(0.6562)  # ≈ 3.326
-k_OIII5006= calzetti_k(0.5006)  # ≈ 4.465
-k_NII6583 = calzetti_k(0.6583)  # ≈ 3.313
-k_SII6716 = calzetti_k(0.6716)  # ≈ 3.230
-k_SII6730 = calzetti_k(0.6730)  # ≈ 3.221
+
+def ccm89_k(w_um, Rv=3.1):
+    """
+    CCM89 (Cardelli, Clayton & Mathis 1989): k(λ)=A(λ)/E(B−V) with λ in microns.
+
+    Uses CCM89 eqs. (2)–(5) exactly:
+      IR:      0.3 <= x < 1.1
+      Opt/NIR: 1.1 <= x < 3.3, y=x-1.82
+      UV:      3.3 <= x <= 8.0 with Fa,Fb terms for x>5.9
+      Far-UV:  8.0 < x <= 10.0
+    where x = 1/λ (micron^-1).
+    """
+    w = np.asarray(w_um, dtype=float)
+    x = 1.0 / w  # micron^-1
+
+    a = np.full_like(x, np.nan, dtype=float)
+    b = np.full_like(x, np.nan, dtype=float)
+
+    # (2) Infrared: 0.3 <= x < 1.1
+    ir = (x >= 0.3) & (x < 1.1)
+    a[ir] = 0.574 * x[ir]**1.61
+    b[ir] = -0.527 * x[ir]**1.61
+
+    # (3) Optical/NIR: 1.1 <= x < 3.3, y = x - 1.82
+    opt = (x >= 1.1) & (x < 3.3)
+    y = x[opt] - 1.82
+    a[opt] = (1.0
+              + 0.17699*y
+              - 0.50447*y**2
+              - 0.02427*y**3
+              + 0.72085*y**4
+              + 0.01979*y**5
+              - 0.77530*y**6
+              + 0.32999*y**7)
+    b[opt] = (1.41338*y
+              + 2.28305*y**2
+              + 1.07233*y**3
+              - 5.38434*y**4
+              - 0.62251*y**5
+              + 5.30260*y**6
+              - 2.09002*y**7)
+
+    # (4) Ultraviolet: 3.3 <= x <= 8.0
+    uv = (x >= 3.3) & (x <= 8.0)
+    a[uv] = 1.752 - 0.316*x[uv] - 0.104/((x[uv] - 4.67)**2 + 0.341)
+    b[uv] = -3.090 + 1.825*x[uv] + 1.206/((x[uv] - 4.62)**2 + 0.263)
+
+    # Fa,Fb curvature terms for 5.9 <= x <= 8.0
+    fuv = (x >= 5.9) & (x <= 8.0)
+    y = x[fuv] - 5.9
+    a[fuv] += -0.04473*y**2 - 0.009779*y**3
+    b[fuv] +=  0.2130*y**2 + 0.1207*y**3
+
+    # (5) Far-UV: 8 < x <= 10, use (x-8)
+    faruv = (x > 8.0) & (x <= 10.0)
+    y = x[faruv] - 8.0
+    a[faruv] = -1.073 - 0.628*y + 0.137*y**2 - 0.070*y**3
+    b[faruv] = 13.670 + 4.257*y - 0.420*y**2 + 0.374*y**3
+
+    # Convert to k(λ)=A(λ)/E(B−V) = Rv*a + b (from CCM89 eq. 1)
+    k = Rv * a + b
+    return k.item() if k.ndim == 1 and k.size == 1 else k
+
+
+def extinction_k(w_um, law=None, Rv=None):
+    """Return k(λ)=A(λ)/E(B−V) for the selected extinction law; wavelengths in microns."""
+    if law is None:
+        law = extinction_law
+    law = str(law).lower()
+
+    if law in ("mw", "milkyway", "ccm", "ccm89"):
+        if Rv is None:
+            Rv = mw_rv
+        return ccm89_k(w_um, Rv=Rv)
+    if law in ("calzetti", "calz", "c00"):
+        return calzetti_k(w_um)
+
+    raise ValueError(f"Unknown extinction law: {law}")
+
+k_HB4861  = extinction_k(0.4861)   # CCM89(MW, Rv=3.1) ≈ 3.609
+k_HA6562  = extinction_k(0.6562)   # CCM89(MW, Rv=3.1) ≈ 2.535
+k_OIII5006= extinction_k(0.5006)
+k_NII6583 = extinction_k(0.6583)
+k_SII6716 = extinction_k(0.6716)
+k_SII6730 = extinction_k(0.6730)
+
+# Print k(λ) values used for dust correction (this will also appear in redirected *.log outputs)
+print("--------------------------------------------------------------")
+print(f"Extinction law for k(λ)=A(λ)/E(B−V): {extinction_law} (mw_rv={mw_rv})")
+print(f"k(Hβ 4861Å)  = {float(k_HB4861):.4f}   at λ=0.4861 µm")
+print(f"k(Hα 6562Å)  = {float(k_HA6562):.4f}   at λ=0.6562 µm")
+print(f"k([OIII]5006)= {float(k_OIII5006):.4f}   at λ=0.5006 µm")
+print(f"k([NII]6583) = {float(k_NII6583):.4f}   at λ=0.6583 µm")
+print(f"k([SII]6716) = {float(k_SII6716):.4f}   at λ=0.6716 µm")
+print(f"k([SII]6730) = {float(k_SII6730):.4f}   at λ=0.6730 µm")
+print("--------------------------------------------------------------")
 
 R_int = 2.86
 
