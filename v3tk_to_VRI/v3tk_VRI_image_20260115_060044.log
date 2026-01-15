@@ -1,0 +1,38 @@
+[Thu Jan 15 06:00:44 UTC 2026] Starting pipeline in: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI
+[Thu Jan 15 06:00:44 UTC 2026] NCPU=64
+[Thu Jan 15 06:00:44 UTC 2026] MAX_DL=2
+[Thu Jan 15 06:00:44 UTC 2026] Log: v3tk_VRI_image_20260115_060044.log
+
+[Thu Jan 15 06:00:46 UTC 2026] Step 1/3: observed R images
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+ERROR: One or more band images contain no finite pixels
+
+ERROR conda.cli.main_run:execute(127): `conda run python v3tk_observed_VRI_image.py --input-dir . --overwrite --workers 64` failed. (See above for error)
+Found 25 file(s)
+Workers: 64
+Pattern: *_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+Done. ok=0 fail=25 runtime=17.01s
+

@@ -24,3 +24,4 @@ vcp -v arc:projects/mauve/alma/products/v0.3/ /Users/Igniz/Desktop/ICRAR/CO/prod
 vcp -v arc:projects/mauve/nGIST_dev_7.6.4/ /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/
 vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_9300_KIN /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_9300_KIN
 vcp -v arc:projects/mauve/v3tk_to_R/ /Users/Igniz/Desktop/ICRAR/v3tk_to_R/
+vcp -v arc:projects/mauve/v3tk_to_VRI/ /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/
