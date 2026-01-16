@@ -51,7 +51,7 @@ The script employs a hierarchical multi-catalog approach:
 
    A. Legacy Surveys DR9 (Preferred High-Fidelity Layer)
       - Library: pyvo (NOIRLab Data Lab TAP)
-      - Selection: Objects with Photo-Z lower bound (z_l95) > 0.2.
+      - Selection: Objects with Photo-Z lower bound (z_l95) > 0.01.
       - Sizing: Uses intrinsic Tractor elliptical shape measurements (shape_r/e1/e2).
       - If found, subsequent fallbacks (C, D) are usually skipped.
 
@@ -98,7 +98,7 @@ You can adjust these values in the `Config` dataclass within the script.
 
 [Legacy Surveys DR9 (Background Galaxies)]
   enable_legacy .................. : True
-  legacy_z_l95_min ............... : 0.2  (Min photo-z lower bound to mask)
+  legacy_z_l95_min ............... : 0.01  (Min photo-z lower bound to mask)
   legacy_use_ellipses ............ : True  (Use Tractor e1/e2 shapes)
   legacy_r_min_arcsec ............ : 1.0
   legacy_r_max_arcsec ............ : 15.0
@@ -220,9 +220,9 @@ class Config:
 
     # Gaia kinematics thresholds used in "foreground" mode
     # Require either significant positive parallax OR significant proper motion.
-    gaia_parallax_snr_min: float = 3.0
+    gaia_parallax_snr_min: float = 5.0
     gaia_parallax_min_mas: float = 0.002
-    gaia_pm_snr_min: float = 3.0
+    gaia_pm_snr_min: float = 5.0
     gaia_pm_min_masyr: float = 0.02
 
     # NOTE: We intentionally do NOT exclude the inner galaxy by default, because
@@ -342,7 +342,12 @@ class Config:
     enable_legacy: bool = True
 
     # Photo-z gating: require lower 95% bound above this redshift
-    legacy_z_l95_min: float = 0.2
+    legacy_z_l95_min: float = 0.01
+
+    # Photo-z significance control (Legacy DR9)
+    legacy_z_snr_min: float = 5.0
+    legacy_z_snr_use_threshold: bool = True
+    legacy_z_width_max: float = 0.0
 
     # Masking size model
     # Legacy sizing policy:
@@ -1516,6 +1521,30 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 if float(z_l95) <= float(getattr(cfg, "legacy_z_l95_min", 0.01)):
                     continue
 
+                z_mean = _get_col_float(row, "z_phot_mean")
+                z_u95 = _get_col_float(row, "z_phot_u95")
+                if z_mean is None or z_u95 is None:
+                    continue
+
+                z_width = float(z_u95) - float(z_l95)
+                if (not np.isfinite(z_width)) or (z_width <= 0):
+                    continue
+                if float(getattr(cfg, "legacy_z_width_max", 0.0)) > 0 and z_width > float(cfg.legacy_z_width_max):
+                    continue
+
+                sigma_z = z_width / 3.92
+                if (not np.isfinite(sigma_z)) or (sigma_z <= 0):
+                    continue
+
+                z_cut = float(getattr(cfg, "legacy_z_l95_min", 0.2))
+                if bool(getattr(cfg, "legacy_z_snr_use_threshold", True)):
+                    z_snr = (float(z_mean) - z_cut) / sigma_z
+                else:
+                    z_snr = float(z_mean) / sigma_z
+
+                if (not np.isfinite(z_snr)) or (z_snr < float(getattr(cfg, "legacy_z_snr_min", 3.0))):
+                    continue
+
                 # Optional: reject Legacy detections sitting on Gaia point sources
                 # (often star halos / bad fits misclassified as extended)
                 if gaia_sky_for_ps1_reject is not None and float(getattr(cfg, "legacy_reject_if_near_gaia_arcsec", 0.0)) > 0:
@@ -1598,7 +1627,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 b_pix = b_arcsec / float(pixscale)
 
                 # --- Force Legacy to circles (robust to PA convention issues) ---
-                if bool(getattr(cfg, "legacy_force_circles", True)):
+                if bool(getattr(cfg, "legacy_force_circles", False)):
                     r_arcsec = float(max(a_arcsec, b_arcsec))
                     r_pix = r_arcsec / float(pixscale)
                     if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
@@ -1654,18 +1683,21 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 if cfg.log_each_galaxy:
                     ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
                     legacy_iau = iau_coord_name("LS", sc, ra_precision=2, dec_precision=1)
-                    if bool(getattr(cfg, "legacy_force_circles", True)):
+                    if bool(getattr(cfg, "legacy_force_circles", False)):
                         r_arcsec = float(max(a_arcsec, b_arcsec))
                         print(
                             f"[GAL][LEGACY] ({legacy_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
                             f"RA={ra_hms} DEC={dec_dms} type={typ} z_l95={float(z_l95):.3f} "
-                            f"r={r_arcsec:.2f}\" (circle from max axis)"
+                            f"r={r_arcsec:.2f}\" (circle from max axis) z_mean={float(z_mean):.3f} "
+                            f"z_u95={float(z_u95):.3f} sigma_z~{float(sigma_z):.3f} SNR={float(z_snr):.1f}"
                         )
                     else:
                         print(
                             f"[GAL][LEGACY] ({legacy_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
                             f"RA={ra_hms} DEC={dec_dms} type={typ} z_l95={float(z_l95):.3f} "
-                            f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" pa={float(angle_deg):.1f}"
+                            f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" pa={float(angle_deg):.1f} "
+                            f"z_mean={float(z_mean):.3f} z_u95={float(z_u95):.3f} "
+                            f"sigma_z~{float(sigma_z):.3f} SNR={float(z_snr):.1f}"
                         )
 
             legacy_success = bool(n_gal_masked > n_gal_before_legacy)
