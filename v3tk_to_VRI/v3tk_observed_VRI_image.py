@@ -82,14 +82,14 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 	p.add_argument(
 		"--percentile-high",
 		type=float,
-		default=100,
-		help="Upper percentile for scaling (default: 100)",
+		default=99.9,
+		help="Upper percentile for scaling (default: 99.9)",
 	)
 	p.add_argument(
 		"--stretch",
 		type=float,
-		default=10.0,
-		help="Lupton RGB stretch parameter (default: 10.0)",
+		default=1.0,
+		help="Lupton RGB stretch parameter (default: 1.0)",
 	)
 	p.add_argument(
 		"--Q",
@@ -110,8 +110,8 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 		"--post-boost",
 		dest="post_boost",
 		type=float,
-		default=12.0,
-		help="Global brightness multiplier applied to the final RGB image after rendering (default: 12.0)",
+		default=2.5,
+		help="Global brightness multiplier applied to the final RGB image after rendering (default: 2.5)",
 	)
 	p.add_argument(
 		"--workers",
@@ -253,6 +253,46 @@ def _scale_by_luminance_percentiles(r, g, b, p_low: float, p_high: float):
 	return _scale(r), _scale(g), _scale(b)
 
 
+def _gray_world_white_balance(r, g, b):
+	"""Simple 'gray world' white balance.
+
+	Scales channels so their robust medians match over moderately bright pixels.
+	"""
+	import numpy as np
+
+	lum = (r + g + b) / 3.0
+	vals = lum[np.isfinite(lum) & (lum > 0)]
+	if vals.size == 0:
+		return r, g, b
+
+	lo = float(np.percentile(vals, 30.0))
+	hi = float(np.percentile(vals, 99.5))
+	mask = np.isfinite(lum) & (lum > lo) & (lum < hi)
+	if int(mask.sum()) < 50:
+		return r, g, b
+
+	mr = float(np.median(r[mask]))
+	mg = float(np.median(g[mask]))
+	mb = float(np.median(b[mask]))
+
+	# Avoid division by ~0
+	eps = 1e-12
+	mr = max(mr, eps)
+	mg = max(mg, eps)
+	mb = max(mb, eps)
+
+	target = float(np.median([mr, mg, mb]))
+	gr = target / mr
+	gg = target / mg
+	gb = target / mb
+
+	# Keep memory / dtype stable.
+	r = (r * gr).astype(np.float32, copy=False)
+	g = (g * gg).astype(np.float32, copy=False)
+	b = (b * gb).astype(np.float32, copy=False)
+	return r, g, b
+
+
 def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, str]:
 	# Import inside worker for ProcessPool compatibility.
 	from astropy.io import fits
@@ -280,6 +320,9 @@ def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, s
 	r_raw = _prep_channel(i)
 	g_raw = _prep_channel(r)
 	b_raw = _prep_channel(v)
+
+	# Pre-balance channels (helps reduce a persistent warm/orange cast).
+	r_raw, g_raw, b_raw = _gray_world_white_balance(r_raw, g_raw, b_raw)
 
 	missing: list[str] = []
 	# Track missing/empty inputs (after prep, empty means all zeros).

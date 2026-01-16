@@ -1,0 +1,822 @@
+=== v3tk masking run start: 2026-01-16T12:18:15 ===
+[FOV] IC3392: nx=437 ny=438 pixscale=0.2000"/pix rad=1.196 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3933244497497883904 (GAIA J122841.21+150012.1) ra=187.171708 dec=15.003350 RA=12:28:41.21 DEC=+15:00:12.06 GaiaG=20.42 r_arcsec=2.50 | plx=0.280±0.766 mas (SNR=0.4) | pm=6.87±1.23 mas/yr (SNR=5.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=59 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122846.31+145924.0) ra=187.192944 dec=14.989996 RA=12:28:46.31 DEC=+14:59:23.98 type=REX z_l95=0.317 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122844.86+145931.5) ra=187.186902 dec=14.992082 RA=12:28:44.86 DEC=+14:59:31.50 type=REX z_l95=0.285 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122845.99+145935.6) ra=187.191631 dec=14.993210 RA=12:28:45.99 DEC=+14:59:35.56 type=REX z_l95=0.246 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote IC3392_mask.fits (shape=(438, 437), masked=1434 px; stars=1, galaxies=3)
+[OK] Wrote IC3392_combined_VRI_mask.png
+[TIME] IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=16.06
+[FOV] NGC4064: nx=566 ny=665 pixscale=0.2000"/pix rad=1.620 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3926786485886436608 (GAIA J120412.92+182748.3) ra=181.053853 dec=18.463424 RA=12:04:12.92 DEC=+18:27:48.33 GaiaG=15.63 r_arcsec=4.74 | plx=0.529±0.052 mas (SNR=10.2) | pm=2.92±0.06 mas/yr (SNR=47.3) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3926786107929314048 (GAIA J120411.98+182641.0) ra=181.049929 dec=18.444713 RA=12:04:11.98 DEC=+18:26:40.97 GaiaG=15.22 r_arcsec=5.51 | plx=0.311±0.039 mas (SNR=8.1) | pm=31.59±0.04 mas/yr (SNR=714.1) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3926785347719359488 (GAIA J120413.18+182559.4) ra=181.054925 dec=18.433166 RA=12:04:13.18 DEC=+18:25:59.40 GaiaG=18.00 r_arcsec=2.50 | plx=0.429±0.149 mas (SNR=2.9) | pm=10.26±0.18 mas/yr (SNR=57.0) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=264 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J120407.09+182541.0) ra=181.029532 dec=18.428062 RA=12:04:07.09 DEC=+18:25:41.02 type=REX z_l95=0.203 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120407.04+182544.4) ra=181.029345 dec=18.429007 RA=12:04:07.04 DEC=+18:25:44.42 type=REX z_l95=0.308 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120407.26+182556.4) ra=181.030239 dec=18.432338 RA=12:04:07.26 DEC=+18:25:56.42 type=EXP z_l95=0.264 a=2.00" b=2.00" pa=-81.2
+[GAL][LEGACY] (LS J120406.99+182557.9) ra=181.029121 dec=18.432755 RA=12:04:06.99 DEC=+18:25:57.92 type=REX z_l95=0.263 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120407.95+182556.3) ra=181.033142 dec=18.432318 RA=12:04:07.95 DEC=+18:25:56.35 type=EXP z_l95=0.249 a=2.07" b=2.00" pa=59.1
+[GAL][LEGACY] (LS J120408.05+182555.5) ra=181.033524 dec=18.432070 RA=12:04:08.05 DEC=+18:25:55.45 type=REX z_l95=0.263 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120407.07+182603.8) ra=181.029455 dec=18.434388 RA=12:04:07.07 DEC=+18:26:03.80 type=REX z_l95=0.348 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120407.29+182606.8) ra=181.030355 dec=18.435222 RA=12:04:07.29 DEC=+18:26:06.80 type=REX z_l95=0.258 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120407.24+182622.5) ra=181.030168 dec=18.439571 RA=12:04:07.24 DEC=+18:26:22.45 type=REX z_l95=0.271 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120409.22+182603.0) ra=181.038425 dec=18.434166 RA=12:04:09.22 DEC=+18:26:03.00 type=EXP z_l95=0.212 a=2.00" b=2.00" pa=-31.0
+[GAL][LEGACY] (LS J120409.04+182605.4) ra=181.037686 dec=18.434834 RA=12:04:09.04 DEC=+18:26:05.40 type=REX z_l95=0.239 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120412.72+182553.6) ra=181.052993 dec=18.431548 RA=12:04:12.72 DEC=+18:25:53.57 type=SER z_l95=0.246 a=4.14" b=3.28" pa=-6.9
+[GAL][LEGACY] (LS J120412.85+182623.9) ra=181.053542 dec=18.439962 RA=12:04:12.85 DEC=+18:26:23.86 type=DEV z_l95=0.265 a=2.00" b=2.00" pa=41.9
+[GAL][LEGACY] (LS J120414.85+182653.4) ra=181.061860 dec=18.448162 RA=12:04:14.85 DEC=+18:26:53.38 type=REX z_l95=0.349 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120415.11+182654.4) ra=181.062954 dec=18.448442 RA=12:04:15.11 DEC=+18:26:54.39 type=DEV z_l95=0.299 a=2.00" b=2.00" pa=69.2
+[GAL][LEGACY] (LS J120414.48+182709.1) ra=181.060337 dec=18.452532 RA=12:04:14.48 DEC=+18:27:09.12 type=REX z_l95=0.212 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120413.26+182717.9) ra=181.055250 dec=18.454980 RA=12:04:13.26 DEC=+18:27:17.93 type=REX z_l95=0.296 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120413.23+182732.0) ra=181.055129 dec=18.458892 RA=12:04:13.23 DEC=+18:27:32.01 type=REX z_l95=0.276 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120414.22+182720.5) ra=181.059252 dec=18.455688 RA=12:04:14.22 DEC=+18:27:20.48 type=DEV z_l95=0.288 a=2.06" b=2.00" pa=-16.8
+[GAL][LEGACY] (LS J120414.74+182721.7) ra=181.061406 dec=18.456022 RA=12:04:14.74 DEC=+18:27:21.68 type=REX z_l95=0.261 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120414.18+182729.7) ra=181.059063 dec=18.458243 RA=12:04:14.18 DEC=+18:27:29.68 type=REX z_l95=0.317 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120414.61+182727.1) ra=181.060884 dec=18.457516 RA=12:04:14.61 DEC=+18:27:27.06 type=EXP z_l95=0.360 a=2.32" b=2.00" pa=18.0
+[GAL][LEGACY] (LS J120414.27+182734.9) ra=181.059447 dec=18.459682 RA=12:04:14.27 DEC=+18:27:34.85 type=REX z_l95=0.326 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120414.05+182743.6) ra=181.058528 dec=18.462125 RA=12:04:14.05 DEC=+18:27:43.65 type=REX z_l95=0.299 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120414.99+182740.3) ra=181.062469 dec=18.461196 RA=12:04:14.99 DEC=+18:27:40.31 type=REX z_l95=0.588 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J120413.49+182747.6) ra=181.056200 dec=18.463231 RA=12:04:13.49 DEC=+18:27:47.63 type=EXP z_l95=0.710 a=2.00" b=2.00" pa=88.1
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4064_mask.fits (shape=(665, 566), masked=11532 px; stars=3, galaxies=26)
+[OK] Wrote NGC4064_combined_VRI_mask.png
+[TIME] NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.98
+[FOV] NGC4189: nx=598 ny=319 pixscale=0.2000"/pix rad=1.294 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3920635920920105216 (GAIA J121345.01+132545.1) ra=183.437558 dec=13.429199 RA=12:13:45.01 DEC=+13:25:45.12 GaiaG=17.47 r_arcsec=2.60 | plx=1.536±0.109 mas (SNR=14.0) | pm=23.48±0.15 mas/yr (SNR=153.9) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3920635989639582208 (GAIA J121350.07+132611.9) ra=183.458612 dec=13.436629 RA=12:13:50.07 DEC=+13:26:11.87 GaiaG=15.23 r_arcsec=5.51 | plx=0.607±0.030 mas (SNR=20.2) | pm=9.95±0.04 mas/yr (SNR=240.1) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=108 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[NED] N=131 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4189_mask.fits (shape=(319, 598), masked=528 px; stars=2, galaxies=0)
+[OK] Wrote NGC4189_combined_VRI_mask.png
+[TIME] NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=24.44
+[FOV] NGC4192: nx=1092 ny=1629 pixscale=0.2000"/pix rad=3.433 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3921361353780824320 (GAIA J121355.32+145223.9) ra=183.480485 dec=14.873304 RA=12:13:55.32 DEC=+14:52:23.90 GaiaG=18.94 r_arcsec=2.50 | plx=0.150±0.241 mas (SNR=0.6) | pm=17.13±0.29 mas/yr (SNR=58.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364411797467904 (GAIA J121349.46+145422.8) ra=183.456097 dec=14.906330 RA=12:13:49.46 DEC=+14:54:22.79 GaiaG=18.34 r_arcsec=2.50 | plx=0.385±0.181 mas (SNR=2.1) | pm=4.98±0.24 mas/yr (SNR=21.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364995912734464 (GAIA J121355.26+145635.2) ra=183.480235 dec=14.943115 RA=12:13:55.26 DEC=+14:56:35.21 GaiaG=19.53 r_arcsec=2.50 | plx=-0.292±0.413 mas (SNR=-0.7) | pm=1.63±0.50 mas/yr (SNR=3.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364995912733568 (GAIA J121354.81+145617.5) ra=183.478390 dec=14.938195 RA=12:13:54.81 DEC=+14:56:17.50 GaiaG=19.02 r_arcsec=2.50 | plx=1.612±0.290 mas (SNR=5.6) | pm=40.04±0.36 mas/yr (SNR=111.9) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361151916609920 (GAIA J121355.07+145149.6) ra=183.479465 dec=14.863779 RA=12:13:55.07 DEC=+14:51:49.61 GaiaG=19.47 r_arcsec=2.50 | plx=1.581±0.358 mas (SNR=4.4) | pm=7.50±0.44 mas/yr (SNR=17.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364549239757824 (GAIA J121342.35+145407.3) ra=183.426461 dec=14.902030 RA=12:13:42.35 DEC=+14:54:07.31 GaiaG=19.35 r_arcsec=2.50 | plx=3.008±0.346 mas (SNR=8.7) | pm=11.79±0.45 mas/yr (SNR=26.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361250701572992 (GAIA J121352.25+145138.6) ra=183.467695 dec=14.860727 RA=12:13:52.25 DEC=+14:51:38.62 GaiaG=18.41 r_arcsec=2.50 | plx=1.789±0.196 mas (SNR=9.1) | pm=6.21±0.27 mas/yr (SNR=23.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921365103287811328 (GAIA J121350.70+145632.0) ra=183.461255 dec=14.942228 RA=12:13:50.70 DEC=+14:56:32.02 GaiaG=12.83 r_arcsec=17.97 | plx=4.198±0.019 mas (SNR=225.4) | pm=4.94±0.03 mas/yr (SNR=186.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364828409903744 (GAIA J121355.15+145522.2) ra=183.479805 dec=14.922827 RA=12:13:55.15 DEC=+14:55:22.18 GaiaG=19.36 r_arcsec=2.50 | plx=0.297±0.365 mas (SNR=0.8) | pm=8.05±0.44 mas/yr (SNR=18.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361839111393536 (GAIA J121354.96+145421.2) ra=183.479010 dec=14.905892 RA=12:13:54.96 DEC=+14:54:21.21 GaiaG=19.70 r_arcsec=2.50 | plx=0.599±0.509 mas (SNR=1.2) | pm=20.77±0.67 mas/yr (SNR=31.0) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361839112665344 (GAIA J121355.09+145420.9) ra=183.479542 dec=14.905797 RA=12:13:55.09 DEC=+14:54:20.87 GaiaG=15.45 r_arcsec=5.06 | plx=0.877±0.042 mas (SNR=21.1) | pm=21.93±0.06 mas/yr (SNR=398.1) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921361151917897216 (GAIA J121355.99+145133.4) ra=183.483272 dec=14.859280 RA=12:13:55.99 DEC=+14:51:33.41 GaiaG=17.00 r_arcsec=2.99 | plx=0.241±0.076 mas (SNR=3.2) | pm=8.41±0.10 mas/yr (SNR=88.3) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364239998577152 (GAIA J121344.47+145230.3) ra=183.435276 dec=14.875096 RA=12:13:44.47 DEC=+14:52:30.35 GaiaG=20.39 r_arcsec=2.50 | plx=-1.373±0.832 mas (SNR=-1.7) | pm=9.09±0.97 mas/yr (SNR=9.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921364862769641984 (GAIA J121352.84+145517.0) ra=183.470171 dec=14.921399 RA=12:13:52.84 DEC=+14:55:17.04 GaiaG=16.74 r_arcsec=3.24 | plx=3.435±0.068 mas (SNR=50.2) | pm=27.11±0.09 mas/yr (SNR=298.1) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921365098991947904 (GAIA J121350.31+145606.5) ra=183.459629 dec=14.935142 RA=12:13:50.31 DEC=+14:56:06.51 GaiaG=20.07 r_arcsec=2.50 | plx=2.998±0.546 mas (SNR=5.5) | pm=11.54±0.74 mas/yr (SNR=15.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=727 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J121343.53+145117.4) ra=183.431383 dec=14.854834 RA=12:13:43.53 DEC=+14:51:17.40 type=REX z_l95=0.852 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121342.94+145143.3) ra=183.428934 dec=14.862030 RA=12:13:42.94 DEC=+14:51:43.31 type=REX z_l95=0.368 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121343.46+145136.2) ra=183.431072 dec=14.860065 RA=12:13:43.46 DEC=+14:51:36.23 type=REX z_l95=0.320 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121344.25+145140.0) ra=183.434375 dec=14.861123 RA=12:13:44.25 DEC=+14:51:40.04 type=DEV z_l95=0.300 a=2.00" b=2.00" pa=-66.0
+[GAL][LEGACY] (LS J121341.50+145227.5) ra=183.422915 dec=14.874304 RA=12:13:41.50 DEC=+14:52:27.49 type=REX z_l95=0.340 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121341.80+145158.3) ra=183.424154 dec=14.866207 RA=12:13:41.80 DEC=+14:51:58.34 type=REX z_l95=0.617 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121342.40+145217.7) ra=183.426669 dec=14.871596 RA=12:13:42.40 DEC=+14:52:17.75 type=REX z_l95=0.588 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121342.68+145230.8) ra=183.427854 dec=14.875232 RA=12:13:42.68 DEC=+14:52:30.83 type=SER z_l95=0.339 a=2.27" b=2.00" pa=-54.9
+[GAL][LEGACY] (LS J121344.09+145214.4) ra=183.433697 dec=14.870654 RA=12:13:44.09 DEC=+14:52:14.35 type=DEV z_l95=0.247 a=2.21" b=2.05" pa=-51.5
+[GAL][LEGACY] (LS J121343.84+145225.7) ra=183.432686 dec=14.873812 RA=12:13:43.84 DEC=+14:52:25.72 type=REX z_l95=0.323 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121343.35+145234.5) ra=183.430621 dec=14.876260 RA=12:13:43.35 DEC=+14:52:34.53 type=REX z_l95=0.436 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121344.90+145128.7) ra=183.437063 dec=14.857983 RA=12:13:44.90 DEC=+14:51:28.74 type=REX z_l95=0.320 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121344.93+145132.3) ra=183.437198 dec=14.858966 RA=12:13:44.93 DEC=+14:51:32.28 type=REX z_l95=0.275 a=2.23" b=2.23" pa=0.0
+[GAL][LEGACY] (LS J121345.44+145129.7) ra=183.439348 dec=14.858259 RA=12:13:45.44 DEC=+14:51:29.73 type=REX z_l95=0.341 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121346.27+145130.6) ra=183.442790 dec=14.858497 RA=12:13:46.27 DEC=+14:51:30.59 type=REX z_l95=0.699 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121345.85+145146.8) ra=183.441054 dec=14.863003 RA=12:13:45.85 DEC=+14:51:46.81 type=REX z_l95=0.336 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121349.19+145141.9) ra=183.454938 dec=14.861634 RA=12:13:49.19 DEC=+14:51:41.88 type=REX z_l95=0.604 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121345.16+145217.6) ra=183.438158 dec=14.871542 RA=12:13:45.16 DEC=+14:52:17.55 type=REX z_l95=0.288 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121341.13+145257.4) ra=183.421375 dec=14.882602 RA=12:13:41.13 DEC=+14:52:57.37 type=REX z_l95=0.450 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121341.68+145239.0) ra=183.423654 dec=14.877498 RA=12:13:41.68 DEC=+14:52:38.99 type=REX z_l95=0.315 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121342.41+145254.4) ra=183.426699 dec=14.881769 RA=12:13:42.41 DEC=+14:52:54.37 type=REX z_l95=0.739 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121343.93+145238.6) ra=183.433062 dec=14.877398 RA=12:13:43.93 DEC=+14:52:38.63 type=SER z_l95=0.261 a=2.00" b=2.00" pa=-73.1
+[GAL][LEGACY] (LS J121342.02+145315.0) ra=183.425092 dec=14.887512 RA=12:13:42.02 DEC=+14:53:15.04 type=REX z_l95=0.335 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121343.72+145343.7) ra=183.432170 dec=14.895464 RA=12:13:43.72 DEC=+14:53:43.67 type=EXP z_l95=0.246 a=2.00" b=2.00" pa=83.3
+[GAL][LEGACY] (LS J121350.41+145611.9) ra=183.460035 dec=14.936639 RA=12:13:50.41 DEC=+14:56:11.90 type=EXP z_l95=0.667 a=2.00" b=2.00" pa=-74.6
+[GAL][LEGACY] (LS J121354.71+145319.3) ra=183.477941 dec=14.888704 RA=12:13:54.71 DEC=+14:53:19.33 type=SER z_l95=0.207 a=2.00" b=2.00" pa=-9.7
+[GAL][LEGACY] (LS J121353.84+145506.8) ra=183.474350 dec=14.918554 RA=12:13:53.84 DEC=+14:55:06.79 type=REX z_l95=0.300 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121354.48+145510.0) ra=183.477013 dec=14.919455 RA=12:13:54.48 DEC=+14:55:10.04 type=REX z_l95=0.693 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121352.23+145538.9) ra=183.467633 dec=14.927461 RA=12:13:52.23 DEC=+14:55:38.86 type=REX z_l95=0.362 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121352.91+145530.7) ra=183.470479 dec=14.925197 RA=12:13:52.91 DEC=+14:55:30.71 type=REX z_l95=0.355 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121352.71+145538.0) ra=183.469643 dec=14.927210 RA=12:13:52.71 DEC=+14:55:37.95 type=REX z_l95=0.208 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121353.11+145535.9) ra=183.471273 dec=14.926634 RA=12:13:53.11 DEC=+14:55:35.88 type=REX z_l95=0.253 a=2.80" b=2.80" pa=0.0
+[GAL][LEGACY] (LS J121354.04+145522.0) ra=183.475170 dec=14.922772 RA=12:13:54.04 DEC=+14:55:21.98 type=REX z_l95=0.559 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121354.43+145529.3) ra=183.476801 dec=14.924798 RA=12:13:54.43 DEC=+14:55:29.27 type=REX z_l95=0.256 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121355.37+145457.6) ra=183.480696 dec=14.915993 RA=12:13:55.37 DEC=+14:54:57.57 type=REX z_l95=0.312 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121355.75+145537.6) ra=183.482303 dec=14.927118 RA=12:13:55.75 DEC=+14:55:37.63 type=DEV z_l95=0.233 a=2.39" b=2.00" pa=27.3
+[GAL][LEGACY] (LS J121352.09+145547.7) ra=183.467056 dec=14.929925 RA=12:13:52.09 DEC=+14:55:47.73 type=REX z_l95=0.351 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121352.84+145550.8) ra=183.470152 dec=14.930773 RA=12:13:52.84 DEC=+14:55:50.78 type=REX z_l95=0.549 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121354.04+145545.5) ra=183.475164 dec=14.929318 RA=12:13:54.04 DEC=+14:55:45.55 type=REX z_l95=0.568 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121354.33+145545.3) ra=183.476359 dec=14.929255 RA=12:13:54.33 DEC=+14:55:45.32 type=REX z_l95=0.343 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121354.81+145559.7) ra=183.478379 dec=14.933241 RA=12:13:54.81 DEC=+14:55:59.67 type=REX z_l95=0.356 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121352.91+145614.5) ra=183.470468 dec=14.937370 RA=12:13:52.91 DEC=+14:56:14.53 type=REX z_l95=0.228 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121352.37+145624.1) ra=183.468206 dec=14.940022 RA=12:13:52.37 DEC=+14:56:24.08 type=REX z_l95=0.290 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121354.40+145623.4) ra=183.476668 dec=14.939832 RA=12:13:54.40 DEC=+14:56:23.40 type=REX z_l95=0.509 a=3.80" b=3.80" pa=0.0
+[GAL][LEGACY] (LS J121355.00+145544.2) ra=183.479181 dec=14.928936 RA=12:13:55.00 DEC=+14:55:44.17 type=REX z_l95=0.343 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121355.40+145543.6) ra=183.480833 dec=14.928785 RA=12:13:55.40 DEC=+14:55:43.63 type=REX z_l95=0.306 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121355.33+145551.8) ra=183.480541 dec=14.931061 RA=12:13:55.33 DEC=+14:55:51.82 type=REX z_l95=0.453 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121355.35+145613.7) ra=183.480625 dec=14.937139 RA=12:13:55.35 DEC=+14:56:13.70 type=REX z_l95=0.575 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121354.81+145643.3) ra=183.478355 dec=14.945373 RA=12:13:54.81 DEC=+14:56:43.34 type=REX z_l95=0.255 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J121355.22+145629.0) ra=183.480078 dec=14.941392 RA=12:13:55.22 DEC=+14:56:29.01 type=REX z_l95=0.562 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4192_mask.fits (shape=(1629, 1092), masked=47169 px; stars=15, galaxies=50)
+[OK] Wrote NGC4192_combined_VRI_mask.png
+[TIME] NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=13.54
+[FOV] NGC4293: nx=923 ny=532 pixscale=0.2000"/pix rad=1.940 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3947188954931954176 (GAIA J122114.65+182319.2) ra=185.311044 dec=18.388675 RA=12:21:14.65 DEC=+18:23:19.23 GaiaG=18.53 r_arcsec=2.50 | plx=0.031±0.186 mas (SNR=0.2) | pm=4.76±0.24 mas/yr (SNR=19.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=153 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122107.28+182349.0) ra=185.280350 dec=18.396945 RA=12:21:07.28 DEC=+18:23:49.00 type=REX z_l95=0.615 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122109.27+182350.5) ra=185.288614 dec=18.397359 RA=12:21:09.27 DEC=+18:23:50.49 type=REX z_l95=0.205 a=2.80" b=2.80" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4293_mask.fits (shape=(532, 923), masked=1281 px; stars=1, galaxies=2)
+[OK] Wrote NGC4293_combined_VRI_mask.png
+[TIME] NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.55
+[FOV] NGC4294: nx=567 ny=663 pixscale=0.2000"/pix rad=1.618 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907393467299334272 (GAIA J122114.46+113126.0) ra=185.310246 dec=11.523899 RA=12:21:14.46 DEC=+11:31:26.04 GaiaG=19.67 r_arcsec=2.50 | plx=2.201±0.398 mas (SNR=5.5) | pm=24.15±0.58 mas/yr (SNR=41.9) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907394188852990976 (GAIA J122120.11+113137.1) ra=185.333797 dec=11.526971 RA=12:21:20.11 DEC=+11:31:37.10 GaiaG=18.60 r_arcsec=2.50 | plx=0.511±0.175 mas (SNR=2.9) | pm=19.33±0.27 mas/yr (SNR=72.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907392677024495744 (GAIA J122114.21+113058.6) ra=185.309191 dec=11.516286 RA=12:21:14.21 DEC=+11:30:58.63 GaiaG=19.19 r_arcsec=2.50 | plx=0.239±0.267 mas (SNR=0.9) | pm=1.81±0.39 mas/yr (SNR=4.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907393471594072448 (GAIA J122114.86+113129.4) ra=185.311935 dec=11.524823 RA=12:21:14.86 DEC=+11:31:29.36 GaiaG=14.56 r_arcsec=7.11 | plx=1.553±0.024 mas (SNR=65.0) | pm=24.09±0.03 mas/yr (SNR=721.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907392612599891456 (GAIA J122117.61+113003.6) ra=185.323387 dec=11.501004 RA=12:21:17.61 DEC=+11:30:03.61 GaiaG=20.09 r_arcsec=2.50 | plx=0.975±0.537 mas (SNR=1.8) | pm=16.90±0.82 mas/yr (SNR=20.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907392612600612864 (GAIA J122117.77+113014.5) ra=185.324062 dec=11.504021 RA=12:21:17.77 DEC=+11:30:14.48 GaiaG=17.22 r_arcsec=2.80 | plx=-0.008±0.085 mas (SNR=-0.1) | pm=1.75±0.13 mas/yr (SNR=13.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=225 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122114.23+112957.1) ra=185.309310 dec=11.499197 RA=12:21:14.23 DEC=+11:29:57.11 type=REX z_l95=0.343 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122114.16+113001.1) ra=185.309002 dec=11.500307 RA=12:21:14.16 DEC=+11:30:01.11 type=DEV z_l95=0.507 a=2.00" b=2.00" pa=-24.9
+[GAL][LEGACY] (LS J122114.74+112958.5) ra=185.311422 dec=11.499591 RA=12:21:14.74 DEC=+11:29:58.53 type=REX z_l95=0.292 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122115.54+112936.6) ra=185.314747 dec=11.493489 RA=12:21:15.54 DEC=+11:29:36.56 type=REX z_l95=0.411 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122118.39+112928.2) ra=185.326608 dec=11.491166 RA=12:21:18.39 DEC=+11:29:28.20 type=REX z_l95=0.509 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122115.49+112945.7) ra=185.314546 dec=11.496039 RA=12:21:15.49 DEC=+11:29:45.74 type=REX z_l95=0.253 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122116.00+112949.1) ra=185.316682 dec=11.496975 RA=12:21:16.00 DEC=+11:29:49.11 type=REX z_l95=0.213 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122116.54+112938.9) ra=185.318915 dec=11.494135 RA=12:21:16.54 DEC=+11:29:38.88 type=EXP z_l95=0.352 a=2.00" b=2.00" pa=83.6
+[GAL][LEGACY] (LS J122116.13+112955.2) ra=185.317192 dec=11.498674 RA=12:21:16.13 DEC=+11:29:55.23 type=REX z_l95=0.543 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122116.56+112955.1) ra=185.319015 dec=11.498626 RA=12:21:16.56 DEC=+11:29:55.05 type=REX z_l95=0.392 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122117.46+112943.2) ra=185.322737 dec=11.495344 RA=12:21:17.46 DEC=+11:29:43.24 type=EXP z_l95=0.386 a=2.00" b=2.00" pa=32.2
+[GAL][LEGACY] (LS J122115.30+113009.8) ra=185.313741 dec=11.502710 RA=12:21:15.30 DEC=+11:30:09.75 type=REX z_l95=0.255 a=2.23" b=2.23" pa=0.0
+[GAL][LEGACY] (LS J122115.12+113012.8) ra=185.312985 dec=11.503564 RA=12:21:15.12 DEC=+11:30:12.83 type=REX z_l95=0.219 a=2.29" b=2.29" pa=0.0
+[GAL][LEGACY] (LS J122114.47+113020.3) ra=185.310296 dec=11.505646 RA=12:21:14.47 DEC=+11:30:20.33 type=REX z_l95=0.380 a=2.28" b=2.28" pa=0.0
+[GAL][LEGACY] (LS J122114.84+113018.5) ra=185.311813 dec=11.505139 RA=12:21:14.84 DEC=+11:30:18.50 type=REX z_l95=0.365 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122114.90+113029.3) ra=185.312069 dec=11.508142 RA=12:21:14.90 DEC=+11:30:29.31 type=DEV z_l95=0.324 a=2.01" b=2.00" pa=-27.1
+[GAL][LEGACY] (LS J122114.88+113031.6) ra=185.311990 dec=11.508787 RA=12:21:14.88 DEC=+11:30:31.63 type=DEV z_l95=0.626 a=2.00" b=2.00" pa=-7.0
+[GAL][LEGACY] (LS J122114.37+113049.6) ra=185.309870 dec=11.513770 RA=12:21:14.37 DEC=+11:30:49.57 type=REX z_l95=0.265 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122114.83+113040.7) ra=185.311779 dec=11.511304 RA=12:21:14.83 DEC=+11:30:40.69 type=REX z_l95=0.217 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122115.43+113028.2) ra=185.314295 dec=11.507831 RA=12:21:15.43 DEC=+11:30:28.19 type=REX z_l95=0.367 a=2.09" b=2.09" pa=0.0
+[GAL][LEGACY] (LS J122115.56+113031.5) ra=185.314813 dec=11.508750 RA=12:21:15.56 DEC=+11:30:31.50 type=EXP z_l95=0.213 a=2.01" b=2.00" pa=55.9
+[GAL][LEGACY] (LS J122115.15+113053.3) ra=185.313129 dec=11.514806 RA=12:21:15.15 DEC=+11:30:53.30 type=EXP z_l95=0.293 a=2.00" b=2.00" pa=-70.7
+[GAL][LEGACY] (LS J122115.25+113107.3) ra=185.313534 dec=11.518683 RA=12:21:15.25 DEC=+11:31:07.26 type=EXP z_l95=0.275 a=2.00" b=2.00" pa=41.7
+[GAL][LEGACY] (LS J122115.82+113132.7) ra=185.315929 dec=11.525754 RA=12:21:15.82 DEC=+11:31:32.72 type=DEV z_l95=0.382 a=2.00" b=2.00" pa=-82.7
+[GAL][LEGACY] (LS J122119.69+113051.2) ra=185.332044 dec=11.514223 RA=12:21:19.69 DEC=+11:30:51.20 type=REX z_l95=0.280 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122120.83+113053.7) ra=185.336800 dec=11.514925 RA=12:21:20.83 DEC=+11:30:53.73 type=REX z_l95=0.456 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122121.20+113109.4) ra=185.338323 dec=11.519264 RA=12:21:21.20 DEC=+11:31:09.35 type=REX z_l95=0.596 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122121.64+113106.9) ra=185.340150 dec=11.518580 RA=12:21:21.64 DEC=+11:31:06.89 type=DEV z_l95=0.701 a=2.00" b=2.00" pa=20.9
+[GAL][LEGACY] (LS J122121.73+113102.1) ra=185.340532 dec=11.517238 RA=12:21:21.73 DEC=+11:31:02.06 type=REX z_l95=0.304 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122120.28+113119.9) ra=185.334519 dec=11.522196 RA=12:21:20.28 DEC=+11:31:19.91 type=REX z_l95=0.281 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122120.10+113131.6) ra=185.333757 dec=11.525455 RA=12:21:20.10 DEC=+11:31:31.64 type=EXP z_l95=0.316 a=2.00" b=2.00" pa=27.2
+[GAL][LEGACY] (LS J122120.23+113136.1) ra=185.334274 dec=11.526688 RA=12:21:20.23 DEC=+11:31:36.08 type=REX z_l95=0.310 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4294_mask.fits (shape=(663, 567), masked=15755 px; stars=6, galaxies=32)
+[OK] Wrote NGC4294_combined_VRI_mask.png
+[TIME] NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.77
+[FOV] NGC4298: nx=1042 ny=995 pixscale=0.2000"/pix rad=2.566 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3921151042117775488 (GAIA J122128.49+143449.5) ra=185.368696 dec=14.580406 RA=12:21:28.49 DEC=+14:34:49.46 GaiaG=16.27 r_arcsec=3.78 | plx=1.473±0.054 mas (SNR=27.2) | pm=5.74±0.07 mas/yr (SNR=80.2) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151557513852160 (GAIA J122133.18+143632.0) ra=185.388250 dec=14.608897 RA=12:21:33.18 DEC=+14:36:32.03 GaiaG=17.09 r_arcsec=2.91 | plx=0.033±0.071 mas (SNR=0.5) | pm=1.23±0.09 mas/yr (SNR=13.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151140900927488 (GAIA J122129.42+143506.3) ra=185.372586 dec=14.585071 RA=12:21:29.42 DEC=+14:35:06.25 GaiaG=19.67 r_arcsec=2.50 | plx=0.498±0.383 mas (SNR=1.3) | pm=4.00±0.55 mas/yr (SNR=7.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151694952806272 (GAIA J122140.72+143754.2) ra=185.419669 dec=14.631712 RA=12:21:40.72 DEC=+14:37:54.16 GaiaG=13.99 r_arcsec=10.96 | plx=2.780±0.021 mas (SNR=130.9) | pm=59.97±0.03 mas/yr (SNR=2165.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151110836313856 (GAIA J122134.16+143511.9) ra=185.392346 dec=14.586634 RA=12:21:34.16 DEC=+14:35:11.88 GaiaG=20.56 r_arcsec=2.50 | plx=-0.444±1.013 mas (SNR=-0.4) | pm=5.65±1.28 mas/yr (SNR=4.4) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151076477513984 (GAIA J122132.21+143434.7) ra=185.384194 dec=14.576302 RA=12:21:32.21 DEC=+14:34:34.69 GaiaG=17.36 r_arcsec=2.69 | plx=0.752±0.090 mas (SNR=8.4) | pm=12.38±0.12 mas/yr (SNR=102.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151587577547008 (GAIA J122136.49+143718.3) ra=185.402031 dec=14.621739 RA=12:21:36.49 DEC=+14:37:18.26 GaiaG=18.10 r_arcsec=2.50 | plx=1.010±0.142 mas (SNR=7.1) | pm=1.21±0.19 mas/yr (SNR=6.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151072181447168 (GAIA J122132.51+143444.6) ra=185.385471 dec=14.579061 RA=12:21:32.51 DEC=+14:34:44.62 GaiaG=17.74 r_arcsec=2.50 | plx=2.427±0.109 mas (SNR=22.3) | pm=32.08±0.15 mas/yr (SNR=211.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151557513852416 (GAIA J122135.85+143641.2) ra=185.399380 dec=14.611447 RA=12:21:35.85 DEC=+14:36:41.21 GaiaG=13.35 r_arcsec=14.34 | plx=1.423±0.016 mas (SNR=88.2) | pm=16.03±0.02 mas/yr (SNR=758.4) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=417 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122126.96+143436.4) ra=185.362348 dec=14.576766 RA=12:21:26.96 DEC=+14:34:36.36 type=REX z_l95=0.277 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122128.15+143434.7) ra=185.367301 dec=14.576309 RA=12:21:28.15 DEC=+14:34:34.71 type=REX z_l95=0.378 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122125.80+143444.8) ra=185.357506 dec=14.579107 RA=12:21:25.80 DEC=+14:34:44.78 type=REX z_l95=0.741 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122126.72+143446.6) ra=185.361339 dec=14.579604 RA=12:21:26.72 DEC=+14:34:46.57 type=REX z_l95=0.657 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122127.13+143458.8) ra=185.363029 dec=14.583012 RA=12:21:27.13 DEC=+14:34:58.84 type=REX z_l95=0.229 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122127.74+143456.5) ra=185.365582 dec=14.582367 RA=12:21:27.74 DEC=+14:34:56.52 type=REX z_l95=0.264 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122127.87+143459.5) ra=185.366125 dec=14.583192 RA=12:21:27.87 DEC=+14:34:59.49 type=REX z_l95=0.364 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122126.37+143518.5) ra=185.359854 dec=14.588475 RA=12:21:26.37 DEC=+14:35:18.51 type=REX z_l95=0.246 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122125.97+143524.5) ra=185.358215 dec=14.590152 RA=12:21:25.97 DEC=+14:35:24.55 type=REX z_l95=0.349 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122129.00+143520.4) ra=185.370842 dec=14.589003 RA=12:21:29.00 DEC=+14:35:20.41 type=EXP z_l95=0.283 a=2.00" b=2.00" pa=5.8
+[GAL][LEGACY] (LS J122134.81+143449.6) ra=185.395043 dec=14.580446 RA=12:21:34.81 DEC=+14:34:49.60 type=EXP z_l95=0.326 a=2.00" b=2.00" pa=82.9
+[GAL][LEGACY] (LS J122135.22+143501.1) ra=185.396750 dec=14.583626 RA=12:21:35.22 DEC=+14:35:01.05 type=REX z_l95=0.213 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122134.93+143516.4) ra=185.395556 dec=14.587890 RA=12:21:34.93 DEC=+14:35:16.40 type=SER z_l95=0.204 a=5.04" b=2.73" pa=21.5
+[GAL][LEGACY] (LS J122135.70+143500.2) ra=185.398746 dec=14.583386 RA=12:21:35.70 DEC=+14:35:00.19 type=REX z_l95=0.299 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122136.90+143737.2) ra=185.403756 dec=14.627003 RA=12:21:36.90 DEC=+14:37:37.21 type=REX z_l95=0.837 a=2.16" b=2.16" pa=0.0
+[GAL][LEGACY] (LS J122126.10+143753.1) ra=185.358758 dec=14.631407 RA=12:21:26.10 DEC=+14:37:53.07 type=EXP z_l95=0.387 a=2.00" b=2.00" pa=-33.7
+[GAL][LEGACY] (LS J122135.17+143755.7) ra=185.396522 dec=14.632146 RA=12:21:35.17 DEC=+14:37:55.73 type=EXP z_l95=0.229 a=2.00" b=2.00" pa=45.1
+[GAL][LEGACY] (LS J122139.77+143716.8) ra=185.415698 dec=14.621332 RA=12:21:39.77 DEC=+14:37:16.79 type=REX z_l95=0.372 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122139.54+143726.6) ra=185.414764 dec=14.624055 RA=12:21:39.54 DEC=+14:37:26.60 type=REX z_l95=0.326 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122138.97+143747.3) ra=185.412389 dec=14.629797 RA=12:21:38.97 DEC=+14:37:47.27 type=EXP z_l95=0.291 a=2.00" b=2.00" pa=-89.5
+[GAL][LEGACY] (LS J122139.88+143756.8) ra=185.416183 dec=14.632431 RA=12:21:39.88 DEC=+14:37:56.75 type=REX z_l95=0.249 a=3.19" b=3.19" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4298_mask.fits (shape=(995, 1042), masked=26964 px; stars=9, galaxies=21)
+[OK] Wrote NGC4298_combined_VRI_mask.png
+[TIME] NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.53
+[FOV] NGC4302: nx=322 ny=1420 pixscale=0.2000"/pix rad=2.591 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3921139870908995840 (GAIA J122144.06+143628.4) ra=185.433581 dec=14.607896 RA=12:21:44.06 DEC=+14:36:28.42 GaiaG=19.60 r_arcsec=2.50 | plx=0.460±0.359 mas (SNR=1.3) | pm=4.62±0.51 mas/yr (SNR=9.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151694952806272 (GAIA J122140.72+143754.2) ra=185.419669 dec=14.631712 RA=12:21:40.72 DEC=+14:37:54.16 GaiaG=13.99 r_arcsec=10.96 | plx=2.780±0.021 mas (SNR=130.9) | pm=59.97±0.03 mas/yr (SNR=2165.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921151621939509120 (GAIA J122141.74+143717.3) ra=185.423930 dec=14.621464 RA=12:21:41.74 DEC=+14:37:17.27 GaiaG=20.47 r_arcsec=2.50 | plx=-0.325±0.757 mas (SNR=-0.4) | pm=5.62±1.03 mas/yr (SNR=5.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921139291087254272 (GAIA J122141.90+143431.2) ra=185.424592 dec=14.575347 RA=12:21:41.90 DEC=+14:34:31.25 GaiaG=19.82 r_arcsec=2.50 | plx=1.257±0.440 mas (SNR=2.9) | pm=19.56±0.63 mas/yr (SNR=30.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921139084928823936 (GAIA J122142.38+143418.9) ra=185.426595 dec=14.571924 RA=12:21:42.38 DEC=+14:34:18.93 GaiaG=16.23 r_arcsec=3.84 | plx=2.986±0.053 mas (SNR=56.4) | pm=50.09±0.08 mas/yr (SNR=632.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3921139291087254016 (GAIA J122140.78+143415.0) ra=185.419913 dec=14.570839 RA=12:21:40.78 DEC=+14:34:15.02 GaiaG=18.14 r_arcsec=2.50 | plx=0.498±0.138 mas (SNR=3.6) | pm=8.64±0.20 mas/yr (SNR=42.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=702 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122142.55+143632.4) ra=185.427305 dec=14.609004 RA=12:21:42.55 DEC=+14:36:32.42 type=SER z_l95=0.242 a=3.90" b=2.00" pa=-14.2
+[GAL][LEGACY] (LS J122144.34+143736.2) ra=185.434755 dec=14.626730 RA=12:21:44.34 DEC=+14:37:36.23 type=REX z_l95=0.237 a=2.29" b=2.29" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4302_mask.fits (shape=(1420, 322), masked=11633 px; stars=6, galaxies=2)
+[OK] Wrote NGC4302_combined_VRI_mask.png
+[TIME] NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=13.14
+[FOV] NGC4330: nx=881 ny=760 pixscale=0.2000"/pix rad=2.104 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907348696559957760 (GAIA J122319.97+112136.6) ra=185.833228 dec=11.360179 RA=12:23:19.97 DEC=+11:21:36.64 GaiaG=20.32 r_arcsec=2.50 | plx=1.250±0.829 mas (SNR=1.5) | pm=7.69±1.38 mas/yr (SNR=5.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907348627840412416 (GAIA J122321.12+112051.1) ra=185.837994 dec=11.347520 RA=12:23:21.12 DEC=+11:20:51.07 GaiaG=18.40 r_arcsec=2.50 | plx=2.003±0.711 mas (SNR=2.8) | pm=30.15±0.99 mas/yr (SNR=30.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907348627840247936 (GAIA J122322.30+112047.9) ra=185.842929 dec=11.346650 RA=12:23:22.30 DEC=+11:20:47.94 GaiaG=12.67 r_arcsec=19.26 | plx=3.075±0.020 mas (SNR=150.5) | pm=36.60±0.03 mas/yr (SNR=1203.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=311 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122311.56+112048.8) ra=185.798155 dec=11.346884 RA=12:23:11.56 DEC=+11:20:48.78 type=EXP z_l95=0.321 a=3.30" b=2.01" pa=-66.3
+[GAL][LEGACY] (LS J122311.76+112050.8) ra=185.799001 dec=11.347454 RA=12:23:11.76 DEC=+11:20:50.84 type=REX z_l95=0.362 a=3.26" b=3.26" pa=0.0
+[GAL][LEGACY] (LS J122311.68+112118.0) ra=185.798660 dec=11.354993 RA=12:23:11.68 DEC=+11:21:17.98 type=REX z_l95=0.493 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122311.54+112149.9) ra=185.798082 dec=11.363859 RA=12:23:11.54 DEC=+11:21:49.89 type=REX z_l95=0.255 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122311.58+112224.3) ra=185.798238 dec=11.373416 RA=12:23:11.58 DEC=+11:22:24.30 type=REX z_l95=0.334 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122311.77+112246.3) ra=185.799030 dec=11.379540 RA=12:23:11.77 DEC=+11:22:46.34 type=REX z_l95=0.275 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122312.17+112055.8) ra=185.800699 dec=11.348825 RA=12:23:12.17 DEC=+11:20:55.77 type=REX z_l95=0.462 a=3.04" b=3.04" pa=0.0
+[GAL][LEGACY] (LS J122313.21+112055.5) ra=185.805022 dec=11.348762 RA=12:23:13.21 DEC=+11:20:55.54 type=REX z_l95=0.277 a=2.38" b=2.38" pa=0.0
+[GAL][LEGACY] (LS J122314.20+112058.3) ra=185.809177 dec=11.349539 RA=12:23:14.20 DEC=+11:20:58.34 type=REX z_l95=0.231 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122314.22+112111.0) ra=185.809231 dec=11.353046 RA=12:23:14.22 DEC=+11:21:10.97 type=REX z_l95=0.255 a=3.28" b=3.28" pa=0.0
+[GAL][LEGACY] (LS J122315.10+112110.0) ra=185.812922 dec=11.352765 RA=12:23:15.10 DEC=+11:21:09.95 type=REX z_l95=0.382 a=2.15" b=2.15" pa=0.0
+[GAL][LEGACY] (LS J122314.98+112118.9) ra=185.812428 dec=11.355261 RA=12:23:14.98 DEC=+11:21:18.94 type=EXP z_l95=0.408 a=3.93" b=2.06" pa=-20.2
+[GAL][LEGACY] (LS J122317.30+112057.8) ra=185.822088 dec=11.349398 RA=12:23:17.30 DEC=+11:20:57.83 type=REX z_l95=0.501 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122317.91+112059.0) ra=185.824605 dec=11.349728 RA=12:23:17.91 DEC=+11:20:59.02 type=REX z_l95=0.654 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122315.57+112111.0) ra=185.814888 dec=11.353059 RA=12:23:15.57 DEC=+11:21:11.01 type=REX z_l95=0.286 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122316.35+112103.6) ra=185.818113 dec=11.351000 RA=12:23:16.35 DEC=+11:21:03.60 type=EXP z_l95=0.284 a=2.00" b=2.00" pa=-73.6
+[GAL][LEGACY] (LS J122316.44+112107.0) ra=185.818484 dec=11.351943 RA=12:23:16.44 DEC=+11:21:07.00 type=REX z_l95=0.692 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122315.72+112122.1) ra=185.815508 dec=11.356129 RA=12:23:15.72 DEC=+11:21:22.07 type=SER z_l95=0.527 a=2.93" b=2.16" pa=-49.1
+[GAL][LEGACY] (LS J122318.13+112114.6) ra=185.825542 dec=11.354042 RA=12:23:18.13 DEC=+11:21:14.55 type=REX z_l95=0.377 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122317.69+112122.0) ra=185.823699 dec=11.356098 RA=12:23:17.69 DEC=+11:21:21.95 type=DEV z_l95=0.550 a=2.00" b=2.00" pa=40.0
+[GAL][LEGACY] (LS J122317.95+112124.4) ra=185.824795 dec=11.356768 RA=12:23:17.95 DEC=+11:21:24.36 type=REX z_l95=0.336 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122312.47+112152.5) ra=185.801954 dec=11.364593 RA=12:23:12.47 DEC=+11:21:52.53 type=DEV z_l95=0.587 a=2.20" b=2.00" pa=-81.4
+[GAL][LEGACY] (LS J122312.42+112157.7) ra=185.801767 dec=11.366040 RA=12:23:12.42 DEC=+11:21:57.74 type=REX z_l95=0.379 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122316.44+112136.6) ra=185.818512 dec=11.360167 RA=12:23:16.44 DEC=+11:21:36.60 type=SER z_l95=0.293 a=3.48" b=2.00" pa=53.7
+[GAL][LEGACY] (LS J122318.09+112147.1) ra=185.825359 dec=11.363085 RA=12:23:18.09 DEC=+11:21:47.11 type=REX z_l95=0.285 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122319.31+112051.6) ra=185.830451 dec=11.347663 RA=12:23:19.31 DEC=+11:20:51.59 type=REX z_l95=0.324 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122321.11+112058.8) ra=185.837967 dec=11.349676 RA=12:23:21.11 DEC=+11:20:58.83 type=REX z_l95=0.554 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122321.63+112057.9) ra=185.840139 dec=11.349405 RA=12:23:21.63 DEC=+11:20:57.86 type=REX z_l95=0.852 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122320.09+112120.3) ra=185.833713 dec=11.355640 RA=12:23:20.09 DEC=+11:21:20.30 type=REX z_l95=0.443 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122320.35+112123.9) ra=185.834792 dec=11.356634 RA=12:23:20.35 DEC=+11:21:23.88 type=REX z_l95=0.351 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122321.42+112115.8) ra=185.839240 dec=11.354375 RA=12:23:21.42 DEC=+11:21:15.75 type=REX z_l95=0.217 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122321.74+112119.1) ra=185.840587 dec=11.355294 RA=12:23:21.74 DEC=+11:21:19.06 type=REX z_l95=0.379 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122322.01+112105.1) ra=185.841698 dec=11.351404 RA=12:23:22.01 DEC=+11:21:05.05 type=REX z_l95=0.361 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122322.45+112111.6) ra=185.843534 dec=11.353231 RA=12:23:22.45 DEC=+11:21:11.63 type=REX z_l95=0.220 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122323.41+112107.5) ra=185.847552 dec=11.352079 RA=12:23:23.41 DEC=+11:21:07.48 type=EXP z_l95=0.231 a=2.00" b=2.00" pa=-10.5
+[GAL][LEGACY] (LS J122322.71+112122.6) ra=185.844609 dec=11.356265 RA=12:23:22.71 DEC=+11:21:22.55 type=REX z_l95=0.248 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122319.42+112144.6) ra=185.830910 dec=11.362375 RA=12:23:19.42 DEC=+11:21:44.55 type=REX z_l95=0.527 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122321.52+112144.6) ra=185.839663 dec=11.362381 RA=12:23:21.52 DEC=+11:21:44.57 type=REX z_l95=0.255 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122319.43+112152.1) ra=185.830946 dec=11.364468 RA=12:23:19.43 DEC=+11:21:52.08 type=REX z_l95=0.237 a=2.21" b=2.21" pa=0.0
+[GAL][LEGACY] (LS J122319.57+112154.3) ra=185.831524 dec=11.365085 RA=12:23:19.57 DEC=+11:21:54.31 type=REX z_l95=0.243 a=2.89" b=2.89" pa=0.0
+[GAL][LEGACY] (LS J122319.86+112155.9) ra=185.832752 dec=11.365531 RA=12:23:19.86 DEC=+11:21:55.91 type=REX z_l95=0.407 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122321.75+112206.8) ra=185.840623 dec=11.368545 RA=12:23:21.75 DEC=+11:22:06.76 type=REX z_l95=0.270 a=2.12" b=2.12" pa=0.0
+[GAL][LEGACY] (LS J122322.79+112154.9) ra=185.844957 dec=11.365249 RA=12:23:22.79 DEC=+11:21:54.90 type=REX z_l95=0.696 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122322.71+112156.6) ra=185.844616 dec=11.365732 RA=12:23:22.71 DEC=+11:21:56.64 type=REX z_l95=0.684 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122312.91+112229.2) ra=185.803777 dec=11.374790 RA=12:23:12.91 DEC=+11:22:29.24 type=REX z_l95=0.376 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122314.74+112223.8) ra=185.811414 dec=11.373288 RA=12:23:14.74 DEC=+11:22:23.84 type=REX z_l95=0.645 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122314.97+112228.2) ra=185.812369 dec=11.374506 RA=12:23:14.97 DEC=+11:22:28.22 type=REX z_l95=0.297 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122312.44+112249.2) ra=185.801828 dec=11.380342 RA=12:23:12.44 DEC=+11:22:49.23 type=REX z_l95=0.369 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122312.40+112254.2) ra=185.801647 dec=11.381716 RA=12:23:12.40 DEC=+11:22:54.18 type=REX z_l95=0.289 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122315.66+112233.1) ra=185.815247 dec=11.375850 RA=12:23:15.66 DEC=+11:22:33.06 type=REX z_l95=0.555 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122316.12+112236.8) ra=185.817154 dec=11.376890 RA=12:23:16.12 DEC=+11:22:36.80 type=REX z_l95=0.321 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122316.68+112242.2) ra=185.819514 dec=11.378380 RA=12:23:16.68 DEC=+11:22:42.17 type=REX z_l95=0.509 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122318.35+112247.8) ra=185.826445 dec=11.379939 RA=12:23:18.35 DEC=+11:22:47.78 type=REX z_l95=0.387 a=2.19" b=2.19" pa=0.0
+[GAL][LEGACY] (LS J122317.29+112256.4) ra=185.822047 dec=11.382347 RA=12:23:17.29 DEC=+11:22:56.45 type=REX z_l95=0.397 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122318.39+112259.6) ra=185.826636 dec=11.383224 RA=12:23:18.39 DEC=+11:22:59.61 type=REX z_l95=0.401 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122312.09+112305.5) ra=185.800358 dec=11.384871 RA=12:23:12.09 DEC=+11:23:05.53 type=REX z_l95=0.242 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122314.19+112306.8) ra=185.809136 dec=11.385233 RA=12:23:14.19 DEC=+11:23:06.84 type=REX z_l95=0.299 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122313.55+112319.2) ra=185.806470 dec=11.388670 RA=12:23:13.55 DEC=+11:23:19.21 type=REX z_l95=0.710 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122313.97+112322.2) ra=185.808203 dec=11.389494 RA=12:23:13.97 DEC=+11:23:22.18 type=REX z_l95=0.747 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122317.31+112309.4) ra=185.822140 dec=11.385938 RA=12:23:17.31 DEC=+11:23:09.38 type=REX z_l95=0.459 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122319.25+112250.1) ra=185.830209 dec=11.380592 RA=12:23:19.25 DEC=+11:22:50.13 type=REX z_l95=0.316 a=2.52" b=2.52" pa=0.0
+[GAL][LEGACY] (LS J122321.95+112226.6) ra=185.841457 dec=11.374064 RA=12:23:21.95 DEC=+11:22:26.63 type=REX z_l95=0.554 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122322.52+112226.5) ra=185.843826 dec=11.374029 RA=12:23:22.52 DEC=+11:22:26.51 type=REX z_l95=0.230 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122323.55+112220.8) ra=185.848113 dec=11.372454 RA=12:23:23.55 DEC=+11:22:20.84 type=REX z_l95=0.233 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122319.16+112303.4) ra=185.829852 dec=11.384277 RA=12:23:19.16 DEC=+11:23:03.40 type=REX z_l95=0.225 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122318.96+112305.7) ra=185.829016 dec=11.384922 RA=12:23:18.96 DEC=+11:23:05.72 type=REX z_l95=0.202 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122319.98+112302.8) ra=185.833231 dec=11.384104 RA=12:23:19.98 DEC=+11:23:02.77 type=REX z_l95=0.286 a=2.72" b=2.72" pa=0.0
+[GAL][LEGACY] (LS J122320.55+112309.1) ra=185.835642 dec=11.385854 RA=12:23:20.55 DEC=+11:23:09.07 type=REX z_l95=0.242 a=2.81" b=2.81" pa=0.0
+[GAL][LEGACY] (LS J122321.38+112314.0) ra=185.839068 dec=11.387221 RA=12:23:21.38 DEC=+11:23:14.00 type=DEV z_l95=0.446 a=2.00" b=2.00" pa=-83.3
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4330_mask.fits (shape=(760, 881), masked=37604 px; stars=3, galaxies=69)
+[OK] Wrote NGC4330_combined_VRI_mask.png
+[TIME] NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.31
+[FOV] NGC4351: nx=591 ny=323 pixscale=0.2000"/pix rad=1.287 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907820661925744768 (GAIA J122358.28+121247.0) ra=185.992851 dec=12.213046 RA=12:23:58.28 DEC=+12:12:46.96 GaiaG=18.44 r_arcsec=2.50 | plx=-0.247±0.171 mas (SNR=-1.4) | pm=2.54±0.23 mas/yr (SNR=11.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3907820494422511616 (GAIA J122357.20+121202.5) ra=185.988349 dec=12.200684 RA=12:23:57.20 DEC=+12:12:02.46 GaiaG=17.52 r_arcsec=2.56 | plx=0.653±0.107 mas (SNR=6.1) | pm=6.74±0.14 mas/yr (SNR=47.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=126 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122357.50+121154.3) ra=185.989584 dec=12.198426 RA=12:23:57.50 DEC=+12:11:54.34 type=REX z_l95=0.269 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122357.58+121212.1) ra=185.989934 dec=12.203353 RA=12:23:57.58 DEC=+12:12:12.07 type=REX z_l95=0.295 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122357.43+121230.8) ra=185.989274 dec=12.208553 RA=12:23:57.43 DEC=+12:12:30.79 type=REX z_l95=0.376 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122357.54+121226.8) ra=185.989761 dec=12.207450 RA=12:23:57.54 DEC=+12:12:26.82 type=EXP z_l95=0.216 a=3.14" b=2.00" pa=-66.5
+[GAL][LEGACY] (LS J122358.56+121148.8) ra=185.994006 dec=12.196878 RA=12:23:58.56 DEC=+12:11:48.76 type=REX z_l95=0.488 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122359.16+121149.2) ra=185.996498 dec=12.196986 RA=12:23:59.16 DEC=+12:11:49.15 type=EXP z_l95=0.686 a=2.93" b=2.00" pa=-11.2
+[GAL][LEGACY] (LS J122402.32+121145.6) ra=186.009686 dec=12.195990 RA=12:24:02.32 DEC=+12:11:45.56 type=EXP z_l95=0.380 a=2.00" b=2.00" pa=27.7
+[GAL][LEGACY] (LS J122403.72+121148.6) ra=186.015506 dec=12.196838 RA=12:24:03.72 DEC=+12:11:48.62 type=REX z_l95=0.665 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122358.47+121229.1) ra=185.993623 dec=12.208090 RA=12:23:58.47 DEC=+12:12:29.12 type=EXP z_l95=0.346 a=2.46" b=2.00" pa=-42.3
+[GAL][LEGACY] (LS J122358.40+121230.9) ra=185.993316 dec=12.208595 RA=12:23:58.40 DEC=+12:12:30.94 type=REX z_l95=0.399 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122358.58+121245.1) ra=185.994075 dec=12.212524 RA=12:23:58.58 DEC=+12:12:45.08 type=REX z_l95=0.219 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122359.72+121251.9) ra=185.998821 dec=12.214403 RA=12:23:59.72 DEC=+12:12:51.85 type=REX z_l95=0.327 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4351_mask.fits (shape=(323, 591), masked=4074 px; stars=2, galaxies=12)
+[OK] Wrote NGC4351_combined_VRI_mask.png
+[TIME] NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.72
+[FOV] NGC4383: nx=633 ny=705 pixscale=0.2000"/pix rad=1.743 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3945999592588608000 (GAIA J122523.89+162732.4) ra=186.349522 dec=16.458988 RA=12:25:23.89 DEC=+16:27:32.36 GaiaG=16.68 r_arcsec=3.31 | plx=2.567±0.135 mas (SNR=19.0) | pm=51.77±0.15 mas/yr (SNR=344.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3946001070056318464 (GAIA J122527.25+162812.0) ra=186.363547 dec=16.469999 RA=12:25:27.25 DEC=+16:28:12.00 GaiaG=20.38 r_arcsec=2.50 | plx=1.214±0.888 mas (SNR=1.4) | pm=3.51±0.86 mas/yr (SNR=4.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3946001413654742784 (GAIA J122529.75+162933.9) ra=186.373976 dec=16.492755 RA=12:25:29.75 DEC=+16:29:33.92 GaiaG=17.48 r_arcsec=2.60 | plx=1.108±0.121 mas (SNR=9.1) | pm=11.68±0.14 mas/yr (SNR=84.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945999519572947456 (GAIA J122525.38+162719.3) ra=186.355764 dec=16.455351 RA=12:25:25.38 DEC=+16:27:19.26 GaiaG=20.48 r_arcsec=2.50 | plx=1.282±0.952 mas (SNR=1.3) | pm=3.19±1.00 mas/yr (SNR=3.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=375 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122521.08+162809.2) ra=186.337848 dec=16.469234 RA=12:25:21.08 DEC=+16:28:09.24 type=REX z_l95=0.300 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.13+162830.5) ra=186.338027 dec=16.475131 RA=12:25:21.13 DEC=+16:28:30.47 type=REX z_l95=0.299 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.60+162805.6) ra=186.340020 dec=16.468229 RA=12:25:21.60 DEC=+16:28:05.62 type=REX z_l95=0.532 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.29+162815.3) ra=186.338693 dec=16.470927 RA=12:25:21.29 DEC=+16:28:15.34 type=REX z_l95=0.262 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122522.50+162812.4) ra=186.343761 dec=16.470114 RA=12:25:22.50 DEC=+16:28:12.41 type=REX z_l95=0.275 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122523.05+162813.5) ra=186.346044 dec=16.470417 RA=12:25:23.05 DEC=+16:28:13.50 type=EXP z_l95=0.394 a=2.00" b=2.00" pa=-25.2
+[GAL][LEGACY] (LS J122521.28+162826.4) ra=186.338661 dec=16.473998 RA=12:25:21.28 DEC=+16:28:26.39 type=REX z_l95=0.443 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122522.43+162825.1) ra=186.343439 dec=16.473652 RA=12:25:22.43 DEC=+16:28:25.15 type=REX z_l95=0.335 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.89+162831.6) ra=186.341216 dec=16.475447 RA=12:25:21.89 DEC=+16:28:31.61 type=DEV z_l95=0.677 a=2.82" b=2.52" pa=11.1
+[GAL][LEGACY] (LS J122521.35+162837.8) ra=186.338978 dec=16.477170 RA=12:25:21.35 DEC=+16:28:37.81 type=REX z_l95=0.294 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122523.63+162821.6) ra=186.348479 dec=16.472660 RA=12:25:23.63 DEC=+16:28:21.58 type=REX z_l95=0.235 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.15+162903.9) ra=186.338142 dec=16.484413 RA=12:25:21.15 DEC=+16:29:03.89 type=REX z_l95=0.473 a=2.08" b=2.08" pa=0.0
+[GAL][LEGACY] (LS J122521.87+162849.4) ra=186.341115 dec=16.480402 RA=12:25:21.87 DEC=+16:28:49.45 type=REX z_l95=0.523 a=2.48" b=2.48" pa=0.0
+[GAL][LEGACY] (LS J122522.16+162843.0) ra=186.342338 dec=16.478609 RA=12:25:22.16 DEC=+16:28:42.99 type=REX z_l95=0.317 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.43+162854.1) ra=186.339291 dec=16.481689 RA=12:25:21.43 DEC=+16:28:54.08 type=REX z_l95=0.228 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.65+162900.8) ra=186.340195 dec=16.483552 RA=12:25:21.65 DEC=+16:29:00.79 type=REX z_l95=0.254 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122521.81+162901.5) ra=186.340861 dec=16.483752 RA=12:25:21.81 DEC=+16:29:01.51 type=DEV z_l95=0.722 a=2.09" b=2.00" pa=-20.5
+[GAL][LEGACY] (LS J122524.14+162839.1) ra=186.350575 dec=16.477514 RA=12:25:24.14 DEC=+16:28:39.05 type=SER z_l95=0.215 a=3.93" b=2.12" pa=-34.5
+[GAL][LEGACY] (LS J122523.23+162901.1) ra=186.346785 dec=16.483629 RA=12:25:23.23 DEC=+16:29:01.06 type=REX z_l95=0.241 a=2.80" b=2.80" pa=0.0
+[GAL][LEGACY] (LS J122522.00+162910.5) ra=186.341670 dec=16.486256 RA=12:25:22.00 DEC=+16:29:10.52 type=REX z_l95=0.201 a=2.12" b=2.12" pa=0.0
+[GAL][LEGACY] (LS J122522.22+162908.0) ra=186.342566 dec=16.485550 RA=12:25:22.22 DEC=+16:29:07.98 type=REX z_l95=0.272 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122522.16+162923.9) ra=186.342339 dec=16.489959 RA=12:25:22.16 DEC=+16:29:23.85 type=REX z_l95=0.275 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122523.35+162917.4) ra=186.347292 dec=16.488153 RA=12:25:23.35 DEC=+16:29:17.35 type=REX z_l95=0.351 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122522.00+162937.1) ra=186.341650 dec=16.493652 RA=12:25:22.00 DEC=+16:29:37.15 type=REX z_l95=0.222 a=2.22" b=2.22" pa=0.0
+[GAL][LEGACY] (LS J122523.34+162925.0) ra=186.347235 dec=16.490265 RA=12:25:23.34 DEC=+16:29:24.95 type=REX z_l95=0.234 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122525.99+162719.6) ra=186.358302 dec=16.455434 RA=12:25:25.99 DEC=+16:27:19.56 type=REX z_l95=0.371 a=2.08" b=2.08" pa=0.0
+[GAL][LEGACY] (LS J122526.55+162720.6) ra=186.360606 dec=16.455729 RA=12:25:26.55 DEC=+16:27:20.63 type=REX z_l95=0.256 a=2.96" b=2.96" pa=0.0
+[GAL][LEGACY] (LS J122527.75+162720.8) ra=186.365629 dec=16.455780 RA=12:25:27.75 DEC=+16:27:20.81 type=REX z_l95=0.366 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122527.28+162723.1) ra=186.363660 dec=16.456404 RA=12:25:27.28 DEC=+16:27:23.06 type=REX z_l95=0.434 a=2.36" b=2.36" pa=0.0
+[GAL][LEGACY] (LS J122527.38+162726.5) ra=186.364082 dec=16.457358 RA=12:25:27.38 DEC=+16:27:26.49 type=REX z_l95=0.356 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122526.35+162732.1) ra=186.359776 dec=16.458923 RA=12:25:26.35 DEC=+16:27:32.12 type=REX z_l95=0.369 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122527.12+162737.6) ra=186.363015 dec=16.460435 RA=12:25:27.12 DEC=+16:27:37.57 type=REX z_l95=0.282 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122527.76+162735.2) ra=186.365674 dec=16.459779 RA=12:25:27.76 DEC=+16:27:35.21 type=REX z_l95=0.291 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122527.28+162739.2) ra=186.363662 dec=16.460889 RA=12:25:27.28 DEC=+16:27:39.20 type=REX z_l95=0.232 a=2.19" b=2.19" pa=0.0
+[GAL][LEGACY] (LS J122529.54+162727.3) ra=186.373069 dec=16.457595 RA=12:25:29.54 DEC=+16:27:27.34 type=REX z_l95=0.221 a=2.88" b=2.88" pa=0.0
+[GAL][LEGACY] (LS J122529.30+162740.0) ra=186.372095 dec=16.461118 RA=12:25:29.30 DEC=+16:27:40.02 type=REX z_l95=0.380 a=2.62" b=2.62" pa=0.0
+[GAL][LEGACY] (LS J122529.36+162748.4) ra=186.372314 dec=16.463457 RA=12:25:29.36 DEC=+16:27:48.45 type=REX z_l95=0.289 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122529.55+162748.3) ra=186.373109 dec=16.463413 RA=12:25:29.55 DEC=+16:27:48.29 type=REX z_l95=0.254 a=2.18" b=2.18" pa=0.0
+[GAL][LEGACY] (LS J122530.03+162741.4) ra=186.375107 dec=16.461512 RA=12:25:30.03 DEC=+16:27:41.44 type=REX z_l95=0.586 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122527.30+162757.9) ra=186.363763 dec=16.466073 RA=12:25:27.30 DEC=+16:27:57.86 type=REX z_l95=0.615 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122527.77+162803.2) ra=186.365692 dec=16.467553 RA=12:25:27.77 DEC=+16:28:03.19 type=REX z_l95=0.527 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122528.78+162756.5) ra=186.369920 dec=16.465696 RA=12:25:28.78 DEC=+16:27:56.51 type=REX z_l95=0.228 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122528.11+162807.7) ra=186.367132 dec=16.468815 RA=12:25:28.11 DEC=+16:28:07.73 type=REX z_l95=0.464 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122529.92+162802.4) ra=186.374670 dec=16.467339 RA=12:25:29.92 DEC=+16:28:02.42 type=REX z_l95=0.268 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122528.63+162815.1) ra=186.369295 dec=16.470871 RA=12:25:28.63 DEC=+16:28:15.13 type=REX z_l95=0.407 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122528.62+162822.1) ra=186.369247 dec=16.472797 RA=12:25:28.62 DEC=+16:28:22.07 type=REX z_l95=0.539 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122529.35+162816.1) ra=186.372281 dec=16.471150 RA=12:25:29.35 DEC=+16:28:16.14 type=REX z_l95=0.294 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122528.78+162820.4) ra=186.369926 dec=16.472340 RA=12:25:28.78 DEC=+16:28:20.43 type=REX z_l95=0.452 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122529.00+162822.8) ra=186.370815 dec=16.473003 RA=12:25:29.00 DEC=+16:28:22.81 type=EXP z_l95=0.609 a=2.80" b=2.00" pa=27.5
+[GAL][LEGACY] (LS J122529.75+162814.5) ra=186.373963 dec=16.470695 RA=12:25:29.75 DEC=+16:28:14.50 type=REX z_l95=0.216 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122524.77+162852.9) ra=186.353224 dec=16.481374 RA=12:25:24.77 DEC=+16:28:52.95 type=REX z_l95=0.452 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122525.76+162857.9) ra=186.357325 dec=16.482736 RA=12:25:25.76 DEC=+16:28:57.85 type=REX z_l95=0.212 a=2.64" b=2.64" pa=0.0
+[GAL][LEGACY] (LS J122525.20+162902.1) ra=186.355015 dec=16.483904 RA=12:25:25.20 DEC=+16:29:02.05 type=REX z_l95=0.311 a=2.50" b=2.50" pa=0.0
+[GAL][LEGACY] (LS J122524.81+162908.9) ra=186.353373 dec=16.485800 RA=12:25:24.81 DEC=+16:29:08.88 type=REX z_l95=0.202 a=2.99" b=2.99" pa=0.0
+[GAL][LEGACY] (LS J122525.68+162906.0) ra=186.356996 dec=16.485006 RA=12:25:25.68 DEC=+16:29:06.02 type=REX z_l95=0.209 a=2.51" b=2.51" pa=0.0
+[GAL][LEGACY] (LS J122525.21+162915.4) ra=186.355049 dec=16.487615 RA=12:25:25.21 DEC=+16:29:15.41 type=REX z_l95=0.221 a=2.15" b=2.15" pa=0.0
+[GAL][LEGACY] (LS J122525.99+162917.2) ra=186.358298 dec=16.488116 RA=12:25:25.99 DEC=+16:29:17.22 type=REX z_l95=0.214 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122526.74+162918.4) ra=186.361397 dec=16.488443 RA=12:25:26.74 DEC=+16:29:18.39 type=REX z_l95=0.212 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122530.00+162854.5) ra=186.375017 dec=16.481792 RA=12:25:30.00 DEC=+16:28:54.45 type=REX z_l95=0.379 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122529.59+162914.8) ra=186.373289 dec=16.487454 RA=12:25:29.59 DEC=+16:29:14.83 type=EXP z_l95=0.722 a=2.13" b=2.00" pa=51.5
+[GAL][LEGACY] (LS J122526.91+162926.5) ra=186.362124 dec=16.490702 RA=12:25:26.91 DEC=+16:29:26.53 type=REX z_l95=0.204 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122527.37+162925.0) ra=186.364023 dec=16.490283 RA=12:25:27.37 DEC=+16:29:25.02 type=REX z_l95=0.276 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122527.36+162935.9) ra=186.364000 dec=16.493295 RA=12:25:27.36 DEC=+16:29:35.86 type=REX z_l95=0.270 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4383_mask.fits (shape=(705, 633), masked=24524 px; stars=4, galaxies=63)
+[OK] Wrote NGC4383_combined_VRI_mask.png
+[TIME] NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.13
+[FOV] NGC4388: nx=870 ny=323 pixscale=0.2000"/pix rad=1.711 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3907951125852987008 (GAIA J122545.46+123911.7) ra=186.439415 dec=12.653255 RA=12:25:45.46 DEC=+12:39:11.72 GaiaG=18.64 r_arcsec=2.50 | plx=1.108±0.251 mas (SNR=4.4) | pm=20.18±0.35 mas/yr (SNR=58.4) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=176 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122553.23+123913.6) ra=186.471783 dec=12.653779 RA=12:25:53.23 DEC=+12:39:13.60 type=REX z_l95=0.473 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.52+123913.1) ra=186.473000 dec=12.653649 RA=12:25:53.52 DEC=+12:39:13.14 type=REX z_l95=0.481 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4388_mask.fits (shape=(323, 870), masked=792 px; stars=1, galaxies=2)
+[OK] Wrote NGC4388_combined_VRI_mask.png
+[TIME] NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.43
+[FOV] NGC4394: nx=624 ny=647 pixscale=0.2000"/pix rad=1.662 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3947041031964284288 (GAIA J122552.06+181344.1) ra=186.466916 dec=18.228913 RA=12:25:52.06 DEC=+18:13:44.09 GaiaG=20.63 r_arcsec=2.50 | plx=-0.191±1.147 mas (SNR=-0.2) | pm=23.05±1.42 mas/yr (SNR=16.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947040830099257728 (GAIA J122556.83+181315.6) ra=186.486809 dec=18.221011 RA=12:25:56.83 DEC=+18:13:15.64 GaiaG=20.38 r_arcsec=2.50 | plx=0.627±0.796 mas (SNR=0.8) | pm=7.85±1.14 mas/yr (SNR=6.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947040761380352640 (GAIA J122556.89+181238.3) ra=186.487051 dec=18.210635 RA=12:25:56.89 DEC=+18:12:38.28 GaiaG=17.92 r_arcsec=2.50 | plx=0.397±0.125 mas (SNR=3.2) | pm=9.52±0.16 mas/yr (SNR=61.2) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947041001898521728 (GAIA J122551.72+181327.9) ra=186.465492 dec=18.224406 RA=12:25:51.72 DEC=+18:13:27.86 GaiaG=18.87 r_arcsec=2.50 | plx=0.784±0.228 mas (SNR=3.4) | pm=16.82±0.28 mas/yr (SNR=60.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947040795740090752 (GAIA J122552.59+181303.5) ra=186.469111 dec=18.217650 RA=12:25:52.59 DEC=+18:13:03.54 GaiaG=17.40 r_arcsec=2.65 | plx=1.016±0.096 mas (SNR=10.6) | pm=44.08±0.11 mas/yr (SNR=386.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947042238848280064 (GAIA J122559.08+181305.3) ra=186.496169 dec=18.218139 RA=12:25:59.08 DEC=+18:13:05.30 GaiaG=19.81 r_arcsec=2.50 | plx=0.132±0.398 mas (SNR=0.3) | pm=12.13±0.51 mas/yr (SNR=23.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947041031962769024 (GAIA J122554.17+181346.3) ra=186.475692 dec=18.229537 RA=12:25:54.17 DEC=+18:13:46.33 GaiaG=18.99 r_arcsec=2.50 | plx=1.365±0.248 mas (SNR=5.5) | pm=15.74±0.31 mas/yr (SNR=50.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3947042307567757184 (GAIA J122557.16+181333.6) ra=186.488147 dec=18.225989 RA=12:25:57.16 DEC=+18:13:33.56 GaiaG=19.51 r_arcsec=2.50 | plx=-0.075±0.378 mas (SNR=-0.2) | pm=17.45±0.45 mas/yr (SNR=38.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=263 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122551.70+181211.0) ra=186.465433 dec=18.203062 RA=12:25:51.70 DEC=+18:12:11.02 type=SER z_l95=0.504 a=7.92" b=5.88" pa=60.1
+[GAL][LEGACY] (LS J122552.09+181216.9) ra=186.467048 dec=18.204690 RA=12:25:52.09 DEC=+18:12:16.88 type=REX z_l95=0.212 a=2.40" b=2.40" pa=0.0
+[GAL][LEGACY] (LS J122552.09+181349.4) ra=186.467045 dec=18.230379 RA=12:25:52.09 DEC=+18:13:49.37 type=EXP z_l95=0.216 a=2.50" b=2.00" pa=34.2
+[GAL][LEGACY] (LS J122559.97+181307.7) ra=186.499889 dec=18.218813 RA=12:25:59.97 DEC=+18:13:07.73 type=SER z_l95=0.215 a=8.76" b=5.09" pa=-3.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4394_mask.fits (shape=(647, 624), masked=9630 px; stars=8, galaxies=4)
+[OK] Wrote NGC4394_combined_VRI_mask.png
+[TIME] NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.90
+[FOV] NGC4396: nx=883 ny=755 pixscale=0.2000"/pix rad=2.101 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3945348883567093376 (GAIA J122600.93+154140.4) ra=186.503873 dec=15.694569 RA=12:26:00.93 DEC=+15:41:40.45 GaiaG=12.31 r_arcsec=22.58 | plx=2.643±0.020 mas (SNR=129.1) | pm=41.74±0.03 mas/yr (SNR=1492.2) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945348819144380416 (GAIA J122555.27+154048.5) ra=186.480285 dec=15.680139 RA=12:25:55.27 DEC=+15:40:48.50 GaiaG=14.75 r_arcsec=6.60 | plx=0.914±0.028 mas (SNR=32.5) | pm=18.42±0.04 mas/yr (SNR=439.2) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945348338108054016 (GAIA J122553.19+153919.8) ra=186.471616 dec=15.655505 RA=12:25:53.19 DEC=+15:39:19.82 GaiaG=20.45 r_arcsec=2.50 | plx=0.631±1.296 mas (SNR=0.5) | pm=7.03±1.34 mas/yr (SNR=5.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945348780488113152 (GAIA J122554.68+154041.5) ra=186.477818 dec=15.678185 RA=12:25:54.68 DEC=+15:40:41.46 GaiaG=19.91 r_arcsec=2.50 | plx=0.040±0.493 mas (SNR=0.1) | pm=8.92±0.76 mas/yr (SNR=11.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=465 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122555.42+153904.7) ra=186.480900 dec=15.651312 RA=12:25:55.42 DEC=+15:39:04.72 type=REX z_l95=0.392 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122557.51+153904.5) ra=186.489626 dec=15.651244 RA=12:25:57.51 DEC=+15:39:04.48 type=REX z_l95=0.587 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.94+153927.4) ra=186.474756 dec=15.657603 RA=12:25:53.94 DEC=+15:39:27.37 type=REX z_l95=0.827 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.43+153934.0) ra=186.472642 dec=15.659444 RA=12:25:53.43 DEC=+15:39:34.00 type=EXP z_l95=0.428 a=2.57" b=2.00" pa=42.0
+[GAL][LEGACY] (LS J122553.98+153941.1) ra=186.474923 dec=15.661415 RA=12:25:53.98 DEC=+15:39:41.09 type=REX z_l95=0.600 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122554.26+153936.4) ra=186.476099 dec=15.660124 RA=12:25:54.26 DEC=+15:39:36.45 type=REX z_l95=0.307 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.66+153944.0) ra=186.473564 dec=15.662226 RA=12:25:53.66 DEC=+15:39:44.01 type=REX z_l95=0.714 a=2.14" b=2.14" pa=0.0
+[GAL][LEGACY] (LS J122556.25+153913.6) ra=186.484380 dec=15.653789 RA=12:25:56.25 DEC=+15:39:13.64 type=REX z_l95=0.402 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122557.64+153926.5) ra=186.490172 dec=15.657353 RA=12:25:57.64 DEC=+15:39:26.47 type=REX z_l95=0.590 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122554.84+153943.3) ra=186.478485 dec=15.662016 RA=12:25:54.84 DEC=+15:39:43.26 type=REX z_l95=0.479 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122556.23+153949.5) ra=186.484272 dec=15.663763 RA=12:25:56.23 DEC=+15:39:49.55 type=REX z_l95=0.222 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122556.68+153948.0) ra=186.486184 dec=15.663331 RA=12:25:56.68 DEC=+15:39:47.99 type=REX z_l95=0.257 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.98+153859.4) ra=186.499908 dec=15.649846 RA=12:25:59.98 DEC=+15:38:59.45 type=REX z_l95=0.426 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122602.54+153902.3) ra=186.510587 dec=15.650629 RA=12:26:02.54 DEC=+15:39:02.26 type=REX z_l95=0.307 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122557.88+153913.4) ra=186.491185 dec=15.653730 RA=12:25:57.88 DEC=+15:39:13.43 type=SER z_l95=0.204 a=3.13" b=2.00" pa=20.3
+[GAL][LEGACY] (LS J122557.84+153915.6) ra=186.491011 dec=15.654330 RA=12:25:57.84 DEC=+15:39:15.59 type=REX z_l95=0.423 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.92+153911.6) ra=186.499655 dec=15.653217 RA=12:25:59.92 DEC=+15:39:11.58 type=REX z_l95=0.275 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.39+153916.9) ra=186.514129 dec=15.654699 RA=12:26:03.39 DEC=+15:39:16.92 type=REX z_l95=0.435 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.34+153925.4) ra=186.513905 dec=15.657053 RA=12:26:03.34 DEC=+15:39:25.39 type=REX z_l95=0.759 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122601.57+153947.6) ra=186.506527 dec=15.663223 RA=12:26:01.57 DEC=+15:39:47.60 type=EXP z_l95=0.564 a=2.00" b=2.00" pa=-61.0
+[GAL][LEGACY] (LS J122605.26+153940.5) ra=186.521915 dec=15.661250 RA=12:26:05.26 DEC=+15:39:40.50 type=REX z_l95=0.547 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.42+153955.1) ra=186.472563 dec=15.665294 RA=12:25:53.42 DEC=+15:39:55.06 type=REX z_l95=0.880 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.25+154003.8) ra=186.471871 dec=15.667722 RA=12:25:53.25 DEC=+15:40:03.80 type=REX z_l95=0.219 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.80+153955.2) ra=186.474170 dec=15.665331 RA=12:25:53.80 DEC=+15:39:55.19 type=REX z_l95=0.331 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122554.12+154005.0) ra=186.475516 dec=15.668051 RA=12:25:54.12 DEC=+15:40:04.98 type=REX z_l95=0.282 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122553.61+154018.4) ra=186.473360 dec=15.671790 RA=12:25:53.61 DEC=+15:40:18.45 type=REX z_l95=0.409 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122555.25+154005.2) ra=186.480205 dec=15.668105 RA=12:25:55.25 DEC=+15:40:05.18 type=REX z_l95=0.420 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122556.35+154013.3) ra=186.484776 dec=15.670360 RA=12:25:56.35 DEC=+15:40:13.30 type=EXP z_l95=0.216 a=2.00" b=2.00" pa=-8.8
+[GAL][LEGACY] (LS J122554.76+154055.5) ra=186.478185 dec=15.682095 RA=12:25:54.76 DEC=+15:40:55.54 type=REX z_l95=0.438 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122556.89+154049.7) ra=186.487042 dec=15.680472 RA=12:25:56.89 DEC=+15:40:49.70 type=EXP z_l95=0.389 a=2.00" b=2.00" pa=8.9
+[GAL][LEGACY] (LS J122554.75+154122.4) ra=186.478116 dec=15.689563 RA=12:25:54.75 DEC=+15:41:22.43 type=REX z_l95=0.330 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122555.30+154119.3) ra=186.480415 dec=15.688701 RA=12:25:55.30 DEC=+15:41:19.32 type=REX z_l95=0.243 a=2.43" b=2.43" pa=0.0
+[GAL][LEGACY] (LS J122555.97+154121.5) ra=186.483210 dec=15.689317 RA=12:25:55.97 DEC=+15:41:21.54 type=EXP z_l95=0.651 a=2.25" b=2.00" pa=16.2
+[GAL][LEGACY] (LS J122556.73+154116.2) ra=186.486377 dec=15.687829 RA=12:25:56.73 DEC=+15:41:16.19 type=REX z_l95=0.253 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122557.30+154117.9) ra=186.488747 dec=15.688313 RA=12:25:57.30 DEC=+15:41:17.93 type=EXP z_l95=0.637 a=2.12" b=2.00" pa=53.0
+[GAL][LEGACY] (LS J122558.19+153957.4) ra=186.492464 dec=15.665952 RA=12:25:58.19 DEC=+15:39:57.43 type=EXP z_l95=0.252 a=2.00" b=2.00" pa=69.9
+[GAL][LEGACY] (LS J122604.29+153951.1) ra=186.517859 dec=15.664205 RA=12:26:04.29 DEC=+15:39:51.14 type=REX z_l95=0.248 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.52+154001.5) ra=186.514660 dec=15.667076 RA=12:26:03.52 DEC=+15:40:01.47 type=REX z_l95=0.435 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122602.11+154029.1) ra=186.508811 dec=15.674749 RA=12:26:02.11 DEC=+15:40:29.10 type=DEV z_l95=0.219 a=5.62" b=3.55" pa=21.2
+[GAL][LEGACY] (LS J122602.63+154025.2) ra=186.510970 dec=15.673657 RA=12:26:02.63 DEC=+15:40:25.16 type=SER z_l95=0.213 a=2.54" b=2.00" pa=20.7
+[GAL][LEGACY] (LS J122602.36+154034.2) ra=186.509825 dec=15.676176 RA=12:26:02.36 DEC=+15:40:34.23 type=REX z_l95=0.210 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.68+154023.6) ra=186.515322 dec=15.673221 RA=12:26:03.68 DEC=+15:40:23.60 type=REX z_l95=0.367 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.12+154032.4) ra=186.513007 dec=15.675667 RA=12:26:03.12 DEC=+15:40:32.40 type=REX z_l95=0.238 a=2.36" b=2.36" pa=0.0
+[GAL][LEGACY] (LS J122600.75+154039.2) ra=186.503109 dec=15.677563 RA=12:26:00.75 DEC=+15:40:39.23 type=REX z_l95=0.340 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122600.81+154047.1) ra=186.503370 dec=15.679760 RA=12:26:00.81 DEC=+15:40:47.14 type=REX z_l95=0.232 a=2.49" b=2.49" pa=0.0
+[GAL][LEGACY] (LS J122600.08+154054.0) ra=186.500346 dec=15.681677 RA=12:26:00.08 DEC=+15:40:54.04 type=REX z_l95=0.266 a=2.49" b=2.49" pa=0.0
+[GAL][LEGACY] (LS J122559.76+154058.3) ra=186.498983 dec=15.682867 RA=12:25:59.76 DEC=+15:40:58.32 type=REX z_l95=0.525 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.31+154106.8) ra=186.497142 dec=15.685217 RA=12:25:59.31 DEC=+15:41:06.78 type=REX z_l95=0.285 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.27+154118.1) ra=186.496958 dec=15.688363 RA=12:25:59.27 DEC=+15:41:18.11 type=REX z_l95=0.309 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.40+154119.6) ra=186.497488 dec=15.688774 RA=12:25:59.40 DEC=+15:41:19.59 type=REX z_l95=0.298 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.79+154103.7) ra=186.499109 dec=15.684352 RA=12:25:59.79 DEC=+15:41:03.67 type=REX z_l95=0.281 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.76+154110.9) ra=186.498996 dec=15.686372 RA=12:25:59.76 DEC=+15:41:10.94 type=REX z_l95=0.361 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.82+154122.9) ra=186.499265 dec=15.689692 RA=12:25:59.82 DEC=+15:41:22.89 type=REX z_l95=0.402 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122602.10+154047.1) ra=186.508770 dec=15.679753 RA=12:26:02.10 DEC=+15:40:47.11 type=REX z_l95=0.422 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122602.76+154041.2) ra=186.511505 dec=15.678106 RA=12:26:02.76 DEC=+15:40:41.18 type=EXP z_l95=0.264 a=3.59" b=2.00" pa=-3.3
+[GAL][LEGACY] (LS J122603.04+154043.0) ra=186.512674 dec=15.678600 RA=12:26:03.04 DEC=+15:40:42.96 type=REX z_l95=0.601 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.53+154042.4) ra=186.514690 dec=15.678442 RA=12:26:03.53 DEC=+15:40:42.39 type=EXP z_l95=0.517 a=2.05" b=2.00" pa=-67.0
+[GAL][LEGACY] (LS J122603.26+154044.6) ra=186.513581 dec=15.679067 RA=12:26:03.26 DEC=+15:40:44.64 type=REX z_l95=0.348 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122602.97+154048.7) ra=186.512393 dec=15.680202 RA=12:26:02.97 DEC=+15:40:48.73 type=REX z_l95=0.448 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.84+154054.2) ra=186.516008 dec=15.681713 RA=12:26:03.84 DEC=+15:40:54.17 type=REX z_l95=0.214 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122602.18+154116.0) ra=186.509086 dec=15.687770 RA=12:26:02.18 DEC=+15:41:15.97 type=REX z_l95=0.351 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122602.55+154117.8) ra=186.510620 dec=15.688267 RA=12:26:02.55 DEC=+15:41:17.76 type=REX z_l95=0.307 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122604.17+154119.1) ra=186.517374 dec=15.688629 RA=12:26:04.17 DEC=+15:41:19.07 type=EXP z_l95=0.290 a=2.00" b=2.00" pa=86.9
+[GAL][LEGACY] (LS J122554.87+154126.6) ra=186.478618 dec=15.690728 RA=12:25:54.87 DEC=+15:41:26.62 type=REX z_l95=0.289 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122554.61+154133.7) ra=186.477531 dec=15.692694 RA=12:25:54.61 DEC=+15:41:33.70 type=REX z_l95=0.869 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122558.63+154128.9) ra=186.494312 dec=15.691365 RA=12:25:58.63 DEC=+15:41:28.91 type=REX z_l95=0.435 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122559.77+154126.3) ra=186.499035 dec=15.690626 RA=12:25:59.77 DEC=+15:41:26.25 type=REX z_l95=0.249 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122600.46+154124.7) ra=186.501897 dec=15.690208 RA=12:26:00.46 DEC=+15:41:24.75 type=REX z_l95=0.278 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122601.99+154129.8) ra=186.508304 dec=15.691600 RA=12:26:01.99 DEC=+15:41:29.76 type=REX z_l95=0.245 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122602.61+154129.1) ra=186.510883 dec=15.691425 RA=12:26:02.61 DEC=+15:41:29.13 type=EXP z_l95=0.214 a=2.00" b=2.00" pa=14.0
+[GAL][LEGACY] (LS J122603.64+154130.2) ra=186.515149 dec=15.691719 RA=12:26:03.64 DEC=+15:41:30.19 type=DEV z_l95=0.244 a=2.28" b=2.00" pa=-73.7
+[GAL][LEGACY] (LS J122603.56+154132.4) ra=186.514842 dec=15.692340 RA=12:26:03.56 DEC=+15:41:32.42 type=REX z_l95=0.384 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122604.92+153958.1) ra=186.520482 dec=15.666128 RA=12:26:04.92 DEC=+15:39:58.06 type=REX z_l95=0.461 a=2.15" b=2.15" pa=0.0
+[GAL][LEGACY] (LS J122605.62+153951.3) ra=186.523409 dec=15.664244 RA=12:26:05.62 DEC=+15:39:51.28 type=REX z_l95=0.254 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122605.10+154007.1) ra=186.521237 dec=15.668631 RA=12:26:05.10 DEC=+15:40:07.07 type=REX z_l95=0.278 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122605.25+154001.0) ra=186.521871 dec=15.666938 RA=12:26:05.25 DEC=+15:40:00.98 type=REX z_l95=0.379 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122604.74+154019.2) ra=186.519761 dec=15.672002 RA=12:26:04.74 DEC=+15:40:19.21 type=REX z_l95=0.398 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122604.76+154109.5) ra=186.519829 dec=15.685982 RA=12:26:04.76 DEC=+15:41:09.54 type=EXP z_l95=0.309 a=2.00" b=2.00" pa=39.6
+[GAL][LEGACY] (LS J122605.09+154118.7) ra=186.521204 dec=15.688527 RA=12:26:05.09 DEC=+15:41:18.70 type=SER z_l95=0.229 a=2.00" b=2.00" pa=50.8
+[GAL][LEGACY] (LS J122604.89+154130.3) ra=186.520360 dec=15.691760 RA=12:26:04.89 DEC=+15:41:30.33 type=EXP z_l95=0.505 a=2.00" b=2.00" pa=2.4
+[GAL][LEGACY] (LS J122605.35+154123.4) ra=186.522289 dec=15.689820 RA=12:26:05.35 DEC=+15:41:23.35 type=REX z_l95=0.382 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4396_mask.fits (shape=(755, 883), masked=41275 px; stars=4, galaxies=81)
+[OK] Wrote NGC4396_combined_VRI_mask.png
+[TIME] NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.33
+[FOV] NGC4402: nx=1152 ny=318 pixscale=0.2000"/pix rad=2.156 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3908743465714913664 (GAIA J122610.78+130704.5) ra=186.544929 dec=13.117904 RA=12:26:10.78 DEC=+13:07:04.45 GaiaG=19.53 r_arcsec=2.50 | plx=0.736±0.478 mas (SNR=1.5) | pm=10.10±0.71 mas/yr (SNR=14.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3908743396994711424 (GAIA J122612.13+130655.2) ra=186.550559 dec=13.115346 RA=12:26:12.13 DEC=+13:06:55.24 GaiaG=20.40 r_arcsec=2.50 | plx=-0.949±1.205 mas (SNR=-0.8) | pm=12.84±1.65 mas/yr (SNR=7.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=508 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122614.67+130619.9) ra=186.561133 dec=13.105523 RA=12:26:14.67 DEC=+13:06:19.88 type=DEV z_l95=0.228 a=9.80" b=7.66" pa=-75.0
+[GAL][LEGACY] (LS J122559.65+130712.4) ra=186.498560 dec=13.120116 RA=12:25:59.65 DEC=+13:07:12.42 type=REX z_l95=0.322 a=5.61" b=5.61" pa=0.0
+[GAL][LEGACY] (LS J122601.14+130710.6) ra=186.504734 dec=13.119619 RA=12:26:01.14 DEC=+13:07:10.63 type=REX z_l95=0.316 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122600.72+130719.4) ra=186.503018 dec=13.122042 RA=12:26:00.72 DEC=+13:07:19.35 type=REX z_l95=0.320 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122605.04+130650.1) ra=186.521006 dec=13.113924 RA=12:26:05.04 DEC=+13:06:50.13 type=SER z_l95=0.342 a=2.00" b=2.00" pa=57.3
+[GAL][LEGACY] (LS J122608.97+130650.6) ra=186.537367 dec=13.114067 RA=12:26:08.97 DEC=+13:06:50.64 type=SER z_l95=0.309 a=4.55" b=2.36" pa=68.2
+[GAL][LEGACY] (LS J122609.74+130719.4) ra=186.540581 dec=13.122049 RA=12:26:09.74 DEC=+13:07:19.38 type=REX z_l95=0.279 a=2.05" b=2.05" pa=0.0
+[GAL][LEGACY] (LS J122610.24+130719.9) ra=186.542653 dec=13.122189 RA=12:26:10.24 DEC=+13:07:19.88 type=REX z_l95=0.740 a=2.07" b=2.07" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4402_mask.fits (shape=(318, 1152), masked=8942 px; stars=2, galaxies=8)
+[OK] Wrote NGC4402_combined_VRI_mask.png
+[TIME] NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.60
+[FOV] NGC4405: nx=522 ny=663 pixscale=0.2000"/pix rad=1.571 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3945792399070019840 (GAIA J122609.19+161022.3) ra=186.538278 dec=16.172872 RA=12:26:09.19 DEC=+16:10:22.34 GaiaG=18.40 r_arcsec=2.50 | plx=-0.524±0.198 mas (SNR=-2.6) | pm=2.15±0.24 mas/yr (SNR=9.0) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945792158551844608 (GAIA J122608.87+160958.2) ra=186.536965 dec=16.166168 RA=12:26:08.87 DEC=+16:09:58.20 GaiaG=19.05 r_arcsec=2.50 | plx=0.277±0.303 mas (SNR=0.9) | pm=10.73±0.36 mas/yr (SNR=29.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3945792403366552064 (GAIA J122607.14+161051.6) ra=186.529751 dec=16.181003 RA=12:26:07.14 DEC=+16:10:51.61 GaiaG=19.53 r_arcsec=2.50 | plx=-1.060±0.802 mas (SNR=-1.3) | pm=3.20±0.95 mas/yr (SNR=3.4) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=164 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122603.90+160949.3) ra=186.516235 dec=16.163698 RA=12:26:03.90 DEC=+16:09:49.31 type=REX z_l95=0.305 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.71+160954.0) ra=186.515452 dec=16.165004 RA=12:26:03.71 DEC=+16:09:54.01 type=REX z_l95=0.564 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122608.39+160948.1) ra=186.534975 dec=16.163368 RA=12:26:08.39 DEC=+16:09:48.12 type=REX z_l95=0.273 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122609.38+160941.7) ra=186.539087 dec=16.161588 RA=12:26:09.38 DEC=+16:09:41.72 type=REX z_l95=0.230 a=2.87" b=2.87" pa=0.0
+[GAL][LEGACY] (LS J122610.07+160951.9) ra=186.541969 dec=16.164431 RA=12:26:10.07 DEC=+16:09:51.95 type=REX z_l95=0.271 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122610.95+161024.8) ra=186.545615 dec=16.173558 RA=12:26:10.95 DEC=+16:10:24.81 type=REX z_l95=0.593 a=2.34" b=2.34" pa=0.0
+[GAL][LEGACY] (LS J122610.72+161027.4) ra=186.544663 dec=16.174270 RA=12:26:10.72 DEC=+16:10:27.37 type=REX z_l95=0.696 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122604.25+161053.9) ra=186.517689 dec=16.181647 RA=12:26:04.25 DEC=+16:10:53.93 type=REX z_l95=0.213 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122603.81+161122.2) ra=186.515878 dec=16.189492 RA=12:26:03.81 DEC=+16:11:22.17 type=EXP z_l95=0.270 a=2.00" b=2.00" pa=-13.6
+[GAL][LEGACY] (LS J122604.54+161114.4) ra=186.518919 dec=16.187334 RA=12:26:04.54 DEC=+16:11:14.40 type=DEV z_l95=0.201 a=2.41" b=2.12" pa=-48.5
+[GAL][LEGACY] (LS J122604.74+161117.8) ra=186.519736 dec=16.188267 RA=12:26:04.74 DEC=+16:11:17.76 type=REX z_l95=0.752 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122607.21+161150.4) ra=186.530036 dec=16.197342 RA=12:26:07.21 DEC=+16:11:50.43 type=EXP z_l95=0.267 a=2.00" b=2.00" pa=15.1
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4405_mask.fits (shape=(663, 522), masked=4825 px; stars=3, galaxies=12)
+[OK] Wrote NGC4405_combined_VRI_mask.png
+[TIME] NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.45
+[FOV] NGC4419: nx=629 ny=643 pixscale=0.2000"/pix rad=1.663 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3933268553608397184 (GAIA J122654.51+150207.4) ra=186.727134 dec=15.035400 RA=12:26:54.51 DEC=+15:02:07.44 GaiaG=16.45 r_arcsec=3.56 | plx=0.334±0.063 mas (SNR=5.3) | pm=2.67±0.10 mas/yr (SNR=25.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3933268514953504640 (GAIA J122653.82+150157.9) ra=186.724253 dec=15.032744 RA=12:26:53.82 DEC=+15:01:57.88 GaiaG=20.02 r_arcsec=2.50 | plx=0.574±0.579 mas (SNR=1.0) | pm=13.84±1.02 mas/yr (SNR=13.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3933275253757002752 (GAIA J122655.71+150349.7) ra=186.732122 dec=15.063801 RA=12:26:55.71 DEC=+15:03:49.69 GaiaG=20.69 r_arcsec=2.50 | plx=-0.403±1.815 mas (SNR=-0.2) | pm=31.99±1.84 mas/yr (SNR=17.4) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=171 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122652.35+150150.4) ra=186.718107 dec=15.030679 RA=12:26:52.35 DEC=+15:01:50.44 type=REX z_l95=0.383 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122652.61+150146.9) ra=186.719203 dec=15.029698 RA=12:26:52.61 DEC=+15:01:46.91 type=REX z_l95=0.566 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122652.03+150204.9) ra=186.716787 dec=15.034706 RA=12:26:52.03 DEC=+15:02:04.94 type=REX z_l95=0.724 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122655.48+150145.8) ra=186.731151 dec=15.029397 RA=12:26:55.48 DEC=+15:01:45.83 type=REX z_l95=0.718 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122655.59+150157.8) ra=186.731613 dec=15.032716 RA=12:26:55.59 DEC=+15:01:57.78 type=REX z_l95=0.561 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122655.58+150356.7) ra=186.731565 dec=15.065756 RA=12:26:55.58 DEC=+15:03:56.72 type=REX z_l95=0.204 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122658.88+150258.8) ra=186.745349 dec=15.049666 RA=12:26:58.88 DEC=+15:02:58.80 type=SER z_l95=0.252 a=2.00" b=2.00" pa=10.8
+[GAL][LEGACY] (LS J122659.15+150310.1) ra=186.746471 dec=15.052793 RA=12:26:59.15 DEC=+15:03:10.06 type=REX z_l95=0.232 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122700.09+150305.3) ra=186.750369 dec=15.051479 RA=12:27:00.09 DEC=+15:03:05.32 type=REX z_l95=0.244 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122659.63+150313.6) ra=186.748478 dec=15.053768 RA=12:26:59.63 DEC=+15:03:13.56 type=DEV z_l95=0.338 a=2.00" b=2.00" pa=-6.3
+[GAL][LEGACY] (LS J122657.86+150329.4) ra=186.741086 dec=15.058162 RA=12:26:57.86 DEC=+15:03:29.38 type=REX z_l95=0.216 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122658.58+150341.1) ra=186.744079 dec=15.061422 RA=12:26:58.58 DEC=+15:03:41.12 type=REX z_l95=0.299 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122658.83+150344.1) ra=186.745144 dec=15.062240 RA=12:26:58.83 DEC=+15:03:44.07 type=REX z_l95=0.202 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122659.77+150331.3) ra=186.749023 dec=15.058701 RA=12:26:59.77 DEC=+15:03:31.32 type=EXP z_l95=0.256 a=3.03" b=2.00" pa=-59.2
+[GAL][LEGACY] (LS J122700.03+150324.5) ra=186.750145 dec=15.056810 RA=12:27:00.03 DEC=+15:03:24.52 type=REX z_l95=0.221 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122659.12+150338.8) ra=186.746313 dec=15.060788 RA=12:26:59.12 DEC=+15:03:38.84 type=REX z_l95=0.272 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122659.10+150351.0) ra=186.746262 dec=15.064154 RA=12:26:59.10 DEC=+15:03:50.95 type=REX z_l95=0.513 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4419_mask.fits (shape=(643, 629), masked=6560 px; stars=3, galaxies=17)
+[OK] Wrote NGC4419_combined_VRI_mask.png
+[TIME] NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.44
+[FOV] NGC4457: nx=725 ny=725 pixscale=0.2000"/pix rad=1.873 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3706835330847890816 (GAIA J122901.20+033424.8) ra=187.255008 dec=3.573564 RA=12:29:01.20 DEC=+03:34:24.83 GaiaG=19.41 r_arcsec=2.50 | plx=0.323±0.405 mas (SNR=0.8) | pm=5.19±0.60 mas/yr (SNR=8.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3706835433927109888 (GAIA J122902.72+033454.6) ra=187.261347 dec=3.581840 RA=12:29:02.72 DEC=+03:34:54.62 GaiaG=19.75 r_arcsec=2.50 | plx=-0.652±0.474 mas (SNR=-1.4) | pm=2.29±0.70 mas/yr (SNR=3.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3706835541302245248 (GAIA J122856.91+033512.7) ra=187.237119 dec=3.586863 RA=12:28:56.91 DEC=+03:35:12.71 GaiaG=18.57 r_arcsec=2.50 | plx=-0.035±0.233 mas (SNR=-0.1) | pm=6.46±0.33 mas/yr (SNR=19.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3706835506942505600 (GAIA J122856.84+033417.9) ra=187.236825 dec=3.571632 RA=12:28:56.84 DEC=+03:34:17.87 GaiaG=17.06 r_arcsec=2.94 | plx=2.071±0.099 mas (SNR=20.8) | pm=23.18±0.18 mas/yr (SNR=131.7) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=332 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J122855.45+033301.6) ra=187.231034 dec=3.550445 RA=12:28:55.45 DEC=+03:33:01.60 type=REX z_l95=0.366 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122855.37+033310.9) ra=187.230689 dec=3.553025 RA=12:28:55.37 DEC=+03:33:10.89 type=EXP z_l95=0.235 a=2.52" b=2.00" pa=45.2
+[GAL][LEGACY] (LS J122855.03+033445.5) ra=187.229312 dec=3.579294 RA=12:28:55.03 DEC=+03:34:45.46 type=REX z_l95=0.562 a=2.02" b=2.02" pa=0.0
+[GAL][LEGACY] (LS J122854.77+033513.7) ra=187.228195 dec=3.587148 RA=12:28:54.77 DEC=+03:35:13.73 type=REX z_l95=0.403 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122854.92+033506.8) ra=187.228832 dec=3.585221 RA=12:28:54.92 DEC=+03:35:06.80 type=REX z_l95=0.624 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122855.45+033509.2) ra=187.231031 dec=3.585893 RA=12:28:55.45 DEC=+03:35:09.22 type=REX z_l95=0.322 a=3.52" b=3.52" pa=0.0
+[GAL][LEGACY] (LS J122855.05+033516.8) ra=187.229384 dec=3.588006 RA=12:28:55.05 DEC=+03:35:16.82 type=REX z_l95=0.552 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122855.03+033521.1) ra=187.229277 dec=3.589203 RA=12:28:55.03 DEC=+03:35:21.13 type=REX z_l95=0.663 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122855.77+033517.5) ra=187.232383 dec=3.588183 RA=12:28:55.77 DEC=+03:35:17.46 type=REX z_l95=0.291 a=2.31" b=2.31" pa=0.0
+[GAL][LEGACY] (LS J122856.08+033521.6) ra=187.233660 dec=3.589321 RA=12:28:56.08 DEC=+03:35:21.55 type=REX z_l95=0.296 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122858.83+033259.5) ra=187.245129 dec=3.549851 RA=12:28:58.83 DEC=+03:32:59.46 type=REX z_l95=0.212 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122900.84+033257.6) ra=187.253482 dec=3.549339 RA=12:29:00.84 DEC=+03:32:57.62 type=REX z_l95=0.516 a=2.74" b=2.74" pa=0.0
+[GAL][LEGACY] (LS J122901.05+033258.4) ra=187.254381 dec=3.549559 RA=12:29:01.05 DEC=+03:32:58.41 type=REX z_l95=0.673 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122902.04+033315.1) ra=187.258482 dec=3.554184 RA=12:29:02.04 DEC=+03:33:15.06 type=REX z_l95=0.593 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122902.27+033306.8) ra=187.259439 dec=3.551887 RA=12:29:02.27 DEC=+03:33:06.79 type=REX z_l95=0.614 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122902.88+033318.9) ra=187.262012 dec=3.555249 RA=12:29:02.88 DEC=+03:33:18.90 type=REX z_l95=0.216 a=3.72" b=3.72" pa=0.0
+[GAL][LEGACY] (LS J122859.43+033347.7) ra=187.247604 dec=3.563242 RA=12:28:59.43 DEC=+03:33:47.67 type=DEV z_l95=0.262 a=3.07" b=2.00" pa=-56.2
+[GAL][LEGACY] (LS J122904.05+033314.8) ra=187.266893 dec=3.554118 RA=12:29:04.05 DEC=+03:33:14.82 type=REX z_l95=0.619 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122903.23+033322.2) ra=187.263445 dec=3.556159 RA=12:29:03.23 DEC=+03:33:22.17 type=REX z_l95=0.220 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122903.50+033332.2) ra=187.264570 dec=3.558931 RA=12:29:03.50 DEC=+03:33:32.15 type=REX z_l95=0.520 a=2.92" b=2.92" pa=0.0
+[GAL][LEGACY] (LS J122903.86+033339.7) ra=187.266098 dec=3.561039 RA=12:29:03.86 DEC=+03:33:39.74 type=REX z_l95=0.568 a=2.24" b=2.24" pa=0.0
+[GAL][LEGACY] (LS J122904.02+033336.3) ra=187.266765 dec=3.560085 RA=12:29:04.02 DEC=+03:33:36.30 type=REX z_l95=0.242 a=2.78" b=2.78" pa=0.0
+[GAL][LEGACY] (LS J122857.81+033508.9) ra=187.240857 dec=3.585801 RA=12:28:57.81 DEC=+03:35:08.88 type=REX z_l95=0.401 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J122902.07+033516.2) ra=187.258618 dec=3.587830 RA=12:29:02.07 DEC=+03:35:16.19 type=REX z_l95=0.495 a=2.17" b=2.17" pa=0.0
+[GAL][LEGACY] (LS J122857.19+033525.8) ra=187.238310 dec=3.590492 RA=12:28:57.19 DEC=+03:35:25.77 type=REX z_l95=0.463 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122857.38+033522.8) ra=187.239098 dec=3.589655 RA=12:28:57.38 DEC=+03:35:22.76 type=REX z_l95=0.493 a=3.31" b=3.31" pa=0.0
+[GAL][LEGACY] (LS J122901.65+033523.1) ra=187.256870 dec=3.589747 RA=12:29:01.65 DEC=+03:35:23.09 type=DEV z_l95=0.318 a=3.16" b=2.65" pa=45.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4457_mask.fits (shape=(725, 725), masked=16100 px; stars=4, galaxies=27)
+[OK] Wrote NGC4457_combined_VRI_mask.png
+[TIME] NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.10
+[FOV] NGC4501: nx=1205 ny=1236 pixscale=0.2000"/pix rad=3.041 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3932952340935999872 (GAIA J123202.80+142342.2) ra=188.011677 dec=14.395067 RA=12:32:02.80 DEC=+14:23:42.24 GaiaG=20.56 r_arcsec=2.50 | plx=0.515±0.896 mas (SNR=0.6) | pm=19.14±1.35 mas/yr (SNR=14.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932950859178905216 (GAIA J123201.21+142337.0) ra=188.005046 dec=14.393613 RA=12:32:01.21 DEC=+14:23:37.01 GaiaG=20.04 r_arcsec=2.50 | plx=0.644±0.625 mas (SNR=1.0) | pm=10.43±0.99 mas/yr (SNR=10.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932964401203975040 (GAIA J123155.51+142613.4) ra=187.981275 dec=14.437048 RA=12:31:55.51 DEC=+14:26:13.37 GaiaG=18.43 r_arcsec=2.50 | plx=0.317±0.194 mas (SNR=1.6) | pm=9.47±0.28 mas/yr (SNR=33.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932952272216859648 (GAIA J123204.61+142315.4) ra=188.019225 dec=14.387615 RA=12:32:04.61 DEC=+14:23:15.41 GaiaG=16.19 r_arcsec=3.89 | plx=1.070±0.059 mas (SNR=18.3) | pm=2.70±0.10 mas/yr (SNR=27.2) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932952272216859776 (GAIA J123204.75+142315.8) ra=188.019782 dec=14.387735 RA=12:32:04.75 DEC=+14:23:15.84 GaiaG=15.16 r_arcsec=5.64 | plx=0.862±0.034 mas (SNR=25.5) | pm=2.91±0.06 mas/yr (SNR=52.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932962648857846400 (GAIA J123152.75+142351.7) ra=187.969795 dec=14.397685 RA=12:31:52.75 DEC=+14:23:51.67 GaiaG=19.12 r_arcsec=2.50 | plx=-0.264±0.294 mas (SNR=-0.9) | pm=8.39±0.42 mas/yr (SNR=20.0) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932964332485030528 (GAIA J123205.26+142700.0) ra=188.021905 dec=14.449998 RA=12:32:05.26 DEC=+14:27:00.00 GaiaG=19.04 r_arcsec=2.50 | plx=1.110±0.328 mas (SNR=3.4) | pm=28.67±0.47 mas/yr (SNR=61.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932952272216305920 (GAIA J123205.49+142335.5) ra=188.022858 dec=14.393198 RA=12:32:05.49 DEC=+14:23:35.51 GaiaG=20.62 r_arcsec=2.50 | plx=-2.034±2.138 mas (SNR=-1.0) | pm=18.95±2.62 mas/yr (SNR=7.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3932964332485030656 (GAIA J123205.06+142708.6) ra=188.021088 dec=14.452400 RA=12:32:05.06 DEC=+14:27:08.64 GaiaG=18.89 r_arcsec=2.50 | plx=0.224±0.270 mas (SNR=0.8) | pm=10.77±0.40 mas/yr (SNR=27.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=532 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J123150.90+142305.9) ra=187.962074 dec=14.384967 RA=12:31:50.90 DEC=+14:23:05.88 type=REX z_l95=0.650 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123151.11+142309.6) ra=187.962974 dec=14.386006 RA=12:31:51.11 DEC=+14:23:09.62 type=REX z_l95=0.457 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123151.57+142311.1) ra=187.964856 dec=14.386422 RA=12:31:51.57 DEC=+14:23:11.12 type=REX z_l95=0.382 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123151.14+142346.3) ra=187.963082 dec=14.396187 RA=12:31:51.14 DEC=+14:23:46.27 type=REX z_l95=0.760 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123154.62+142324.7) ra=187.977593 dec=14.390188 RA=12:31:54.62 DEC=+14:23:24.68 type=REX z_l95=0.587 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123207.32+142346.1) ra=188.030491 dec=14.396141 RA=12:32:07.32 DEC=+14:23:46.11 type=REX z_l95=0.382 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123206.75+142638.5) ra=188.028140 dec=14.444028 RA=12:32:06.75 DEC=+14:26:38.50 type=EXP z_l95=0.295 a=2.00" b=2.00" pa=-41.0
+[GAL][LEGACY] (LS J123206.88+142655.8) ra=188.028667 dec=14.448827 RA=12:32:06.88 DEC=+14:26:55.78 type=EXP z_l95=0.315 a=2.00" b=2.00" pa=-73.2
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4501_mask.fits (shape=(1236, 1205), masked=8226 px; stars=9, galaxies=8)
+[OK] Wrote NGC4501_combined_VRI_mask.png
+[TIME] NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=13.23
+[FOV] NGC4522: nx=590 ny=659 pixscale=0.2000"/pix rad=1.639 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3902903783365171840 (GAIA J123336.33+091042.6) ra=188.401359 dec=9.178495 RA=12:33:36.33 DEC=+09:10:42.58 GaiaG=19.58 r_arcsec=2.50 | plx=0.361±0.441 mas (SNR=0.8) | pm=14.92±0.60 mas/yr (SNR=24.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3902903718940838016 (GAIA J123338.29+091014.0) ra=188.409550 dec=9.170542 RA=12:33:38.29 DEC=+09:10:13.95 GaiaG=20.69 r_arcsec=2.50 | plx=1.379±0.970 mas (SNR=1.4) | pm=25.76±1.45 mas/yr (SNR=17.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3902903753300361600 (GAIA J123340.12+091039.4) ra=188.417170 dec=9.177608 RA=12:33:40.12 DEC=+09:10:39.39 GaiaG=19.60 r_arcsec=2.50 | plx=0.102±0.416 mas (SNR=0.2) | pm=5.98±0.65 mas/yr (SNR=9.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=289 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J123339.50+090928.0) ra=188.414590 dec=9.157780 RA=12:33:39.50 DEC=+09:09:28.01 type=REX z_l95=0.213 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123336.65+090951.5) ra=188.402708 dec=9.164297 RA=12:33:36.65 DEC=+09:09:51.47 type=REX z_l95=0.316 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123341.75+090927.2) ra=188.423945 dec=9.157547 RA=12:33:41.75 DEC=+09:09:27.17 type=REX z_l95=0.324 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123341.06+090929.7) ra=188.421091 dec=9.158262 RA=12:33:41.06 DEC=+09:09:29.74 type=REX z_l95=0.360 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123341.35+090932.6) ra=188.422272 dec=9.159062 RA=12:33:41.35 DEC=+09:09:32.62 type=EXP z_l95=0.287 a=2.00" b=2.00" pa=-49.8
+[GAL][LEGACY] (LS J123341.35+090939.1) ra=188.422299 dec=9.160873 RA=12:33:41.35 DEC=+09:09:39.14 type=DEV z_l95=0.431 a=2.62" b=2.00" pa=-8.8
+[GAL][LEGACY] (LS J123340.61+090940.7) ra=188.419222 dec=9.161319 RA=12:33:40.61 DEC=+09:09:40.75 type=REX z_l95=0.277 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123340.76+090949.5) ra=188.419833 dec=9.163738 RA=12:33:40.76 DEC=+09:09:49.46 type=DEV z_l95=0.493 a=3.36" b=2.08" pa=-19.4
+[GAL][LEGACY] (LS J123342.33+090937.1) ra=188.426385 dec=9.160311 RA=12:33:42.33 DEC=+09:09:37.12 type=REX z_l95=0.233 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123342.52+090944.9) ra=188.427166 dec=9.162460 RA=12:33:42.52 DEC=+09:09:44.86 type=EXP z_l95=0.246 a=2.00" b=2.00" pa=-5.4
+[GAL][LEGACY] (LS J123343.09+090930.2) ra=188.429523 dec=9.158401 RA=12:33:43.09 DEC=+09:09:30.24 type=REX z_l95=0.378 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123335.62+091017.8) ra=188.398428 dec=9.171618 RA=12:33:35.62 DEC=+09:10:17.82 type=REX z_l95=0.323 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123335.93+091011.7) ra=188.399713 dec=9.169906 RA=12:33:35.93 DEC=+09:10:11.66 type=REX z_l95=0.303 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123336.47+091007.7) ra=188.401979 dec=9.168801 RA=12:33:36.47 DEC=+09:10:07.68 type=EXP z_l95=0.215 a=2.00" b=2.00" pa=-69.7
+[GAL][LEGACY] (LS J123336.34+091037.5) ra=188.401431 dec=9.177077 RA=12:33:36.34 DEC=+09:10:37.48 type=EXP z_l95=0.254 a=2.00" b=2.00" pa=-18.9
+[GAL][LEGACY] (LS J123336.92+091029.0) ra=188.403813 dec=9.174730 RA=12:33:36.92 DEC=+09:10:29.03 type=EXP z_l95=0.264 a=2.87" b=2.00" pa=-14.0
+[GAL][LEGACY] (LS J123336.80+091033.2) ra=188.403344 dec=9.175902 RA=12:33:36.80 DEC=+09:10:33.25 type=REX z_l95=0.295 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123337.24+091036.5) ra=188.405147 dec=9.176794 RA=12:33:37.24 DEC=+09:10:36.46 type=REX z_l95=0.269 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123335.33+091101.0) ra=188.397208 dec=9.183603 RA=12:33:35.33 DEC=+09:11:00.97 type=EXP z_l95=0.323 a=2.00" b=2.00" pa=1.1
+[GAL][LEGACY] (LS J123335.85+091059.2) ra=188.399384 dec=9.183115 RA=12:33:35.85 DEC=+09:10:59.21 type=REX z_l95=0.312 a=2.11" b=2.11" pa=0.0
+[GAL][LEGACY] (LS J123336.15+091115.1) ra=188.400611 dec=9.187532 RA=12:33:36.15 DEC=+09:11:15.12 type=EXP z_l95=0.745 a=2.13" b=2.00" pa=-53.6
+[GAL][LEGACY] (LS J123336.53+091054.5) ra=188.402192 dec=9.181804 RA=12:33:36.53 DEC=+09:10:54.50 type=REX z_l95=0.308 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123336.85+091100.5) ra=188.403529 dec=9.183465 RA=12:33:36.85 DEC=+09:11:00.47 type=REX z_l95=0.611 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123338.41+091105.6) ra=188.410058 dec=9.184885 RA=12:33:38.41 DEC=+09:11:05.59 type=REX z_l95=0.216 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123337.86+091110.5) ra=188.407733 dec=9.186262 RA=12:33:37.86 DEC=+09:11:10.54 type=REX z_l95=0.794 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123338.00+091110.2) ra=188.408328 dec=9.186155 RA=12:33:38.00 DEC=+09:11:10.16 type=REX z_l95=0.624 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123338.97+091111.0) ra=188.412355 dec=9.186394 RA=12:33:38.97 DEC=+09:11:11.02 type=REX z_l95=0.307 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123338.34+091123.9) ra=188.409740 dec=9.189968 RA=12:33:38.34 DEC=+09:11:23.88 type=EXP z_l95=0.323 a=2.00" b=2.00" pa=-66.4
+[GAL][LEGACY] (LS J123340.84+090952.6) ra=188.420183 dec=9.164612 RA=12:33:40.84 DEC=+09:09:52.60 type=EXP z_l95=0.205 a=2.62" b=2.00" pa=-28.4
+[GAL][LEGACY] (LS J123340.73+091001.3) ra=188.419695 dec=9.167021 RA=12:33:40.73 DEC=+09:10:01.28 type=DEV z_l95=0.255 a=2.61" b=2.00" pa=50.1
+[GAL][LEGACY] (LS J123342.47+090951.8) ra=188.426946 dec=9.164398 RA=12:33:42.47 DEC=+09:09:51.83 type=REX z_l95=0.364 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123342.55+091014.2) ra=188.427300 dec=9.170601 RA=12:33:42.55 DEC=+09:10:14.16 type=REX z_l95=0.272 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123343.41+091003.2) ra=188.430879 dec=9.167555 RA=12:33:43.41 DEC=+09:10:03.20 type=REX z_l95=0.344 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123343.35+091012.4) ra=188.430627 dec=9.170122 RA=12:33:43.35 DEC=+09:10:12.44 type=DEV z_l95=0.773 a=2.00" b=2.00" pa=-26.1
+[GAL][LEGACY] (LS J123342.74+091053.2) ra=188.428085 dec=9.181452 RA=12:33:42.74 DEC=+09:10:53.23 type=REX z_l95=0.332 a=2.71" b=2.71" pa=0.0
+[GAL][LEGACY] (LS J123343.50+091112.6) ra=188.431252 dec=9.186819 RA=12:33:43.50 DEC=+09:11:12.55 type=EXP z_l95=0.238 a=3.24" b=2.00" pa=-88.0
+[GAL][LEGACY] (LS J123337.03+091132.8) ra=188.404273 dec=9.192434 RA=12:33:37.03 DEC=+09:11:32.76 type=REX z_l95=0.462 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123337.26+091137.6) ra=188.405230 dec=9.193787 RA=12:33:37.26 DEC=+09:11:37.63 type=REX z_l95=0.482 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123338.48+091138.8) ra=188.410344 dec=9.194106 RA=12:33:38.48 DEC=+09:11:38.78 type=REX z_l95=0.353 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4522_mask.fits (shape=(659, 590), masked=13364 px; stars=3, galaxies=39)
+[OK] Wrote NGC4522_combined_VRI_mask.png
+[TIME] NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.08
+[FOV] NGC4567_8: nx=971 ny=1059 pixscale=0.2000"/pix rad=2.559 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3904332671739848192 (GAIA J123634.29+111419.8) ra=189.142866 dec=11.238829 RA=12:36:34.29 DEC=+11:14:19.78 GaiaG=17.94 r_arcsec=2.50 | plx=-0.660±0.237 mas (SNR=-2.8) | pm=2.00±0.45 mas/yr (SNR=4.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332499941367168 (GAIA J123638.29+111348.1) ra=189.159547 dec=11.230036 RA=12:36:38.29 DEC=+11:13:48.13 GaiaG=20.72 r_arcsec=2.50 | plx=0.420±1.778 mas (SNR=0.2) | pm=12.85±1.95 mas/yr (SNR=6.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332667447448448 (GAIA J123632.81+111419.8) ra=189.136715 dec=11.238829 RA=12:36:32.81 DEC=+11:14:19.78 GaiaG=19.14 r_arcsec=2.50 | plx=0.482±0.331 mas (SNR=1.5) | pm=6.57±0.58 mas/yr (SNR=11.4) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332701806139776 (GAIA J123637.01+111437.4) ra=189.154219 dec=11.243717 RA=12:36:37.01 DEC=+11:14:37.38 GaiaG=18.75 r_arcsec=2.50 | plx=0.156±0.253 mas (SNR=0.6) | pm=12.95±0.39 mas/yr (SNR=32.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332495646225664 (GAIA J123638.19+111412.6) ra=189.159137 dec=11.236839 RA=12:36:38.19 DEC=+11:14:12.62 GaiaG=19.01 r_arcsec=2.50 | plx=1.730±0.313 mas (SNR=5.5) | pm=22.60±0.49 mas/yr (SNR=45.9) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332701806127488 (GAIA J123635.52+111451.2) ra=189.147989 dec=11.247553 RA=12:36:35.52 DEC=+11:14:51.19 GaiaG=19.06 r_arcsec=2.50 | plx=0.606±0.316 mas (SNR=1.9) | pm=31.07±0.49 mas/yr (SNR=62.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332358208728576 (GAIA J123633.74+111328.1) ra=189.140564 dec=11.224485 RA=12:36:33.74 DEC=+11:13:28.15 GaiaG=18.97 r_arcsec=2.50 | plx=1.635±0.340 mas (SNR=4.8) | pm=36.44±0.57 mas/yr (SNR=63.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332465582135808 (GAIA J123636.79+111320.4) ra=189.153280 dec=11.222327 RA=12:36:36.79 DEC=+11:13:20.38 GaiaG=18.95 r_arcsec=2.50 | plx=1.226±0.272 mas (SNR=4.5) | pm=20.11±0.45 mas/yr (SNR=44.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3904332706099725184 (GAIA J123638.33+111443.3) ra=189.159693 dec=11.245370 RA=12:36:38.33 DEC=+11:14:43.33 GaiaG=20.51 r_arcsec=2.50 | plx=-0.108±0.991 mas (SNR=-0.1) | pm=14.33±1.66 mas/yr (SNR=8.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=313 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J123638.86+111259.2) ra=189.161896 dec=11.216443 RA=12:36:38.86 DEC=+11:12:59.20 type=REX z_l95=0.417 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123639.24+111322.3) ra=189.163488 dec=11.222873 RA=12:36:39.24 DEC=+11:13:22.34 type=EXP z_l95=0.256 a=2.87" b=2.00" pa=52.3
+[GAL][LEGACY] (LS J123636.97+111345.2) ra=189.154049 dec=11.229227 RA=12:36:36.97 DEC=+11:13:45.22 type=EXP z_l95=0.606 a=2.00" b=2.00" pa=-22.6
+[GAL][LEGACY] (LS J123627.68+111545.5) ra=189.115329 dec=11.262639 RA=12:36:27.68 DEC=+11:15:45.50 type=REX z_l95=0.632 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4567_8_mask.fits (shape=(1059, 971), masked=5817 px; stars=9, galaxies=4)
+[OK] Wrote NGC4567_8_combined_VRI_mask.png
+[TIME] NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.25
+[FOV] NGC4580: nx=647 ny=619 pixscale=0.2000"/pix rad=1.657 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3707538468533861376 (GAIA J123748.56+052217.4) ra=189.452331 dec=5.371487 RA=12:37:48.56 DEC=+05:22:17.35 GaiaG=18.82 r_arcsec=2.50 | plx=0.173±0.289 mas (SNR=0.6) | pm=16.26±0.43 mas/yr (SNR=37.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3707538571614801024 (GAIA J123750.56+052228.8) ra=189.460646 dec=5.374663 RA=12:37:50.56 DEC=+05:22:28.79 GaiaG=20.15 r_arcsec=2.50 | plx=0.239±0.746 mas (SNR=0.3) | pm=38.04±1.37 mas/yr (SNR=27.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3707538434175843200 (GAIA J123745.88+052159.8) ra=189.441154 dec=5.366601 RA=12:37:45.88 DEC=+05:21:59.76 GaiaG=20.38 r_arcsec=2.50 | plx=-0.718±0.917 mas (SNR=-0.8) | pm=5.46±1.61 mas/yr (SNR=3.4) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3707538575907257472 (GAIA J123751.50+052243.7) ra=189.464599 dec=5.378806 RA=12:37:51.50 DEC=+05:22:43.70 GaiaG=20.58 r_arcsec=2.50 | plx=-0.236±1.025 mas (SNR=-0.2) | pm=40.34±1.47 mas/yr (SNR=27.4) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=176 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J123745.68+052103.7) ra=189.440345 dec=5.351028 RA=12:37:45.68 DEC=+05:21:03.70 type=REX z_l95=0.216 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123744.47+052214.5) ra=189.435287 dec=5.370681 RA=12:37:44.47 DEC=+05:22:14.45 type=DEV z_l95=0.236 a=2.89" b=2.00" pa=-15.2
+[GAL][LEGACY] (LS J123744.69+052216.1) ra=189.436200 dec=5.371132 RA=12:37:44.69 DEC=+05:22:16.08 type=EXP z_l95=0.293 a=2.00" b=2.00" pa=-40.0
+[GAL][LEGACY] (LS J123748.31+052306.8) ra=189.451293 dec=5.385225 RA=12:37:48.31 DEC=+05:23:06.81 type=REX z_l95=0.529 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123750.88+052213.6) ra=189.461996 dec=5.370456 RA=12:37:50.88 DEC=+05:22:13.64 type=DEV z_l95=0.218 a=2.66" b=2.00" pa=23.1
+[GAL][LEGACY] (LS J123749.50+052241.4) ra=189.456237 dec=5.378179 RA=12:37:49.50 DEC=+05:22:41.44 type=DEV z_l95=0.800 a=2.00" b=2.00" pa=-7.3
+[GAL][LEGACY] (LS J123751.77+052241.6) ra=189.465725 dec=5.378226 RA=12:37:51.77 DEC=+05:22:41.61 type=REX z_l95=0.555 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J123748.85+052302.1) ra=189.453536 dec=5.383919 RA=12:37:48.85 DEC=+05:23:02.11 type=REX z_l95=0.521 a=2.00" b=2.00" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4580_mask.fits (shape=(619, 647), masked=4458 px; stars=4, galaxies=8)
+[OK] Wrote NGC4580_combined_VRI_mask.png
+[TIME] NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.56
+[FOV] NGC4606: nx=434 ny=435 pixscale=0.2000"/pix rad=1.188 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3928479699433087104 (GAIA J124056.75+115411.6) ra=190.236476 dec=11.903212 RA=12:40:56.75 DEC=+11:54:11.56 GaiaG=13.13 r_arcsec=15.78 | plx=1.487±0.038 mas (SNR=39.2) | pm=23.93±0.07 mas/yr (SNR=367.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3928479699433087360 (GAIA J124057.44+115424.8) ra=190.239349 dec=11.906892 RA=12:40:57.44 DEC=+11:54:24.81 GaiaG=18.30 r_arcsec=2.50 | plx=2.412±0.194 mas (SNR=12.5) | pm=35.19±0.33 mas/yr (SNR=106.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3928483028032866688 (GAIA J124055.55+115515.1) ra=190.231467 dec=11.920868 RA=12:40:55.55 DEC=+11:55:15.12 GaiaG=18.02 r_arcsec=2.50 | plx=0.414±0.145 mas (SNR=2.9) | pm=7.75±0.25 mas/yr (SNR=31.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3928483028033282688 (GAIA J124058.03+115516.5) ra=190.241798 dec=11.921242 RA=12:40:58.03 DEC=+11:55:16.47 GaiaG=20.58 r_arcsec=2.50 | plx=3.826±1.125 mas (SNR=3.4) | pm=21.98±2.20 mas/yr (SNR=10.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=50 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[NED] N=93 cols=['No.', 'Object Name', 'RA', 'DEC', 'Type', 'Velocity', 'Redshift', 'Redshift Flag', 'Magnitude and Filter', 'Separation', 'References', 'Notes', 'Photometry Points', 'Positions', 'Redshift Points', 'Diameter Points', 'Associations']
+[SDSS-spec] N=1 cols=['ra', 'dec', 'objid', 'run', 'rerun', 'camcol', 'field', 'z', 'plate', 'mjd', 'fiberID', 'specobjid', 'run2d']
+WARNING: Pan-STARRS (MAST) query failed; falling back to VizieR. ("Expected key not found in response data while attempting to get column list for panstarrs catalog mean, dr2: 'column_name'")
+[SDSS] photo columns=['ra', 'dec', 'objid', 'type', 'psfMag_r', 'modelMag_r', 'petroR50_r', 'petroR90_r', 'expRad_r', 'deVRad_r', 'petroRad_r']
+[OK] Wrote NGC4606_mask.fits (shape=(435, 434), masked=20129 px; stars=4, galaxies=0)
+[OK] Wrote NGC4606_combined_VRI_mask.png
+[TIME] NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=17.88
+[FOV] NGC4694: nx=439 ny=441 pixscale=0.2000"/pix rad=1.201 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3927389155697596800 (GAIA J124816.55+105912.4) ra=192.068946 dec=10.986765 RA=12:48:16.55 DEC=+10:59:12.35 GaiaG=17.40 r_arcsec=2.66 | plx=0.483±0.093 mas (SNR=5.2) | pm=15.84±0.15 mas/yr (SNR=106.3) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=151 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J124813.88+105821.4) ra=192.057816 dec=10.972607 RA=12:48:13.88 DEC=+10:58:21.39 type=DEV z_l95=0.267 a=5.37" b=2.07" pa=6.2
+[GAL][LEGACY] (LS J124813.52+105827.3) ra=192.056342 dec=10.974258 RA=12:48:13.52 DEC=+10:58:27.33 type=REX z_l95=0.467 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J124818.25+105914.1) ra=192.076054 dec=10.987236 RA=12:48:18.25 DEC=+10:59:14.05 type=REX z_l95=0.200 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J124817.34+105926.4) ra=192.072247 dec=10.990656 RA=12:48:17.34 DEC=+10:59:26.36 type=REX z_l95=0.368 a=2.43" b=2.43" pa=0.0
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4694_mask.fits (shape=(441, 439), masked=1792 px; stars=1, galaxies=4)
+[OK] Wrote NGC4694_combined_VRI_mask.png
+[TIME] NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.48
+[FOV] NGC4698: nx=608 ny=1189 pixscale=0.2000"/pix rad=2.390 arcmin
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥3.0 OR pm≥0.02 mas/yr & SNR≥3.0)
+[STAR] Gaia DR3 3710604800306390528 (GAIA J124821.76+082835.6) ra=192.090682 dec=8.476543 RA=12:48:21.76 DEC=+08:28:35.55 GaiaG=20.82 r_arcsec=2.50 | plx=2.671±1.585 mas (SNR=1.7) | pm=11.07±3.11 mas/yr (SNR=3.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710604559789059456 (GAIA J124823.61+082804.5) ra=192.098378 dec=8.467905 RA=12:48:23.61 DEC=+08:28:04.46 GaiaG=20.87 r_arcsec=2.50 | plx=-1.232±1.691 mas (SNR=-0.7) | pm=13.71±3.46 mas/yr (SNR=4.0) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710605212623288832 (GAIA J124826.68+083001.0) ra=192.111160 dec=8.500290 RA=12:48:26.68 DEC=+08:30:01.04 GaiaG=18.50 r_arcsec=2.50 | plx=0.082±0.157 mas (SNR=0.5) | pm=1.89±0.28 mas/yr (SNR=6.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710652285463135232 (GAIA J124821.10+083118.2) ra=192.087931 dec=8.521731 RA=12:48:21.10 DEC=+08:31:18.23 GaiaG=11.32 r_arcsec=32.25 | plx=4.070±0.079 mas (SNR=51.7) | pm=57.80±0.15 mas/yr (SNR=394.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥3.0 OR PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710604598442517632 (GAIA J124826.91+082801.7) ra=192.112126 dec=8.467139 RA=12:48:26.91 DEC=+08:28:01.70 GaiaG=19.84 r_arcsec=2.50 | plx=0.360±0.390 mas (SNR=0.9) | pm=4.37±0.72 mas/yr (SNR=6.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710604800306419072 (GAIA J124825.20+082844.8) ra=192.105001 dec=8.479107 RA=12:48:25.20 DEC=+08:28:44.78 GaiaG=19.03 r_arcsec=2.50 | plx=0.324±0.243 mas (SNR=1.3) | pm=4.67±0.43 mas/yr (SNR=10.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[STAR] Gaia DR3 3710605285636049920 (GAIA J124825.49+083005.7) ra=192.106211 dec=8.501580 RA=12:48:25.49 DEC=+08:30:05.69 GaiaG=20.31 r_arcsec=2.50 | plx=0.233±0.589 mas (SNR=0.4) | pm=4.38±1.11 mas/yr (SNR=3.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥3.0
+[LEGACY] N(joined)=393 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[GAL][LEGACY] (LS J124826.28+082924.0) ra=192.109492 dec=8.490009 RA=12:48:26.28 DEC=+08:29:24.03 type=EXP z_l95=0.297 a=2.00" b=2.00" pa=-39.5
+[GAL][LEGACY] (LS J124820.98+083047.6) ra=192.087408 dec=8.513213 RA=12:48:20.98 DEC=+08:30:47.57 type=REX z_l95=0.285 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J124825.87+083020.9) ra=192.107796 dec=8.505797 RA=12:48:25.87 DEC=+08:30:20.87 type=REX z_l95=0.302 a=2.00" b=2.00" pa=0.0
+[GAL][LEGACY] (LS J124826.61+083036.8) ra=192.110862 dec=8.510230 RA=12:48:26.61 DEC=+08:30:36.83 type=DEV z_l95=0.252 a=2.00" b=2.00" pa=-40.5
+[GAL][LEGACY] (LS J124826.78+083109.5) ra=192.111603 dec=8.519295 RA=12:48:26.78 DEC=+08:31:09.46 type=EXP z_l95=0.273 a=2.00" b=2.00" pa=73.7
+[LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
+[OK] Wrote NGC4698_mask.fits (shape=(1189, 608), masked=29464 px; stars=7, galaxies=5)
+[OK] Wrote NGC4698_combined_VRI_mask.png
+[TIME] NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=19.25
+[TIME] total runtime_s=332.14
+=== v3tk masking run end:   2026-01-16T12:23:47 ===
