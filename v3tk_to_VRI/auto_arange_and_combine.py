@@ -241,9 +241,9 @@ def main(argv: list[str]) -> int:
 
 	ratio_x, ratio_y, image_args = _parse_ratio(argv[1:])
 	paths = _expand_args_to_files(image_args)
-	paths = [p for p in paths if p.is_file()]
+	paths = [p for p in paths if p.is_file() and not p.name.startswith("ALL_")]
 	if not paths:
-		print("No input files found.", file=sys.stderr)
+		print("No input files found (or all were skipped because they start with 'ALL_').", file=sys.stderr)
 		return 2
 
 	basenames = [p.name for p in paths]
@@ -297,10 +297,22 @@ def main(argv: list[str]) -> int:
 		canvas.paste(img, (x, y), img)
 
 	ext = out_path.suffix.lower()
-	if ext in {".jpg", ".jpeg"}:
-		canvas = canvas.convert("RGB")
+	save_kwargs: dict[str, object] = {}
 
-	canvas.save(out_path)
+	# Important: we never rescale any input image; we only paste them at native pixel size.
+	# Here we pick save settings that avoid quality loss where possible.
+	if ext in {".png"}:
+		# PNG is lossless; `compress_level` only affects file size and CPU.
+		save_kwargs.update({"compress_level": 0, "optimize": False})
+	elif ext in {".jpg", ".jpeg"}:
+		# JPEG is inherently lossy. Use settings that minimize additional loss.
+		canvas = canvas.convert("RGB")
+		save_kwargs.update({"quality": 100, "subsampling": 0, "optimize": False})
+	elif ext in {".webp"}:
+		# Prefer lossless output for WebP if requested by extension.
+		save_kwargs.update({"lossless": True, "quality": 100})
+
+	canvas.save(out_path, **save_kwargs)
 	print(
 		f"Wrote {out_path} ({width}x{height}, ratio {ratio_x}:{ratio_y}) from {len(images)} images"
 	)
