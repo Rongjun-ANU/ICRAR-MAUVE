@@ -4,137 +4,197 @@
 nGIST-Compatible Spatial Masking Tool (v3tk)
 
 This script generates binary spatial masks (FITS) and diagnostic overlays (PNG) for
-galaxy data cubes. It acts as a pre-processing step for nGIST or other analysis
-pipelines, automatically masking foreground stars and background galaxies while
-preserving the target galaxy structure.
+MUSE galaxy data cubes. It is designed as a pre-processing step for nGIST (or other
+pipelines), automatically masking foreground stars and (as safely as possible)
+background galaxies while preserving the target galaxy emission.
 
 Usage:
-    python create_masks.py [pattern]
-    
-    If [pattern] is provided (e.g., "NGC*.fits"), it processes matching files.
-    Otherwise, it defaults to processing all "*_DATACUBE*_VRI.fits" files in the directory.
+    python create_masks.py [pattern ...]
+
+    If one or more [pattern] arguments are provided (e.g., "NGC*.fits"), it processes
+    all matching files (deduplicated, order-preserving).
+    Otherwise, it defaults to processing all "*_DATACUBE*_VRI.fits" files in the current
+    directory.
 
 --------------------------------------------------------------------------------
 I. FILE INPUTS & OUTPUTS
 --------------------------------------------------------------------------------
 Inputs (per galaxy XXX):
   1. XXX_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits  (Required)
-     - 2D image or 3D cube (collapsed to 2D) used for WCS and dimensions.
-  2. XXX_combined_VRI.png                                (Optional)
-     - High-res visual reference. If present, used as background for diagnostic plots.
+     - 2D image or 3D cube (collapsed to 2D) used for WCS and pixel geometry.
+  2. XXX_combined_VRI.png                               (Optional)
+     - High-res visual reference used as the background for diagnostic overlays
+       ONLY if it matches the FITS pixel grid exactly (same nx, ny).
 
-Outputs:
+Outputs (per galaxy XXX):
   1. XXX_mask.fits
-     - 0 = Unmasked (Target/Sky)
-     - 1 = Masked (Star/Background Galaxy)
-     - Same spatial WCS/dimensions as input FITS.
+     - Binary mask with the same spatial WCS/dimensions as the input.
+     - 0 = Unmasked (target/sky), 1 = Masked (foreground star / background object).
   2. XXX_combined_VRI_mask.png
-     - Diagnostic overlay: Green circles = Stars, Brown ellipses/circles = Background objects.
+     - Diagnostic overlay. Green outlines = stars. Brown outlines = galaxies.
+     - Pixel-locked output: written at the same pixel dimensions as the chosen
+       background (PNG if compatible, otherwise FITS).
   3. v3tk_masking.log
-     - Detailed execution log capturing stdout/stderr.
+     - Full stdout/stderr tee for reproducibility and debugging.
 
 --------------------------------------------------------------------------------
 II. MASKING ALGORITHM
 --------------------------------------------------------------------------------
-The script employs a hierarchical multi-catalog approach:
+The masking is hierarchical and conservative by default:
 
-1. FOREGROUND STARS (Gaia DR3)
-   - Library: astroquery.gaia
-   - Selection: "Foreground" mode by default.
-     - Uses Parallax and Proper Motion (PM) to identify Milky Way stars.
-     - Ignores stars lacking significant kinematic motion to avoid masking 
-       star clusters in the target galaxy (Virgo distance).
-   - Sizing: Power-law scaling based on Gaia G-magnitude.
+1) FOREGROUND STARS (Gaia DR3)
+   - Query: Gaia DR3 cone search over the full field-of-view.
+   - Modes (Config.gaia_star_mode):
+     a) "foreground" (default): mask ONLY Milky Way stars identified via kinematics
+        (significant parallax and/or proper motion). This avoids masking Virgo-distance
+        compact sources that may be present in Gaia.
+     b) "strict": mask all Gaia sources in the FoV, but require reasonable astrometric
+        quality (RUWE/IPD/excess-noise thresholds).
+     c) "loose": mask any Gaia detection in the FoV (most complete; highest risk of
+        masking extragalactic compact sources).
+   - Size model: power-law radius vs Gaia G magnitude, with optional bright-star boost.
+     r = max(r_min, r_ref * 10^(-0.2*(G - G_ref))) capped at r_max, then padded by
+     gaia_margin_arcsec. A seeing floor (>= 1×FWHM) is enforced.
 
-2. BACKGROUND GALAXIES (Layered Strategy)
-   The script attempts to mask background objects using the following priority:
+2) BACKGROUND GALAXIES (Layered Strategy)
+   The code attempts background masking in the following priority order:
 
-   A. Legacy Surveys DR9 (Preferred High-Fidelity Layer)
-      - Library: pyvo (NOIRLab Data Lab TAP)
-      - Selection: Objects with Photo-Z lower bound (z_l95) > 0.01.
-      - Sizing: Uses intrinsic Tractor elliptical shape measurements (shape_r/e1/e2).
-      - If found, subsequent fallbacks (C, D) are usually skipped.
+   A) Legacy Surveys DR9 (Preferred first-pass; high-fidelity morphology + photo-z)
+      - Query mechanism: NOIRLab Data Lab TAP via pyvo.
+      - Tables: ls_dr9.tractor joined to ls_dr9.photo_z by ls_id.
+      - Selection:
+        * Exclude PSF-type detections (type != "PSF").
+        * Require photo-z lower 95% bound z_phot_l95 > legacy_z_l95_min.
+        * Require photo-z significance using (z_mean, z_l95, z_u95) to compute an
+          approximate sigma_z and a SNR threshold (legacy_z_snr_min).
+      - Shape / sizing:
+        * Uses Tractor intrinsic size shape_r (angular) with a configurable floor/cap.
+        * If enabled, uses Tractor ellipticity (shape_e1/e2) to derive axis ratio and
+          a major-axis angle.
+      - Robust ellipse rendering:
+        * Optionally rasterizes ellipses by sampling in the local tangent plane and
+          mapping points through the FITS WCS. This avoids common PA/parity mistakes
+          when the image axes are rotated/flipped relative to (east, north).
+        * If you prefer maximum robustness, you can force Legacy detections to be
+          masked as circles (legacy_force_circles=True).
+      - If Legacy masking succeeds (i.e., at least one object is masked), the script
+        skips the lower-fidelity fallback catalogs (PS1/SkyMapper/SDSS/NED).
 
-   B. Spectroscopic Confirmation (Evidence-Based Veto)
-      - Sources: SDSS SpecObj, NED.
-      - Logic: Checks spectroscopic redshift/velocity.
-        - If cz < 3500 km/s: Treated as Target/Virgo (NOT masked).
-        - If cz > 5000 km/s: Treated as Background (Masked).
+   B) Evidence-Based Distance Confirmation (SDSS spec-z / NED spec-z)
+      - When enabled (require_nonvirgo_confirmation_for_galaxy_mask=True), the script
+        will ONLY mask candidate galaxies if there is spectroscopic evidence that they
+        are background:
+          * cz <= virgo_keep_cz_max_kms     -> treated as Virgo/nearby (NOT masked)
+          * cz >= background_mask_cz_min_kms -> treated as background (masked)
+      - SDSS spectroscopy is preferred when available; NED spectroscopic redshifts are
+        used as a fallback.
 
-   C. Pan-STARRS (PS1) / SkyMapper (Photometric Fallback)
-      - Sources: MAST (PS1), VizieR (PS1 DR2 or SkyMapper DR4).
-      - Selection: "Galaxy-like" via morphology (PSF mag - Kron mag > threshold).
-      - Filters: Color cuts and Quality Flag checks applied to reduce false positives.
+   C) Pan-STARRS (PS1) / SkyMapper (Photometric fallback; lower fidelity)
+      - Used only if Legacy did not succeed (or is unavailable).
+      - Galaxy-like selection primarily via extendedness:
+          (PSF mag - Kron mag) > ps1_ext_thresh, with a sanity cap ps1_ext_max.
+      - Additional guards (when using VizieR PS1, II/349/ps1):
+        * Minimum detections (Nr).
+        * Qual bitmask filtering to require extendedness/quality and reject suspect
+          stack objects (configurable).
+        * Optional color cuts to reduce contamination from compact blue sources in
+          the target galaxy (HII regions / some PNe), at the cost of completeness.
+      - Photometric “no-spec-z” fallback (optional):
+        * If no cz evidence exists, the script can still mask only objects that are
+          VERY extended and bright (ps1_fallback_ext_min and ps1_fallback_rmag_max).
 
-   D. SDSS Photometry (Supplemental)
-      - Selection: SDSS morphological classification (Type=3/Galaxy).
-      - Sizing: Uses petroR90 or Model radii.
+   D) SDSS Photometry (Supplemental; footprint-limited)
+      - Used only if Legacy did not succeed (or is unavailable) and SDSS is enabled.
+      - SDSS query_region is limited by the service to <= 3 arcmin radius.
+      - Uses morphology proxies (psfMag-modelMag) and robust radii where available
+        (petroR90/petroR50/deV/exp radii), with optional high-z PSF override when a
+        confirmed high-z spec-z exists.
+      - Optional photometric fallback exists but is OFF by default.
 
 --------------------------------------------------------------------------------
-III. CONFIGURATION PARAMETERS (Config Class)
+III. KEY CONFIGURATION PARAMETERS (Config dataclass)
 --------------------------------------------------------------------------------
-You can adjust these values in the `Config` dataclass within the script.
-
 [Global]
-  fwhm_arcsec .................... : 1.0   (Assumed seeing for point-source floors)
-  exclude_center_arcsec .......... : 0.0   (Radius from center to force UNMASKED)
+  fwhm_arcsec ............................: seeing FWHM used for floors/overrides
+  exclude_center_arcsec ..................: inner radius to force UNMASKED (default 0)
 
 [Gaia Stars]
-  gaia_gmag_max .................. : 21.0  (Faintest stars to query)
-  gaia_margin_arcsec ............. : 1.0   (Padding added to star masks)
-  gaia_star_mode ................. : "foreground" (Options: "strict", "loose", "foreground")
-  
-  (Foreground Mode Kinematics Thresholds - identifying Milky Way stars)
-  gaia_parallax_snr_min .......... : 3.0
-  gaia_parallax_min_mas .......... : 0.002
-  gaia_pm_snr_min ................ : 3.0
-  gaia_pm_min_masyr .............. : 0.02
-  
-  (Sizing Model: r = max(min, ref * 10^(-0.2*(G - G_ref))))
-  star_r_min_arcsec .............. : 1.5
-  star_r_max_arcsec .............. : 25.0
-  star_r_ref_arcsec .............. : 5.0
-  star_g_ref ..................... : 15.0
+  gaia_star_mode .........................: "foreground" | "strict" | "loose"
+  gaia_gmag_max ..........................: faint limit for Gaia query
+  gaia_margin_arcsec .....................: padding added to star/galaxy masks
 
-[Legacy Surveys DR9 (Background Galaxies)]
-  enable_legacy .................. : True
-  legacy_z_l95_min ............... : 0.01  (Min photo-z lower bound to mask)
-  legacy_use_ellipses ............ : True  (Use Tractor e1/e2 shapes)
-  legacy_r_min_arcsec ............ : 1.0
-  legacy_r_max_arcsec ............ : 15.0
-  legacy_reject_if_near_gaia ..... : 0.8   (Avoid masking artifacts around bright stars)
+  (Foreground-by-kinematics thresholds)
+  gaia_parallax_snr_min ..................: minimum parallax SNR
+  gaia_parallax_min_mas ..................: minimum positive parallax (mas)
+  gaia_pm_snr_min ........................: minimum proper-motion SNR
+  gaia_pm_min_masyr ......................: minimum total proper motion (mas/yr)
 
-[Evidence-Based Masking (Spec-z / NED)]
-  require_nonvirgo_confirmation .. : True  (For PS1/SDSS: require proof or strong fallback)
-  virgo_keep_cz_max_kms .......... : 3500.0 (Do NOT mask if v < this)
-  background_mask_cz_min_kms ..... : 5000.0 (DO mask if v > this)
-  virgo_distance_mpc ............. : 16.5
-  virgo_distance_tolerance_mpc ... : 5.0
+  (Strict-mode Gaia quality thresholds)
+  gaia_ruwe_max ..........................: RUWE upper bound
+  gaia_ipd_frac_multi_peak_max ...........: IPD multi-peak threshold
+  gaia_astrometric_excess_noise_sig_max ..: excess-noise significance threshold
 
-[Pan-STARRS / SkyMapper (Photometric Galaxies)]
-  ps1_min_Nr ..................... : 2     (Min detections)
-  ps1_ext_thresh ................. : 0.25  (Extended if PSF - Kron > this)
-  ps1_ext_max .................... : 1.5   (Sanity cap for extendedness)
-  ps1_rmag_max ................... : 22.0
-  ps1_allow_photometric_fallback . : True  (Mask without spec-z if very extended?)
-  ps1_fallback_ext_min ........... : 0.6   (Strict extension threshold for fallback)
-  ps1_enable_color_cuts .......... : True  (Enforce g-r, r-i cuts to remove HII regions)
-  gal_r_min_arcsec ............... : 2.0
-  gal_r_max_arcsec ............... : 30.0
+  (Star radius model)
+  star_r_min_arcsec, star_r_ref_arcsec, star_g_ref, star_r_max_arcsec
+
+[Legacy Surveys DR9]
+  enable_legacy ..........................: enable DR9 TAP queries
+  legacy_z_l95_min .......................: photo-z lower 95% bound cut
+  legacy_z_snr_min .......................: photo-z significance cut
+  legacy_use_ellipses ....................: use Tractor e1/e2 to form ellipses
+  legacy_force_circles ...................: mask all Legacy objects as circles
+  legacy_wcs_sample_ellipses .............: WCS-sampled ellipse rasterization
+  legacy_pa_east_of_north ................: angle convention toggle (see code comments)
+  legacy_pa_offset_deg ...................: fixed extra rotation (degrees)
+  legacy_r_min_arcsec, legacy_r_max_arcsec: size floor/cap
+  legacy_reject_if_near_gaia_arcsec ......: reject Legacy detections near Gaia sources
+  legacy_write_ds9_regions ...............: write DS9 region files for PA debugging
+
+[Evidence-Based Masking (Spec-z)]
+  require_nonvirgo_confirmation_for_galaxy_mask ..: if True, only mask with cz evidence
+  virgo_keep_cz_max_kms ..................: keep (NOT mask) if cz <= this
+  background_mask_cz_min_kms .............: mask if cz >= this
+  sdss_spec_match_arcsec, ned_match_arcsec: crossmatch radii
+
+[PS1 / SkyMapper Photometric Galaxies]
+  ps1_min_Nr .............................: minimum detections
+  ps1_ext_thresh, ps1_ext_max ............: PSF-Kron extendedness thresholds
+  ps1_rmag_max ...........................: optional magnitude cut
+  ps1_enable_color_cuts ..................: apply g-r / r-i cuts (optional)
+  ps1_e_mag_max ..........................: max allowed mag error for color cuts
+  ps1_qual_extended_required_bits ........: required Qual bits (VizieR PS1)
+  ps1_require_qual_good ..................: require good-quality bits (VizieR PS1)
+  ps1_require_qual_primary_best ..........: require primary-best bit (VizieR PS1)
+  ps1_reject_qual_suspect ................: reject suspect/poor stack bits (VizieR PS1)
+  ps1_allow_photometric_fallback .........: allow no-cz fallback for very extended/bright
+  ps1_fallback_ext_min, ps1_fallback_rmag_max
+  ps1_reject_if_near_gaia_arcsec .........: avoid masking Gaia-like sources as galaxies
+  gal_fallback_arcsec ....................: fallback radius when no size is available
 
 [SDSS Supplemental]
-  enable_sdss .................... : True
-  sdss_pointlike_dmag_max ........ : 0.145 (Morphology separator)
-  sdss_petro_r90_scale ........... : 1.2   (Scaling for Petrosian radii)
-  sdss_model_radius_scale ........ : 3.0   (Scaling for Model radii)
-  highz_psf_override_zmin ........ : 0.3   (Treat high-z objects as point sources)
+  enable_sdss ............................: enable SDSS photometry/spectroscopy
+  sdss_pointlike_dmag_max ................: psf-model threshold for point-like
+  sdss_petro_r90_scale, sdss_petro_r50_scale, sdss_model_radius_scale
+  highz_psf_override_zmin ................: if spec-z > this, use seeing-based radius
+  highz_psf_k_fwhm, highz_psf_rmax_arcsec
+  sdss_reject_if_near_gaia_arcsec ........: Gaia-near rejection
+  sdss_star_fallback .....................: use SDSS stars only if Gaia returns none
 
 [Output]
-  use_png_background ............. : True  (Use .png for overlay if available)
-  output_dpi ..................... : 200
+  use_png_background .....................: use *_combined_VRI.png ONLY if pixel-matched
+  output_dpi .............................: DPI for overlays (pixel-locked sizing)
 
-Requirements:
-  pip install astropy astroquery matplotlib numpy pillow pyvo
+--------------------------------------------------------------------------------
+IV. REQUIREMENTS
+--------------------------------------------------------------------------------
+Core:
+  pip install numpy astropy matplotlib pillow
+
+Catalog services:
+  pip install astroquery
+
+Legacy DR9 TAP (optional but recommended for best background masking):
+  pip install pyvo
 """
 
 from __future__ import annotations
