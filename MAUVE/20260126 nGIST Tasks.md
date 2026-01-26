@@ -88,13 +88,13 @@ Additional safeguards:
 
 ## 2) Background galaxies (Legacy Surveys DR9; photo-z gated)
 
-For background galaxies, the script’s primary (and usually sufficient) strategy is a **Legacy Surveys DR9** query with **photo-z gating**. If this layer succeeds (i.e., it masks at least one object), the script **skips** other background-catalog fallbacks.
+For background galaxies, the script’s primary (and usually sufficient) strategy is a Legacy Surveys DR9 query with **photo-z gating**. 
 
 ### Catalog + join strategy
 
 Using the NOIRLab Data Lab TAP service (via `pyvo`), the script queries:
 
-- `ls_dr9.tractor` for positions, object type, and (when available) **Tractor shape parameters** (`shape_r`, `shape_e1`, `shape_e2`)
+- `ls_dr9.tractor` for positions, object type, and (when available) Tractor shape parameters (`shape_r`, `shape_e1`, `shape_e2`)
 - `ls_dr9.photo_z` for photometric redshift constraints (`z_phot_l95`, `z_phot_u95`, `z_phot_mean`)
 
 These tables are joined by `ls_id`.
@@ -166,3 +166,49 @@ Here I show the images for 26 galaxies before and after masking in combined VRI 
 And finally, I try run NGC4606 to test `_mask.fits`. 
 
 ![image-20260124163433430](assets/image-20260124163433430.png)
+
+## 3) Continuum subtracted cubes
+
+Here I still use masked IC3392 v3tk cube, restricted to $4800–7000\AA$ for this test and run all the `nGIST` modules up to `CONT`, with `MILES_EMLINES` template and different setting: $\mathrm{MDEG}=8,12,16,20$. Then I inspect the `LINE` cubes subtracted from `CONT` module by checking check the median flux and RMS. I check results across the following windows:
+
+```python
+windows = {
+    "cont_5050_5120": (5050.0, 5120.0),
+    "cont_5218_5485": (5218.0, 5485.0),
+    "cont_5600_5650": (5600.0, 5650.0),
+    "cont_6000_6200": (6000.0, 6200.0),
+    "cont_6400_6500": (6400.0, 6500.0),
+    "Hb_edge_4800_4920": (4800.0, 4920.0),
+    "OIII_edge_4940_5060": (4940.0, 5060.0),
+    "HaNII_edge_6500_6625": (6500.0, 6625.0),
+    "SII_edge_6680_6760": (6680.0, 6760.0),
+}
+```
+
+**Short answer is that changing $\mathrm{MDEG}$ from 8 to 20 marginally changes the fitting results. ** 
+
+For example, for $5218-5485\AA$ continuum window, medians are 0.38, 0.34, 0.33 and 0.37, with $\mathrm{RMS}\approx6.18$ for all $\mathrm{MDEGs}$. 
+
+![image-20260126190657683](assets/image-20260126190657683.png)
+
+![image-20260126190704228](assets/image-20260126190704228.png)
+
+For Line-adjacent windows like H$\alpha$+[N II] $6500-6625\AA$, medians are around 1 with RMS $4.76~4.77$ across all $\mathrm{MDEGs}$. 
+
+![image-20260126191350952](assets/image-20260126191350952.png)
+
+![image-20260126191400885](assets/image-20260126191400885.png)
+
+Below I fix the spaxel at the center (218, 218) of IC3392 and visualize the `LINE` cube spectra at different $\mathrm{MDEGs}$ with $5218-5485\AA$ continuum window:
+
+![image-20260126190717710](assets/image-20260126190717710.png)
+
+$6500-6625\AA$ H$\alpha$+[N II] window
+
+![image-20260126191414873](assets/image-20260126191414873.png)
+
+and full $4800-7000\AA$ window: 
+
+![image-20260126191420322](assets/image-20260126191420322.png)
+
+Next step will try using `SAFE` template and expand the tests to $9100\AA$. 

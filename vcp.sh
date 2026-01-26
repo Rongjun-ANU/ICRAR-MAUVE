@@ -25,3 +25,7 @@ vcp -v arc:projects/mauve/nGIST_dev_7.6.4/ /Users/Igniz/Desktop/ICRAR/nGIST_dev_
 vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_9300_KIN /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_9300_KIN
 vcp -v arc:projects/mauve/v3tk_to_R/ /Users/Igniz/Desktop/ICRAR/v3tk_to_R/
 vcp -v arc:projects/mauve/v3tk_to_VRI/ /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/
+vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT/IC3392_v3tk_mask_uptoCONT_line_cube.fits /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT/IC3392_v3tk_mask_uptoCONT_line_cube.fits
+vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT_MDEG12/IC3392_v3tk_mask_uptoCONT_MDEG12_line_cube.fits /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT_MDEG12/IC3392_v3tk_mask_uptoCONT_MDEG12_line_cube.fits
+vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT_MDEG16/IC3392_v3tk_mask_uptoCONT_MDEG16_line_cube.fits /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT_MDEG16/IC3392_v3tk_mask_uptoCONT_MDEG16_line_cube.fits
+vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT_MDEG20/IC3392_v3tk_mask_uptoCONT_MDEG20_line_cube.fits /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_v3tk_mask_uptoCONT_MDEG20/IC3392_v3tk_mask_uptoCONT_MDEG20_line_cube.fits
