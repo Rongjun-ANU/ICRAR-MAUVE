@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/usr/bin/env python
 """
 nGIST-Compatible Spatial Masking Tool (v3tk)
 
@@ -37,8 +36,9 @@ Outputs (per galaxy XXX):
      - Diagnostic overlay (pixel-locked to the chosen background).
      - Green outlines = masked stars. Brown outlines = masked background galaxies.
      - Optional: a dashed contour of the target-galaxy footprint (blue) if enabled.
+     - Optional: a dashed/colored contour of the MUSE FoV footprint (yellow) if enabled.
 
-  3. Optional DS9 region files (Legacy Surveys validation; OFF by default):
+  3. Optional DS9 region files (Legacy Surveys PA validation; OFF by default):
      - XXX_legacy_PA_EofN.reg
      - XXX_legacy_phi_from_E.reg
 
@@ -58,6 +58,14 @@ The masking is hierarchical and conservative by default:
    - Computes pixel scale (arcsec/pix) from the WCS and the FoV radius from the corners
      (plus a small padding of ~10").
 
+0b) MUSE FoV footprint (recommended; enabled by default)
+   - If fov_use_mask=True, reads the R_FLUX extension to define the true MUSE footprint:
+       FoV = finite & non-zero pixels (with optional morphological cleanup).
+   - All star/galaxy rasterization can be gated to this FoV mask to prevent masking
+     outside the valid MUSE area.
+   - A small edge-buffer option can keep partial edge objects from being over-masked.
+   - The FoV contour can be drawn on the diagnostic overlay (fov_draw_contour=True).
+
 1) FOREGROUND STARS (Gaia DR3)
    - Query: Gaia DR3 cone search over the full FoV via ADQL (astroquery.gaia).
    - Modes (Config.gaia_star_mode):
@@ -72,21 +80,16 @@ The masking is hierarchical and conservative by default:
      plus a bright-star boost for very bright stars, then padded by gaia_margin_arcsec:
         r = max(r_min, r_ref * 10^(-0.2*(G - G_ref))) capped at r_max
    - Implementation note: circles are rasterized directly into the output mask; objects
-     fully outside the FITS footprint are skipped robustly.
+     fully outside the FITS footprint are skipped robustly; FoV gating is applied if enabled.
 
 2) TARGET-GALAXY FOOTPRINT (optional but enabled by default as a veto)
-   - Goal: avoid masking “background candidates” that fall inside a pragmatic target
-     footprint (helps suppress midplane artifacts / HII-region contamination).
-   - Built from the 2D image by:
-     * sigma-clipped sky estimate
-     * conversion to surface brightness mu (mag/arcsec^2) assuming nanomaggy/pixel
-     * threshold at mu < target_mu_lim
-     * morphological closing + hole filling + component filtering
-     * keep component closest to image center
-     * optional dilation by ~FWHM (target_iso_dilate_fwhm)
-   - Foreground-star “exclusion” pixels are removed when estimating the footprint.
-   - If draw_target_iso_contour=True, the footprint is drawn as a dashed contour
-     on the overlay.
+     - Goal: avoid masking “background candidates” that fall inside a pragmatic target
+         footprint (helps suppress midplane artifacts / HII-region contamination).
+     - Built directly from the R_MAG extension (surface-brightness map):
+         * footprint = finite R_MAG spaxels with R_MAG < target_mu_lim
+     - No foreground-star exclusion, no component filtering, no dilation.
+     - If draw_target_iso_contour=True, the footprint is drawn as a dashed contour
+         on the overlay (all connected regions are outlined, including single spaxels).
 
 3) BACKGROUND GALAXIES (layered strategy; evidence-based by default)
 
@@ -169,6 +172,15 @@ III. KEY CONFIGURATION PARAMETERS (Config dataclass)
   fwhm_arcsec ............................: seeing FWHM used for floors/overrides
   gaia_margin_arcsec .....................: padding added to star/galaxy radii
   exclude_center_arcsec ..................: inner radius to force UNMASKED (default 0)
+
+[FoV gating (R_FLUX footprint)]
+  fov_use_mask ...........................: enable FoV gating from R_FLUX extension
+  fov_extname ............................: extension name (default "R_FLUX")
+  fov_close_size_pix .....................: cleanup kernel size for closing/filling
+  fov_min_abs ............................: minimum absolute flux for valid FoV pixels
+  fov_edge_star_buffer_arcsec ............: edge buffer to prevent over-masking outside FoV
+  fov_draw_contour .......................: draw FoV contour on overlay
+  fov_flip_y .............................: flip FoV contour for PNG background orientation
 
 [Gaia Stars]
   gaia_star_mode .........................: "foreground" | "strict" | "loose"
@@ -262,7 +274,7 @@ Catalog services (Gaia/PS1/VizieR/NED/SDSS):
 Legacy DR9 TAP (recommended for best background masking):
   pip install pyvo
 
-Target-footprint morphology (recommended; otherwise footprint step is skipped):
+FoV/target-footprint morphology (recommended; otherwise these steps are skipped):
   pip install scipy
 """
 
@@ -333,6 +345,18 @@ class Config:
     fwhm_arcsec: float = 1.0                # typical MUSE seeing FWHM, tune if needed
     gaia_gmag_max: float = 21.0             # ignore very faint Gaia sources
     gaia_margin_arcsec: float = 1.0         # extra padding on radii (registration / wings)
+
+    # MUSE FoV detection from R_FLUX (non-NaN region)
+    fov_use_mask: bool = True
+    fov_extname: str = "R_FLUX"
+    fov_close_size_pix: int = 5
+    fov_min_abs: float = 0.0
+    fov_edge_star_buffer_arcsec: float = 5.0
+    fov_draw_contour: bool = True
+    fov_contour_color: str = "yellow"
+    fov_contour_linestyle: str = ":"
+    fov_contour_linewidth: float = 1.0
+    fov_flip_y: bool = True
 
     # Foreground-star selection in Gaia:
     # - "loose": mask any Gaia detection within the FOV (most complete; can mask some non-foreground knots)
@@ -433,7 +457,7 @@ class Config:
 
     # Target-galaxy footprint veto (pragmatic guard against midplane artifacts)
     reject_bg_inside_target_footprint: bool = True
-    target_mu_lim: float = 23.0             # R-band surface brightness isophote (mag/arcsec^2)
+    target_mu_lim: float = 26.0             # R-band surface brightness isophote (mag/arcsec^2)
     target_mu_min_area_pix: int = 500       # minimum area to keep a component
     target_mu_min_area_frac: float = 0.002  # minimum area as a fraction of the FoV
     target_mu_close_radius_pix: int = 3     # morphological closing radius (pixels)
@@ -606,6 +630,60 @@ def load_r_image_and_wcs(rfits_path: str):
 
     ny, nx = data2d.shape
     return data2d, w, hdr_for_wcs, nx, ny
+
+
+def build_muse_fov_mask(
+    rfits_path: str,
+    fov_extname: str,
+    closing_size: int = 5,
+    min_abs: float = 0.0,
+) -> np.ndarray | None:
+    """Return boolean FoV mask from the R_FLUX HDU (finite & non-zero pixels), with optional cleanup."""
+    try:
+        with fits.open(rfits_path) as hdul:
+            fov_hdu = None
+            for hdu in hdul:
+                if getattr(hdu, "name", "").strip().upper() == str(fov_extname).strip().upper():
+                    fov_hdu = hdu
+                    break
+            if fov_hdu is None:
+                print(f"WARNING: FoV extension '{fov_extname}' not found in {rfits_path}; FoV gating disabled.")
+                return None
+            data = fov_hdu.data
+            if data is None:
+                print(f"WARNING: FoV extension '{fov_extname}' has no data; FoV gating disabled.")
+                return None
+    except Exception as e:
+        print(f"WARNING: failed to read FoV extension '{fov_extname}' from {rfits_path}: {e}")
+        return None
+
+    if data.ndim == 3:
+        img = np.nanmedian(data, axis=0)
+    elif data.ndim == 2:
+        img = data
+    else:
+        print(f"WARNING: FoV extension '{fov_extname}' has ndim={data.ndim}; FoV gating disabled.")
+        return None
+
+    try:
+        min_abs_val = float(min_abs)
+    except Exception:
+        min_abs_val = 0.0
+    if min_abs_val < 0:
+        min_abs_val = 0.0
+    fov = np.isfinite(img) & (np.abs(img) > min_abs_val)
+
+    if closing_size and int(closing_size) > 1:
+        try:
+            from scipy.ndimage import binary_closing, binary_fill_holes
+
+            st = np.ones((int(closing_size), int(closing_size)), dtype=bool)
+            fov = binary_closing(fov, structure=st)
+            fov = binary_fill_holes(fov)
+        except Exception:
+            print("WARNING: scipy.ndimage unavailable; FoV mask cleanup skipped.")
+
+    return np.asarray(fov, dtype=bool)
 
 
 def pixel_scale_arcsec(w: WCS) -> float:
@@ -1344,7 +1422,7 @@ def _to_float_or_nan(x):
         return float("nan")
 
 
-def rasterize_circle(mask: np.ndarray, xi: float, yi: float, r_pix: float) -> None:
+def rasterize_circle(mask: np.ndarray, xi: float, yi: float, r_pix: float, fov_mask: np.ndarray | None = None) -> None:
     ny, nx = mask.shape
     if not np.isfinite(xi) or not np.isfinite(yi) or not np.isfinite(r_pix) or r_pix <= 0:
         return
@@ -1356,7 +1434,13 @@ def rasterize_circle(mask: np.ndarray, xi: float, yi: float, r_pix: float) -> No
         return
     yy, xx = np.ogrid[y0 : y1 + 1, x0 : x1 + 1]
     rr2 = (xx - xi) ** 2 + (yy - yi) ** 2
-    mask[y0 : y1 + 1, x0 : x1 + 1][rr2 <= (r_pix**2)] = 1
+    inside = rr2 <= (r_pix**2)
+    if fov_mask is not None:
+        fsub = fov_mask[y0 : y1 + 1, x0 : x1 + 1]
+        if fsub.shape == inside.shape:
+            mask[y0 : y1 + 1, x0 : x1 + 1][inside & fsub] = 1
+        return
+    mask[y0 : y1 + 1, x0 : x1 + 1][inside] = 1
 
 
 def circle_intersects_fov(xi: float, yi: float, r_pix: float, nx: int, ny: int) -> bool:
@@ -1376,7 +1460,7 @@ def ellipse_intersects_fov(xi: float, yi: float, a_pix: float, b_pix: float, nx:
     return circle_intersects_fov(xi, yi, r, nx, ny)
 
 
-def rasterize_ellipse(mask: np.ndarray, xi: float, yi: float, a_pix: float, b_pix: float, angle_deg: float) -> None:
+def rasterize_ellipse(mask: np.ndarray, xi: float, yi: float, a_pix: float, b_pix: float, angle_deg: float, fov_mask: np.ndarray | None = None) -> None:
     ny, nx = mask.shape
     if (
         not np.isfinite(xi)
@@ -1399,10 +1483,15 @@ def rasterize_ellipse(mask: np.ndarray, xi: float, yi: float, a_pix: float, b_pi
     xp = (xx - xi) * np.cos(th) + (yy - yi) * np.sin(th)
     yp = -(xx - xi) * np.sin(th) + (yy - yi) * np.cos(th)
     inside = (xp / a_pix) ** 2 + (yp / b_pix) ** 2 <= 1.0
+    if fov_mask is not None:
+        fsub = fov_mask[y0 : y1 + 1, x0 : x1 + 1]
+        if fsub.shape == inside.shape:
+            mask[y0 : y1 + 1, x0 : x1 + 1][inside & fsub] = 1
+        return
     mask[y0 : y1 + 1, x0 : x1 + 1][inside] = 1
 
 
-def rasterize_polygon(mask: np.ndarray, xverts: np.ndarray, yverts: np.ndarray) -> None:
+def rasterize_polygon(mask: np.ndarray, xverts: np.ndarray, yverts: np.ndarray, fov_mask: np.ndarray | None = None) -> None:
     ny, nx = mask.shape
     x = np.asarray(xverts, dtype=float)
     y = np.asarray(yverts, dtype=float)
@@ -1428,7 +1517,119 @@ def rasterize_polygon(mask: np.ndarray, xverts: np.ndarray, yverts: np.ndarray) 
     pts = np.column_stack([xx.ravel(), yy.ravel()])
     inside = np.asarray(Path(verts).contains_points(pts), dtype=bool)
     inside = inside.reshape(yy.shape)
+    if fov_mask is not None:
+        fsub = fov_mask[y0 : y1 + 1, x0 : x1 + 1]
+        if fsub.shape == inside.shape:
+            mask[y0 : y1 + 1, x0 : x1 + 1][inside & fsub] = 1
+        return
     mask[y0 : y1 + 1, x0 : x1 + 1][inside] = 1
+
+
+def circle_overlaps_mask(fov_mask: np.ndarray | None, xi: float, yi: float, r_pix: float) -> bool:
+    if fov_mask is None:
+        return True
+    if not np.isfinite(xi) or not np.isfinite(yi) or not np.isfinite(r_pix) or r_pix <= 0:
+        return False
+    ny, nx = fov_mask.shape
+    x0 = max(0, int(np.floor(xi - r_pix)))
+    x1 = min(nx - 1, int(np.ceil(xi + r_pix)))
+    y0 = max(0, int(np.floor(yi - r_pix)))
+    y1 = min(ny - 1, int(np.ceil(yi + r_pix)))
+    if x1 < x0 or y1 < y0:
+        return False
+    sub = fov_mask[y0 : y1 + 1, x0 : x1 + 1]
+    if not np.any(sub):
+        return False
+    yy, xx = np.ogrid[y0 : y1 + 1, x0 : x1 + 1]
+    rr2 = (xx - xi) ** 2 + (yy - yi) ** 2
+    inside = rr2 <= (r_pix**2)
+    return bool(np.any(sub & inside))
+
+
+def circle_within_mask(fov_mask: np.ndarray | None, xi: float, yi: float, r_pix: float) -> bool:
+    if fov_mask is None:
+        return True
+    if not np.isfinite(xi) or not np.isfinite(yi) or not np.isfinite(r_pix) or r_pix <= 0:
+        return False
+    ny, nx = fov_mask.shape
+    x0 = max(0, int(np.floor(xi - r_pix)))
+    x1 = min(nx - 1, int(np.ceil(xi + r_pix)))
+    y0 = max(0, int(np.floor(yi - r_pix)))
+    y1 = min(ny - 1, int(np.ceil(yi + r_pix)))
+    if x1 < x0 or y1 < y0:
+        return False
+    yy, xx = np.ogrid[y0 : y1 + 1, x0 : x1 + 1]
+    rr2 = (xx - xi) ** 2 + (yy - yi) ** 2
+    inside = rr2 <= (r_pix**2)
+    fsub = fov_mask[y0 : y1 + 1, x0 : x1 + 1]
+    if fsub.shape != inside.shape:
+        return False
+    return bool(np.all(fsub[inside]))
+
+
+def ellipse_overlaps_mask(fov_mask: np.ndarray | None, xi: float, yi: float, a_pix: float, b_pix: float, angle_deg: float) -> bool:
+    if fov_mask is None:
+        return True
+    if (
+        not np.isfinite(xi)
+        or not np.isfinite(yi)
+        or not np.isfinite(a_pix)
+        or not np.isfinite(b_pix)
+        or a_pix <= 0
+        or b_pix <= 0
+    ):
+        return False
+    ny, nx = fov_mask.shape
+    r = float(max(a_pix, b_pix))
+    x0 = max(0, int(np.floor(xi - r)))
+    x1 = min(nx - 1, int(np.ceil(xi + r)))
+    y0 = max(0, int(np.floor(yi - r)))
+    y1 = min(ny - 1, int(np.ceil(yi + r)))
+    if x1 < x0 or y1 < y0:
+        return False
+    sub = fov_mask[y0 : y1 + 1, x0 : x1 + 1]
+    if not np.any(sub):
+        return False
+    yy, xx = np.ogrid[y0 : y1 + 1, x0 : x1 + 1]
+    th = np.deg2rad(angle_deg)
+    xp = (xx - xi) * np.cos(th) + (yy - yi) * np.sin(th)
+    yp = -(xx - xi) * np.sin(th) + (yy - yi) * np.cos(th)
+    inside = (xp / a_pix) ** 2 + (yp / b_pix) ** 2 <= 1.0
+    return bool(np.any(sub & inside))
+
+
+def polygon_overlaps_mask(fov_mask: np.ndarray | None, xverts: np.ndarray, yverts: np.ndarray) -> bool:
+    if fov_mask is None:
+        return True
+    x = np.asarray(xverts, dtype=float)
+    y = np.asarray(yverts, dtype=float)
+    if x.size < 3 or y.size < 3:
+        return False
+    if x.size != y.size:
+        return False
+    if not (np.all(np.isfinite(x)) and np.all(np.isfinite(y))):
+        return False
+
+    ny, nx = fov_mask.shape
+    verts = np.column_stack([x, y])
+    if not np.allclose(verts[0], verts[-1]):
+        verts = np.vstack([verts, verts[0]])
+
+    x0 = max(0, int(np.floor(np.min(verts[:, 0]))))
+    x1 = min(nx - 1, int(np.ceil(np.max(verts[:, 0]))))
+    y0 = max(0, int(np.floor(np.min(verts[:, 1]))))
+    y1 = min(ny - 1, int(np.ceil(np.max(verts[:, 1]))))
+    if x1 < x0 or y1 < y0:
+        return False
+    sub = fov_mask[y0 : y1 + 1, x0 : x1 + 1]
+    if not np.any(sub):
+        return False
+
+    xx, yy = np.meshgrid(np.arange(x0, x1 + 1), np.arange(y0, y1 + 1))
+    pts = np.column_stack([xx.ravel(), yy.ravel()])
+    inside = np.asarray(Path(verts).contains_points(pts), dtype=bool)
+    inside = inside.reshape(yy.shape)
+    return bool(np.any(sub & inside))
 
 
 def _ds9_region_header() -> list[str]:
@@ -1506,108 +1707,50 @@ def sample_ellipse_via_wcs(
     return np.asarray(xp, dtype=float), np.asarray(yp, dtype=float)
 
 
-def make_target_footprint(
-    data2d: np.ndarray,
+def make_target_footprint_from_rmag(
+    rfits_path: str,
     cfg: Config,
-    pixscale: float,
-    *,
-    exclude_mask: np.ndarray | None = None,
+    shape: tuple[int, int] | None = None,
 ) -> tuple[np.ndarray | None, float | None]:
-    """Build a target-galaxy footprint mask from an R-band surface-brightness isophote.
+    """Build a target-galaxy footprint mask directly from the R_MAG HDU.
 
-    Returns (footprint_mask, mu_lim). If dependencies are missing, returns (None, None).
+    Returns (footprint_mask, mu_lim). If R_MAG is missing/unreadable, returns (None, None).
     """
     try:
-        from astropy.stats import sigma_clipped_stats
-    except Exception:
-        print("WARNING: missing astropy.stats; skipping target footprint.")
+        with fits.open(rfits_path) as hdul:
+            rmag_hdu = None
+            for hdu in hdul:
+                if getattr(hdu, "name", "").strip().upper() == "R_MAG":
+                    rmag_hdu = hdu
+                    break
+            if rmag_hdu is None:
+                print(f"WARNING: R_MAG extension not found in {rfits_path}; skipping target footprint.")
+                return None, None
+            data = rmag_hdu.data
+            if data is None:
+                print(f"WARNING: R_MAG extension has no data; skipping target footprint.")
+                return None, None
+    except Exception as e:
+        print(f"WARNING: failed to read R_MAG from {rfits_path}: {e}")
         return None, None
 
-    try:
-        from scipy.ndimage import binary_fill_holes, binary_dilation, binary_closing, label, center_of_mass
-    except Exception:
-        print("WARNING: scipy.ndimage unavailable; skipping target footprint.")
+    if data.ndim == 3:
+        img = np.nanmedian(data, axis=0)
+    elif data.ndim == 2:
+        img = data
+    else:
+        print(f"WARNING: R_MAG has ndim={data.ndim}; skipping target footprint.")
         return None, None
 
-    if data2d is None or data2d.size == 0:
-        return None, None
+    if shape is not None and img.shape != shape:
+        if img.shape == (shape[1], shape[0]):
+            img = img.T
+        else:
+            print(f"WARNING: R_MAG shape {img.shape} != expected {shape}; skipping target footprint.")
+            return None, None
 
-    def _disk(radius: int) -> np.ndarray:
-        r = int(max(0, radius))
-        if r <= 0:
-            return np.ones((1, 1), dtype=bool)
-        y, x = np.ogrid[-r : r + 1, -r : r + 1]
-        return (x * x + y * y) <= (r * r)
-
-    arr = np.array(data2d, dtype=float, copy=True)
-    if exclude_mask is not None:
-        em = np.asarray(exclude_mask, dtype=bool)
-        if em.shape == arr.shape:
-            arr[em] = np.nan
-
-    # Background estimate on unmasked pixels (nanomaggy per pixel)
-    _, sky, sig = sigma_clipped_stats(arr, sigma=3.0, maxiters=5)
-    if not np.isfinite(sky):
-        return None, None
-
-    arr_bs = arr - float(sky)
-
-    # Convert to surface brightness (mag/arcsec^2)
-    pixarea = float(pixscale) * float(pixscale)
-    mu = np.full_like(arr_bs, np.nan, dtype=float)
-    good = np.isfinite(arr_bs) & (arr_bs > 0)
-    if pixarea <= 0:
-        return None, None
-    mu[good] = 22.5 - 2.5 * np.log10(arr_bs[good] / pixarea)
-
-    mu_lim = float(getattr(cfg, "target_mu_lim", 23.0))
-    footprint = np.isfinite(mu) & (mu < mu_lim)
-
-    # Morphological cleanup
-    close_r = int(getattr(cfg, "target_mu_close_radius_pix", 3))
-    if close_r > 0:
-        footprint = binary_closing(footprint, structure=_disk(close_r))
-    footprint = binary_fill_holes(footprint)
-
-    lab, nlab = label(footprint)
-    if nlab == 0:
-        return None, None
-
-    ny, nx = footprint.shape
-    min_area = int(max(float(getattr(cfg, "target_mu_min_area_pix", 500)), float(getattr(cfg, "target_mu_min_area_frac", 0.002)) * ny * nx))
-
-    # Remove small components
-    sizes = np.bincount(lab.ravel())
-    sizes[0] = 0
-    keep = np.zeros_like(sizes, dtype=bool)
-    keep[sizes >= min_area] = True
-    footprint = keep[lab]
-
-    lab, nlab = label(footprint)
-    if nlab == 0:
-        return None, None
-
-    # Keep component closest to image center
-    cy, cx = (ny - 1) / 2.0, (nx - 1) / 2.0
-    cents = center_of_mass(footprint, labels=lab, index=list(range(1, nlab + 1)))
-    best_i = 0
-    best_d2 = float("inf")
-    for i, c in enumerate(cents):
-        if c is None:
-            continue
-        dy = float(c[0]) - cy
-        dx = float(c[1]) - cx
-        d2 = dy * dy + dx * dx
-        if d2 < best_d2:
-            best_d2 = d2
-            best_i = i
-    footprint = lab == (best_i + 1)
-
-    # Optional dilation by ~FWHM
-    iters = int(np.ceil(float(cfg.target_iso_dilate_fwhm) * (float(cfg.fwhm_arcsec) / float(pixscale))))
-    if iters > 0:
-        footprint = binary_dilation(footprint, iterations=iters)
-
+    mu_lim = float(getattr(cfg, "target_mu_lim", 26.0))
+    footprint = np.isfinite(img) & (img < mu_lim)
     return footprint, mu_lim
 
 
@@ -1632,6 +1775,40 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 
     mask = np.zeros((ny, nx), dtype=np.uint8)
     exclude_center = cfg.exclude_center_arcsec * u.arcsec
+
+    fov_mask = None
+    fov_mask_plot = None
+    if bool(getattr(cfg, "fov_use_mask", True)):
+        fov_mask = build_muse_fov_mask(
+            rfits_path,
+            getattr(cfg, "fov_extname", "R_FLUX"),
+            getattr(cfg, "fov_close_size_pix", 5),
+            getattr(cfg, "fov_min_abs", 0.0),
+        )
+        if fov_mask is not None and fov_mask.shape != (ny, nx):
+            if fov_mask.shape == (nx, ny):
+                print("WARNING: FoV mask shape appears transposed; applying transpose to match data.")
+                fov_mask = fov_mask.T
+            else:
+                print(f"WARNING: FoV mask shape {fov_mask.shape} != data shape {(ny, nx)}; FoV gating disabled.")
+                fov_mask = None
+        if fov_mask is not None and not np.any(fov_mask):
+            print("WARNING: FoV mask is empty (all False). Gating will suppress all masks.")
+        if fov_mask is not None:
+            fov_mask_plot = np.flipud(fov_mask) if bool(getattr(cfg, "fov_flip_y", False)) else fov_mask
+            try:
+                frac = float(np.sum(fov_mask)) / float(fov_mask.size)
+                print(f"[FOV] FoV mask coverage: {100.0 * frac:.2f}%")
+            except Exception:
+                pass
+    if fov_mask is None:
+        fov_mask = np.isfinite(data2d)
+        print("WARNING: FoV mask unavailable; using finite data2d as FoV to prevent masking outside image.")
+        fov_mask_plot = fov_mask
+
+    star_edge_buffer_pix = None
+    if fov_mask is not None:
+        star_edge_buffer_pix = float(getattr(cfg, "fov_edge_star_buffer_arcsec", 5.0)) / float(pixscale)
 
     # ---------- Gaia stars ----------
     gaia = query_gaia_sources(center, rad, cfg)
@@ -1696,13 +1873,29 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
                 continue
 
+            # FoV gating: ignore stars fully outside FoV; if edge-buffer only partially overlaps,
+            # mask only the buffer-sized circle.
+            if fov_mask is not None:
+                if not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
+                    continue
+                r_mask_pix = float(r_pix)
+                if star_edge_buffer_pix is not None and float(star_edge_buffer_pix) > 0:
+                    if not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(star_edge_buffer_pix)):
+                        continue
+                    if not circle_within_mask(fov_mask, float(xi), float(yi), float(star_edge_buffer_pix)):
+                        r_mask_pix = float(min(r_pix, float(star_edge_buffer_pix)))
+            else:
+                r_mask_pix = float(r_pix)
+
             # rasterize into mask
-            rasterize_circle(mask, xi, yi, r_pix)
+            rasterize_circle(mask, xi, yi, r_mask_pix, fov_mask=fov_mask)
 
             # Rasterize an expanded star-exclusion mask for footprint estimation
             r_arcsec_fp = float(r_arcsec) + (2.0 * float(cfg.fwhm_arcsec))
             r_pix_fp = r_arcsec_fp / float(pixscale)
-            rasterize_circle(star_exclude, xi, yi, r_pix_fp)
+            if fov_mask is not None and r_mask_pix < float(r_pix):
+                r_pix_fp = min(float(r_pix_fp), float(r_mask_pix))
+            rasterize_circle(star_exclude, xi, yi, r_pix_fp, fov_mask=fov_mask)
 
             sid = row["source_id"] if "source_id" in row.colnames else "?"
             if cfg.log_each_star:
@@ -1725,16 +1918,15 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             # The provided PNG background images are typically rendered with a
             # different vertical origin than raw FITS array indices.
             y_plot = (ny - 1 - yi) if use_png_bg else yi
-            star_patches.append(Circle((xi, y_plot), r_pix, fill=False))
+            star_patches.append(Circle((xi, y_plot), r_mask_pix, fill=False))
 
     target_fp = None
     target_thresh = None
     if bool(getattr(cfg, "reject_bg_inside_target_footprint", False)) or bool(getattr(cfg, "draw_target_iso_contour", False)):
-        target_fp, target_thresh = make_target_footprint(
-            data2d,
+        target_fp, target_thresh = make_target_footprint_from_rmag(
+            rfits_path,
             cfg,
-            pixscale,
-            exclude_mask=(star_exclude > 0),
+            shape=(ny, nx),
         )
 
     # ---------- Background galaxies (Pan-STARRS preferred) ----------
@@ -1743,11 +1935,13 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     gal_catalog = None
     n_gal_masked = 0
     legacy_success = False
+    legacy_attempted = False
     legacy_ds9_entries_pa_eofn: list[dict] = []
     legacy_ds9_entries_phi_from_east: list[dict] = []
 
     # ---------- Legacy Surveys DR9 photo-z-gated background objects (DEFAULT first-pass) ----------
     if bool(getattr(cfg, "enable_legacy", True)):
+        legacy_attempted = True
         legacy = query_legacy_dr9_tractor_and_photoz(center, rad, cfg)
         if legacy is not None and len(legacy) > 0:
             n_gal_before_legacy = int(n_gal_masked)
@@ -1897,13 +2091,17 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     r_pix = r_arcsec / float(pixscale)
                     if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
                         continue
-                    rasterize_circle(mask, xi, yi, r_pix)
+                    if fov_mask is not None and not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
+                        continue
+                    rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
                     gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
                 else:
                     # Original behavior: ellipses when available, otherwise circles.
                     if bool(getattr(cfg, "legacy_use_ellipses", False)) and (abs(float(a_arcsec) - float(b_arcsec)) > 1e-6):
                         if not ellipse_intersects_fov(float(xi), float(yi), float(a_pix), float(b_pix), nx, ny):
+                            continue
+                        if fov_mask is not None and not ellipse_overlaps_mask(fov_mask, float(xi), float(yi), float(a_pix), float(b_pix), float(angle_deg)):
                             continue
                         use_wcs_sampling = bool(getattr(cfg, "legacy_wcs_sample_ellipses", True))
                         if use_wcs_sampling:
@@ -1920,19 +2118,21 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                                     float(angle_for_sampling),
                                     npts=int(getattr(cfg, "legacy_ellipse_npts", 96)),
                                 )
-                                rasterize_polygon(mask, xv, yv)
+                                if fov_mask is not None and not polygon_overlaps_mask(fov_mask, xv, yv):
+                                    continue
+                                rasterize_polygon(mask, xv, yv, fov_mask=fov_mask)
                                 if use_png_bg:
                                     yv_plot = (ny - 1) - yv
                                 else:
                                     yv_plot = yv
                                 gal_patches.append(Polygon(np.column_stack([xv, yv_plot]), closed=True, fill=False))
                             except Exception:
-                                rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg)
+                                rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg, fov_mask=fov_mask)
                                 y_plot = (ny - 1 - yi) if use_png_bg else yi
                                 angle_plot = (-angle_deg) if use_png_bg else angle_deg
                                 gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
                         else:
-                            rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg)
+                            rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg, fov_mask=fov_mask)
                             y_plot = (ny - 1 - yi) if use_png_bg else yi
                             angle_plot = (-angle_deg) if use_png_bg else angle_deg
                             gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
@@ -1940,7 +2140,9 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         r_pix = float(max(a_pix, b_pix))
                         if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
                             continue
-                        rasterize_circle(mask, xi, yi, r_pix)
+                        if fov_mask is not None and not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
+                            continue
+                        rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
                         y_plot = (ny - 1 - yi) if use_png_bg else yi
                         gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
                 n_gal_masked += 1
@@ -1983,7 +2185,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     # Optional: NED crossmatch for redshift-based background determination
     ned_tab = None
     ned_sky = None
-    if (not legacy_success) and (
+    if (not legacy_attempted) and (
         bool(getattr(cfg, "enable_virgo_distance_veto", False))
         or bool(getattr(cfg, "require_nonvirgo_confirmation_for_galaxy_mask", False))
     ):
@@ -1995,13 +2197,13 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             ned_sky = None
 
     try:
-        if not legacy_success:
+        if not legacy_attempted:
             print(f"[NED] N={0 if ned_tab is None else len(ned_tab)} cols={None if ned_tab is None else ned_tab.colnames}")
     except Exception:
         pass
 
     # SDSS spectroscopy table (has redshifts; preferred for evidence-based masking)
-    sdss_spec_tab = query_sdss_spectro(center, rad, cfg) if ((not legacy_success) and bool(getattr(cfg, "enable_sdss", True))) else None
+    sdss_spec_tab = query_sdss_spectro(center, rad, cfg) if ((not legacy_attempted) and bool(getattr(cfg, "enable_sdss", True))) else None
     sdss_spec_sky = None
     if sdss_spec_tab is not None and len(sdss_spec_tab) > 0:
         ra_c = pick_first_existing_col(sdss_spec_tab, ["ra", "RA"])
@@ -2014,20 +2216,20 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             )
 
     try:
-        if not legacy_success:
+        if not legacy_attempted:
             print(
                 f"[SDSS-spec] N={0 if sdss_spec_tab is None else len(sdss_spec_tab)} cols={None if sdss_spec_tab is None else sdss_spec_tab.colnames}"
             )
     except Exception:
         pass
 
-    if (not legacy_success) and center.dec.deg >= -30:
+    if (not legacy_attempted) and center.dec.deg >= -30:
         gal_tab = query_ps1_galaxy_like(center, rad, cfg)
         if gal_tab is not None and len(gal_tab) > 0:
             gal_catalog = "PS1"
 
     # If PS1 failed/empty and SkyMapper is available, try SkyMapper (useful mainly in the south)
-    if (not legacy_success) and (gal_tab is None or len(gal_tab) == 0) and center.dec.deg <= +28:
+    if (not legacy_attempted) and (gal_tab is None or len(gal_tab) == 0) and center.dec.deg <= +28:
         gal_tab = query_skymapper(center, rad)
         if gal_tab is not None and len(gal_tab) > 0:
             gal_catalog = "SkyMapper"
@@ -2344,13 +2546,15 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     # Skip if ellipse does not touch the FITS image at all
                     if not ellipse_intersects_fov(float(xi), float(yi), float(a_pix), float(b_pix), nx, ny):
                         continue
+                    if fov_mask is not None and not ellipse_overlaps_mask(fov_mask, float(xi), float(yi), float(a_pix), float(b_pix), float(angle)):
+                        continue
 
                     # Plot coords (only affects overlay, not the FITS mask)
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
                     angle_plot = (-angle) if use_png_bg else angle
 
                     # rasterize ellipse (local cutout)
-                    rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle)
+                    rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle, fov_mask=fov_mask)
 
                     # Get cz info for logging
                     cz, zval, zsrc, zsep = get_best_cz_info(sc, cfg, sdss_spec_sky, sdss_spec_tab, ned_sky, ned_tab)
@@ -2396,8 +2600,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
                         continue
 
+                    if fov_mask is not None and not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
+                        continue
+
+                    if fov_mask is not None and not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
+                        continue
+
                     # rasterize circle
-                    rasterize_circle(mask, xi, yi, r_pix)
+                    rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
 
                     # Get cz info for logging
                     cz, zval, zsrc, zsep = get_best_cz_info(sc, cfg, sdss_spec_sky, sdss_spec_tab, ned_sky, ned_tab)
@@ -2451,7 +2661,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 print(f"[GAL] ... suppressed {n_gal_masked - gal_logged} more galaxy logs")
 
     # ---------- Supplemental galaxies from SDSS (if available) ----------
-    if (not legacy_success) and bool(getattr(cfg, "enable_sdss", True)):
+    if (not legacy_attempted) and bool(getattr(cfg, "enable_sdss", True)):
         sdss_tab = query_sdss_photoobj(center, rad, cfg)
         if sdss_tab is not None and len(sdss_tab) > 0:
             if bool(getattr(cfg, "log_sdss_colnames", False)):
@@ -2613,7 +2823,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                             pass
 
                     # Rasterize circle
-                    rasterize_circle(mask, xi, yi, r_pix)
+                    rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
 
                     objid = "?"
                     if objid_col:
@@ -2694,7 +2904,19 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     if not circle_intersects_fov(float(xi), float(yi), float(r_pix), nx, ny):
                         continue
 
-                    rasterize_circle(mask, xi, yi, r_pix)
+                    if fov_mask is not None:
+                        if not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
+                            continue
+                        r_mask_pix = float(r_pix)
+                        if star_edge_buffer_pix is not None and float(star_edge_buffer_pix) > 0:
+                            if not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(star_edge_buffer_pix)):
+                                continue
+                            if not circle_within_mask(fov_mask, float(xi), float(yi), float(star_edge_buffer_pix)):
+                                r_mask_pix = float(min(r_pix, float(star_edge_buffer_pix)))
+                    else:
+                        r_mask_pix = float(r_pix)
+
+                    rasterize_circle(mask, xi, yi, r_mask_pix, fov_mask=fov_mask)
                     if cfg.log_each_star:
                         ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
                         print(
@@ -2703,11 +2925,19 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         )
                     n_star_masked += 1
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
-                    star_patches.append(Circle((xi, y_plot), r_pix, fill=False))
+                    star_patches.append(Circle((xi, y_plot), r_mask_pix, fill=False))
 
     # ---------- Write mask FITS (nGIST expects 0=unmasked, 1=masked) ----------
-    # Same spatial dims as input image/cube. :contentReference[oaicite:1]{index=1}
-    fits.writeto(out_mask_fits, mask.astype(np.uint8), header=hdr, overwrite=True)
+    if fov_mask is not None and fov_mask.shape == mask.shape:
+        mask = np.where(fov_mask, mask, 0)
+    # Same spatial dims as input image/cube. Ensure extension name is MASK.
+    hdr_mask = hdr.copy()
+    hdr_mask["EXTNAME"] = "MASK"
+    hdul_out = fits.HDUList([
+        fits.PrimaryHDU(),
+        fits.ImageHDU(mask.astype(np.uint8), header=hdr_mask, name="MASK"),
+    ])
+    hdul_out.writeto(out_mask_fits, overwrite=True)
     print(
         f"[OK] Wrote {out_mask_fits} (shape={mask.shape}, masked={(mask>0).sum()} px; "
         f"stars={n_star_masked}, galaxies={n_gal_masked})"
@@ -2716,14 +2946,27 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     # ---------- Overlay PNG (pixel-locked output size) ----------
     if use_png_bg:
         assert Image is not None
-        im = np.asarray(Image.open(png_path))
+        im_obj = Image.open(png_path)
+        im = np.asarray(im_obj)
         H, W = im.shape[0], im.shape[1]
 
-        # Strong safety check: only use PNG if it matches the FITS pixel grid
-        # (otherwise your WCS->pixel coords (from FITS) won't align to PNG pixels).
+        # If PNG size differs from FITS, resize PNG to match FITS so all outputs align.
         if (H, W) != (ny, nx):
-            print(f"WARNING: {png_path} shape=({H}, {W}) != FITS shape=({ny}, {nx}); using FITS background instead.")
-            use_png_bg = False
+            print(
+                f"WARNING: {png_path} shape=({H}, {W}) != FITS shape=({ny}, {nx}); resizing PNG to match FITS for overlay."
+            )
+            try:
+                im_obj = im_obj.resize((nx, ny), resample=Image.BILINEAR)
+                im = np.asarray(im_obj)
+                H, W = im.shape[0], im.shape[1]
+                try:
+                    im_obj.save(png_path)
+                    print(f"[PNG] Resized and overwrote {png_path} to match FITS size.")
+                except Exception as e:
+                    print(f"WARNING: failed to write resized PNG back to disk ({e}).")
+            except Exception as e:
+                print(f"WARNING: failed to resize PNG ({e}); using FITS background instead.")
+                use_png_bg = False
 
     dpi = int(cfg.output_dpi)
 
@@ -2743,6 +2986,15 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     ax.set_xlim(-0.5, nx - 0.5)
     ax.set_ylim(ny - 0.5, -0.5)
     ax.set_axis_off()
+
+    if bool(getattr(cfg, "fov_draw_contour", False)) and (fov_mask_plot is not None):
+        ax.contour(
+            fov_mask_plot.astype(float),
+            levels=[0.5],
+            colors=str(getattr(cfg, "fov_contour_color", "yellow")),
+            linestyles=str(getattr(cfg, "fov_contour_linestyle", ":")),
+            linewidths=float(getattr(cfg, "fov_contour_linewidth", 1.0)),
+        )
 
     if bool(getattr(cfg, "draw_target_iso_contour", False)) and (target_fp is not None):
         ax.contour(
@@ -2770,6 +3022,17 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     # IMPORTANT: no bbox_inches="tight" here; it changes output size
     fig.savefig(out_overlay_png, dpi=dpi)
     plt.close(fig)
+    if Image is not None:
+        try:
+            out_im = Image.open(out_overlay_png)
+            if out_im.size != (nx, ny):
+                print(
+                    f"WARNING: {out_overlay_png} size={out_im.size} != FITS size=({nx}, {ny}); resizing output PNG."
+                )
+                out_im = out_im.resize((nx, ny), resample=Image.BILINEAR)
+                out_im.save(out_overlay_png)
+        except Exception as e:
+            print(f"WARNING: failed to verify/resize output PNG size ({e}).")
     print(f"[OK] Wrote {out_overlay_png}")
 
     return out_mask_fits, out_overlay_png
