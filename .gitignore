@@ -46,3 +46,5 @@ Unihall/
 extended/MAUVE_all_R.png
 MAUVE/Rongjun_rFMR_Virgo_Mauve_Presentation.pdf
 extended/MAUVE_all_R.tiff
+# Ignore Doc folder
+Doc/
