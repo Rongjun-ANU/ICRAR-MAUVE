@@ -28,11 +28,16 @@
 !*.dat
 !*.png
 !*.pdf
+!*.svg
 !*.tiff
 !*.jpg
 !*.jpeg
 !*.gif
 !*.nb
+!*.pptx
+!*.docx
+!*.xlsx
+!*.odp
 
 # Keep these metadata files tracked too
 !.gitignore
