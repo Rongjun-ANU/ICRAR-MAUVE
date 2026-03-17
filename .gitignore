@@ -38,6 +38,7 @@
 !*.docx
 !*.xlsx
 !*.odp
+!specMask*
 
 # Keep these metadata files tracked too
 !.gitignore
