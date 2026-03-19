@@ -1,7 +1,7 @@
 # This is a test config file
 GENERAL :
-  RUN_ID : 'MasterConfig_MAUVE_v7.6.8_IC3392_v3tk' # Name of the analysis run. A subdirectory of this name within the output directory will be created. This identifier further serves as a prefix to all output files.
-  INPUT : 'IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits' # Input file for this analysis run. The specified path is relative to the input path given in defaultDir.
+  RUN_ID : 'IC3392_v3tk_v7.6.8' # Name of the analysis run. A subdirectory of this name within the output directory will be created. This identifier further serves as a prefix to all output files.
+  INPUT : '/scratch/pawsey1308/rhuang/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits' # Input file for this analysis run. The specified path is relative to the input path given in defaultDir.
   OUTPUT : '/scratch/pawsey1308/rhuang/mauve/cubes/v3tk_results' # Output directory. The output of this run will be collected in a subdirectory named RUN_ID. The specified path is relative to the output path given in defaultDir.
   REDSHIFT : 0.005566 # Initial guess on the redshift of the system [in z]. Spectra are shifted to rest-frame, according to this redshift.
   PARALLEL: True # Use multiprocessing [True/False]
