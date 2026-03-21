@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 import argparse
+import csv
 import os
 import sys
 
@@ -25,6 +27,9 @@ master_config = "MAUVE_MasterConfig_v7.6.8_setonix.yaml"
 ### Supports either a real FITS file or a text pointer to a FITS file path.
 mauve_info_file = "GIST_setupinput_v1.fits"
 ##
+### CSV file containing cube centers (ID, center_y, center_x)
+cube_centers_file = "cube_centers_v3tk.csv"
+##
 # MUSE cube subscript
 cube_sub = "_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"
 # path
@@ -43,7 +48,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument("galid", help="MAUVE GALAXY ID")
 parser.add_argument("-cpu", default=128, help="cpu used")
 parser.add_argument(
-    "-center", default="219,219", help="coordinates of the center of cube in pixels"
+    "-center",
+    default=None,
+    help="optional manual center override as 'x,y' (otherwise read from cube_centers_v3tk.csv)",
 )
 args = parser.parse_args()
 setup = vars(args)
@@ -72,13 +79,37 @@ def resolve_mauve_info_file(path):
 
     return resolved
 
+
+def resolve_cube_centers_file(path):
+    # Resolve the centers CSV relative to this script.
+    resolved = os.path.join(os.path.dirname(__file__), path)
+    if not os.path.exists(resolved):
+        raise FileNotFoundError(f"Cube centers CSV not found: {resolved}")
+    return resolved
+
+
+def get_center_from_csv(galaxy_id, csv_path):
+    with open(csv_path, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row.get("ID", "").strip() == galaxy_id:
+                center_y = row.get("center_y")
+                center_x = row.get("center_x")
+                if center_y is None or center_x is None:
+                    raise ValueError(
+                        f"Missing center_y/center_x for galaxy {galaxy_id} in {csv_path}"
+                    )
+                return f"{int(center_x)},{int(center_y)}"
+
+    raise ValueError(f"Galaxy ID {galaxy_id} not found in cube centers CSV: {csv_path}")
+
 ########################################################
 ########################################################
 
 
 ###
 ### gets galaxy name when lanching
-galid = sys.argv[1]
+galid = setup["galid"]
 
 ###################################
 ### read MasterConfig YAML file
@@ -93,6 +124,13 @@ with open(master_config, "r") as f:
 mauve_info_resolved = resolve_mauve_info_file(mauve_info_file)
 print(f"Using MAUVE setup file: {mauve_info_resolved}")
 mauve_sample = fits.open(mauve_info_resolved)
+
+if setup["center"] is None:
+    centers_csv_resolved = resolve_cube_centers_file(cube_centers_file)
+    setup["center"] = get_center_from_csv(galid, centers_csv_resolved)
+    print(f"Using center from CSV: {setup['center']} ({centers_csv_resolved})")
+else:
+    print(f"Using manually provided center: {setup['center']}")
 
 ### extract z and (if id is correct) also ebv and sigma
 z = mauve_sample[1].data["z"][np.where(mauve_sample[1].data["Galaxy"] == galid)]

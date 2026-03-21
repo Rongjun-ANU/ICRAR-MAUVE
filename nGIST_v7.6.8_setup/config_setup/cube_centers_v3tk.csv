@@ -1,0 +1,26 @@
+ID,file,shape,nz,ny,nx,center_y,center_x,status
+IC3392,/scratch/pawsey1308/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 438, 437)",3761,438,437,219,219,ok
+NGC4064,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 665, 566)",3761,665,566,333,283,ok
+NGC4189,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 319, 598)",3761,319,598,160,299,ok
+NGC4192,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1629, 1092)",3761,1629,1092,815,546,ok
+NGC4293,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 532, 923)",3761,532,923,266,462,ok
+NGC4294,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 663, 567)",3761,663,567,332,284,ok
+NGC4298,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 995, 1042)",3761,995,1042,498,521,ok
+NGC4302,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1420, 322)",3761,1420,322,710,161,ok
+NGC4330,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 760, 881)",3761,760,881,380,441,ok
+NGC4351,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 323, 591)",3761,323,591,162,296,ok
+NGC4383,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 705, 633)",3761,705,633,353,317,ok
+NGC4388,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 323, 870)",3761,323,870,162,435,ok
+NGC4394,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 647, 624)",3761,647,624,324,312,ok
+NGC4396,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 755, 883)",3761,755,883,378,442,ok
+NGC4402,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 318, 1152)",3761,318,1152,159,576,ok
+NGC4405,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 663, 522)",3761,663,522,332,261,ok
+NGC4419,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 643, 629)",3761,643,629,322,315,ok
+NGC4457,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 725, 725)",3761,725,725,363,363,ok
+NGC4501,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1236, 1205)",3761,1236,1205,618,603,ok
+NGC4522,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 659, 590)",3761,659,590,330,295,ok
+NGC4567_8,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1059, 971)",3761,1059,971,530,486,ok
+NGC4580,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 619, 647)",3761,619,647,310,324,ok
+NGC4606,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 435, 434)",3761,435,434,218,217,ok
+NGC4694,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 441, 439)",3761,441,439,221,220,ok
+NGC4698,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1189, 608)",3761,1189,608,595,304,ok
