@@ -659,7 +659,7 @@ vcp \
 
 Use the shared wrapper directly.
 
-Example job script:
+Example job script under `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial` using the shared environment:
 
 ```bash
 #!/bin/bash -l
@@ -670,22 +670,33 @@ Example job script:
 #SBATCH --cpus-per-task=128
 #SBATCH --mem=220G
 #SBATCH --time=24:00:00
-#SBATCH --job-name=ngist_IC3392
+#SBATCH --job-name=IC3392_v3tk_v7.6.8
 #SBATCH --output=slurm-%j.out
 #SBATCH --error=slurm-%j.err
+#SBATCH --mail-user=rongjun.huang@research.uwa.edu.au,astro@rongjun-huang.com
+#SBATCH --mail-type=BEGIN,END,FAIL
 
 set -euo pipefail
+
 module load singularity/4.1.0-slurm
 
 cd /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial
 
-stdbuf -oL -eL ngistenv1308 \
-  ngistPipeline \
-  --config configFiles/MasterConfig_MAUVE_IC3392_v3tk_mask.yaml \
+# (Optional but usually wise) prevent oversubscription from BLAS/OpenMP libs:
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+# run + stream output to both screen (slurm out) and logfile
+srun -n 1 -c $SLURM_CPUS_PER_TASK stdbuf -oL -eL \
+  ngistenv1308 ngistPipeline \
+  --config configFiles/IC3392_MAUVE_MasterConfig_v7.6.8_setonix.yaml \
   --default-dir configFiles/defaultDir \
-  2>&1 | tee IC3392_v3tk_mask.${SLURM_JOB_ID}.log
+  2>&1 | tee IC3392_v3tk_v7.6.8.log
 
 exit ${PIPESTATUS[0]}
+
+
 ```
 
 ------

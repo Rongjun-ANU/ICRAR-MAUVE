@@ -348,7 +348,7 @@ Example scratch structure:
 
 ## 8. Example Slurm usage
 
-A typical Slurm script using the shared environment looks like this.
+A typical Slurm script under `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial` using the shared environment looks like this.
 
 **Important:** users should update the email notification address before submitting.
 
@@ -380,7 +380,7 @@ export MKL_NUM_THREADS=1
 
 # run + stream output to both screen (slurm out) and logfile
 srun -n 1 -c $SLURM_CPUS_PER_TASK stdbuf -oL -eL \
-  $HOME/bin/conda run -p /ngistenv1308 ngistPipeline \
+  ngistenv1308 ngistPipeline \
   --config configFiles/IC3392_MAUVE_MasterConfig_v7.6.8_setonix.yaml \
   --default-dir configFiles/defaultDir \
   2>&1 | tee IC3392_v3tk_v7.6.8.log
