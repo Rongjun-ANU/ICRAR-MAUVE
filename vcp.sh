@@ -56,3 +56,11 @@ vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_
 vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow8/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow8_line_cube.fits /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow8/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow8_line_cube.fits
 vcp -v arc:projects/mauve/nGIST_dev_7.6.4/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow10/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow10_line_cube.fits /Users/Igniz/Desktop/ICRAR/nGIST_dev_7.6.4/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow10/IC3392_v3tk_9100_mask_uptoCONT_MDEG23_narrow10_line_cube.fits
 vcp -v arc:projects/mauve/products/v0.6/IC3392/ /Users/Igniz/Desktop/ICRAR/further/IC3392_v3_v0.6
+
+# Download all v0.7dev_gas_BIN_maps.fits from XXX_v0.7dev folders
+GALAXIES=("IC3392" "NGC4064" "NGC4192" "NGC4293" "NGC4298" "NGC4330" "NGC4383" "NGC4396" "NGC4419" "NGC4457" "NGC4501" "NGC4522" "NGC4694" "NGC4698")
+for gal in "${GALAXIES[@]}"; do
+    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_gas_BIN_maps.fits" /Users/Igniz/Desktop/ICRAR/extended/ &
+done
+wait
+
