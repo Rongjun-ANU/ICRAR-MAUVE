@@ -1,0 +1,12 @@
+
+=== pseudo_EWHa inputs/outputs ===
+Galaxy      : NGC4383
+Binning FITS: /Users/Igniz/Desktop/ICRAR/extended/NGC4383_SPATIAL_BINNING_maps_extended.fits
+Gas FITS    : /Users/Igniz/Desktop/ICRAR/extended/NGC4383_gas_BIN_maps_extended.fits
+Output FITS : NGC4383_pseudo_EW_maps.fits
+
+Saved: /Users/Igniz/Desktop/ICRAR/extended/NGC4383_pseudo_EW_maps.fits
+Halpha source extension: HA6562_FLUX
+R-band source extension: magnitude_r_uncorrected
+Valid pseudo_EWHa pixels: 129210
+✅  NGC4383 finished in 0m4s
