@@ -64,3 +64,4 @@ for gal in "${GALAXIES[@]}"; do
 done
 wait
 
+vcp -v arc:/projects/mauve/products/v0.6/IC3392/IC3392_CONTcube.fits /Users/Igniz/Desktop/ICRAR/extended/IC3392_CONTcube.fits

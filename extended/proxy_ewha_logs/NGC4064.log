@@ -1,0 +1,38 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+CANFAR products root: /arc/projects/mauve/products/v0.6/NGC4064
+CANFAR cubes root   : /arc/projects/mauve/cubes/v3.0/NGC4064
+Local fallback root : /arc/home/RongjunHuang/ICRAR/extended
+Resolved bin file   : /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
+Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4064/NGC4064_gas_BIN_maps.fits
+Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4064/NGC4064_CONTcube.fits
+Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
+
+WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
+
+=== proxy_EWHa inputs/outputs ===
+Galaxy          : NGC4064
+Redshift (z)    : 0.003025
+Primary root    : /arc/home/RongjunHuang/ICRAR/extended
+Binning FITS    : /arc/home/RongjunHuang/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
+Gas FITS        : /arc/projects/mauve/products/v0.6/NGC4064/NGC4064_gas_BIN_maps.fits
+Continuum FITS  : /arc/projects/mauve/products/v0.6/NGC4064/NGC4064_CONTcube.fits
+Redshift file   : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
+Output FITS     : NGC4064_proxy_EW_maps.fits
+Halpha window (vacuum, rest) : 6557.600 - 6571.600 A
+Halpha window (air, rest)    : 6555.789 - 6569.785 A
+Halpha lambda (air, rest)    : 6562.795 A
+Halpha Delta lambda (air)    : 13.996 A
+
+Saved: /arc/home/RongjunHuang/ICRAR/extended/NGC4064_proxy_EW_maps.fits
+Halpha source extension       : HA6562_FLUX
+Legacy R-band source          : magnitude_r_uncorrected
+Continuum cube source HDU     : DATA
+Continuum spectral axis       : AWAV
+Selected rest-frame window    : 6555.789 - 6569.785 A
+Selected observed-frame win   : 6575.620 - 6589.659 A
+Continuum planes in window    : 11
+Valid CONT_HA_MEAN pixels     : 376390
+Valid proxy_EWHa pixels       : 157507
+Valid pseudo_EWHa pixels      : 157507
+✅  NGC4064 finished in 0m12s

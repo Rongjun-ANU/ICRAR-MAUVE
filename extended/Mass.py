@@ -51,6 +51,14 @@ Changes (2025-12-02)
 * Updated internal attenuation calculation: A_r = k_r_calz * EBV_star.
 * Effective wavelengths used: Bessell R ~ 0.64 µm, SDSS r ~ 0.623 µm.
 
+Changes (2026-03-31)
+-----------------------
+* Added `--fallback-root` for secondary input lookup.
+* Datacube, binning, SFH, and weights inputs are now resolved independently,
+  with the primary root checked before the fallback root.
+* This allows mixed-root runs where different required inputs come from CANFAR
+  and local storage in the same execution.
+
 """
 
 # ------------------------------------------------------------------
@@ -67,6 +75,45 @@ apply_inclination_correction = True
 import argparse
 from pathlib import Path
 
+def _unique_paths(*paths: Path | None) -> list[Path]:
+    unique: list[Path] = []
+    seen: set[str] = set()
+
+    for path in paths:
+        if path is None:
+            continue
+        resolved = path.expanduser().resolve()
+        if str(resolved) in seen:
+            continue
+        seen.add(str(resolved))
+        unique.append(resolved)
+
+    return unique
+
+
+def resolve_existing_path(label: str, *paths: Path | None) -> Path:
+    candidates = _unique_paths(*paths)
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    checked = "\n".join(f"  - {candidate}" for candidate in candidates)
+    raise FileNotFoundError(f"Could not find {label}. Checked:\n{checked}")
+
+
+def build_input_candidates(
+    root: Path | None, relative_path: Path, flat_name: str | None = None
+) -> list[Path]:
+    if root is None:
+        return []
+
+    candidates = [root / relative_path]
+    if flat_name is not None:
+        candidates.append(root / flat_name)
+
+    return candidates
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Generate extended Voronoi‑binning maps for a MAUVE galaxy"
@@ -79,27 +126,76 @@ def parse_args() -> argparse.Namespace:
         "--root", default="/arc/projects/mauve",
         help="Root directory of the MAUVE data tree (default: /arc/projects/mauve)"
     )
+    p.add_argument(
+        "--fallback-root",
+        default=".",
+        help="Fallback directory searched when a required input is not found under --root",
+    )
     return p.parse_args()
 
-args    = parse_args()
-galaxy  = args.galaxy.upper()   # ensure consistent capitalisation
-rootdir = Path(args.root).expanduser().resolve()
+args          = parse_args()
+galaxy        = args.galaxy.upper()   # ensure consistent capitalisation
+rootdir       = Path(args.root).expanduser().resolve()
+fallback_root = (
+    Path(args.fallback_root).expanduser().resolve()
+    if args.fallback_root is not None
+    else None
+)
 
 # ------------------------------------------------------------------
 # 1.  File paths derived from CLI args
 # ------------------------------------------------------------------
-cube_path   = rootdir / "cubes/v3.0"            / f"{galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits"
-bin_path    = rootdir / "products/v0.6" / galaxy / f"{galaxy}_SPATIAL_BINNING_maps.fits"
-sfh_path    = rootdir / "products/v0.6" / galaxy / f"{galaxy}_SFH_maps.fits"
-weight_path = rootdir / "products/v0.6" / galaxy / f"{galaxy}_sfh-weights.fits"
+cube_name   = f"{galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits"
+bin_name    = f"{galaxy}_SPATIAL_BINNING_maps.fits"
+sfh_name    = f"{galaxy}_SFH_maps.fits"
+weight_name = f"{galaxy}_sfh-weights.fits"
+
+cube_path = resolve_existing_path(
+    "datacube FITS",
+    *build_input_candidates(rootdir, Path("cubes/v3.0") / cube_name, cube_name),
+    *build_input_candidates(
+        fallback_root, Path("cubes/v3.0") / cube_name, cube_name
+    ),
+)
+bin_path = resolve_existing_path(
+    "spatial binning FITS",
+    *build_input_candidates(
+        rootdir, Path("products/v0.6") / galaxy / bin_name, bin_name
+    ),
+    *build_input_candidates(
+        fallback_root, Path("products/v0.6") / galaxy / bin_name, bin_name
+    ),
+)
+sfh_path = resolve_existing_path(
+    "SFH FITS",
+    *build_input_candidates(
+        rootdir, Path("products/v0.6") / galaxy / sfh_name, sfh_name
+    ),
+    *build_input_candidates(
+        fallback_root, Path("products/v0.6") / galaxy / sfh_name, sfh_name
+    ),
+)
+weight_path = resolve_existing_path(
+    "SFH weights FITS",
+    *build_input_candidates(
+        rootdir, Path("products/v0.6") / galaxy / weight_name, weight_name
+    ),
+    *build_input_candidates(
+        fallback_root, Path("products/v0.6") / galaxy / weight_name, weight_name
+    ),
+)
 phot_path   = Path("BaSTI+Chabrier.dat")                         # local file
 out_path    = Path(f"{galaxy}_SPATIAL_BINNING_maps_extended.fits")   # output in CWD
+inclination_path = Path("MAUVE_Inclination.dat")
 
 # For backwards compatibility with variable names in the original notebook
 vor_path     = bin_path
 binning_path = bin_path
 
 print("\n=== Using the following files ===")
+print("Primary root :", rootdir)
+if fallback_root is not None:
+    print("Fallback root:", fallback_root)
 print("Cube         :", cube_path)
 print("Binning map  :", bin_path)
 print("SFH map      :", sfh_path)
@@ -218,7 +314,7 @@ names = [
     'F439W','F555W','F675W','F814W','C439_555','C555_675','C555_814'
 ]
 
-fname = Path("BaSTI+Chabrier.dat")
+fname = phot_path
 
 # ---------- 2.2  Load data, skip the two header lines ----------
 tbl = np.genfromtxt(
@@ -482,7 +578,7 @@ pixel_area_kpc = pixel_area_Mpc.to(u.kpc**2)
 
 # 2. Read galaxy inclination and calculate correction factor
 if apply_inclination_correction:
-    galaxy_inclination = read_galaxy_inclination(galaxy)
+    galaxy_inclination = read_galaxy_inclination(galaxy, inclination_path)
     if galaxy_inclination is not None:
         inclination_rad = np.deg2rad(galaxy_inclination)
         cos_inclination = np.cos(inclination_rad)
@@ -535,5 +631,3 @@ with fits.open(out_path, mode="append") as hdul:             # open existing fil
     hdul.flush()                                             # write in-place
 
 print("r-band uncorrected magnitude layer saved ➜", out_path.resolve())
-
-

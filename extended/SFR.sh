@@ -17,11 +17,24 @@ export LANG=C
 # ──────────────────────────────────────────────────────────────
 # 1.  Configurable variables
 # ──────────────────────────────────────────────────────────────
-ROOT="/arc/projects/mauve"   # MAUVE root path, for CANFAR
-ROOT="$PWD"                  # MAUVE root path, for local testing
-SCRIPT="SFR+Z.py"              # Python driver
-LOGDIR="sfr_logs"            # Log directory
+ROOT_CANFAR_BASE="/arc/projects/mauve"   # MAUVE base root; Python checks products/v0.6 and cubes/v3.0 under this
+ROOT_LOCAL="$PWD"                        # Local fallback root
+SCRIPT="SFR+Z.py"                        # Python driver
+LOGDIR="sfr_logs"                        # Log directory
 mkdir -p "$LOGDIR"
+
+if [[ -n "${PYTHON_BIN:-}" ]]; then
+  PYTHON_BIN="$(command -v "$PYTHON_BIN" 2>/dev/null || printf '%s' "$PYTHON_BIN")"
+elif [[ -n "${CONDA_PREFIX:-}" && -x "${CONDA_PREFIX}/bin/python" ]]; then
+  PYTHON_BIN="${CONDA_PREFIX}/bin/python"
+elif command -v python >/dev/null 2>&1; then
+  PYTHON_BIN="$(command -v python)"
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN="$(command -v python3)"
+else
+  echo "ERROR: could not find a usable Python executable." >&2
+  exit 1
+fi
 
 # Detect number of cores
 if command -v nproc >/dev/null 2>&1; then
@@ -61,8 +74,21 @@ process_galaxy() {
   printf "\n====================  %s  ====================\n" "$GAL"
   
   start=$(date +%s)
-  python "$SCRIPT" -g "$GAL" --root "$ROOT" >"$LOGFILE" 2>&1
+  set +e
+  {
+    echo "Python executable: $PYTHON_BIN"
+    "$PYTHON_BIN" --version
+    echo "CANFAR base root : $ROOT_CANFAR_BASE"
+    echo "Local fallback   : $ROOT_LOCAL"
+    echo
+  } >"$LOGFILE" 2>&1
+  "$PYTHON_BIN" "$SCRIPT" \
+    -g "$GAL" \
+    --root "$ROOT_CANFAR_BASE" \
+    --fallback-root "$ROOT_LOCAL" \
+    >>"$LOGFILE" 2>&1
   status=$?
+  set -e
   end=$(date +%s)
   dur=$((end - start))
   mins=$((dur / 60)); secs=$((dur % 60))
@@ -77,7 +103,7 @@ process_galaxy() {
 
 # Export function and variables for parallel execution
 export -f process_galaxy
-export ROOT SCRIPT LOGDIR
+export ROOT_CANFAR_BASE ROOT_LOCAL PYTHON_BIN SCRIPT LOGDIR
 
 # ──────────────────────────────────────────────────────────────
 # 3.  Parallel execution
@@ -85,6 +111,7 @@ export ROOT SCRIPT LOGDIR
 all_start=$(date +%s)
 
 printf "Running %d galaxies in parallel using %d cores...\n" "${#GALAXIES[@]}" "$CORES"
+printf "Using Python executable: %s\n" "$PYTHON_BIN"
 
 # Use GNU parallel if available, otherwise use xargs
 if command -v parallel >/dev/null 2>&1; then

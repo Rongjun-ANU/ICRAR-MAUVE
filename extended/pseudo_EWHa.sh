@@ -5,51 +5,75 @@
 #   ./pseudo_EWHa.sh                   # default galaxy list below
 #   ./pseudo_EWHa.sh NGC4064 NGC4192   # custom subset
 #
-# Per-galaxy runtime is appended to each log, and a grand-total runtime
-# is printed at the end.
+# The script checks CANFAR per-galaxy inputs in both:
+#   ${ROOT_CANFAR_BASE}/products/v0.6/${GAL}
+#   ${ROOT_CANFAR_BASE}/cubes/v3.0/${GAL}
+# and falls back to the current working directory for any file missing from
+# both CANFAR locations.
 
 set -euo pipefail
 
-# Fix locale settings for parallel
 export LC_ALL=C
 export LANG=C
 
 # ──────────────────────────────────────────────────────────────
 # 1.  Configurable variables
 # ──────────────────────────────────────────────────────────────
-ROOT="/arc/projects/mauve"   # MAUVE root path, for CANFAR
-ROOT="$PWD"                  # MAUVE root path, for local testing
-SCRIPT="pseudo_EWHa.py"      # Python driver
-LOGDIR="pseudo_ewha_logs"    # Log directory
+ROOT_CANFAR_BASE="/arc/projects/mauve"
+ROOT_LOCAL="$PWD"
+SCRIPT="pseudo_EWHa.py"
+LOGDIR="pseudo_ewha_logs"
 mkdir -p "$LOGDIR"
 
-# Detect number of cores
-if command -v nproc >/dev/null 2>&1; then
-  CORES=$(nproc)                # Linux
-elif command -v sysctl >/dev/null 2>&1; then
-  CORES=$(sysctl -n hw.ncpu)    # macOS
+if [[ -n "${PYTHON_BIN:-}" ]]; then
+  PYTHON_BIN="$(command -v "$PYTHON_BIN" 2>/dev/null || printf '%s' "$PYTHON_BIN")"
+elif [[ -n "${CONDA_PREFIX:-}" && -x "${CONDA_PREFIX}/bin/python" ]]; then
+  PYTHON_BIN="${CONDA_PREFIX}/bin/python"
+elif command -v python >/dev/null 2>&1; then
+  PYTHON_BIN="$(command -v python)"
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN="$(command -v python3)"
 else
-  CORES=4                       # fallback
+  echo "ERROR: could not find a usable Python executable." >&2
+  exit 1
+fi
+
+if command -v nproc >/dev/null 2>&1; then
+  CORES=$(nproc)
+elif command -v sysctl >/dev/null 2>&1; then
+  CORES=$(sysctl -n hw.ncpu)
+else
+  CORES=4
 fi
 
 GALAXIES=(
-  IC3392  
-  NGC4064  
-  NGC4192  
-  NGC4293  
+  IC3392
+  NGC4064
+  NGC4192
+  NGC4293
   NGC4298
-  NGC4330 
-  NGC4383  
-  NGC4396  
-  NGC4419  
+  NGC4330
+  NGC4383
+  NGC4396
+  NGC4419
   NGC4457
-  NGC4501 
-  NGC4522  
-  NGC4694  
+  NGC4501
+  NGC4522
+  NGC4694
   NGC4698
 )
 
-[[ $# -gt 0 ]] && GALAXIES=("$@")   # override list from CLI
+[[ $# -gt 0 ]] && GALAXIES=("$@")
+
+resolve_first_existing() {
+  local candidate
+  for candidate in "$@"; do
+    [[ -n "$candidate" && -e "$candidate" ]] || continue
+    printf '%s\n' "$candidate"
+    return 0
+  done
+  return 1
+}
 
 # ──────────────────────────────────────────────────────────────
 # 2.  Process function for each galaxy
@@ -57,13 +81,55 @@ GALAXIES=(
 process_galaxy() {
   local GAL="$1"
   local LOGFILE="$LOGDIR/${GAL}.log"
-  
+  local ROOT_PRODUCTS="${ROOT_CANFAR_BASE}/products/v0.6/${GAL}"
+  local ROOT_CUBES="${ROOT_CANFAR_BASE}/cubes/v3.0/${GAL}"
+
+  local BIN_FILE=""
+  local GAS_FILE=""
+
+  BIN_FILE="$(resolve_first_existing \
+    "${ROOT_PRODUCTS}/${GAL}_SPATIAL_BINNING_maps_extended.fits" \
+    "${ROOT_CUBES}/${GAL}_SPATIAL_BINNING_maps_extended.fits" \
+    "${ROOT_LOCAL}/${GAL}_SPATIAL_BINNING_maps_extended.fits")" || BIN_FILE=""
+
+  GAS_FILE="$(resolve_first_existing \
+    "${ROOT_PRODUCTS}/${GAL}_gas_BIN_maps_extended.fits" \
+    "${ROOT_CUBES}/${GAL}_gas_BIN_maps_extended.fits" \
+    "${ROOT_PRODUCTS}/${GAL}_gas_BIN_maps.fits" \
+    "${ROOT_CUBES}/${GAL}_gas_BIN_maps.fits" \
+    "${ROOT_LOCAL}/${GAL}_gas_BIN_maps_extended.fits" \
+    "${ROOT_LOCAL}/${GAL}_gas_BIN_maps.fits")" || GAS_FILE=""
+
   printf "\n====================  %s  ====================\n" "$GAL"
-  
+
   start=$(date +%s)
   set +e
-  python "$SCRIPT" -g "$GAL" --root "$ROOT" >"$LOGFILE" 2>&1
-  status=$?
+  {
+    echo "Python executable: $PYTHON_BIN"
+    "$PYTHON_BIN" --version
+    echo "CANFAR products root: $ROOT_PRODUCTS"
+    echo "CANFAR cubes root   : $ROOT_CUBES"
+    echo "Local fallback root : $ROOT_LOCAL"
+    echo "Resolved bin file   : ${BIN_FILE:-<missing>}"
+    echo "Resolved gas file   : ${GAS_FILE:-<missing>}"
+    echo
+  } >"$LOGFILE" 2>&1
+
+  if [[ -z "$BIN_FILE" || -z "$GAS_FILE" ]]; then
+    {
+      echo "ERROR: missing required input file(s)."
+      [[ -n "$BIN_FILE" ]] || echo "  - missing bin file"
+      [[ -n "$GAS_FILE" ]] || echo "  - missing gas file"
+    } >>"$LOGFILE" 2>&1
+    status=1
+  else
+    "$PYTHON_BIN" "$SCRIPT" \
+      -g "$GAL" \
+      --bin-file "$BIN_FILE" \
+      --gas-file "$GAS_FILE" \
+      >>"$LOGFILE" 2>&1
+    status=$?
+  fi
   set -e
   end=$(date +%s)
   dur=$((end - start))
@@ -77,9 +143,9 @@ process_galaxy() {
   echo "$msg" | tee -a "$LOGFILE"
 }
 
-# Export function and variables for parallel execution
 export -f process_galaxy
-export ROOT SCRIPT LOGDIR
+export -f resolve_first_existing
+export ROOT_CANFAR_BASE ROOT_LOCAL PYTHON_BIN SCRIPT LOGDIR
 
 # ──────────────────────────────────────────────────────────────
 # 3.  Parallel execution
@@ -87,8 +153,8 @@ export ROOT SCRIPT LOGDIR
 all_start=$(date +%s)
 
 printf "Running %d galaxies in parallel using %d cores...\n" "${#GALAXIES[@]}" "$CORES"
+printf "Using Python executable: %s\n" "$PYTHON_BIN"
 
-# Use GNU parallel if available, otherwise use xargs
 if command -v parallel >/dev/null 2>&1; then
   printf '%s\n' "${GALAXIES[@]}" | parallel -j "$CORES" process_galaxy
 else

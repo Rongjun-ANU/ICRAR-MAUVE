@@ -1,6 +1,8 @@
 
 === pseudo_EWHa inputs/outputs ===
 Galaxy      : NGC4064
+Primary root: /arc/projects/mauve/NGC4064
+Fallback root: /Users/Igniz/Desktop/ICRAR/extended
 Binning FITS: /Users/Igniz/Desktop/ICRAR/extended/NGC4064_SPATIAL_BINNING_maps_extended.fits
 Gas FITS    : /Users/Igniz/Desktop/ICRAR/extended/NGC4064_gas_BIN_maps_extended.fits
 Output FITS : NGC4064_pseudo_EW_maps.fits

@@ -136,6 +136,14 @@ Changes (2026-01-15)
 * Added Milky Way (CCM89; Cardelli, Clayton & Mathis 1989) extinction curve as k(λ)=A(λ)/E(B−V).
 * Set Milky Way (CCM89, R_V=3.1) as the default extinction law for k-values (Balmer-decrement dust correction).
 * Kept Calzetti (2000) curve intact and available via `extinction_k(..., law="calzetti")`.
+
+Changes (2026-03-31)
+-----------------------
+* Added `--fallback-root` for secondary input lookup.
+* Gas, kinematic, and extended input FITS files are now resolved per file,
+  checking the primary root first and then the fallback root.
+* Removed the hardwired local gas-path override so mixed-root runs work
+  consistently when some inputs are on CANFAR and others are local.
 """
 
 # ------------------------------------------------------------------
@@ -166,6 +174,50 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 # ------------------------------------------------------------------
 # Helper function for inclination correction
 # ------------------------------------------------------------------
+
+def _unique_paths(*paths: Path | None) -> list[Path]:
+    unique: list[Path] = []
+    seen: set[str] = set()
+
+    for path in paths:
+        if path is None:
+            continue
+        resolved = path.expanduser().resolve()
+        if str(resolved) in seen:
+            continue
+        seen.add(str(resolved))
+        unique.append(resolved)
+
+    return unique
+
+
+def find_first_existing(*paths: Path | None) -> Path | None:
+    for candidate in _unique_paths(*paths):
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def resolve_existing_path(label: str, *paths: Path | None) -> Path:
+    resolved = find_first_existing(*paths)
+    if resolved is not None:
+        return resolved
+
+    checked = "\n".join(f"  - {candidate}" for candidate in _unique_paths(*paths))
+    raise FileNotFoundError(f"Could not find {label}. Checked:\n{checked}")
+
+
+def build_input_candidates(
+    root: Path | None, relative_path: Path, flat_name: str | None = None
+) -> list[Path]:
+    if root is None:
+        return []
+
+    candidates = [root / relative_path]
+    if flat_name is not None:
+        candidates.append(root / flat_name)
+
+    return candidates
 
 def read_galaxy_inclination(galaxy_name, inclination_file="MAUVE_Inclination.dat"):
     """
@@ -201,6 +253,11 @@ def read_galaxy_inclination(galaxy_name, inclination_file="MAUVE_Inclination.dat
 p = argparse.ArgumentParser(description="Generate SFR maps for a MAUVE galaxy")
 p.add_argument("-g", "--galaxy", default="IC3392", help="Galaxy ID (default IC3392)")
 p.add_argument("--root", default="/arc/projects/mauve", help="MAUVE root path")
+p.add_argument(
+    "--fallback-root",
+    default=".",
+    help="Fallback directory searched when an input file is not found under --root",
+)
 p.add_argument("-v", "--verbose", action="store_true", help="Verbose logging")
 args = p.parse_args()
 
@@ -209,12 +266,57 @@ logging.basicConfig(level=loglvl, format="%(levelname)s %(message)s", stream=sys
 
 t0   = time.perf_counter()
 gal  = args.galaxy.upper()
-root = Path(args.root)
+root = Path(args.root).expanduser().resolve()
+fallback_root = (
+    Path(args.fallback_root).expanduser().resolve()
+    if args.fallback_root is not None
+    else None
+)
 
-gas_path = root / "products" / "v0.6" / gal / f"{gal}_gas_BIN_maps.fits" # For CANFAR
-gas_path = Path(f"{gal}_gas_BIN_maps.fits") # For local testing
+gas_name = f"{gal}_gas_BIN_maps.fits"
+gas_extended_name = f"{gal}_gas_BIN_maps_extended.fits"
+kin_name = f"{gal}_KIN_maps_extended.fits"
+bin_extended_name = f"{gal}_SPATIAL_BINNING_maps_extended.fits"
+
+gas_path = find_first_existing(
+    *build_input_candidates(
+        root, Path("products/v0.6") / gal / gas_name, gas_name
+    ),
+    *build_input_candidates(
+        fallback_root, Path("products/v0.6") / gal / gas_name, gas_name
+    ),
+)
 out_path = Path(f"{gal}_gas_BIN_maps_extended.fits")
-kin_path = Path(f"{gal}_KIN_maps_extended.fits")          # foreground + stellar V
+kin_path = find_first_existing(
+    *build_input_candidates(
+        root, Path("products/v0.6") / gal / kin_name, kin_name
+    ),
+    *build_input_candidates(
+        fallback_root, Path("products/v0.6") / gal / kin_name, kin_name
+    ),
+)
+gas_extended_path = find_first_existing(
+    *build_input_candidates(
+        root, Path("products/v0.6") / gal / gas_extended_name, gas_extended_name
+    ),
+    *build_input_candidates(
+        fallback_root,
+        Path("products/v0.6") / gal / gas_extended_name,
+        gas_extended_name,
+    ),
+)
+bin_extended_path = resolve_existing_path(
+    "extended binning FITS",
+    *build_input_candidates(
+        root, Path("products/v0.6") / gal / bin_extended_name, bin_extended_name
+    ),
+    *build_input_candidates(
+        fallback_root,
+        Path("products/v0.6") / gal / bin_extended_name,
+        bin_extended_name,
+    ),
+)
+inclination_path = Path("MAUVE_Inclination.dat")
 
 # two key cut parameters
 cut = 3 # FLUX/FLUX_ERR
@@ -224,12 +326,33 @@ noise = 20 # detection limit of FLUX, in the unit of 10^-20 erg/s
 # 1.  Load gas-line maps (extended version file if it already exists)
 # ------------------------------------------------------------------
 
-if gas_path.exists():
+if gas_path is not None:
     src = gas_path
-elif Path(out_path).exists():
-    src = Path(out_path)
+elif gas_extended_path is not None:
+    src = gas_extended_path
 else:
-    sys.exit(f"Cannot find {gas_path} or {out_path}")
+    checked = "\n".join(
+        f"  - {candidate}"
+        for candidate in _unique_paths(
+            *build_input_candidates(
+                root, Path("products/v0.6") / gal / gas_name, gas_name
+            ),
+            *build_input_candidates(
+                fallback_root, Path("products/v0.6") / gal / gas_name, gas_name
+            ),
+            *build_input_candidates(
+                root,
+                Path("products/v0.6") / gal / gas_extended_name,
+                gas_extended_name,
+            ),
+            *build_input_candidates(
+                fallback_root,
+                Path("products/v0.6") / gal / gas_extended_name,
+                gas_extended_name,
+            ),
+        )
+    )
+    raise FileNotFoundError(f"Could not find gas-line FITS. Checked:\n{checked}")
 
 print(f"Reading gas-line FITS ➜ {src}")
 with fits.open(src) as hdul:
@@ -256,7 +379,7 @@ gas_header
 # 2.  Foreground-star removal  (verbatim from notebook snippet)
 # ------------------------------------------------------------------
 
-if kin_path.exists():
+if kin_path is not None:
     print(f"Loading kinematic map from {kin_path}")
     with fits.open(kin_path) as hdul:
         kin_info = hdul.info()
@@ -1294,10 +1417,15 @@ def calculate_combined_c20_metallicity(gal):
         method_map: Map showing which method was used for each spaxel (0-5)
         combined_mask: Combined valid spaxel mask
     """
+    if gas_extended_path is None:
+        raise FileNotFoundError(
+            "Could not find extended gas FITS required for combined C20 metallicity."
+        )
+
     # Load all required fluxes
-    with fits.open(f'{gal}_SPATIAL_BINNING_maps_extended.fits') as h:
+    with fits.open(bin_extended_path) as h:
         sigM = h['LOGMASS_SURFACE_DENSITY'].data
-    with fits.open(f'{gal}_gas_BIN_maps_extended.fits') as h:
+    with fits.open(gas_extended_path) as h:
         sigSFR = h['LOGSFR_SURFACE_DENSITY_SF'].data
         
         # Load emission line fluxes
@@ -1537,7 +1665,7 @@ pixel_area_kpc = pixel_area_Mpc.to(u.kpc**2)
 
 # 2. Read galaxy inclination and calculate correction factor
 if apply_inclination_correction:
-    galaxy_inclination = read_galaxy_inclination(gal)
+    galaxy_inclination = read_galaxy_inclination(gal, inclination_path)
     if galaxy_inclination is not None:
         inclination_rad = np.deg2rad(galaxy_inclination)
         cos_inclination = np.cos(inclination_rad)
@@ -3347,7 +3475,7 @@ else:
 # 12.  Output the results
 # ------------------------------------------------------------------
 
-with fits.open(gas_path) as hdul:
+with fits.open(src) as hdul:
     new_hdul = fits.HDUList([hdu.copy() for hdu in hdul])
 
 # Add provenance information to primary header

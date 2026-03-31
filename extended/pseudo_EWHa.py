@@ -13,6 +13,13 @@ Changes (2026-03-30)
         containing 3 HDUs total:
             PRIMARY(OBS_HA6562_FLUX), OBS_R_FLUX, pseudo_EWHa.
 
+Changes (2026-03-31)
+--------------------
+* Added `--fallback-root` for secondary input lookup.
+* Input FITS files are now resolved per file, checking the primary root first
+  and then the fallback root.
+* This allows mixed-root runs where some inputs are on CANFAR and others are local.
+
 Notes:
 * This script computes a proxy EW(Halpha) from broadband r-band continuum.
 * The computation is:
@@ -52,6 +59,11 @@ def parse_args() -> argparse.Namespace:
         help="Directory containing the input FITS files (default: current directory)",
     )
     parser.add_argument(
+        "--fallback-root",
+        default=None,
+        help="Fallback directory searched when an input file is not found under --root",
+    )
+    parser.add_argument(
         "--bin-file",
         default=None,
         help="Optional explicit path to {gal}_SPATIAL_BINNING_maps_extended.fits",
@@ -67,6 +79,32 @@ def parse_args() -> argparse.Namespace:
         help="Optional output path (default: {gal}_pseudo_EW_maps.fits in current directory)",
     )
     return parser.parse_args()
+
+
+def _unique_paths(*paths: Path | None) -> list[Path]:
+    unique: list[Path] = []
+    seen: set[str] = set()
+
+    for path in paths:
+        if path is None:
+            continue
+        resolved = path.expanduser().resolve()
+        if str(resolved) in seen:
+            continue
+        seen.add(str(resolved))
+        unique.append(resolved)
+
+    return unique
+
+
+def resolve_existing_path(label: str, *paths: Path | None) -> Path:
+    candidates = _unique_paths(*paths)
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    checked = "\n".join(f"  - {candidate}" for candidate in candidates)
+    raise FileNotFoundError(f"Could not find {label}. Checked:\n{checked}")
 
 
 def magnitude_to_nanomaggies(magnitude: np.ndarray) -> np.ndarray:
@@ -142,29 +180,44 @@ def main() -> None:
     args = parse_args()
     gal = args.galaxy.upper()
     root = Path(args.root).expanduser().resolve()
+    fallback_root = (
+        Path(args.fallback_root).expanduser().resolve()
+        if args.fallback_root is not None
+        else None
+    )
 
     bin_path = (
-        Path(args.bin_file)
+        Path(args.bin_file).expanduser().resolve()
         if args.bin_file
-        else root / f"{gal}_SPATIAL_BINNING_maps_extended.fits"
+        else resolve_existing_path(
+            "binning FITS",
+            root / f"{gal}_SPATIAL_BINNING_maps_extended.fits",
+            fallback_root / f"{gal}_SPATIAL_BINNING_maps_extended.fits"
+            if fallback_root is not None
+            else None,
+        )
     )
     gas_path = (
-        Path(args.gas_file)
+        Path(args.gas_file).expanduser().resolve()
         if args.gas_file
-        else root / f"{gal}_gas_BIN_maps_extended.fits"
+        else resolve_existing_path(
+            "gas FITS",
+            root / f"{gal}_gas_BIN_maps_extended.fits",
+            fallback_root / f"{gal}_gas_BIN_maps_extended.fits"
+            if fallback_root is not None
+            else None,
+        )
     )
     out_path = Path(args.out) if args.out else Path(f"{gal}_pseudo_EW_maps.fits")
 
     print("\n=== pseudo_EWHa inputs/outputs ===")
     print("Galaxy      :", gal)
+    print("Primary root:", root)
+    if fallback_root is not None:
+        print("Fallback root:", fallback_root)
     print("Binning FITS:", bin_path)
     print("Gas FITS    :", gas_path)
     print("Output FITS :", out_path)
-
-    if not bin_path.exists():
-        raise FileNotFoundError(f"Input file not found: {bin_path}")
-    if not gas_path.exists():
-        raise FileNotFoundError(f"Input file not found: {gas_path}")
 
     obs_ha, ha_header, ha_extname, ha_bunit = read_observed_halpha(gas_path)
     obs_r, r_header, r_source, r_bunit = read_observed_r_flux(bin_path)
@@ -246,4 +299,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
