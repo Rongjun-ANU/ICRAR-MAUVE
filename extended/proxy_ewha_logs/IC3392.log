@@ -26,13 +26,17 @@ Halpha Delta lambda (air)    : 13.996 A
 
 Saved: /arc/home/RongjunHuang/ICRAR/extended/IC3392_proxy_EW_maps.fits
 Halpha source extension       : HA6562_FLUX
+Halpha velocity extension     : HA6562_VEL
 Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
+Galaxy systemic velocity      : 1664.001 km/s
+Finite Halpha velocity spaxels: 73168
+Spaxel redshift range         : 0.004668 - 0.006183
 Selected rest-frame window    : 6555.789 - 6569.785 A
-Selected observed-frame win   : 6592.279 - 6606.353 A
-Continuum planes in window    : 12
+Observed-frame window range   : 6586.389 - 6610.404 A
+Continuum planes in window    : 19
 Valid CONT_HA_MEAN pixels     : 191406
 Valid proxy_EWHa pixels       : 73168
 Valid pseudo_EWHa pixels      : 73168
-✅  IC3392 finished in 0m14s
+✅  IC3392 finished in 0m36s

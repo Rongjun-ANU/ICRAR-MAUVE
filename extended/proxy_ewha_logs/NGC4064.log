@@ -26,13 +26,17 @@ Halpha Delta lambda (air)    : 13.996 A
 
 Saved: /arc/home/RongjunHuang/ICRAR/extended/NGC4064_proxy_EW_maps.fits
 Halpha source extension       : HA6562_FLUX
+Halpha velocity extension     : HA6562_VEL
 Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
+Galaxy systemic velocity      : 905.501 km/s
+Finite Halpha velocity spaxels: 157507
+Spaxel redshift range         : -0.006452 - 0.005474
 Selected rest-frame window    : 6555.789 - 6569.785 A
-Selected observed-frame win   : 6575.620 - 6589.659 A
-Continuum planes in window    : 11
+Observed-frame window range   : 6513.490 - 6605.751 A
+Continuum planes in window    : 74
 Valid CONT_HA_MEAN pixels     : 376390
 Valid proxy_EWHa pixels       : 157507
 Valid pseudo_EWHa pixels      : 157507
-✅  NGC4064 finished in 0m12s
+✅  NGC4064 finished in 0m56s

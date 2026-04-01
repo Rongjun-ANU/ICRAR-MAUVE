@@ -26,13 +26,17 @@ Halpha Delta lambda (air)    : 13.996 A
 
 Saved: /arc/home/RongjunHuang/ICRAR/extended/NGC4522_proxy_EW_maps.fits
 Halpha source extension       : HA6562_FLUX
+Halpha velocity extension     : HA6562_VEL
 Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
+Galaxy systemic velocity      : 2320.041 km/s
+Finite Halpha velocity spaxels: 120510
+Spaxel redshift range         : 0.001455 - 0.014892
 Selected rest-frame window    : 6555.789 - 6569.785 A
-Selected observed-frame win   : 6606.721 - 6620.826 A
-Continuum planes in window    : 11
+Observed-frame window range   : 6565.325 - 6667.621 A
+Continuum planes in window    : 82
 Valid CONT_HA_MEAN pixels     : 388810
 Valid proxy_EWHa pixels       : 120510
 Valid pseudo_EWHa pixels      : 120510
-✅  NGC4522 finished in 0m11s
+✅  NGC4522 finished in 0m54s

@@ -26,13 +26,17 @@ Halpha Delta lambda (air)    : 13.996 A
 
 Saved: /arc/home/RongjunHuang/ICRAR/extended/NGC4396_proxy_EW_maps.fits
 Halpha source extension       : HA6562_FLUX
+Halpha velocity extension     : HA6562_VEL
 Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
+Galaxy systemic velocity      : -125.040 km/s
+Finite Halpha velocity spaxels: 158915
+Spaxel redshift range         : -0.006551 - 0.006776
 Selected rest-frame window    : 6555.789 - 6569.785 A
-Selected observed-frame win   : 6553.055 - 6567.046 A
-Continuum planes in window    : 11
+Observed-frame window range   : 6512.844 - 6614.304 A
+Continuum planes in window    : 81
 Valid CONT_HA_MEAN pixels     : 666665
 Valid proxy_EWHa pixels       : 158915
 Valid pseudo_EWHa pixels      : 158915
-✅  NGC4396 finished in 0m14s
+✅  NGC4396 finished in 0m58s

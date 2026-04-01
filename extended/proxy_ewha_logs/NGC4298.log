@@ -26,13 +26,17 @@ Halpha Delta lambda (air)    : 13.996 A
 
 Saved: /arc/home/RongjunHuang/ICRAR/extended/NGC4298_proxy_EW_maps.fits
 Halpha source extension       : HA6562_FLUX
+Halpha velocity extension     : HA6562_VEL
 Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
+Galaxy systemic velocity      : 1121.815 km/s
+Finite Halpha velocity spaxels: 350051
+Spaxel redshift range         : -0.006705 - 0.010266
 Selected rest-frame window    : 6555.789 - 6569.785 A
-Selected observed-frame win   : 6580.367 - 6594.415 A
-Continuum planes in window    : 11
+Observed-frame window range   : 6511.834 - 6637.233 A
+Continuum planes in window    : 100
 Valid CONT_HA_MEAN pixels     : 1036790
 Valid proxy_EWHa pixels       : 350051
 Valid pseudo_EWHa pixels      : 350051
-✅  NGC4298 finished in 0m14s
+✅  NGC4298 finished in 1m15s

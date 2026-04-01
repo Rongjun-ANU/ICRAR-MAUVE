@@ -9,11 +9,18 @@ Changes (2026-03-31)
   - {gal}_proxy_EW_maps.fits
 * The old pseudo-EW calculation is still preserved in separate comparison HDUs.
 *
+* Changes (2026-04-01)
+* --------------------
+* The proxy continuum window is now re-centered for each spaxel using the
+* Halpha velocity map `HA6562_VEL` on top of the galaxy systemic redshift.
+*
 * Inputs:
   - Observed Halpha map from:
       {gal}_gas_BIN_maps_extended.fits, or
       {gal}_gas_BIN_maps.fits
     using extension `HA6562_FLUX` (or legacy fallbacks if needed).
+  - Observed Halpha velocity map from the same gas FITS:
+      `HA6562_VEL`
   - Continuum cube from:
       {gal}_CONTcube.fits
   - Legacy broad-band R proxy input from:
@@ -43,20 +50,26 @@ Changes (2026-03-31)
 *
 *   3. Shift the observed continuum cube to the rest frame:
 *
-*        lambda_rest = lambda_obs / (1 + z)
+*        v_gal = Doppler velocity corresponding to the galaxy redshift z_gal
+*        v_spaxel = v_gal + v_Halpha(x, y)
+*        z_spaxel = Doppler redshift corresponding to v_spaxel
 *
-*      and convert the observed flux density to the rest-frame flux density:
+*        lambda_rest(x, y) = lambda_obs / (1 + z_spaxel(x, y))
 *
-*        f_lambda,rest = (1 + z) * f_lambda,obs
+*      For each spaxel, convert the observed flux density to the local
+*      rest-frame flux density:
 *
-*   4. Measure the mean continuum flux density in the rest-frame Halpha window:
+*        f_lambda,rest(x, y) = (1 + z_spaxel(x, y)) * f_lambda,obs
+*
+*   4. Measure the mean continuum flux density in the rest-frame Halpha window
+*      for each spaxel:
 *
 *        <f_lambda,cont> =
 *            (1 / Delta_lambda) * Integral[f_lambda,rest(lambda) d lambda]
 *
 *      In the sampled cube this is implemented as the arithmetic mean of all
-*      continuum planes whose rest-frame wavelength falls inside the selected
-*      Halpha EW window.
+*      continuum planes whose wavelength falls inside the selected Halpha EW
+*      window after shifting each spaxel by its own z_spaxel(x, y).
 *
 *   5. Compute the proxy equivalent width:
 *
@@ -107,6 +120,7 @@ DEFAULT_REDSHIFT_FILE = "new_redshifts"
 CONT_CGS_UNIT = "erg s-1 cm-2 Angstrom-1"
 NMAGGY_TO_FNU = 3.631e-29
 C_AA_PER_S = 2.99792458e18
+C_KM_PER_S = 2.99792458e5
 
 
 def parse_args() -> argparse.Namespace:
@@ -283,6 +297,47 @@ def read_observed_halpha(gas_path: Path) -> tuple[np.ndarray, fits.Header, str, 
     )
 
 
+def velocity_to_kms(velocity: np.ndarray, bunit: str) -> np.ndarray:
+    unit_norm = str(bunit).strip().lower().replace(" ", "")
+    factor = 1.0
+    if unit_norm in {"", "km/s", "kms-1", "km/s^-1", "kilometer/second"}:
+        factor = 1.0
+    elif unit_norm in {"m/s", "ms-1", "meter/second"}:
+        factor = 1.0e-3
+    return np.asarray(velocity, dtype=np.float64) * factor
+
+
+def read_observed_halpha_velocity(
+    gas_path: Path,
+) -> tuple[np.ndarray, fits.Header, str, str]:
+    candidates = (
+        "HA6562_VEL",
+        "HA6563_VEL",
+        "HALPHA6563_VEL",
+        "HALPHA_VEL",
+    )
+
+    with fits.open(gas_path) as hdul:
+        available = {
+            str(getattr(hdu, "name", "")).upper()
+            for hdu in hdul
+            if getattr(hdu, "name", "")
+        }
+
+        for ext in candidates:
+            if ext.upper() in available:
+                hdu = cast(Any, hdul[ext])
+                data = np.asarray(hdu.data, dtype=np.float64)
+                header = hdu.header.copy()
+                bunit = header.get("BUNIT", "km/s")
+                return data, header, ext, bunit
+
+    raise KeyError(
+        f"Could not find observed Halpha velocity extension in {gas_path.name}. "
+        f"Tried: {candidates}"
+    )
+
+
 def read_observed_r_flux(bin_path: Path) -> tuple[np.ndarray, fits.Header, str, str]:
     with fits.open(bin_path) as hdul:
         available = {
@@ -365,6 +420,33 @@ def lookup_redshift(galaxy: str, redshift_path: Path) -> float:
     return z
 
 
+def redshift_to_velocity_kms(z: float) -> float:
+    one_plus_z = 1.0 + float(z)
+    beta = (one_plus_z**2 - 1.0) / (one_plus_z**2 + 1.0)
+    return C_KM_PER_S * beta
+
+
+def velocity_to_redshift(velocity_kms: np.ndarray | float) -> np.ndarray:
+    beta = np.asarray(velocity_kms, dtype=np.float64) / C_KM_PER_S
+    if np.any(np.abs(beta[np.isfinite(beta)]) >= 1.0):
+        raise ValueError("Velocity implies |v| >= c; cannot convert to redshift.")
+    return np.sqrt((1.0 + beta) / (1.0 - beta)) - 1.0
+
+
+def build_spaxel_redshift_map(galaxy_z: float, ha_vel_kms: np.ndarray) -> np.ndarray:
+    spaxel_z = np.full(ha_vel_kms.shape, galaxy_z, dtype=np.float64)
+    valid_vel = np.isfinite(ha_vel_kms)
+    if not np.any(valid_vel):
+        return spaxel_z
+
+    galaxy_vel_kms = redshift_to_velocity_kms(galaxy_z)
+    # Follow the requested practical recipe: add the per-spaxel Halpha velocity
+    # to the systemic galaxy velocity in km/s, then convert back to redshift.
+    total_vel_kms = galaxy_vel_kms + ha_vel_kms[valid_vel]
+    spaxel_z[valid_vel] = velocity_to_redshift(total_vel_kms)
+    return spaxel_z
+
+
 def find_continuum_hdu(hdul: fits.HDUList) -> tuple[np.ndarray, fits.Header, str, str]:
     for index, hdu in enumerate(hdul):
         data = getattr(hdu, "data", None)
@@ -439,9 +521,15 @@ def spectral_axis_uses_air_wavelength(header: fits.Header, spectral_fits_axis: i
 
 def compute_mean_restframe_continuum(
     cont_path: Path,
-    z: float,
+    spaxel_z: np.ndarray,
     expected_spatial_shape: tuple[int, ...],
 ) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    if spaxel_z.shape != expected_spatial_shape:
+        raise ValueError(
+            "Redshift-map shape mismatch: "
+            f"expected {expected_spatial_shape} but got {spaxel_z.shape}."
+        )
+
     with fits.open(cont_path, memmap=True) as hdul:
         cube, cont_header, cont_source, cont_bunit = find_continuum_hdu(hdul)
 
@@ -460,7 +548,6 @@ def compute_mean_restframe_continuum(
         wave_obs_a = build_wavelength_axis_angstrom(
             cont_header, spectral_fits_axis, cube_view.shape[0]
         )
-        wave_rest_a = wave_obs_a / (1.0 + z)
 
         use_air_window = spectral_axis_uses_air_wavelength(cont_header, spectral_fits_axis)
         if use_air_window:
@@ -472,24 +559,50 @@ def compute_mean_restframe_continuum(
 
         low = min(rest_low_a, rest_high_a)
         high = max(rest_low_a, rest_high_a)
-        wave_mask = (wave_rest_a >= low) & (wave_rest_a <= high)
-        nwave_window = int(np.count_nonzero(wave_mask))
-        if nwave_window == 0:
+        valid_z = np.isfinite(spaxel_z) & ((1.0 + spaxel_z) > 0.0)
+        if not np.any(valid_z):
             raise ValueError(
-                f"No continuum planes fall inside the Halpha EW window for {cont_path.name}."
+                "Spaxel redshift map has no finite values with 1+z > 0."
             )
 
-        cont_window_rest = flux_density_to_cgs(cube_view[wave_mask], cont_bunit) * (1.0 + z)
-        finite = np.isfinite(cont_window_rest)
-        valid_counts = np.sum(finite, axis=0)
-        cont_sum = np.sum(np.where(finite, cont_window_rest, 0.0), axis=0)
+        one_plus_z = 1.0 + spaxel_z
+        observed_low_a = low * one_plus_z
+        observed_high_a = high * one_plus_z
+        observed_ref_a = rest_ref_a * one_plus_z
+
+        global_wave_mask = (wave_obs_a >= np.nanmin(observed_low_a[valid_z])) & (
+            wave_obs_a <= np.nanmax(observed_high_a[valid_z])
+        )
+        nwave_window = int(np.count_nonzero(global_wave_mask))
+        if nwave_window == 0:
+            raise ValueError(
+                "No continuum planes intersect the spaxel-dependent Halpha EW "
+                f"window for {cont_path.name}."
+            )
+
+        valid_counts = np.zeros(expected_spatial_shape, dtype=np.int32)
+        cont_sum = np.zeros(expected_spatial_shape, dtype=np.float64)
+
+        for wave_idx in np.flatnonzero(global_wave_mask):
+            plane_mask = (
+                valid_z
+                & (wave_obs_a[wave_idx] >= observed_low_a)
+                & (wave_obs_a[wave_idx] <= observed_high_a)
+            )
+            if not np.any(plane_mask):
+                continue
+
+            plane_rest = flux_density_to_cgs(cube_view[wave_idx], cont_bunit) * one_plus_z
+            finite = plane_mask & np.isfinite(plane_rest)
+            if not np.any(finite):
+                continue
+
+            valid_counts[finite] += 1
+            cont_sum[finite] += plane_rest[finite]
 
         cont_mean = np.full(expected_spatial_shape, np.nan, dtype=np.float64)
         valid = valid_counts > 0
         cont_mean[valid] = cont_sum[valid] / valid_counts[valid]
-
-        observed_low_a = low * (1.0 + z)
-        observed_high_a = high * (1.0 + z)
 
         meta: dict[str, Any] = {
             "source": cont_source,
@@ -501,8 +614,15 @@ def compute_mean_restframe_continuum(
             "rest_low_a": low,
             "rest_high_a": high,
             "rest_ref_a": rest_ref_a,
-            "observed_low_a": observed_low_a,
-            "observed_high_a": observed_high_a,
+            "observed_low_min_a": float(np.nanmin(observed_low_a[valid_z])),
+            "observed_low_max_a": float(np.nanmax(observed_low_a[valid_z])),
+            "observed_high_min_a": float(np.nanmin(observed_high_a[valid_z])),
+            "observed_high_max_a": float(np.nanmax(observed_high_a[valid_z])),
+            "observed_ref_min_a": float(np.nanmin(observed_ref_a[valid_z])),
+            "observed_ref_max_a": float(np.nanmax(observed_ref_a[valid_z])),
+            "z_min": float(np.nanmin(spaxel_z[valid_z])),
+            "z_max": float(np.nanmax(spaxel_z[valid_z])),
+            "nspaxel_z": int(np.count_nonzero(valid_z)),
             "nwave_total": int(cube_view.shape[0]),
             "nwave_window": nwave_window,
         }
@@ -628,17 +748,28 @@ def main() -> None:
         f"{HALPHA_EW_AIR_RANGE_A[1] - HALPHA_EW_AIR_RANGE_A[0]:.3f} A"
     )
 
+    galaxy_vel_kms = redshift_to_velocity_kms(z)
+
     obs_ha, ha_header, ha_extname, ha_bunit = read_observed_halpha(gas_path)
+    ha_vel, _vel_header, vel_extname, vel_bunit = read_observed_halpha_velocity(gas_path)
     obs_r_nmgy, r_header, r_source, r_bunit = read_observed_r_flux(bin_path)
-    cont_mean, cont_counts, cont_meta = compute_mean_restframe_continuum(
-        cont_path, z, obs_ha.shape
-    )
 
     if obs_ha.shape != obs_r_nmgy.shape:
         raise ValueError(
             "Map shape mismatch: "
             f"Halpha shape {obs_ha.shape} vs R-band shape {obs_r_nmgy.shape}."
         )
+    if obs_ha.shape != ha_vel.shape:
+        raise ValueError(
+            "Map shape mismatch: "
+            f"Halpha flux shape {obs_ha.shape} vs Halpha velocity shape {ha_vel.shape}."
+        )
+
+    ha_vel_kms = velocity_to_kms(ha_vel, vel_bunit)
+    spaxel_z = build_spaxel_redshift_map(z, ha_vel_kms)
+    cont_mean, cont_counts, cont_meta = compute_mean_restframe_continuum(
+        cont_path, spaxel_z, obs_ha.shape
+    )
 
     obs_ha_cgs = halpha_flux_to_cgs(obs_ha, ha_bunit)
 
@@ -656,8 +787,13 @@ def main() -> None:
     primary.header["GASFILE"] = gas_path.name
     primary.header["CNTFILE"] = cont_path.name
     primary.header["ZFILE"] = redshift_path.name
-    primary.header["REDSHIFT"] = (z, "Galaxy redshift used for rest-frame EW")
+    primary.header["REDSHIFT"] = (z, "Galaxy systemic redshift")
+    primary.header["GALVEL"] = (
+        galaxy_vel_kms,
+        "Systemic velocity from galaxy redshift [km/s]",
+    )
     primary.header["HA_SRC"] = ha_extname
+    primary.header["VELSRC"] = vel_extname
     primary.header["RSRC"] = r_source
     primary.header["CNTSRC"] = str(cont_meta["source"])
     primary.header["EWVAC"] = (HALPHA_RITZ_VAC_A, "MaNGA DAP Halpha Ritz wavelength [A]")
@@ -680,7 +816,13 @@ def main() -> None:
     )
     hdu_cont.header["BUNIT"] = CONT_CGS_UNIT
     hdu_cont.header["METHOD"] = "rest_mean"
-    hdu_cont.header["REDSHIFT"] = (z, "Galaxy redshift used for rest-frame shift")
+    hdu_cont.header["REDSHIFT"] = (z, "Galaxy systemic redshift")
+    hdu_cont.header["GALVEL"] = (
+        galaxy_vel_kms,
+        "Systemic velocity from galaxy redshift [km/s]",
+    )
+    hdu_cont.header["VELHDU"] = vel_extname
+    hdu_cont.header["VELUNIT"] = "km/s"
     hdu_cont.header["CONTHDU"] = str(cont_meta["source"])
     hdu_cont.header["CNTBUNIT"] = str(cont_meta["bunit"])
     hdu_cont.header["WAVEAXIS"] = (
@@ -702,21 +844,48 @@ def main() -> None:
         "Selected rest-frame EW window high [A]",
     )
     hdu_cont.header["EWLOWOB"] = (
-        float(cont_meta["observed_low_a"]),
-        "Observed-frame EW window low [A]",
+        float(cont_meta["rest_low_a"] * (1.0 + z)),
+        "Observed-frame EW low [A] at galaxy z",
     )
     hdu_cont.header["EWHIOBS"] = (
-        float(cont_meta["observed_high_a"]),
-        "Observed-frame EW window high [A]",
+        float(cont_meta["rest_high_a"] * (1.0 + z)),
+        "Observed-frame EW high [A] at galaxy z",
+    )
+    hdu_cont.header["EWLOMIN"] = (
+        float(cont_meta["observed_low_min_a"]),
+        "Min spaxel observed-frame EW low [A]",
+    )
+    hdu_cont.header["EWLOMAX"] = (
+        float(cont_meta["observed_low_max_a"]),
+        "Max spaxel observed-frame EW low [A]",
+    )
+    hdu_cont.header["EWHIMIN"] = (
+        float(cont_meta["observed_high_min_a"]),
+        "Min spaxel observed-frame EW high [A]",
+    )
+    hdu_cont.header["EWHIMAX"] = (
+        float(cont_meta["observed_high_max_a"]),
+        "Max spaxel observed-frame EW high [A]",
+    )
+    hdu_cont.header["ZSPXMIN"] = (
+        float(cont_meta["z_min"]),
+        "Minimum spaxel redshift used for EW",
+    )
+    hdu_cont.header["ZSPXMAX"] = (
+        float(cont_meta["z_max"]),
+        "Maximum spaxel redshift used for EW",
     )
     hdu_cont.header["NWAVE"] = (int(cont_meta["nwave_total"]), "Total continuum planes")
     hdu_cont.header["NWIN"] = (int(cont_meta["nwave_window"]), "Planes in EW window")
     hdu_cont.header["RESTFSCL"] = (
         True,
-        "Continuum density scaled by (1+z) to rest-frame f_lambda",
+        "Continuum density scaled by (1+z_spaxel) to rest-frame f_lambda",
     )
     hdu_cont.header.add_comment(
         "Mean continuum flux density measured from the continuum-only cube over the Halpha EW passband."
+    )
+    hdu_cont.header.add_comment(
+        "The observed-frame EW window is re-centered per spaxel using the galaxy redshift plus HA6562_VEL."
     )
 
     hdu_cont_npix = fits.ImageHDU(
@@ -754,7 +923,12 @@ def main() -> None:
     )
     hdu_proxy_ew.header["BUNIT"] = "Angstrom"
     hdu_proxy_ew.header["METHOD"] = "proxy"
-    hdu_proxy_ew.header["REDSHIFT"] = (z, "Galaxy redshift used for rest-frame EW")
+    hdu_proxy_ew.header["REDSHIFT"] = (z, "Galaxy systemic redshift")
+    hdu_proxy_ew.header["GALVEL"] = (
+        galaxy_vel_kms,
+        "Systemic velocity from galaxy redshift [km/s]",
+    )
+    hdu_proxy_ew.header["VELHDU"] = vel_extname
     hdu_proxy_ew.header["HAUNIT"] = "erg s-1 cm-2"
     hdu_proxy_ew.header["CNTUNIT"] = CONT_CGS_UNIT
     hdu_proxy_ew.header["CONTHDU"] = "CONT_HA_MEAN"
@@ -765,7 +939,7 @@ def main() -> None:
         "MaNGA DAP Halpha vacuum passband 6557.6-6571.6 A converted to air with Peck & Reeder (1972)."
     )
     hdu_proxy_ew.header.add_comment(
-        "Continuum is shifted to the rest frame using the galaxy redshift and scaled as f_lambda,rest=(1+z)*f_lambda,obs."
+        "Continuum is shifted to the rest frame using the per-spaxel redshift from galaxy z plus HA6562_VEL and scaled as f_lambda,rest=(1+z_spaxel)*f_lambda,obs."
     )
 
     hdu_pseudo_ew = fits.ImageHDU(
@@ -802,16 +976,23 @@ def main() -> None:
 
     print("\nSaved:", out_path.resolve())
     print("Halpha source extension       :", ha_extname)
+    print("Halpha velocity extension     :", vel_extname)
     print("Legacy R-band source          :", r_source)
     print("Continuum cube source HDU     :", cont_meta["source"])
     print("Continuum spectral axis       :", cont_meta["spectral_ctype"])
+    print("Galaxy systemic velocity      :", f"{galaxy_vel_kms:.3f} km/s")
+    print("Finite Halpha velocity spaxels:", int(np.sum(np.isfinite(ha_vel_kms))))
+    print(
+        "Spaxel redshift range         : "
+        f"{cont_meta['z_min']:.6f} - {cont_meta['z_max']:.6f}"
+    )
     print(
         "Selected rest-frame window    : "
         f"{cont_meta['rest_low_a']:.3f} - {cont_meta['rest_high_a']:.3f} A"
     )
     print(
-        "Selected observed-frame win   : "
-        f"{cont_meta['observed_low_a']:.3f} - {cont_meta['observed_high_a']:.3f} A"
+        "Observed-frame window range   : "
+        f"{cont_meta['observed_low_min_a']:.3f} - {cont_meta['observed_high_max_a']:.3f} A"
     )
     print("Continuum planes in window    :", cont_meta["nwave_window"])
     print("Valid CONT_HA_MEAN pixels     :", int(np.sum(cont_counts > 0)))

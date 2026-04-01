@@ -26,13 +26,17 @@ Halpha Delta lambda (air)    : 13.996 A
 
 Saved: /arc/home/RongjunHuang/ICRAR/extended/NGC4383_proxy_EW_maps.fits
 Halpha source extension       : HA6562_FLUX
+Halpha velocity extension     : HA6562_VEL
 Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
+Galaxy systemic velocity      : 1705.139 km/s
+Finite Halpha velocity spaxels: 129210
+Spaxel redshift range         : 0.000769 - 0.006021
 Selected rest-frame window    : 6555.789 - 6569.785 A
-Selected observed-frame win   : 6593.183 - 6607.259 A
-Continuum planes in window    : 11
+Observed-frame window range   : 6560.829 - 6609.343 A
+Continuum planes in window    : 39
 Valid CONT_HA_MEAN pixels     : 446265
 Valid proxy_EWHa pixels       : 129210
 Valid pseudo_EWHa pixels      : 129210
-✅  NGC4383 finished in 0m10s
+✅  NGC4383 finished in 0m54s
