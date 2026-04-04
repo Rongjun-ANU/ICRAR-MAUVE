@@ -1,5 +1,16 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+CANFAR base root : /arc/projects/mauve
+Local fallback   : /arc/home/RongjunHuang/ICRAR/extended
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+
 
 === Using the following files ===
+Primary root : /arc/projects/mauve
+Fallback root: /arc/home/RongjunHuang/ICRAR/extended
 Cube         : /arc/projects/mauve/cubes/v3.0/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits
 Binning map  : /arc/projects/mauve/products/v0.6/NGC4293/NGC4293_SPATIAL_BINNING_maps.fits
 SFH map      : /arc/projects/mauve/products/v0.6/NGC4293/NGC4293_SFH_maps.fits
@@ -7,6 +18,8 @@ Weights      : /arc/projects/mauve/products/v0.6/NGC4293/NGC4293_sfh-weights.fit
 Photometry   : BaSTI+Chabrier.dat
 Output       : NGC4293_SPATIAL_BINNING_maps_extended.fits 
 
+Thread control: forcing 16 BLAS/OpenMP threads
+Vectorized processing row-block size: 8
 Loading: /arc/projects/mauve/products/v0.6/NGC4293/NGC4293_SPATIAL_BINNING_maps.fits
 Filename: /arc/projects/mauve/products/v0.6/NGC4293/NGC4293_SPATIAL_BINNING_maps.fits
 No.    Name      Ver    Type      Cards   Dimensions   Format
@@ -24,23 +37,69 @@ No.    Name      Ver    Type      Cards   Dimensions   Format
   0  PRIMARY       1 PrimaryHDU      23   ()      
   1  WEIGHTS       1 BinTableHDU     27   21133R x 1C   [477D]   
   2  GRID          1 BinTableHDU     31   477R x 3C   [D, D, D]   
-/arc/home/RongjunHuang/ICRAR/extended/Mass.py:337: RuntimeWarning: invalid value encountered in cast
-  BINID   = BINID_f32.astype(np.int32)   # safe: all finite →
 None
 Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
 Loading: /arc/projects/mauve/cubes/v3.0/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits
-Computing AB magnitudes for each spaxel...
-Processing row 0/532
-Processing row 50/532
-Processing row 100/532
-Processing row 150/532
-Processing row 200/532
-Processing row 250/532
-Processing row 300/532
-Processing row 350/532
-Processing row 400/532
-Processing row 450/532
-Processing row 500/532
+Using STAT variance extension for photometric error propagation.
+Cube dimensions (nz, ny, nx): 3761, 532, 923
+Approx. DATA footprint: 6.88 GiB
+Approx. STAT footprint: 6.88 GiB
+Building exact speclite linear operator for AB maggies...
+  Linear-operator chunk 1/8 (wave bins 0:512, elapsed 0.0s)
+  Linear-operator chunk 2/8 (wave bins 512:1024, elapsed 0.0s)
+  Linear-operator chunk 3/8 (wave bins 1024:1536, elapsed 0.1s)
+  Linear-operator chunk 4/8 (wave bins 1536:2048, elapsed 0.1s)
+  Linear-operator chunk 5/8 (wave bins 2048:2560, elapsed 0.1s)
+  Linear-operator chunk 6/8 (wave bins 2560:3072, elapsed 0.1s)
+  Linear-operator chunk 7/8 (wave bins 3072:3584, elapsed 0.1s)
+  Linear-operator chunk 8/8 (wave bins 3584:3761, elapsed 0.1s)
+Using contiguous filter-support slice: [641:3441] (2800 bins).
+Photometric propagation method: exact discrete first-order Jacobian through speclite AB-maggies operator (support bins=2800/3761).
+STAT assumption: independent spectral-bin variances (no covariance provided by cube).
+Computing AB maggies with vectorized blocks... (estimated support-slice stream volume: 10.24 GiB, DATA+STAT)
+Processed rows 0:8/532 (  1.5%, block 1/67, block 650.19s, elapsed 10.84 min, ETA 715.21 min)
+Processed rows 8:16/532 (  3.0%, block 2/67, block 0.33s, elapsed 10.84 min, ETA 352.37 min)
+Processed rows 24:32/532 (  6.0%, block 4/67, block 0.30s, elapsed 10.85 min, ETA 170.92 min)
+Processed rows 40:48/532 (  9.0%, block 6/67, block 0.29s, elapsed 10.87 min, ETA 110.46 min)
+Processed rows 56:64/532 ( 12.0%, block 8/67, block 0.29s, elapsed 10.88 min, ETA 80.20 min)
+Processed rows 72:80/532 ( 15.0%, block 10/67, block 0.29s, elapsed 10.89 min, ETA 62.04 min)
+Processed rows 88:96/532 ( 18.0%, block 12/67, block 0.33s, elapsed 10.90 min, ETA 49.94 min)
+Processed rows 104:112/532 ( 21.1%, block 14/67, block 0.32s, elapsed 10.91 min, ETA 41.29 min)
+Processed rows 120:128/532 ( 24.1%, block 16/67, block 0.33s, elapsed 10.92 min, ETA 34.81 min)
+Processed rows 136:144/532 ( 27.1%, block 18/67, block 0.34s, elapsed 10.93 min, ETA 29.76 min)
+Processed rows 152:160/532 ( 30.1%, block 20/67, block 0.33s, elapsed 10.94 min, ETA 25.71 min)
+Processed rows 168:176/532 ( 33.1%, block 22/67, block 0.32s, elapsed 10.95 min, ETA 22.40 min)
+Processed rows 184:192/532 ( 36.1%, block 24/67, block 0.32s, elapsed 10.96 min, ETA 19.64 min)
+Processed rows 200:208/532 ( 39.1%, block 26/67, block 0.33s, elapsed 10.98 min, ETA 17.31 min)
+Processed rows 216:224/532 ( 42.1%, block 28/67, block 0.32s, elapsed 10.99 min, ETA 15.30 min)
+Processed rows 232:240/532 ( 45.1%, block 30/67, block 0.36s, elapsed 11.00 min, ETA 13.56 min)
+Processed rows 248:256/532 ( 48.1%, block 32/67, block 0.31s, elapsed 11.01 min, ETA 12.04 min)
+Processed rows 264:272/532 ( 51.1%, block 34/67, block 0.31s, elapsed 11.02 min, ETA 10.70 min)
+Processed rows 280:288/532 ( 54.1%, block 36/67, block 0.32s, elapsed 11.03 min, ETA 9.50 min)
+Processed rows 296:304/532 ( 57.1%, block 38/67, block 0.34s, elapsed 11.04 min, ETA 8.43 min)
+Processed rows 312:320/532 ( 60.2%, block 40/67, block 0.33s, elapsed 11.05 min, ETA 7.46 min)
+Processed rows 328:336/532 ( 63.2%, block 42/67, block 0.31s, elapsed 11.07 min, ETA 6.59 min)
+Processed rows 344:352/532 ( 66.2%, block 44/67, block 0.32s, elapsed 11.08 min, ETA 5.79 min)
+Processed rows 360:368/532 ( 69.2%, block 46/67, block 0.34s, elapsed 11.09 min, ETA 5.06 min)
+Processed rows 376:384/532 ( 72.2%, block 48/67, block 0.32s, elapsed 11.10 min, ETA 4.39 min)
+Processed rows 392:400/532 ( 75.2%, block 50/67, block 0.33s, elapsed 11.11 min, ETA 3.78 min)
+Processed rows 408:416/532 ( 78.2%, block 52/67, block 0.32s, elapsed 11.12 min, ETA 3.21 min)
+Processed rows 424:432/532 ( 81.2%, block 54/67, block 0.32s, elapsed 11.13 min, ETA 2.68 min)
+Processed rows 440:448/532 ( 84.2%, block 56/67, block 0.33s, elapsed 11.14 min, ETA 2.19 min)
+Processed rows 456:464/532 ( 87.2%, block 58/67, block 0.33s, elapsed 11.16 min, ETA 1.73 min)
+Processed rows 472:480/532 ( 90.2%, block 60/67, block 0.33s, elapsed 11.17 min, ETA 1.30 min)
+Processed rows 488:496/532 ( 93.2%, block 62/67, block 0.35s, elapsed 11.18 min, ETA 0.90 min)
+Processed rows 504:512/532 ( 96.2%, block 64/67, block 0.33s, elapsed 11.19 min, ETA 0.52 min)
+Processed rows 520:528/532 ( 99.2%, block 66/67, block 0.31s, elapsed 11.20 min, ETA 0.17 min)
+Processed rows 528:532/532 (100.0%, block 67/67, block 0.16s, elapsed 11.20 min, ETA 0.00 min)
+AB maggies vectorized pass completed in 11.20 min
+Estimated effective streaming throughput: 15.6 MiB/s over support-slice read volume
+Finite binned flux-error bins: 21133/21133 (STAT=21133, sample=21133)
+Finite binned magnitude-error bins: 21133/21133
+Median binned relative flux error : 6.3690e-04
+Binned magnitude error min/max   : 3.2078e-04 .. 2.2804e-03 mag
+Binned magnitude error [p16, p50, p84] = [6.4044e-04, 6.9151e-04, 7.4193e-04] mag
+Warning: No EBV error extension found; EBV uncertainty term will be omitted.
 R-band magnitude calculation completed!
 Filter used: bessell-R
 Magnitude range: 17.98 to 25.44
@@ -48,12 +107,20 @@ Distance modulus: 31.09 mag
 Total R-band magnitude   : 10.633 mag (AB)
 Total R-band luminosity  : 10.170 log10(L☉)
 Total stellar mass (R)   : 10.461 log10(M☉)
+Median LOGMSTAR_ERR      : 2.8513e-04 dex
+LOGMSTAR_ERR [p16, p50, p84] = [2.6654e-04, 2.8513e-04, 3.0505e-04] dex
+LOGMSTAR_ERR min/max     : 1.2831e-04 .. 9.1214e-04 dex
+Error budget note (LOGMSTAR): includes photometric+extinction propagation; excludes M/L model, distance, and inclination/area systematic uncertainties.
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/NGC4293_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4293_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4293_SPATIAL_BINNING_maps_extended.fits
 Galaxy NGC4293 inclination: 67.0° (cos θ = 0.391)
 Inclination correction ENABLED: applying b/a = 0.432 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
+Median LOGMASS_SURFACE_DENSITY_ERR: 2.8513e-04 dex
+LOGMASS_SURFACE_DENSITY_ERR [p16, p50, p84] = [2.6654e-04, 2.8513e-04, 3.0505e-04] dex
+LOGMASS_SURFACE_DENSITY_ERR min/max: 1.2831e-04 .. 9.1214e-04 dex
+Consistency check |LOGMSTAR_ERR - LOGMASS_SURFACE_DENSITY_ERR| median=0.0000e+00 dex, max=1.0842e-19 dex
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4293_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4293_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4293_SPATIAL_BINNING_maps_extended.fits
-✅  NGC4293 finished in 5m16s
+✅  NGC4293 finished in 11m21s

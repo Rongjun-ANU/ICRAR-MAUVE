@@ -310,6 +310,10 @@ def compute_rho_curve_from_pipeline(
 
         trend_x = y_offset[sigma_clip_mask]
         trend_y = z_offset[sigma_clip_mask]
+        delta_sfr_cloud.append(trend_x)
+        delta_oh_cloud.append(trend_y)
+        mass_bin_index_cloud.append(np.full(trend_x.size, i, dtype=int))
+
         trend_centers, _, _, _ = calculate_binned_stats(
             trend_x,
             trend_y,
@@ -320,9 +324,6 @@ def compute_rho_curve_from_pipeline(
             continue
 
         rho[i], p_value[i] = spearmanr(trend_x, trend_y)
-        delta_sfr_cloud.append(trend_x)
-        delta_oh_cloud.append(trend_y)
-        mass_bin_index_cloud.append(np.full(trend_x.size, i, dtype=int))
 
     if delta_sfr_cloud:
         delta_sfr_cloud = np.concatenate(delta_sfr_cloud)
@@ -389,7 +390,7 @@ def _build_primary_bin_model(sample, mass_bin_edges):
     }
 
 
-def _mass_error_proxy(log_sigma_star, base_error=0.05):
+def _mass_error_proxy(log_sigma_star, base_error=0.01):
     x = np.asarray(log_sigma_star, dtype=float)
     x_min = np.nanmin(x)
     x_max = np.nanmax(x)
@@ -405,7 +406,7 @@ def run_sec34_style_null_test(
     n_realizations=250,
     random_seed=726,
     include_mass_error_proxy=True,
-    mass_error_base=0.05,
+    mass_error_base=0.01,
     bin_width=0.2,
     min_unique=20,
     min_trend_points=3,
@@ -645,9 +646,817 @@ def plot_sec34_style_null_test(result, reference_curve=None):
         mass_label = "Mass distribution fixed; no extra mass-error proxy"
 
     fig.suptitle(
-        "Sec. 3.4-style null test: independent primary relations + propagated errors\n"
-        + mass_label,
+        "Null test: independent primary relations + propagated errors\n"
+        # + mass_label
+        ,
         fontsize=13,
     )
     plt.tight_layout()
+    plt.show()
+
+
+def list_available_galaxies():
+    return [path.name.split("_")[0] for path in sorted(Path(".").glob("*_SPATIAL_BINNING_maps_extended.fits"))]
+
+
+def load_o3n2_m13_hii_galaxy_maps_with_errors(galaxy):
+    from astropy.io import fits
+    from astropy.wcs import WCS
+
+    spatial_path = Path(f"{galaxy}_SPATIAL_BINNING_maps_extended.fits")
+    gas_path = Path(f"{galaxy}_gas_BIN_maps_extended.fits")
+    if not (spatial_path.exists() and gas_path.exists()):
+        raise FileNotFoundError(f"Required FITS files for {galaxy} not found.")
+
+    with fits.open(spatial_path) as h_spatial, fits.open(gas_path) as h_gas:
+        mass_map = h_spatial["LOGMASS_SURFACE_DENSITY"].data
+        sfr_map = h_gas["LOGSFR_SURFACE_DENSITY_HII"].data
+        oh_map = h_gas["O_H_O3N2_M13_HII"].data
+        gas_header = h_gas["LOGSFR_SURFACE_DENSITY_HII"].header
+
+        ha_corr = h_gas["HA6562_FLUX_corr_HII"].data
+        hb_corr = h_gas["HB4861_FLUX_corr_HII"].data
+        oiii_corr = h_gas["OIII5006_FLUX_corr_HII"].data
+        nii_corr = h_gas["NII6583_FLUX_corr_HII"].data
+
+        ha_err = _first_existing_hdu(
+            h_gas,
+            (
+                "HA6563_FLUX_ERR",
+                "HA6562_FLUX_ERR",
+                "HALPHA6563_FLUX_ERR",
+                "HALPHA_FLUX_ERR",
+            ),
+        )
+        hb_err = h_gas["HB4861_FLUX_ERR"].data
+        oiii_err = h_gas["OIII5006_FLUX_ERR"].data
+        nii_err = _first_existing_hdu(h_gas, ("NII6584_FLUX_ERR", "NII6583_FLUX_ERR"))
+
+    common_mask = np.isfinite(mass_map) & np.isfinite(sfr_map) & np.isfinite(oh_map)
+
+    sfr_err_map = np.full_like(sfr_map, np.nan, dtype=float)
+    valid_ha = np.isfinite(ha_corr) & np.isfinite(ha_err) & (ha_corr > 0) & (ha_err >= 0)
+    sfr_err_map[valid_ha] = ha_err[valid_ha] / (ha_corr[valid_ha] * LOG10)
+
+    oh_err_map = _propagate_o3n2_m13_error(
+        oiii_corr,
+        hb_corr,
+        nii_corr,
+        ha_corr,
+        oiii_err,
+        hb_err,
+        nii_err,
+        ha_err,
+    )
+
+    valid_mask = common_mask & np.isfinite(sfr_err_map) & np.isfinite(oh_err_map)
+
+    return {
+        "galaxy": galaxy,
+        "log_sigma_star_map": np.asarray(mass_map, dtype=float),
+        "log_sigma_sfr_map": np.asarray(sfr_map, dtype=float),
+        "oh_map": np.asarray(oh_map, dtype=float),
+        "sigma_log_sfr_map": np.asarray(sfr_err_map, dtype=float),
+        "sigma_oh_map": np.asarray(oh_err_map, dtype=float),
+        "common_mask": np.asarray(common_mask, dtype=bool),
+        "valid_mask": np.asarray(valid_mask, dtype=bool),
+        "gas_header": gas_header,
+        "wcs_celestial": WCS(gas_header).celestial,
+    }
+
+
+def galaxy_maps_to_sample(galaxy_maps):
+    valid_mask = np.asarray(galaxy_maps["valid_mask"], dtype=bool)
+    galaxy = galaxy_maps["galaxy"]
+    n_valid = int(np.sum(valid_mask))
+    if n_valid == 0:
+        raise RuntimeError(f"No finite propagated-error spaxels are available for {galaxy}.")
+
+    return {
+        "log_sigma_star": galaxy_maps["log_sigma_star_map"][valid_mask].ravel(),
+        "log_sigma_sfr": galaxy_maps["log_sigma_sfr_map"][valid_mask].ravel(),
+        "oh": galaxy_maps["oh_map"][valid_mask].ravel(),
+        "sigma_log_sfr": galaxy_maps["sigma_log_sfr_map"][valid_mask].ravel(),
+        "sigma_oh": galaxy_maps["sigma_oh_map"][valid_mask].ravel(),
+        "galaxy_name": np.full(n_valid, galaxy, dtype=object),
+    }
+
+
+def generate_sec34_mock_realization(
+    sample,
+    mass_bin_edges,
+    random_seed=726,
+    include_mass_error_proxy=True,
+    mass_error_base=0.01,
+):
+    x_true = np.asarray(sample["log_sigma_star"], dtype=float)
+    y_obs = np.asarray(sample["log_sigma_sfr"], dtype=float)
+    z_obs = np.asarray(sample["oh"], dtype=float)
+    sigma_y = np.asarray(sample["sigma_log_sfr"], dtype=float)
+    sigma_z = np.asarray(sample["sigma_oh"], dtype=float)
+
+    finite = (
+        np.isfinite(x_true)
+        & np.isfinite(y_obs)
+        & np.isfinite(z_obs)
+        & np.isfinite(sigma_y)
+        & np.isfinite(sigma_z)
+    )
+    if not np.all(finite):
+        sample = mask_sample(sample, finite)
+        x_true = np.asarray(sample["log_sigma_star"], dtype=float)
+        y_obs = np.asarray(sample["log_sigma_sfr"], dtype=float)
+        z_obs = np.asarray(sample["oh"], dtype=float)
+        sigma_y = np.asarray(sample["sigma_log_sfr"], dtype=float)
+        sigma_z = np.asarray(sample["sigma_oh"], dtype=float)
+
+    model = _build_primary_bin_model(sample, mass_bin_edges)
+    bin_index = _digitize_to_bins(x_true, mass_bin_edges)
+    rng = np.random.default_rng(random_seed)
+
+    y_true = model["mean_sfr"][bin_index] + rng.normal(
+        loc=0.0,
+        scale=model["intrinsic_sfr"][bin_index],
+    )
+    z_true = model["mean_oh"][bin_index] + rng.normal(
+        loc=0.0,
+        scale=model["intrinsic_oh"][bin_index],
+    )
+
+    if include_mass_error_proxy:
+        sigma_x = _mass_error_proxy(x_true, base_error=mass_error_base)
+        x_mock = x_true + rng.normal(loc=0.0, scale=sigma_x)
+    else:
+        sigma_x = np.zeros_like(x_true)
+        x_mock = x_true.copy()
+
+    y_mock = y_true + rng.normal(loc=0.0, scale=sigma_y)
+    z_mock = z_true + rng.normal(loc=0.0, scale=sigma_z)
+
+    return {
+        "log_sigma_star": x_mock,
+        "log_sigma_sfr": y_mock,
+        "oh": z_mock,
+        "log_sigma_star_true": x_true,
+        "log_sigma_sfr_true": y_true,
+        "oh_true": z_true,
+        "sigma_log_sigma_star": sigma_x,
+        "sigma_log_sfr": sigma_y,
+        "sigma_oh": sigma_z,
+        "primary_model": model,
+        "mass_bin_edges": np.asarray(mass_bin_edges, dtype=float),
+    }
+
+
+def run_sec34_style_null_test_by_galaxy(
+    full_sample,
+    galaxy_order=None,
+    n_bins=6,
+    lower_percentile=2.5,
+    upper_percentile=97.5,
+    n_realizations=120,
+    random_seed=726,
+    include_mass_error_proxy=True,
+    mass_error_base=0.01,
+    bin_width=0.2,
+    min_unique=20,
+    min_trend_points=3,
+):
+    if galaxy_order is None:
+        galaxy_order = sorted(np.unique(full_sample["galaxy_name"]).tolist())
+
+    galaxy_results = {}
+    rng = np.random.default_rng(random_seed)
+
+    for galaxy in galaxy_order:
+        mask = np.asarray(full_sample["galaxy_name"] == galaxy)
+        if not np.any(mask):
+            continue
+
+        galaxy_sample = mask_sample(full_sample, mask)
+        mass_bin_edges = make_percentile_mass_bin_edges(
+            galaxy_sample["log_sigma_star"],
+            n_bins=n_bins,
+            lower_percentile=lower_percentile,
+            upper_percentile=upper_percentile,
+        )
+        galaxy_seed = int(rng.integers(0, np.iinfo(np.uint32).max))
+        galaxy_results[galaxy] = run_sec34_style_null_test(
+            galaxy_sample,
+            mass_bin_edges=mass_bin_edges,
+            n_realizations=n_realizations,
+            random_seed=galaxy_seed,
+            include_mass_error_proxy=include_mass_error_proxy,
+            mass_error_base=mass_error_base,
+            bin_width=bin_width,
+            min_unique=min_unique,
+            min_trend_points=min_trend_points,
+        )
+
+    return {
+        "galaxy_order": [galaxy for galaxy in galaxy_order if galaxy in galaxy_results],
+        "galaxy_results": galaxy_results,
+        "config": {
+            "n_bins": n_bins,
+            "lower_percentile": lower_percentile,
+            "upper_percentile": upper_percentile,
+            "n_realizations": n_realizations,
+            "random_seed": random_seed,
+            "include_mass_error_proxy": include_mass_error_proxy,
+            "mass_error_base": mass_error_base,
+            "bin_width": bin_width,
+            "min_unique": min_unique,
+            "min_trend_points": min_trend_points,
+        },
+    }
+
+
+def plot_sec34_galaxy_grid(
+    galaxy_results,
+    galaxy_order=None,
+    combined_curve=None,
+    excluded_galaxies=("NGC4383",),
+    max_cols=6,
+    mask_null_to_observed=True,
+):
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+
+    if galaxy_order is None:
+        galaxy_order = list(galaxy_results.keys())
+
+    n_panels_per_galaxy = 3
+    galaxies_per_row = max_cols // n_panels_per_galaxy
+    if galaxies_per_row < 1:
+        raise ValueError("max_cols must be at least 3.")
+
+    n_rows = int(np.ceil(len(galaxy_order) / galaxies_per_row))
+    fig, axes = plt.subplots(
+        n_rows,
+        max_cols,
+        figsize=(max_cols * 3.15, n_rows * 3.35),
+        squeeze=False,
+    )
+
+    for ax in axes.ravel():
+        ax.set_visible(False)
+
+    excluded = set(excluded_galaxies)
+
+    for idx, galaxy in enumerate(galaxy_order):
+        result = galaxy_results[galaxy]
+        row = idx // galaxies_per_row
+        block = idx % galaxies_per_row
+        col0 = block * n_panels_per_galaxy
+
+        ax_obs = axes[row, col0]
+        ax_null = axes[row, col0 + 1]
+        ax_rho = axes[row, col0 + 2]
+        ax_obs.set_visible(True)
+        ax_null.set_visible(True)
+        ax_rho.set_visible(True)
+
+        observed = result["observed"]
+        mock = result["null"]["example_cloud"]
+        centers = observed["centers"]
+        observed_valid_rho = np.isfinite(observed["rho"])
+
+        if mask_null_to_observed:
+            null_p16 = np.where(observed_valid_rho, result["null"]["p16_rho"], np.nan)
+            null_p84 = np.where(observed_valid_rho, result["null"]["p84_rho"], np.nan)
+            null_median = np.where(observed_valid_rho, result["null"]["median_rho"], np.nan)
+        else:
+            null_p16 = result["null"]["p16_rho"]
+            null_p84 = result["null"]["p84_rho"]
+            null_median = result["null"]["median_rho"]
+
+        dx_arrays = []
+        dz_arrays = []
+        if observed["delta_sfr"].size > 0 and observed["delta_oh"].size > 0:
+            dx_arrays.append(observed["delta_sfr"])
+            dz_arrays.append(observed["delta_oh"])
+        if mock is not None and mock["delta_sfr"].size > 0 and mock["delta_oh"].size > 0:
+            dx_arrays.append(mock["delta_sfr"])
+            dz_arrays.append(mock["delta_oh"])
+
+        if dx_arrays and dz_arrays:
+            x_lim = np.nanpercentile(np.abs(np.concatenate(dx_arrays)), 99.0)
+            y_lim = np.nanpercentile(np.abs(np.concatenate(dz_arrays)), 99.0)
+        else:
+            x_lim = 1.0
+            y_lim = 0.1
+        x_lim = max(float(x_lim), 0.1)
+        y_lim = max(float(y_lim), 0.05)
+
+        if observed["delta_sfr"].size > 0 and observed["delta_oh"].size > 0:
+            ax_obs.hexbin(
+                observed["delta_sfr"],
+                observed["delta_oh"],
+                gridsize=28,
+                mincnt=1,
+                cmap="Greys",
+                linewidths=0.0,
+            )
+        ax_obs.axhline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+        ax_obs.axvline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+        ax_obs.set_xlim(-x_lim, x_lim)
+        ax_obs.set_ylim(-y_lim, y_lim)
+        ax_obs.grid(True, alpha=0.15)
+        if galaxy in excluded:
+            ax_obs.set_title(f"{galaxy} (excluded)\nObserved", fontsize=9)
+        else:
+            ax_obs.set_title(f"{galaxy}\nObserved", fontsize=9)
+        ax_obs.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=7)
+        ax_obs.set_ylabel(r"$\Delta$[O/H]", fontsize=7)
+        ax_obs.tick_params(labelsize=7)
+
+        if mock is not None and mock["delta_sfr"].size > 0 and mock["delta_oh"].size > 0:
+            ax_null.hexbin(
+                mock["delta_sfr"],
+                mock["delta_oh"],
+                gridsize=28,
+                mincnt=1,
+                cmap="Oranges",
+                linewidths=0.0,
+            )
+        ax_null.axhline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+        ax_null.axvline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+        ax_null.set_xlim(-x_lim, x_lim)
+        ax_null.set_ylim(-y_lim, y_lim)
+        ax_null.grid(True, alpha=0.15)
+        ax_null.set_title("Null", fontsize=9)
+        ax_null.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=7)
+        ax_null.set_ylabel(r"$\Delta$[O/H]", fontsize=7)
+        ax_null.tick_params(labelsize=7)
+
+        ax_rho.fill_between(
+            centers,
+            null_p16,
+            null_p84,
+            color="tab:orange",
+            alpha=0.25,
+        )
+        ax_rho.plot(
+            centers,
+            null_median,
+            color="tab:orange",
+            linewidth=1.8,
+        )
+        if combined_curve is not None:
+            ref_centers = np.asarray(combined_curve["centers"], dtype=float)
+            ref_rho = np.asarray(combined_curve["rho"], dtype=float)
+            ref_valid = np.isfinite(ref_centers) & np.isfinite(ref_rho)
+            if np.any(ref_valid):
+                ax_rho.plot(
+                    ref_centers[ref_valid],
+                    ref_rho[ref_valid],
+                    color="tab:blue",
+                    linewidth=1.3,
+                    linestyle=":",
+                    alpha=0.95,
+                )
+        obs_linestyle = "--" if galaxy in excluded else "-"
+        ax_rho.plot(
+            centers,
+            observed["rho"],
+            color="black",
+            linewidth=1.8,
+            linestyle=obs_linestyle,
+            marker="o",
+            markersize=3,
+        )
+        ax_rho.axhline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+        ax_rho.grid(True, alpha=0.2)
+        ax_rho.set_xlabel(r"$\log\,\Sigma_*$ bin center", fontsize=7)
+        ax_rho.set_ylabel(r"Spearman $\rho$", fontsize=7)
+        ax_rho.tick_params(labelsize=7)
+        ax_rho.text(
+            0.03,
+            0.03,
+            f"N={result['sample_size']}",
+            transform=ax_rho.transAxes,
+            ha="left",
+            va="bottom",
+            fontsize=7,
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.75, linewidth=0.0),
+        )
+
+    legend_handles = [
+        Patch(facecolor="0.5", alpha=0.6, label="Observed cloud"),
+        Patch(facecolor="tab:orange", alpha=0.25, label="Null 16-84%"),
+        Line2D([0], [0], color="tab:orange", linewidth=1.8, label="Null median"),
+        Line2D([0], [0], color="black", linewidth=1.8, label="Galaxy observed"),
+        Line2D([0], [0], color="black", linewidth=1.8, linestyle="--", label="Excluded galaxy observed"),
+    ]
+    if combined_curve is not None:
+        legend_handles.append(
+            Line2D(
+                [0],
+                [0],
+                color="tab:blue",
+                linewidth=1.3,
+                linestyle=":",
+                label=combined_curve.get("label", "Combined observed"),
+            )
+        )
+
+    fig.legend(
+        handles=legend_handles,
+        loc="upper center",
+        ncol=min(len(legend_handles), 6),
+        frameon=False,
+        fontsize=9,
+        bbox_to_anchor=(0.5, 0.995),
+    )
+    fig.suptitle(
+        "Per-galaxy null tests\nObserved residual cloud, one null realization, and galaxy-specific rho trend",
+        fontsize=14,
+        y=1.015,
+    )
+    plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.965])
+    plt.show()
+
+
+def compute_offset_maps_from_mass_bins(
+    log_sigma_star_map,
+    log_sigma_sfr_map,
+    oh_map,
+    valid_mask,
+    n_bins=12,
+):
+    x = np.asarray(log_sigma_star_map, dtype=float)
+    y = np.asarray(log_sigma_sfr_map, dtype=float)
+    z = np.asarray(oh_map, dtype=float)
+    valid_mask = np.asarray(valid_mask, dtype=bool)
+
+    if np.sum(valid_mask) == 0:
+        raise RuntimeError("Cannot compute offset maps from an empty valid mask.")
+
+    mass_min = np.nanmin(x[valid_mask])
+    mass_max = np.nanmax(x[valid_mask])
+    sigmaM_bin_edges = np.linspace(mass_min, mass_max, n_bins + 1)
+
+    sfr_offset = np.full_like(y, np.nan, dtype=float)
+    oh_offset = np.full_like(z, np.nan, dtype=float)
+    sigM_binned_map = np.full_like(x, np.nan, dtype=float)
+
+    for i in range(n_bins):
+        bin_mask = _in_bin_mask(x, sigmaM_bin_edges[i], sigmaM_bin_edges[i + 1], i == n_bins - 1) & valid_mask
+        if np.sum(bin_mask) == 0:
+            continue
+
+        bin_center = 0.5 * (sigmaM_bin_edges[i] + sigmaM_bin_edges[i + 1])
+        sfr_bin_mean = np.nanmean(y[bin_mask])
+        oh_bin_mean = np.nanmean(z[bin_mask])
+
+        sfr_offset[bin_mask] = y[bin_mask] - sfr_bin_mean
+        oh_offset[bin_mask] = z[bin_mask] - oh_bin_mean
+        sigM_binned_map[bin_mask] = bin_center
+
+    sfr_offset_max = np.nanmax(np.abs(sfr_offset[valid_mask]))
+    oh_offset_max = np.nanmax(np.abs(oh_offset[valid_mask]))
+
+    return {
+        "sigmaM_bin_edges": sigmaM_bin_edges,
+        "sfr_offset": sfr_offset,
+        "oh_offset": oh_offset,
+        "sigM_binned_map": sigM_binned_map,
+        "sfr_offset_max": max(float(sfr_offset_max), 0.1),
+        "oh_offset_max": max(float(oh_offset_max), 0.05),
+    }
+
+
+def local_bivariate_moran(A, B, valid_mask, neighbourhood="queen"):
+    A = np.asarray(A, dtype=float)
+    B = np.asarray(B, dtype=float)
+    valid_mask = np.asarray(valid_mask, dtype=bool)
+
+    ny, nx = A.shape
+    I_map = np.full_like(A, np.nan, dtype=float)
+    quad_map = np.zeros_like(A, dtype=int)
+
+    Aval = A[valid_mask]
+    Bval = B[valid_mask]
+    Astd = np.nanstd(Aval)
+    Bstd = np.nanstd(Bval)
+    if not np.isfinite(Astd) or Astd == 0:
+        Astd = 1.0
+    if not np.isfinite(Bstd) or Bstd == 0:
+        Bstd = 1.0
+
+    Az = (A - np.nanmean(Aval)) / Astd
+    Bz = (B - np.nanmean(Bval)) / Bstd
+
+    if neighbourhood == "queen":
+        offsets = [
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1),            (0, 1),
+            (1, -1),  (1, 0),   (1, 1),
+        ]
+    elif neighbourhood == "rook":
+        offsets = [(-1, 0), (0, -1), (0, 1), (1, 0)]
+    else:
+        raise ValueError("neighbourhood must be 'queen' or 'rook'")
+
+    for i in range(ny):
+        for j in range(nx):
+            if not valid_mask[i, j]:
+                continue
+
+            neigh_vals = []
+            for dy, dx in offsets:
+                ii = i + dy
+                jj = j + dx
+                if 0 <= ii < ny and 0 <= jj < nx and valid_mask[ii, jj]:
+                    neigh_vals.append(Bz[ii, jj])
+
+            if not neigh_vals:
+                continue
+
+            lag_B = float(np.mean(neigh_vals))
+            I_val = Az[i, j] * lag_B
+            I_map[i, j] = I_val
+
+            if Az[i, j] >= 0 and lag_B >= 0:
+                quad_map[i, j] = 1
+            elif Az[i, j] < 0 and lag_B >= 0:
+                quad_map[i, j] = 2
+            elif Az[i, j] < 0 and lag_B < 0:
+                quad_map[i, j] = 3
+            else:
+                quad_map[i, j] = 4
+
+    return I_map, quad_map
+
+
+def _world_extent_from_header(gas_header, shape):
+    from astropy.wcs import WCS
+
+    wcs_celestial = WCS(gas_header).celestial
+    y_size, x_size = shape
+    x_coords = np.arange(x_size)
+    y_coords = np.arange(y_size)
+    xx, yy = np.meshgrid(x_coords, y_coords)
+    ra, dec = wcs_celestial.pixel_to_world_values(xx, yy)
+    return [float(ra.max()), float(ra.min()), float(dec.min()), float(dec.max())]
+
+
+def _scalebar_length_deg(pix_scale_arcsec=0.2, distance_mpc=16.5):
+    kpc_arcsec = 206265.0 / (distance_mpc * 1000.0)
+    return kpc_arcsec / 3600.0
+
+
+def build_simulated_moran_maps_for_galaxy(
+    galaxy,
+    random_seed=726,
+    null_n_bins=6,
+    offset_n_bins=12,
+    include_mass_error_proxy=True,
+    mass_error_base=0.01,
+    neighbourhood="queen",
+    threshold=1.0,
+):
+    galaxy_maps = load_o3n2_m13_hii_galaxy_maps_with_errors(galaxy)
+    sample = galaxy_maps_to_sample(galaxy_maps)
+
+    null_mass_bin_edges = make_percentile_mass_bin_edges(
+        sample["log_sigma_star"],
+        n_bins=null_n_bins,
+        lower_percentile=2.5,
+        upper_percentile=97.5,
+    )
+    mock = generate_sec34_mock_realization(
+        sample,
+        null_mass_bin_edges,
+        random_seed=random_seed,
+        include_mass_error_proxy=include_mass_error_proxy,
+        mass_error_base=mass_error_base,
+    )
+
+    valid_mask = np.asarray(galaxy_maps["valid_mask"], dtype=bool)
+    shape = galaxy_maps["log_sigma_star_map"].shape
+
+    x_mock_map = np.full(shape, np.nan, dtype=float)
+    y_mock_map = np.full(shape, np.nan, dtype=float)
+    z_mock_map = np.full(shape, np.nan, dtype=float)
+    x_mock_map[valid_mask] = mock["log_sigma_star"]
+    y_mock_map[valid_mask] = mock["log_sigma_sfr"]
+    z_mock_map[valid_mask] = mock["oh"]
+
+    offset_data = compute_offset_maps_from_mass_bins(
+        x_mock_map,
+        y_mock_map,
+        z_mock_map,
+        valid_mask,
+        n_bins=offset_n_bins,
+    )
+    I_map, quad_map = local_bivariate_moran(
+        offset_data["sfr_offset"],
+        offset_data["oh_offset"],
+        valid_mask,
+        neighbourhood=neighbourhood,
+    )
+
+    valid_I = np.isfinite(I_map)
+    n_total = int(np.sum(valid_I))
+    n_high = int(np.sum(I_map[valid_I] > threshold))
+    n_mid = int(np.sum((I_map[valid_I] >= -threshold) & (I_map[valid_I] <= threshold)))
+    n_low = int(np.sum(I_map[valid_I] < -threshold))
+
+    return {
+        "galaxy": galaxy,
+        "threshold": float(threshold),
+        "neighbourhood": neighbourhood,
+        "valid_mask": valid_mask,
+        "null_mass_bin_edges": null_mass_bin_edges,
+        "mock_realization": mock,
+        "x_mock_map": x_mock_map,
+        "y_mock_map": y_mock_map,
+        "z_mock_map": z_mock_map,
+        "I_map": I_map,
+        "quad_map": quad_map,
+        "extent": _world_extent_from_header(galaxy_maps["gas_header"], shape),
+        "scalebar_length_deg": _scalebar_length_deg(),
+        "stats": {
+            "n_total": n_total,
+            "n_high": n_high,
+            "n_mid": n_mid,
+            "n_low": n_low,
+            "pct_high": (100.0 * n_high / n_total) if n_total > 0 else 0.0,
+            "pct_mid": (100.0 * n_mid / n_total) if n_total > 0 else 0.0,
+            "pct_low": (100.0 * n_low / n_total) if n_total > 0 else 0.0,
+        },
+        **offset_data,
+    }
+
+
+def plot_simulated_moran_2x2(sim_result):
+    import matplotlib.gridspec as gs_module  # noqa: F401
+    import matplotlib.ticker as mticker
+    from matplotlib.colors import BoundaryNorm, SymLogNorm
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+    galaxy = sim_result["galaxy"]
+    extent = sim_result["extent"]
+    threshold = sim_result["threshold"]
+    sfr_offset = sim_result["sfr_offset"]
+    oh_offset = sim_result["oh_offset"]
+    I_map = sim_result["I_map"]
+    sigM_binned_map = sim_result["sigM_binned_map"]
+    sigmaM_bin_edges = sim_result["sigmaM_bin_edges"]
+
+    dx = abs(extent[1] - extent[0])
+    dy = abs(extent[3] - extent[2])
+    data_ratio = (dx / dy) if dy > 0 else 1.0
+    panel_h = 4.2
+    panel_w = panel_h * data_ratio
+    cbar_w = 0.35
+    W = 2 * panel_w + 2 * cbar_w + 1.2
+    H = 2 * panel_h + 0.8
+
+    fig, axs = plt.subplots(2, 2, figsize=(W, H), sharex=True, sharey=True)
+    fig.subplots_adjust(left=0.07, right=0.96, bottom=0.07, top=0.95, wspace=0.20, hspace=0.06)
+    ax1, ax2 = axs[0, 0], axs[0, 1]
+    ax3, ax4 = axs[1, 0], axs[1, 1]
+
+    def add_cbar(ax, im, label, size="3.5%", pad=0.02, labelpad=6, labelsize=11):
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size=size, pad=pad)
+        cbar = fig.colorbar(im, cax=cax)
+        cbar.set_label(label, fontsize=labelsize, labelpad=labelpad)
+        return cbar
+
+    def add_scalebar(ax, length_deg, label="1 kpc"):
+        x0, x1 = ax.get_xlim()
+        x_range = abs(x1 - x0)
+        if x_range == 0:
+            return
+        frac_len = length_deg / x_range
+        x_start = 0.05
+        y_start = 0.95
+        x_end = x_start + frac_len
+        line, = ax.plot(
+            [x_start, x_end],
+            [y_start, y_start],
+            transform=ax.transAxes,
+            color="k",
+            lw=3,
+            clip_on=False,
+        )
+        line.set_in_layout(False)
+        txt = ax.text(
+            (x_start + x_end) / 2,
+            y_start - 0.03,
+            label,
+            transform=ax.transAxes,
+            ha="center",
+            va="top",
+            color="k",
+        )
+        txt.set_in_layout(False)
+
+    for ax in (ax1, ax2, ax3, ax4):
+        ax.xaxis.set_major_locator(mticker.MaxNLocator(3))
+        ax.yaxis.set_major_locator(mticker.MaxNLocator(5))
+        ax.xaxis.set_major_formatter(mticker.FormatStrFormatter("%.2f"))
+
+    plt.setp(ax1.get_xticklabels(), visible=False)
+    plt.setp(ax2.get_xticklabels(), visible=False)
+    plt.setp(ax2.get_yticklabels(), visible=False)
+    plt.setp(ax4.get_yticklabels(), visible=False)
+
+    ax3.set_xlabel("RA (deg)", fontsize=16)
+    ax4.set_xlabel("RA (deg)", fontsize=16)
+    ax1.set_ylabel("Dec (deg)", fontsize=16)
+    ax3.set_ylabel("Dec (deg)", fontsize=16)
+
+    im_sfr = ax1.imshow(
+        np.ma.masked_invalid(sfr_offset),
+        origin="lower",
+        cmap="coolwarm",
+        extent=extent,
+        vmin=-sim_result["sfr_offset_max"],
+        vmax=sim_result["sfr_offset_max"],
+        aspect="equal",
+    )
+    ax1.set_title(f"{galaxy}: simulated " + r"$\Delta\log\,\Sigma_{\mathrm{SFR}}$", fontsize=13)
+    add_scalebar(ax1, sim_result["scalebar_length_deg"], label="1 kpc")
+    add_cbar(ax1, im_sfr, r"$\Delta\log\,\Sigma_{\mathrm{SFR}}$ (dex)", labelpad=4)
+
+    im_oh = ax2.imshow(
+        np.ma.masked_invalid(oh_offset),
+        origin="lower",
+        cmap="coolwarm",
+        extent=extent,
+        vmin=-sim_result["oh_offset_max"],
+        vmax=sim_result["oh_offset_max"],
+        aspect="equal",
+    )
+    ax2.set_title(f"{galaxy}: simulated " + r"$\Delta$[O/H]", fontsize=13)
+    add_cbar(ax2, im_oh, r"$\Delta$[O/H] (dex)")
+
+    vI = np.nanmax(np.abs(I_map))
+    if not np.isfinite(vI) or vI <= 0:
+        vI = threshold
+    norm = SymLogNorm(linthresh=threshold, linscale=1.0, vmin=-vI, vmax=vI, base=10)
+    imI = ax3.imshow(
+        np.ma.masked_invalid(I_map),
+        origin="lower",
+        cmap="coolwarm",
+        extent=extent,
+        norm=norm,
+        aspect="equal",
+    )
+    ax3.set_title(f"{galaxy}: simulated Moran-like map", fontsize=13)
+    cbarI = add_cbar(
+        ax3,
+        imI,
+        r"$z(\Delta\log\Sigma_{\rm SFR}) \times z_{\rm lag}(\Delta{\rm [O/H]})$",
+    )
+    max_pow = int(np.floor(np.log10(vI))) if vI > 0 else 0
+    pos_ticks = [10**k for k in range(0, max_pow + 1) if 10**k <= vI]
+    pos_ticks_filtered = [p for p in pos_ticks if p != threshold]
+    neg_ticks_filtered = [-p for p in reversed(pos_ticks_filtered)]
+    ticks = sorted(set(neg_ticks_filtered + [-threshold, 0.0, threshold] + pos_ticks_filtered))
+    cbarI.set_ticks(ticks)
+    cbarI.set_ticklabels([f"{tick:g}" for tick in ticks])
+
+    legend_text = (
+        rf"$I_i > {threshold:g}$: {sim_result['stats']['pct_high']:.1f}% (N={sim_result['stats']['n_high']})"
+        + "\n"
+        + rf"$|I_i| \leq {threshold:g}$: {sim_result['stats']['pct_mid']:.1f}% (N={sim_result['stats']['n_mid']})"
+        + "\n"
+        + rf"$I_i < -{threshold:g}$: {sim_result['stats']['pct_low']:.1f}% (N={sim_result['stats']['n_low']})"
+    )
+    ax3.text(
+        0.98,
+        0.02,
+        legend_text,
+        transform=ax3.transAxes,
+        fontsize=10,
+        va="bottom",
+        ha="right",
+        bbox=dict(boxstyle="round", facecolor="white", alpha=0.85),
+    )
+
+    cmap_discrete = plt.cm.inferno
+    norm_discrete = BoundaryNorm(sigmaM_bin_edges, cmap_discrete.N)
+    im_sigM_binned = ax4.imshow(
+        np.ma.masked_invalid(sigM_binned_map),
+        origin="lower",
+        cmap=cmap_discrete,
+        norm=norm_discrete,
+        extent=extent,
+        aspect="equal",
+    )
+    ax4.set_title(f"{galaxy}: simulated binned " + r"$\log\,\Sigma_*$", fontsize=13)
+    cbar_binned = add_cbar(
+        ax4,
+        im_sigM_binned,
+        r"$\log\,\Sigma_*\;(M_\odot\,\mathrm{kpc}^{-2})$",
+    )
+    bin_centers = 0.5 * (sigmaM_bin_edges[:-1] + sigmaM_bin_edges[1:])
+    cbar_binned.set_ticks(bin_centers)
+    cbar_binned.set_ticklabels([f"{center:.2f}" for center in bin_centers])
+
     plt.show()

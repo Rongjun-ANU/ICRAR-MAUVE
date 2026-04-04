@@ -1,5 +1,16 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+CANFAR base root : /arc/projects/mauve
+Local fallback   : /arc/home/RongjunHuang/ICRAR/extended
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+
 
 === Using the following files ===
+Primary root : /arc/projects/mauve
+Fallback root: /arc/home/RongjunHuang/ICRAR/extended
 Cube         : /arc/projects/mauve/cubes/v3.0/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits
 Binning map  : /arc/projects/mauve/products/v0.6/IC3392/IC3392_SPATIAL_BINNING_maps.fits
 SFH map      : /arc/projects/mauve/products/v0.6/IC3392/IC3392_SFH_maps.fits
@@ -7,6 +18,8 @@ Weights      : /arc/projects/mauve/products/v0.6/IC3392/IC3392_sfh-weights.fits
 Photometry   : BaSTI+Chabrier.dat
 Output       : IC3392_SPATIAL_BINNING_maps_extended.fits 
 
+Thread control: forcing 16 BLAS/OpenMP threads
+Vectorized processing row-block size: 8
 Loading: /arc/projects/mauve/products/v0.6/IC3392/IC3392_SPATIAL_BINNING_maps.fits
 Filename: /arc/projects/mauve/products/v0.6/IC3392/IC3392_SPATIAL_BINNING_maps.fits
 No.    Name      Ver    Type      Cards   Dimensions   Format
@@ -24,21 +37,63 @@ No.    Name      Ver    Type      Cards   Dimensions   Format
   0  PRIMARY       1 PrimaryHDU      23   ()      
   1  WEIGHTS       1 BinTableHDU     27   4077R x 1C   [477D]   
   2  GRID          1 BinTableHDU     31   477R x 3C   [D, D, D]   
-/arc/home/RongjunHuang/ICRAR/extended/Mass.py:337: RuntimeWarning: invalid value encountered in cast
-  BINID   = BINID_f32.astype(np.int32)   # safe: all finite →
 None
 Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
 Loading: /arc/projects/mauve/cubes/v3.0/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits
-Computing AB magnitudes for each spaxel...
-Processing row 0/438
-Processing row 50/438
-Processing row 100/438
-Processing row 150/438
-Processing row 200/438
-Processing row 250/438
-Processing row 300/438
-Processing row 350/438
-Processing row 400/438
+Using STAT variance extension for photometric error propagation.
+Cube dimensions (nz, ny, nx): 3761, 438, 437
+Approx. DATA footprint: 2.68 GiB
+Approx. STAT footprint: 2.68 GiB
+Building exact speclite linear operator for AB maggies...
+  Linear-operator chunk 1/8 (wave bins 0:512, elapsed 0.0s)
+  Linear-operator chunk 2/8 (wave bins 512:1024, elapsed 0.1s)
+  Linear-operator chunk 3/8 (wave bins 1024:1536, elapsed 0.1s)
+  Linear-operator chunk 4/8 (wave bins 1536:2048, elapsed 0.1s)
+  Linear-operator chunk 5/8 (wave bins 2048:2560, elapsed 0.1s)
+  Linear-operator chunk 6/8 (wave bins 2560:3072, elapsed 0.1s)
+  Linear-operator chunk 7/8 (wave bins 3072:3584, elapsed 0.2s)
+  Linear-operator chunk 8/8 (wave bins 3584:3761, elapsed 0.2s)
+Using contiguous filter-support slice: [641:3441] (2800 bins).
+Photometric propagation method: exact discrete first-order Jacobian through speclite AB-maggies operator (support bins=2800/3761).
+STAT assumption: independent spectral-bin variances (no covariance provided by cube).
+Computing AB maggies with vectorized blocks... (estimated support-slice stream volume: 3.99 GiB, DATA+STAT)
+Processed rows 0:8/438 (  1.8%, block 1/55, block 321.92s, elapsed 5.37 min, ETA 289.73 min)
+Processed rows 8:16/438 (  3.7%, block 2/55, block 0.18s, elapsed 5.37 min, ETA 142.26 min)
+Processed rows 24:32/438 (  7.3%, block 4/55, block 0.16s, elapsed 5.37 min, ETA 68.51 min)
+Processed rows 40:48/438 ( 11.0%, block 6/55, block 0.16s, elapsed 5.38 min, ETA 43.93 min)
+Processed rows 56:64/438 ( 14.6%, block 8/55, block 0.16s, elapsed 5.38 min, ETA 31.63 min)
+Processed rows 72:80/438 ( 18.3%, block 10/55, block 0.16s, elapsed 5.39 min, ETA 24.25 min)
+Processed rows 88:96/438 ( 21.9%, block 12/55, block 0.16s, elapsed 5.39 min, ETA 19.33 min)
+Processed rows 104:112/438 ( 25.6%, block 14/55, block 0.16s, elapsed 5.40 min, ETA 15.82 min)
+Processed rows 120:128/438 ( 29.2%, block 16/55, block 0.16s, elapsed 5.41 min, ETA 13.18 min)
+Processed rows 136:144/438 ( 32.9%, block 18/55, block 0.17s, elapsed 5.41 min, ETA 11.12 min)
+Processed rows 152:160/438 ( 36.5%, block 20/55, block 0.16s, elapsed 5.42 min, ETA 9.48 min)
+Processed rows 168:176/438 ( 40.2%, block 22/55, block 0.16s, elapsed 5.42 min, ETA 8.13 min)
+Processed rows 184:192/438 ( 43.8%, block 24/55, block 0.16s, elapsed 5.43 min, ETA 7.01 min)
+Processed rows 200:208/438 ( 47.5%, block 26/55, block 0.16s, elapsed 5.43 min, ETA 6.06 min)
+Processed rows 216:224/438 ( 51.1%, block 28/55, block 0.17s, elapsed 5.44 min, ETA 5.24 min)
+Processed rows 232:240/438 ( 54.8%, block 30/55, block 0.16s, elapsed 5.44 min, ETA 4.54 min)
+Processed rows 248:256/438 ( 58.4%, block 32/55, block 0.16s, elapsed 5.45 min, ETA 3.92 min)
+Processed rows 264:272/438 ( 62.1%, block 34/55, block 0.16s, elapsed 5.45 min, ETA 3.37 min)
+Processed rows 280:288/438 ( 65.8%, block 36/55, block 0.16s, elapsed 5.46 min, ETA 2.88 min)
+Processed rows 296:304/438 ( 69.4%, block 38/55, block 0.16s, elapsed 5.46 min, ETA 2.44 min)
+Processed rows 312:320/438 ( 73.1%, block 40/55, block 0.16s, elapsed 5.47 min, ETA 2.05 min)
+Processed rows 328:336/438 ( 76.7%, block 42/55, block 0.16s, elapsed 5.48 min, ETA 1.70 min)
+Processed rows 344:352/438 ( 80.4%, block 44/55, block 0.16s, elapsed 5.48 min, ETA 1.37 min)
+Processed rows 360:368/438 ( 84.0%, block 46/55, block 0.16s, elapsed 5.49 min, ETA 1.07 min)
+Processed rows 376:384/438 ( 87.7%, block 48/55, block 0.17s, elapsed 5.49 min, ETA 0.80 min)
+Processed rows 392:400/438 ( 91.3%, block 50/55, block 0.17s, elapsed 5.50 min, ETA 0.55 min)
+Processed rows 408:416/438 ( 95.0%, block 52/55, block 0.16s, elapsed 5.50 min, ETA 0.32 min)
+Processed rows 424:432/438 ( 98.6%, block 54/55, block 0.16s, elapsed 5.51 min, ETA 0.10 min)
+Processed rows 432:438/438 (100.0%, block 55/55, block 0.11s, elapsed 5.51 min, ETA 0.00 min)
+AB maggies vectorized pass completed in 5.51 min
+Estimated effective streaming throughput: 12.4 MiB/s over support-slice read volume
+Finite binned flux-error bins: 4077/4077 (STAT=4077, sample=4077)
+Finite binned magnitude-error bins: 4077/4077
+Median binned relative flux error : 5.7589e-04
+Binned magnitude error min/max   : 5.0132e-04 .. 8.6501e-04 mag
+Binned magnitude error [p16, p50, p84] = [5.9229e-04, 6.2527e-04, 6.5977e-04] mag
+Warning: No EBV error extension found; EBV uncertainty term will be omitted.
 R-band magnitude calculation completed!
 Filter used: bessell-R
 Magnitude range: 20.85 to 26.03
@@ -46,12 +101,20 @@ Distance modulus: 31.09 mag
 Total R-band magnitude   : 12.305 mag (AB)
 Total R-band luminosity  : 9.531 log10(L☉)
 Total stellar mass (R)   : 9.684 log10(M☉)
+Median LOGMSTAR_ERR      : 2.4863e-04 dex
+LOGMSTAR_ERR [p16, p50, p84] = [2.3528e-04, 2.4863e-04, 2.6105e-04] dex
+LOGMSTAR_ERR min/max     : 2.0053e-04 .. 3.4601e-04 dex
+Error budget note (LOGMSTAR): includes photometric+extinction propagation; excludes M/L model, distance, and inclination/area systematic uncertainties.
 Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 Galaxy IC3392 inclination: 68.0° (cos θ = 0.375)
 Inclination correction ENABLED: applying b/a = 0.418 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
+Median LOGMASS_SURFACE_DENSITY_ERR: 2.4863e-04 dex
+LOGMASS_SURFACE_DENSITY_ERR [p16, p50, p84] = [2.3528e-04, 2.4863e-04, 2.6105e-04] dex
+LOGMASS_SURFACE_DENSITY_ERR min/max: 2.0053e-04 .. 3.4601e-04 dex
+Consistency check |LOGMSTAR_ERR - LOGMASS_SURFACE_DENSITY_ERR| median=0.0000e+00 dex, max=1.0842e-19 dex
 Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
 r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/IC3392_SPATIAL_BINNING_maps_extended.fits
-✅  IC3392 finished in 3m25s
+✅  IC3392 finished in 7m41s

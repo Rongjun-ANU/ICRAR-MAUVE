@@ -17,6 +17,28 @@ SCRIPT="Mass.py"                # Python script to call
 LOGDIR="mass_logs"              # Per-galaxy logs live here
 mkdir -p "$LOGDIR"
 
+EXTRA_ARGS=()
+if [[ "${MASS_DISABLE_STAT:-0}" == "1" ]]; then
+  EXTRA_ARGS+=(--disable-stat-propagation)
+fi
+
+if [[ -z "${MASS_NCPUS:-}" ]]; then
+  if command -v nproc >/dev/null 2>&1; then
+    MASS_NCPUS="$(nproc)"
+  elif command -v getconf >/dev/null 2>&1; then
+    MASS_NCPUS="$(getconf _NPROCESSORS_ONLN)"
+  else
+    MASS_NCPUS="0"
+  fi
+fi
+if [[ "${MASS_NCPUS}" =~ ^[0-9]+$ ]] && (( MASS_NCPUS > 0 )); then
+  EXTRA_ARGS+=(--ncpus "$MASS_NCPUS")
+fi
+
+if [[ -n "${MASS_ROW_BLOCK_SIZE:-}" ]]; then
+  EXTRA_ARGS+=(--row-block-size "$MASS_ROW_BLOCK_SIZE")
+fi
+
 if [[ -n "${PYTHON_BIN:-}" ]]; then
   PYTHON_BIN="$(command -v "$PYTHON_BIN" 2>/dev/null || printf '%s' "$PYTHON_BIN")"
 elif [[ -n "${CONDA_PREFIX:-}" && -x "${CONDA_PREFIX}/bin/python" ]]; then
@@ -63,14 +85,19 @@ for GAL in "${GALAXIES[@]}"; do
   {
     echo "Python executable: $PYTHON_BIN"
     "$PYTHON_BIN" --version
+    echo "PYTHONUNBUFFERED: 1"
     echo "CANFAR base root : $ROOT_CANFAR_BASE"
     echo "Local fallback   : $ROOT_LOCAL"
+    echo "MASS_DISABLE_STAT: ${MASS_DISABLE_STAT:-0}"
+    echo "MASS_NCPUS       : ${MASS_NCPUS}"
+    echo "MASS_ROW_BLOCK_SIZE: ${MASS_ROW_BLOCK_SIZE:-default}"
     echo
   } >"$LOGFILE" 2>&1
-  "$PYTHON_BIN" "$SCRIPT" \
+  PYTHONUNBUFFERED=1 "$PYTHON_BIN" -u "$SCRIPT" \
     -g "$GAL" \
     --root "$ROOT_CANFAR_BASE" \
     --fallback-root "$ROOT_LOCAL" \
+    "${EXTRA_ARGS[@]}" \
     2>&1 | tee -a "$LOGFILE"
   status=${PIPESTATUS[0]}               # exit code of python, not tee
   set -e
