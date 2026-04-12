@@ -177,8 +177,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--row-block-size",
         type=int,
-        default=8,
-        help="Number of image rows processed per vectorized block (default: 8)",
+        default=16,
+        help="Number of image rows processed per vectorized block (default: 16)",
     )
     return p.parse_args()
 

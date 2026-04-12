@@ -278,6 +278,27 @@ gas_extended_name = f"{gal}_gas_BIN_maps_extended.fits"
 kin_name = f"{gal}_KIN_maps_extended.fits"
 bin_extended_name = f"{gal}_SPATIAL_BINNING_maps_extended.fits"
 
+gas_primary_candidates = [
+    *build_input_candidates(
+        root, Path("products/v0.6") / gal / gas_name, gas_name
+    ),
+    *build_input_candidates(
+        root,
+        Path("products/v0.6") / gal / gas_extended_name,
+        gas_extended_name,
+    ),
+]
+gas_fallback_candidates = [
+    *build_input_candidates(
+        fallback_root, Path("products/v0.6") / gal / gas_name, gas_name
+    ),
+    *build_input_candidates(
+        fallback_root,
+        Path("products/v0.6") / gal / gas_extended_name,
+        gas_extended_name,
+    ),
+]
+
 gas_path = find_first_existing(
     *build_input_candidates(
         root, Path("products/v0.6") / gal / gas_name, gas_name
@@ -305,6 +326,11 @@ gas_extended_path = find_first_existing(
         gas_extended_name,
     ),
 )
+src = resolve_existing_path(
+    "gas-line FITS",
+    *gas_primary_candidates,
+    *gas_fallback_candidates,
+)
 bin_extended_path = resolve_existing_path(
     "extended binning FITS",
     *build_input_candidates(
@@ -325,34 +351,6 @@ noise = 20 # detection limit of FLUX, in the unit of 10^-20 erg/s
 # ------------------------------------------------------------------
 # 1.  Load gas-line maps (extended version file if it already exists)
 # ------------------------------------------------------------------
-
-if gas_path is not None:
-    src = gas_path
-elif gas_extended_path is not None:
-    src = gas_extended_path
-else:
-    checked = "\n".join(
-        f"  - {candidate}"
-        for candidate in _unique_paths(
-            *build_input_candidates(
-                root, Path("products/v0.6") / gal / gas_name, gas_name
-            ),
-            *build_input_candidates(
-                fallback_root, Path("products/v0.6") / gal / gas_name, gas_name
-            ),
-            *build_input_candidates(
-                root,
-                Path("products/v0.6") / gal / gas_extended_name,
-                gas_extended_name,
-            ),
-            *build_input_candidates(
-                fallback_root,
-                Path("products/v0.6") / gal / gas_extended_name,
-                gas_extended_name,
-            ),
-        )
-    )
-    raise FileNotFoundError(f"Could not find gas-line FITS. Checked:\n{checked}")
 
 print(f"Reading gas-line FITS ➜ {src}")
 with fits.open(src) as hdul:
@@ -1417,64 +1415,22 @@ def calculate_combined_c20_metallicity(gal):
         method_map: Map showing which method was used for each spaxel (0-5)
         combined_mask: Combined valid spaxel mask
     """
-    if gas_extended_path is None:
-        raise FileNotFoundError(
-            "Could not find extended gas FITS required for combined C20 metallicity."
-        )
+    # Reuse the already loaded and corrected arrays from this run.
+    hb4861_flux = HB4861_FLUX_corr
+    oiii5006_flux = OIII5006_FLUX_corr
+    sii6716_flux = SII6716_FLUX_corr
+    sii6730_flux = SII6730_FLUX_corr
 
-    # Load all required fluxes
-    with fits.open(bin_extended_path) as h:
-        sigM = h['LOGMASS_SURFACE_DENSITY'].data
-    with fits.open(gas_extended_path) as h:
-        sigSFR = h['LOGSFR_SURFACE_DENSITY_SF'].data
-        
-        # Load emission line fluxes
-        hb4861_flux = h['HB4861_FLUX_corr'].data
-        oiii5006_flux = h['OIII5006_FLUX_corr'].data
-        sii6716_flux = h['SII6716_FLUX_corr'].data
-        sii6730_flux = h['SII6730_FLUX_corr'].data
-        
-        # Load emission line flux errors
-        hb4861_flux_err = h['HB4861_FLUX_ERR'].data
-        oiii5006_flux_err = h['OIII5006_FLUX_ERR'].data
-        sii6716_flux_err = h['SII6716_FLUX_ERR'].data
-        sii6730_flux_err = h['SII6730_FLUX_ERR'].data
-        
-        # Load Halpha and NII with multiple naming conventions
-        ha_key_candidates = ('HA6563_FLUX_corr', 'HA6562_FLUX_corr', 'HALPHA6563_FLUX_corr', 'HALPHA_FLUX_corr')
-        ha_err_candidates = ('HA6563_FLUX_ERR', 'HA6562_FLUX_ERR', 'HALPHA6563_FLUX_ERR', 'HALPHA_FLUX_ERR')
-        nii_key_candidates = ('NII6584_FLUX_corr', 'NII6583_FLUX_corr', 'NII6584_FLUX', 'NII6583_FLUX')
-        nii_err_candidates = ('NII6584_FLUX_ERR', 'NII6583_FLUX_ERR')
-        
-        ha6563_flux = None
-        for k in ha_key_candidates:
-            if k in h:
-                ha6563_flux = h[k].data
-                break
-        
-        ha6563_flux_err = None
-        for k in ha_err_candidates:
-            if k in h:
-                ha6563_flux_err = h[k].data
-                break
-                
-        nii6584_flux = None
-        for k in nii_key_candidates:
-            if k in h:
-                nii6584_flux = h[k].data
-                break
-                
-        nii6584_flux_err = None
-        for k in nii_err_candidates:
-            if k in h:
-                nii6584_flux_err = h[k].data
-                break
-        
-        # Load reference O/H data
-        try:
-            oh_d16_sf = h['O_H_D16_SF'].data
-        except KeyError:
-            oh_d16_sf = None
+    hb4861_flux_err = HB4861_FLUX_ERR
+    oiii5006_flux_err = OIII5006_FLUX_ERR
+    sii6716_flux_err = SII6716_FLUX_ERR
+    sii6730_flux_err = SII6730_FLUX_ERR
+
+    ha6563_flux = HA6562_FLUX_corr
+    ha6563_flux_err = HA6562_FLUX_ERR
+    nii6584_flux = NII6583_FLUX_corr
+    nii6584_flux_err = NII6583_FLUX_ERR
+    oh_d16_sf = None
     
     # Calculate metallicity for all 6 methods
     print(f"Calculating all 6 C20 metallicities for {gal}...")
