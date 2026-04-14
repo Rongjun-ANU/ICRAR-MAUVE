@@ -144,6 +144,13 @@ Changes (2026-03-31)
   checking the primary root first and then the fallback root.
 * Removed the hardwired local gas-path override so mixed-root runs work
   consistently when some inputs are on CANFAR and others are local.
+
+Changes (2026-04-14)
+-----------------------
+* For SF/HII/total integrated properties, totals now follow the same integrated flow
+    as the total-region block: sum masked raw line maps first, then apply one
+    integrated Balmer-decrement correction, then derive metallicities from
+    integrated corrected line fluxes.
 """
 
 # ------------------------------------------------------------------
@@ -2197,25 +2204,77 @@ def choose_BPT(choice='both', classification=1):
 # 10.  Calculate the total Metallicity in SF regions (Classification 1)
 # ------------------------------------------------------------------
 
-# nansum the line maps in SF regions
-HB4861_FLUX_corr_SF_total = np.nansum(HB4861_FLUX_corr_SF)
-HA6562_FLUX_corr_SF_total = np.nansum(HA6562_FLUX_corr_SF)
-OIII5006_FLUX_corr_SF_total = np.nansum(OIII5006_FLUX_corr_SF)
-NII6583_FLUX_corr_SF_total = np.nansum(NII6583_FLUX_corr_SF)
-SII6716_FLUX_corr_SF_total = np.nansum(SII6716_FLUX_corr_SF)
-SII6730_FLUX_corr_SF_total = np.nansum(SII6730_FLUX_corr_SF)
+# Sum raw line maps in SF regions first, then apply one integrated BD correction.
+HB4861_FLUX_SF_total = np.nansum(np.where(mask_SF, HB4861_FLUX, np.nan))
+HA6562_FLUX_SF_total = np.nansum(np.where(mask_SF, HA6562_FLUX, np.nan))
+OIII5006_FLUX_SF_total = np.nansum(np.where(mask_SF, OIII5006_FLUX, np.nan))
+NII6583_FLUX_SF_total = np.nansum(np.where(mask_SF, NII6583_FLUX, np.nan))
+SII6716_FLUX_SF_total = np.nansum(np.where(mask_SF, SII6716_FLUX, np.nan))
+SII6730_FLUX_SF_total = np.nansum(np.where(mask_SF, SII6730_FLUX, np.nan))
+
+if (
+    np.isfinite(HB4861_FLUX_SF_total)
+    and np.isfinite(HA6562_FLUX_SF_total)
+    and HB4861_FLUX_SF_total > 0
+    and HA6562_FLUX_SF_total > 0
+):
+    BD_SF_total = HA6562_FLUX_SF_total / HB4861_FLUX_SF_total
+    if BD_SF_total < R_int:
+        BD_SF_total = R_int
+    E_BV_BD_SF_total = convert_bd_to_ebv(BD_SF_total, k_HB4861, k_HA6562, R_int)
+    HB4861_FLUX_corr_SF_total = correct_flux_with_ebv(HB4861_FLUX_SF_total, E_BV_BD_SF_total, k_HB4861)
+    HA6562_FLUX_corr_SF_total = correct_flux_with_ebv(HA6562_FLUX_SF_total, E_BV_BD_SF_total, k_HA6562)
+    OIII5006_FLUX_corr_SF_total = correct_flux_with_ebv(OIII5006_FLUX_SF_total, E_BV_BD_SF_total, k_OIII5006)
+    NII6583_FLUX_corr_SF_total = correct_flux_with_ebv(NII6583_FLUX_SF_total, E_BV_BD_SF_total, k_NII6583)
+    SII6716_FLUX_corr_SF_total = correct_flux_with_ebv(SII6716_FLUX_SF_total, E_BV_BD_SF_total, k_SII6716)
+    SII6730_FLUX_corr_SF_total = correct_flux_with_ebv(SII6730_FLUX_SF_total, E_BV_BD_SF_total, k_SII6730)
+else:
+    BD_SF_total = np.nan
+    E_BV_BD_SF_total = np.nan
+    HB4861_FLUX_corr_SF_total = np.nan
+    HA6562_FLUX_corr_SF_total = np.nan
+    OIII5006_FLUX_corr_SF_total = np.nan
+    NII6583_FLUX_corr_SF_total = np.nan
+    SII6716_FLUX_corr_SF_total = np.nan
+    SII6730_FLUX_corr_SF_total = np.nan
 
 # ------------------------------------------------------------------
 # 10a. Calculate the total Metallicity in HII regions (Classification 2)
 # ------------------------------------------------------------------
 
-# nansum the line maps in HII regions
-HB4861_FLUX_corr_HII_total = np.nansum(HB4861_FLUX_corr_HII)
-HA6562_FLUX_corr_HII_total = np.nansum(HA6562_FLUX_corr_HII)
-OIII5006_FLUX_corr_HII_total = np.nansum(OIII5006_FLUX_corr_HII)
-NII6583_FLUX_corr_HII_total = np.nansum(NII6583_FLUX_corr_HII)
-SII6716_FLUX_corr_HII_total = np.nansum(SII6716_FLUX_corr_HII)
-SII6730_FLUX_corr_HII_total = np.nansum(SII6730_FLUX_corr_HII)
+# Sum raw line maps in HII regions first, then apply one integrated BD correction.
+HB4861_FLUX_HII_total = np.nansum(np.where(mask_HII, HB4861_FLUX, np.nan))
+HA6562_FLUX_HII_total = np.nansum(np.where(mask_HII, HA6562_FLUX, np.nan))
+OIII5006_FLUX_HII_total = np.nansum(np.where(mask_HII, OIII5006_FLUX, np.nan))
+NII6583_FLUX_HII_total = np.nansum(np.where(mask_HII, NII6583_FLUX, np.nan))
+SII6716_FLUX_HII_total = np.nansum(np.where(mask_HII, SII6716_FLUX, np.nan))
+SII6730_FLUX_HII_total = np.nansum(np.where(mask_HII, SII6730_FLUX, np.nan))
+
+if (
+    np.isfinite(HB4861_FLUX_HII_total)
+    and np.isfinite(HA6562_FLUX_HII_total)
+    and HB4861_FLUX_HII_total > 0
+    and HA6562_FLUX_HII_total > 0
+):
+    BD_HII_total = HA6562_FLUX_HII_total / HB4861_FLUX_HII_total
+    if BD_HII_total < R_int:
+        BD_HII_total = R_int
+    E_BV_BD_HII_total = convert_bd_to_ebv(BD_HII_total, k_HB4861, k_HA6562, R_int)
+    HB4861_FLUX_corr_HII_total = correct_flux_with_ebv(HB4861_FLUX_HII_total, E_BV_BD_HII_total, k_HB4861)
+    HA6562_FLUX_corr_HII_total = correct_flux_with_ebv(HA6562_FLUX_HII_total, E_BV_BD_HII_total, k_HA6562)
+    OIII5006_FLUX_corr_HII_total = correct_flux_with_ebv(OIII5006_FLUX_HII_total, E_BV_BD_HII_total, k_OIII5006)
+    NII6583_FLUX_corr_HII_total = correct_flux_with_ebv(NII6583_FLUX_HII_total, E_BV_BD_HII_total, k_NII6583)
+    SII6716_FLUX_corr_HII_total = correct_flux_with_ebv(SII6716_FLUX_HII_total, E_BV_BD_HII_total, k_SII6716)
+    SII6730_FLUX_corr_HII_total = correct_flux_with_ebv(SII6730_FLUX_HII_total, E_BV_BD_HII_total, k_SII6730)
+else:
+    BD_HII_total = np.nan
+    E_BV_BD_HII_total = np.nan
+    HB4861_FLUX_corr_HII_total = np.nan
+    HA6562_FLUX_corr_HII_total = np.nan
+    OIII5006_FLUX_corr_HII_total = np.nan
+    NII6583_FLUX_corr_HII_total = np.nan
+    SII6716_FLUX_corr_HII_total = np.nan
+    SII6730_FLUX_corr_HII_total = np.nan
 
 # Dopita et al. (2016) metallicity calculation (total)
 y_SF_total = np.log10(NII6583_FLUX_corr_SF_total / (SII6716_FLUX_corr_SF_total + SII6730_FLUX_corr_SF_total)) + 0.264*np.log10(NII6583_FLUX_corr_SF_total / HA6562_FLUX_corr_SF_total)
@@ -2914,7 +2973,7 @@ else:
 # 11.  Calculate the total Metallicity in total available regions
 # ------------------------------------------------------------------
 
-# nansum the line maps in total available regions
+# Sum raw line maps in the total region first, then apply one integrated BD correction.
 HB4861_FLUX_total = np.nansum(HB4861_FLUX)
 HA6562_FLUX_total = np.nansum(HA6562_FLUX)
 OIII5006_FLUX_total = np.nansum(OIII5006_FLUX)
@@ -2930,21 +2989,33 @@ NII6583_FLUX_ERR_total = np.sqrt(np.nansum(NII6583_FLUX_ERR**2))
 SII6716_FLUX_ERR_total = np.sqrt(np.nansum(SII6716_FLUX_ERR**2))
 SII6730_FLUX_ERR_total = np.sqrt(np.nansum(SII6730_FLUX_ERR**2))
 
-# Calculate Balmer Decrement for total flux
-BD_total = HA6562_FLUX_total / HB4861_FLUX_total
-if BD_total < 2.86:
-    BD_total = 2.86
+if (
+    np.isfinite(HB4861_FLUX_total)
+    and np.isfinite(HA6562_FLUX_total)
+    and HB4861_FLUX_total > 0
+    and HA6562_FLUX_total > 0
+):
+    BD_total = HA6562_FLUX_total / HB4861_FLUX_total
+    if BD_total < R_int:
+        BD_total = R_int
+    E_BV_BD_total = convert_bd_to_ebv(BD_total, k_HB4861, k_HA6562, R_int)
 
-# Calculate E(B-V) for total flux
-E_BV_BD_total = convert_bd_to_ebv(BD_total, k_HB4861, k_HA6562, R_int)
-
-# Correct total fluxes with the uniform E(B-V)
-HB4861_FLUX_corr_total = correct_flux_with_ebv(HB4861_FLUX_total, E_BV_BD_total, k_HB4861)
-HA6562_FLUX_corr_total = correct_flux_with_ebv(HA6562_FLUX_total, E_BV_BD_total, k_HA6562)
-OIII5006_FLUX_corr_total = correct_flux_with_ebv(OIII5006_FLUX_total, E_BV_BD_total, k_OIII5006)
-NII6583_FLUX_corr_total = correct_flux_with_ebv(NII6583_FLUX_total, E_BV_BD_total, k_NII6583)
-SII6716_FLUX_corr_total = correct_flux_with_ebv(SII6716_FLUX_total, E_BV_BD_total, k_SII6716)
-SII6730_FLUX_corr_total = correct_flux_with_ebv(SII6730_FLUX_total, E_BV_BD_total, k_SII6730)
+    # Correct integrated total fluxes with the uniform E(B-V)
+    HB4861_FLUX_corr_total = correct_flux_with_ebv(HB4861_FLUX_total, E_BV_BD_total, k_HB4861)
+    HA6562_FLUX_corr_total = correct_flux_with_ebv(HA6562_FLUX_total, E_BV_BD_total, k_HA6562)
+    OIII5006_FLUX_corr_total = correct_flux_with_ebv(OIII5006_FLUX_total, E_BV_BD_total, k_OIII5006)
+    NII6583_FLUX_corr_total = correct_flux_with_ebv(NII6583_FLUX_total, E_BV_BD_total, k_NII6583)
+    SII6716_FLUX_corr_total = correct_flux_with_ebv(SII6716_FLUX_total, E_BV_BD_total, k_SII6716)
+    SII6730_FLUX_corr_total = correct_flux_with_ebv(SII6730_FLUX_total, E_BV_BD_total, k_SII6730)
+else:
+    BD_total = np.nan
+    E_BV_BD_total = np.nan
+    HB4861_FLUX_corr_total = np.nan
+    HA6562_FLUX_corr_total = np.nan
+    OIII5006_FLUX_corr_total = np.nan
+    NII6583_FLUX_corr_total = np.nan
+    SII6716_FLUX_corr_total = np.nan
+    SII6730_FLUX_corr_total = np.nan
 
 # Dopita et al. (2016) metallicity calculation (total)
 y_total = np.log10(NII6583_FLUX_corr_total / (SII6716_FLUX_corr_total + SII6730_FLUX_corr_total)) + 0.264*np.log10(NII6583_FLUX_corr_total / HA6562_FLUX_corr_total)
