@@ -653,6 +653,7 @@ def plot_sec34_style_null_test(result, reference_curve=None):
     )
     plt.tight_layout()
     plt.show()
+    return fig
 
 
 def list_available_galaxies():
@@ -1075,6 +1076,7 @@ def plot_sec34_galaxy_grid(
     )
     plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.965])
     plt.show()
+    return fig
 
 
 def compute_offset_maps_from_mass_bins(
@@ -1460,3 +1462,4 @@ def plot_simulated_moran_2x2(sim_result):
     cbar_binned.set_ticklabels([f"{center:.2f}" for center in bin_centers])
 
     plt.show()
+    return fig
