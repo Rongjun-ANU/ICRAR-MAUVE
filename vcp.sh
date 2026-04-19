@@ -65,10 +65,3 @@ done
 wait
 
 vcp -v arc:/projects/mauve/products/v0.6/IC3392/IC3392_CONTcube.fits /Users/Igniz/Desktop/ICRAR/extended/IC3392_CONTcube.fits
-
-# Download all v0.7dev_gas_BIN_maps.fits from XXX_v0.7dev folders
-GALAXIES=("NGC4064" "NGC4457" "NGC4522")
-for gal in "${GALAXIES[@]}"; do
-    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_gas_BIN_maps.fits" /Users/Igniz/Desktop/ICRAR/extended/ &
-done
-wait
