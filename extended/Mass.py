@@ -89,6 +89,33 @@ Changes (2026-04-03)
         where the filter linear coefficients are non-zero.
     - Added more frequent elapsed-time progress prints during row-block processing.
 
+Changes (2026-04-23)
+-----------------------
+* Fixed the composite `M/L_R` calculation to normalize SFH template weights per bin
+  before combining SSP properties, and added an explicit interpretation switch for
+  how nGIST `SFH` weights are converted into an R-band `M/L`.
+* Replaced the approximate `V-R`-based LIGHT-mode conversion with an exact
+  normalization-window conversion using the SSP template spectra themselves to
+  measure the pre-normalization mean flux within the fitted wavelength range
+  (`LMIN`–`LMAX`), while keeping the R-band luminosity term from the BaSTI
+  photometry table.
+* Added an optional `--template-library-dir` override and an automatic fallback
+  from the exact `light_norm_to_r` mode to the approximate `light_v_to_r` mode
+  when the original SSP template library is not available on the machine.
+* Added diagnostics for raw SFH weight sums and for the resulting candidate `M/L_R`
+  distributions (simple-light, exact light norm→R, approximate light V→R, and
+  mass-harmonic), so different runs can be compared directly in the logs.
+* Relaxed the R-band photometry validity criterion from "all filter-support wavelength
+  bins must be finite" to a support-fraction test with renormalization for small masked
+  gaps inside the filter bandpass.
+* Added diagnostics for strict-vs-relaxed filter-support acceptance counts and the
+  retained filter-support fraction across spaxels.
+* Separated cube-photometry validity from the nGIST binning-product `FLUX` mask so
+  integrated R-band totals and reconstructed binned maps are not biased by binning-map
+  footprint differences.
+* Clarified integrated summary logging by printing both uncorrected and extinction-
+  corrected R-band totals, plus the integrated stellar `M/L_R`.
+
 """
 
 # ------------------------------------------------------------------
@@ -99,11 +126,31 @@ Changes (2026-04-03)
 # Set to True to apply cos(θ) inclination correction, False to disable
 apply_inclination_correction = True
 
+# Interpretation of nGIST SFH template weights when converting them into a
+# composite R-band mass-to-light ratio.
+# Available options:
+#   "light_norm_to_r": exact LIGHT-mode conversion using the SSP template mean
+#                      flux in the fitted wavelength window and the BaSTI
+#                      R-band luminosity proxy (default).
+#   "light_r":      weights are already R-band light fractions.
+#   "light_v_to_r": approximate LIGHT-mode fallback using SSP V-R colours.
+#   "mass":         weights are mass fractions, giving the harmonic-mean M/L_R.
+sfh_weight_interpretation = "light_norm_to_r"
+
+# If the exact LIGHT-mode conversion is requested but the original SSP template
+# library is unavailable, fall back to this approximate interpretation.
+sfh_weight_interpretation_fallback = "light_v_to_r"
+
+# Minimum retained fraction of the R-band filter support required to accept
+# a spaxel photometry measurement when some wavelength bins are masked/NaN.
+min_filter_support_fraction = 0.99
+
 # ------------------------------------------------------------------
 # 0.  Command‑line interface
 # ------------------------------------------------------------------
 import argparse
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -180,6 +227,14 @@ def parse_args() -> argparse.Namespace:
         default=16,
         help="Number of image rows processed per vectorized block (default: 16)",
     )
+    p.add_argument(
+        "--template-library-dir",
+        default=None,
+        help=(
+            "Optional path to the SSP template library used by the SFH fit "
+            "(needed for the exact light_norm_to_r M/L conversion)"
+        ),
+    )
     return p.parse_args()
 
 args          = parse_args()
@@ -193,6 +248,11 @@ fallback_root = (
 disable_stat_propagation = args.disable_stat_propagation
 ncpus = max(int(args.ncpus), 0)
 row_block_size = max(int(args.row_block_size), 1)
+template_library_dir_override = (
+    Path(args.template_library_dir).expanduser().resolve()
+    if args.template_library_dir is not None
+    else None
+)
 
 # Ensure line-buffered logs so progress appears promptly when stdout is piped.
 try:
@@ -254,9 +314,19 @@ weight_path = resolve_existing_path(
         fallback_root, Path("products/v0.6") / galaxy / weight_name, weight_name
     ),
 )
-phot_path   = Path("BaSTI+Chabrier.dat")                         # local file
+script_dir = Path(__file__).resolve().parent
+phot_path = resolve_existing_path(
+    "photometry table",
+    Path("BaSTI+Chabrier.dat"),
+    script_dir / "BaSTI+Chabrier.dat",
+    script_dir.parent / "data" / "IC3392" / "BaSTI+Chabrier.dat",
+)
 out_path    = Path(f"{galaxy}_SPATIAL_BINNING_maps_extended.fits")   # output in CWD
-inclination_path = Path("MAUVE_Inclination.dat")
+inclination_path = resolve_existing_path(
+    "inclination table",
+    Path("MAUVE_Inclination.dat"),
+    script_dir / "MAUVE_Inclination.dat",
+)
 
 # For backwards compatibility with variable names in the original notebook
 vor_path     = bin_path
@@ -271,6 +341,8 @@ print("Binning map  :", bin_path)
 print("SFH map      :", sfh_path)
 print("Weights      :", weight_path)
 print("Photometry   :", phot_path)
+if template_library_dir_override is not None:
+    print("Template lib :", template_library_dir_override)
 print("Output       :", out_path, "\n")
 if disable_stat_propagation:
     print("STAT propagation: DISABLED by --disable-stat-propagation")
@@ -462,6 +534,100 @@ def build_ab_maggies_linear_coeff(
 
     return coeff
 
+
+_MILES_TEMPLATE_RE = re.compile(
+    r"Mch(?P<slope>\d+\.\d+)"
+    r"Z(?P<mh_sign>[mp])(?P<mh>\d+\.\d+)"
+    r"T(?P<age>\d+\.\d+)"
+    r"_iT(?P<alpha_sign>[mp])(?P<alpha>\d+\.\d+)"
+)
+
+
+def parse_template_filename_key(template_path: Path) -> tuple[float, float, float] | None:
+    """Parse a MILES-style SSP filename into rounded (age[Gyr], [M/H], [alpha/Fe])."""
+    match = _MILES_TEMPLATE_RE.search(template_path.name)
+    if match is None:
+        return None
+
+    mh = float(match.group("mh"))
+    if match.group("mh_sign") == "m":
+        mh *= -1.0
+
+    alpha = float(match.group("alpha"))
+    if match.group("alpha_sign") == "m":
+        alpha *= -1.0
+
+    age = float(match.group("age"))
+    return (round(age, 2), round(mh, 2), round(alpha, 2))
+
+
+def resolve_template_library_dir(
+    library_header_value: str | None,
+    script_dir: Path,
+    override_dir: Path | None = None,
+    rootdir: Path | None = None,
+    fallback_root: Path | None = None,
+) -> Path:
+    """Resolve the SSP template-library directory used to create the SFH weights."""
+    library_raw = str(library_header_value).strip() if library_header_value is not None else ""
+    library_path = Path(library_raw.rstrip("/")) if library_raw else None
+    library_name = library_path.name if library_path is not None and library_path.name else "MILES_safe"
+
+    return resolve_existing_path(
+        f"template library directory for {library_name}",
+        override_dir,
+        library_path,
+        Path(library_name),
+        script_dir / library_name,
+        script_dir.parent / library_name,
+        script_dir.parent / "data" / "IC3392" / library_name,
+        script_dir.parent.parent / "data" / "IC3392" / library_name,
+        (rootdir / library_name) if rootdir is not None else None,
+        (fallback_root / library_name) if fallback_root is not None else None,
+    )
+
+
+def build_template_norm_flux_lookup(
+    template_dir: Path,
+    lmin: float,
+    lmax: float,
+) -> dict[tuple[float, float, float], float]:
+    """
+    Return the pre-normalization mean flux in the fitted spectral window for each SSP.
+
+    This mirrors pPXF's LIGHT-mode normalization, where the output weights
+    represent mean-flux fractions within norm_range / [LMIN, LMAX].
+    """
+    lookup: dict[tuple[float, float, float], float] = {}
+
+    for template_path in sorted(template_dir.glob("*.fits")):
+        key = parse_template_filename_key(template_path)
+        if key is None:
+            continue
+
+        with fits.open(template_path, memmap=True) as hdul:
+            template_flux = np.asarray(hdul[0].data, dtype=np.float64)
+            template_hdr = hdul[0].header
+
+        wave = template_hdr["CRVAL1"] + template_hdr["CDELT1"] * np.arange(
+            template_hdr["NAXIS1"], dtype=np.float64
+        )
+        in_window = (wave >= lmin) & (wave <= lmax)
+        if not np.any(in_window):
+            continue
+
+        mean_flux = float(np.nanmean(template_flux[in_window]))
+        if np.isfinite(mean_flux) and mean_flux > 0:
+            lookup[key] = mean_flux
+
+    if len(lookup) == 0:
+        raise RuntimeError(
+            f"No valid SSP template mean-flux measurements were found in {template_dir} "
+            f"for the normalization window [{lmin}, {lmax}] Angstrom."
+        )
+
+    return lookup
+
 # ------------------------------------------------------------------
 # 4.  Begin main workflow 
 # ------------------------------------------------------------------
@@ -514,40 +680,204 @@ phot = tbl[mask]
 print(f"Loaded {len(phot)} out of {len(tbl)} rows of data from {fname.name}")
 
 
-# --- 3.1  Build a lookup dict keyed by (logAge, MH) rounded to 2 dec —--
-key_ml = {}
+# --- 3.1  Build a lookup dict keyed by (Age[Gyr], [M/H]) rounded to 2 dec ----
+key_phot = {}
 
 for row in phot:
-    age_gyr = round(row['Age'], 2)                     # e.g. 0.03 → 0.03
-    mh_dex  = round(row['MH'],  2)                     # e.g. –2.27 → –2.27
-    mlr     = row['ML_R']                   # keep 2 dp as requested
-    key_ml[(age_gyr, mh_dex)] = mlr
+    age_gyr = round(float(row['Age']), 2)
+    mh_dex = round(float(row['MH']), 2)
+    key_phot[(age_gyr, mh_dex)] = {
+        "ml_r": float(row['ML_R']),
+        "v_minus_r": float(row['VminusR']),
+        # Any fixed zeropoint cancels, so an R-band luminosity proxy is enough.
+        "lum_r_proxy": float(10.0 ** (-0.4 * float(row['R']))),
+    }
 
 grid = grid_data  # the FITS_rec you already loaded
 
-# --- 4.1  Prepare new array with an extra ML_R column -------------
-mlr_values = np.full(len(grid), np.nan, dtype=np.float32)
+# 1) convert the opaque FITS_rec into plain ndarrays
+w = weights_data['WEIGHTS'].astype(np.float64)             # (n_bin, n_ssp)
+ml_r_ssp = np.full(len(grid), np.nan, dtype=np.float64)
+v_minus_r_ssp = np.full(len(grid), np.nan, dtype=np.float64)
+lum_r_proxy_ssp = np.full(len(grid), np.nan, dtype=np.float64)
+grid_template_keys: list[tuple[float, float, float]] = []
 
-for i, (logage, mh, _) in enumerate(grid):
-    age_gyr = round(10**logage, 2)   # yrs → Gyr, 2 dp
-    mh_dex  = round(mh, 2)                 # already dex
-    mlr_values[i] = key_ml.get((age_gyr, mh_dex), np.nan)
+for i, (logage, mh, alpha) in enumerate(grid):
+    age_gyr = round(10 ** float(logage), 2)
+    mh_dex = round(float(mh), 2)
+    alpha_dex = round(float(alpha), 2)
+    grid_template_keys.append((age_gyr, mh_dex, alpha_dex))
 
-# --- 4.2  Build a new structured array including ML_R -------------
-ml_dtype = grid.dtype.descr + [('ML_R', 'f4')]
-grid_mlr  = np.empty(len(grid), dtype=ml_dtype)
+    phot_entry = key_phot.get((age_gyr, mh_dex))
+    if phot_entry is None:
+        continue
 
-for name in grid.dtype.names:
-    grid_mlr[name] = grid[name]
-grid_mlr['ML_R'] = mlr_values
+    ml_r_ssp[i] = phot_entry["ml_r"]
+    v_minus_r_ssp[i] = phot_entry["v_minus_r"]
+    lum_r_proxy_ssp[i] = phot_entry["lum_r_proxy"]
 
+if not np.all(np.isfinite(ml_r_ssp)) or np.any(ml_r_ssp <= 0):
+    raise ValueError("Encountered invalid SSP ML_R values from the photometry table.")
+if not np.all(np.isfinite(v_minus_r_ssp)):
+    raise ValueError("Encountered invalid SSP V-R colours from the photometry table.")
+if not np.all(np.isfinite(lum_r_proxy_ssp)) or np.any(lum_r_proxy_ssp <= 0):
+    raise ValueError("Encountered invalid SSP R-band luminosity proxies from the photometry table.")
 
-# 1) convert the opaque FITS_rec into a plain ndarray
-w      = weights_data['WEIGHTS'].astype(np.float32)        # (4077, 477)
-ml_ssp = grid_mlr['ML_R'].astype(np.float32)               # (477,)
+# 2) normalize template weights per Voronoi bin before combining SSP properties.
+weight_sum = w.sum(axis=1, dtype=np.float64)
+if not np.all(np.isfinite(weight_sum)) or np.any(weight_sum <= 0):
+    raise ValueError("Encountered non-finite or non-positive SFH weight sums.")
 
-# 2) light-weighted M/L_R per Voronoi bin (shape 4077)
-ml_bin = (w * ml_ssp).sum(axis=1)     # or: np.dot(w, ml_ssp)
+w_norm = w / weight_sum[:, None]
+norm_check = w_norm.sum(axis=1, dtype=np.float64)
+
+# Candidate interpretations of the saved SFH weights.
+# - light_r: old behaviour, valid only if the weights are already R-band light fractions.
+# - light_norm_to_r: exact LIGHT-mode conversion using the template mean flux
+#   in the fitted wavelength window (ppxf norm_range / nGIST LMIN-LMAX).
+# - light_v_to_r: approximate LIGHT-mode conversion using SSP V-R colours.
+# - mass: use the harmonic-mean M/L_R that would apply if the weights were mass fractions.
+light_r_simple = np.sum(w_norm * ml_r_ssp[None, :], axis=1, dtype=np.float64)
+
+norm_flux_ssp = np.full(len(grid), np.nan, dtype=np.float64)
+light_norm_to_r = np.full(weight_sum.shape, np.nan, dtype=np.float64)
+template_library_dir: Path | None = None
+template_library_status = "not requested"
+template_library_error: Exception | None = None
+
+try:
+    template_library_dir = resolve_template_library_dir(
+        weights_hdr.get("LIBRARY"),
+        script_dir=script_dir,
+        override_dir=template_library_dir_override,
+        rootdir=rootdir,
+        fallback_root=fallback_root,
+    )
+    template_norm_flux_lookup = build_template_norm_flux_lookup(
+        template_library_dir,
+        lmin=float(weights_hdr["LMIN"]),
+        lmax=float(weights_hdr["LMAX"]),
+    )
+
+    missing_template_keys: list[tuple[float, float, float]] = []
+    for i, template_key in enumerate(grid_template_keys):
+        flux_value = template_norm_flux_lookup.get(template_key)
+        if flux_value is None:
+            missing_template_keys.append(template_key)
+            continue
+        norm_flux_ssp[i] = flux_value
+
+    if missing_template_keys:
+        sample_missing = ", ".join(str(key) for key in missing_template_keys[:5])
+        raise KeyError(
+            "Could not match all SFH grid SSPs to template spectra in "
+            f"{template_library_dir}. Missing {len(missing_template_keys)} keys; "
+            f"first few: {sample_missing}"
+        )
+    if not np.all(np.isfinite(norm_flux_ssp)) or np.any(norm_flux_ssp <= 0):
+        raise ValueError("Encountered invalid SSP mean-flux values from the template library.")
+
+    lr_over_lnorm = lum_r_proxy_ssp / norm_flux_ssp
+    light_norm_to_r_num = np.sum(
+        w_norm * (ml_r_ssp * lr_over_lnorm)[None, :],
+        axis=1,
+        dtype=np.float64,
+    )
+    light_norm_to_r_den = np.sum(
+        w_norm * lr_over_lnorm[None, :],
+        axis=1,
+        dtype=np.float64,
+    )
+    light_norm_to_r = np.divide(
+        light_norm_to_r_num,
+        light_norm_to_r_den,
+        out=np.full_like(light_norm_to_r_num, np.nan, dtype=np.float64),
+        where=light_norm_to_r_den > 0,
+    )
+    template_library_status = "available"
+except (FileNotFoundError, KeyError, RuntimeError, ValueError) as exc:
+    template_library_error = exc
+    template_library_status = f"unavailable ({exc})"
+
+lr_over_lv = 10.0 ** (0.4 * v_minus_r_ssp)
+light_v_to_r_num = np.sum(w_norm * (ml_r_ssp * lr_over_lv)[None, :], axis=1, dtype=np.float64)
+light_v_to_r_den = np.sum(w_norm * lr_over_lv[None, :], axis=1, dtype=np.float64)
+light_v_to_r = np.divide(
+    light_v_to_r_num,
+    light_v_to_r_den,
+    out=np.full_like(light_v_to_r_num, np.nan, dtype=np.float64),
+    where=light_v_to_r_den > 0,
+)
+mass_harmonic = np.divide(
+    1.0,
+    np.sum(w_norm / ml_r_ssp[None, :], axis=1, dtype=np.float64),
+    out=np.full(weight_sum.shape, np.nan, dtype=np.float64),
+    where=np.all(np.isfinite(w_norm / ml_r_ssp[None, :]), axis=1),
+)
+
+ml_bin_candidates = {
+    "light_r": light_r_simple,
+    "light_norm_to_r": light_norm_to_r,
+    "light_v_to_r": light_v_to_r,
+    "mass": mass_harmonic,
+}
+effective_sfh_weight_interpretation = sfh_weight_interpretation
+if sfh_weight_interpretation not in ml_bin_candidates:
+    raise ValueError(
+        "Unsupported sfh_weight_interpretation="
+        f"{sfh_weight_interpretation!r}. Expected one of {sorted(ml_bin_candidates)}."
+    )
+if sfh_weight_interpretation == "light_norm_to_r" and not np.all(np.isfinite(light_norm_to_r)):
+    if sfh_weight_interpretation_fallback not in ml_bin_candidates:
+        raise ValueError(
+            "Unsupported sfh_weight_interpretation_fallback="
+            f"{sfh_weight_interpretation_fallback!r}. Expected one of {sorted(ml_bin_candidates)}."
+        )
+    effective_sfh_weight_interpretation = sfh_weight_interpretation_fallback
+    print(
+        "Warning: Exact light_norm_to_r conversion is unavailable because the "
+        "original SSP template library could not be resolved. "
+        f"Falling back to {effective_sfh_weight_interpretation!r}."
+    )
+    if template_library_error is not None:
+        print(f"Template-library resolution detail: {template_library_error}")
+ml_bin = ml_bin_candidates[effective_sfh_weight_interpretation]
+
+print(
+    "Raw SFH weight-sum [min, p16, p50, p84, max] = "
+    f"[{np.min(weight_sum):.4e}, "
+    f"{np.percentile(weight_sum, 16):.4e}, "
+    f"{np.percentile(weight_sum, 50):.4e}, "
+    f"{np.percentile(weight_sum, 84):.4e}, "
+    f"{np.max(weight_sum):.4e}]"
+)
+print(
+    "Normalized SFH weight-sum check [min, max] = "
+    f"[{np.min(norm_check):.6f}, {np.max(norm_check):.6f}]"
+)
+print(
+    "Composite ML_R candidates [median] "
+    f"(light_r, light_norm_to_r, light_v_to_r, mass_harmonic) = "
+    f"[{np.nanmedian(light_r_simple):.4f}, "
+    f"{np.nanmedian(light_norm_to_r):.4f}, "
+    f"{np.nanmedian(light_v_to_r):.4f}, "
+    f"{np.nanmedian(mass_harmonic):.4f}]"
+)
+if template_library_dir is not None:
+    print(
+        "Template-library LIGHT normalization for ML_R: "
+        f"{template_library_dir} (LMIN={float(weights_hdr['LMIN']):.1f}, "
+        f"LMAX={float(weights_hdr['LMAX']):.1f} Angstrom)"
+    )
+else:
+    print(
+        "Template-library LIGHT normalization for ML_R: "
+        f"{template_library_status}"
+    )
+print(
+    "Selected SFH-weight interpretation for ML_R: "
+    f"{effective_sfh_weight_interpretation}"
+)
 
 # 3) optional sanity check: every bin should return a finite, positive value
 assert np.all(np.isfinite(ml_bin)) and (ml_bin > 0).all()
@@ -563,7 +893,16 @@ binning_MLR = np.full_like(binning_BINID, np.nan, dtype=np.float32)
 
 # --- 2)  fill *valid* Voronoi zones ----------------------------------------
 valid = binning_BINID >= 0                     # True where BINID is a real zone
-binning_MLR[valid] = ml_bin[binning_BINID[valid].astype(int)]
+binid_max = int(np.nanmax(binning_BINID[valid])) if np.any(valid) else -1
+if binid_max >= len(ml_bin):
+    raise ValueError(
+        "BINID values exceed the number of rows in the SFH weights file: "
+        f"max BINID={binid_max}, n_weight_rows={len(ml_bin)}"
+    )
+print(f"BINID range check for ML_R mapping: max BINID={binid_max}, n_weight_rows={len(ml_bin)}")
+ml_lut = np.full(binid_max + 1, np.nan, dtype=np.float32)
+ml_lut[: len(ml_bin)] = ml_bin.astype(np.float32)
+binning_MLR[valid] = ml_lut[binning_BINID[valid].astype(int)]
 
 
 # ---------------------------------------------------------------------
@@ -643,6 +982,10 @@ with fits.open(cube_path, memmap=True) as cube:
         print(f"Using non-contiguous filter-support index set ({coeff_eff.size} bins).")
 
     n_wave_eff = coeff_eff.size
+    coeff_support_total = float(np.sum(np.abs(coeff_eff)))
+    if coeff_support_total <= 0:
+        raise RuntimeError("Effective filter-support coefficient sum is not positive.")
+
     print(
         "Photometric propagation method: exact discrete first-order Jacobian through "
         f"speclite AB-maggies operator (support bins={support_count}/{nz})."
@@ -652,8 +995,12 @@ with fits.open(cube_path, memmap=True) as cube:
     )
 
     maggies_map = np.full((ny, nx), np.nan, dtype=np.float64)
+    filter_support_fraction_map = np.full((ny, nx), np.nan, dtype=np.float32)
     if has_stat:
         maggies_var_map = np.full((ny, nx), np.nan, dtype=np.float64)
+
+    strict_allfinite_pixels = 0
+    accepted_support_pixels = 0
 
     est_io_factor = 2 if has_stat else 1
     est_io_gib = (
@@ -676,23 +1023,47 @@ with fits.open(cube_path, memmap=True) as cube:
         raw_block = data[support_sel, j0:j1, :]                            # (nz_eff, b, nx)
         finite_flux = np.isfinite(raw_block)
         finite_flux_support = np.all(finite_flux, axis=0)
+        finite_flux_weight = np.einsum(
+            "z,zpn->pn",
+            np.abs(coeff_eff),
+            finite_flux.astype(np.float32),
+            optimize=True,
+        )
+        support_fraction = finite_flux_weight / coeff_support_total
+        good_support = support_fraction >= min_filter_support_fraction
+        strict_allfinite_pixels += int(np.count_nonzero(finite_flux_support))
+        accepted_support_pixels += int(np.count_nonzero(good_support))
 
         zero = np.array(0.0, dtype=raw_block.dtype)
         block_flux = np.where(finite_flux, raw_block, zero).reshape(n_wave_eff, -1)
         block_maggies = np.einsum("z,zp->p", coeff_eff, block_flux, optimize=True)
         block_maggies = block_maggies.reshape(j1 - j0, nx)
-        block_maggies[~finite_flux_support] = np.nan
+        with np.errstate(divide="ignore", invalid="ignore"):
+            block_maggies = np.where(good_support, block_maggies / support_fraction, np.nan)
         maggies_map[j0:j1, :] = block_maggies
+        filter_support_fraction_map[j0:j1, :] = support_fraction.astype(np.float32)
 
         if has_stat:
             assert stat_data is not None
             raw_stat = stat_data[support_sel, j0:j1, :]
             finite_stat = np.isfinite(raw_stat) & (raw_stat >= 0)
-            finite_stat_support = np.all(finite_stat, axis=0)
+            finite_stat_weight = np.einsum(
+                "z,zpn->pn",
+                np.abs(coeff_eff),
+                finite_stat.astype(np.float32),
+                optimize=True,
+            )
+            stat_support_fraction = finite_stat_weight / coeff_support_total
+            good_stat_support = stat_support_fraction >= min_filter_support_fraction
             block_stat = np.where(finite_stat, raw_stat, zero).reshape(n_wave_eff, -1)
             block_var = np.einsum("z,zp->p", coeff_sq_eff, block_stat, optimize=True)
             block_var = block_var.reshape(j1 - j0, nx)
-            block_var[~finite_stat_support] = np.nan
+            with np.errstate(divide="ignore", invalid="ignore"):
+                block_var = np.where(
+                    good_support & good_stat_support,
+                    block_var / support_fraction**2,
+                    np.nan,
+                )
             maggies_var_map[j0:j1, :] = block_var
 
         block_t1 = time.perf_counter()
@@ -722,6 +1093,19 @@ with fits.open(cube_path, memmap=True) as cube:
             f"{throughput_mib_s:.1f} MiB/s over support-slice read volume"
         )
 
+    finite_support_fraction = filter_support_fraction_map[np.isfinite(filter_support_fraction_map)]
+    if finite_support_fraction.size > 0:
+        p16_sup, p50_sup, p84_sup = np.percentile(finite_support_fraction, [16, 50, 84])
+        print(
+            "Filter-support fraction [p16, p50, p84] = "
+            f"[{p16_sup:.6f}, {p50_sup:.6f}, {p84_sup:.6f}]"
+        )
+    print(
+        "Strict all-finite support pixels vs accepted relaxed-support pixels = "
+        f"{strict_allfinite_pixels:,} vs {accepted_support_pixels:,} "
+        f"(threshold={min_filter_support_fraction:.4f})"
+    )
+
     m_r_map = np.where(maggies_map > 0, -2.5 * np.log10(maggies_map), np.nan).astype(np.float32)
 
     flux_map = F0_ref * maggies_map
@@ -738,7 +1122,6 @@ with fits.open(cube_path, memmap=True) as cube:
         # keep BINID as float so NaNs survive the read
         BINID_f32 = hd_v["BINID"].data.astype(np.float32)
         muse_hdr2 = hd_v["BINID"].header
-        nan_mask  = ~np.isfinite(hd_v["FLUX"].data)
 
         # build an *integer* copy with sentinel -1 for “no bin”
         bad_pix = (~np.isfinite(BINID_f32)) | (BINID_f32 < 0)
@@ -748,8 +1131,6 @@ with fits.open(cube_path, memmap=True) as cube:
         # ---------- PATCH END ----------
 
     uniq = np.unique(BINID[BINID >= 0])                 # keep this line
-    flux_map[nan_mask] = np.nan  # Keep NaNs where needed
-    flux_err_map[nan_mask] = np.nan
 
     # Explicitly release cube-backed arrays before downstream processing.
     del data
@@ -758,8 +1139,14 @@ with fits.open(cube_path, memmap=True) as cube:
 
 gc.collect()
 
-# Average flux in each bin (excluding NaN pixels)
-flux_map_clean = np.where(nan_mask | ~np.isfinite(m_r_map), np.nan, flux_map)
+# Keep the cube-photometry validity separate from the binning-product mask.
+# Otherwise the "total" R-band flux changes when the binning map changes.
+phot_valid_mask = np.isfinite(m_r_map)
+bin_member_mask = BINID >= 0
+pixel_valid_for_binned_maps = bin_member_mask & phot_valid_mask
+
+# Average flux in each bin using only pixels with valid cube photometry.
+flux_map_clean = np.where(pixel_valid_for_binned_maps, flux_map, np.nan)
 valid_pixels = sum_labels((~np.isnan(flux_map_clean)).astype(np.int32), BINID, uniq)
 sum_flux = sum_labels(np.nan_to_num(flux_map_clean), BINID, uniq)
 mean_flux_err_stat = np.full_like(sum_flux, np.nan, dtype=np.float64)
@@ -787,7 +1174,7 @@ mean_flux_err_sample = np.divide(
 )
 
 if has_stat:
-    err_valid = (~nan_mask) & np.isfinite(flux_map) & np.isfinite(flux_err_map) & (BINID >= 0)
+    err_valid = pixel_valid_for_binned_maps & np.isfinite(flux_map) & np.isfinite(flux_err_map)
     valid_err_pixels = sum_labels(err_valid.astype(np.int32), BINID, uniq)
     sum_var_flux = sum_labels(np.where(err_valid, flux_err_map**2, 0.0), BINID, uniq)
     mean_flux_err_stat = np.divide(
@@ -848,13 +1235,11 @@ else:
 # Create lookup table for bin-averaged magnitudes
 lut = np.full(int(BINID.max()) + 1, np.nan, dtype=np.float32)
 lut[uniq] = mean_mag
-m_r_binned = np.where(BINID >= 0, lut[BINID], np.nan)     # (ny, nx)
-m_r_binned[nan_mask] = np.nan  # Keep NaNs where needed
+m_r_binned = np.where(pixel_valid_for_binned_maps, lut[BINID], np.nan)     # (ny, nx)
 
 lut_err = np.full(int(BINID.max()) + 1, np.nan, dtype=np.float32)
 lut_err[uniq] = mean_mag_err.astype(np.float32)
-m_r_binned_err = np.where(BINID >= 0, lut_err[BINID], np.nan)
-m_r_binned_err[nan_mask] = np.nan
+m_r_binned_err = np.where(pixel_valid_for_binned_maps, lut_err[BINID], np.nan)
 
 flux_map_binned = F0_ref * 10**(-0.4 * m_r_binned)  # Convert mag to flux
 
@@ -901,8 +1286,8 @@ A_r_err = np.where(np.isfinite(EBV_ERR), np.abs(k_r_calz) * EBV_ERR, np.nan)
 # 5) Correct magnitudes for *internal* attenuation
 m_r_corr = m_r_binned - A_r
 m_r_corr_err = quadrature_sum(m_r_binned_err, A_r_err)
-m_r_corr[nan_mask] = np.nan
-m_r_corr_err[nan_mask] = np.nan
+m_r_corr[~pixel_valid_for_binned_maps] = np.nan
+m_r_corr_err[~pixel_valid_for_binned_maps] = np.nan
 m_r_corr_err[~np.isfinite(m_r_corr)] = np.nan
 
 # magnitude back to nanomaggies in Legacy survey format
@@ -929,8 +1314,8 @@ M_star = L_Lsun * binning_MLR
 logM_star = np.where(M_star > 0, np.log10(M_star), np.nan)
 logM_star_err = np.where(M_star > 0, 0.4 * m_r_corr_err, np.nan)
 M_star_err = np.abs(M_star) * np.log(10.0) * logM_star_err
-logM_star[nan_mask] = np.nan
-logM_star_err[nan_mask] = np.nan
+logM_star[~pixel_valid_for_binned_maps] = np.nan
+logM_star_err[~pixel_valid_for_binned_maps] = np.nan
 
 print("R-band magnitude calculation completed!")
 print(f"Filter used: {f_r.name}")
@@ -938,15 +1323,23 @@ print(f"Magnitude range: {np.nanmin(m_r_corr):.2f} to {np.nanmax(m_r_corr):.2f}"
 print(f"Distance modulus: {distmod:.2f} mag")
 
 # ──────────────────────────────────────────────────────────────────
-#  NEW summary lines
+#  Integrated summary lines
 # ──────────────────────────────────────────────────────────────────
-tot_mag  = -2.5 * np.log10(np.nansum(flux_map) / F0_ref)
-tot_L_R  = np.log10(np.nansum(L_Lsun))          # log₁₀(L/L☉)
-tot_M_R  = np.log10(np.nansum(M_star))          # log₁₀(M/M☉)
+total_flux_uncorrected = np.nansum(np.where(phot_valid_mask, flux_map, np.nan))
+total_flux_corrected = np.nansum(np.where(np.isfinite(FLUX_R_corr), FLUX_R_corr, np.nan))
+tot_mag_uncorrected = -2.5 * np.log10(total_flux_uncorrected / F0_ref)
+tot_mag_corrected = 22.5 - 2.5 * np.log10(total_flux_corrected)
+total_L_R_linear = np.nansum(L_Lsun)
+total_M_R_linear = np.nansum(M_star)
+tot_L_R  = np.log10(total_L_R_linear)          # log₁₀(L/L☉)
+tot_M_R  = np.log10(total_M_R_linear)          # log₁₀(M/M☉)
+integrated_ml_r = total_M_R_linear / total_L_R_linear
 
-print(f"Total R-band magnitude   : {tot_mag:.3f} mag (AB)")
-print(f"Total R-band luminosity  : {tot_L_R:.3f} log10(L☉)")
-print(f"Total stellar mass (R)   : {tot_M_R:.3f} log10(M☉)")
+print(f"Total R-band magnitude (uncorrected) : {tot_mag_uncorrected:.3f} mag (AB)")
+print(f"Total R-band magnitude (corrected)   : {tot_mag_corrected:.3f} mag (AB)")
+print(f"Total R-band luminosity              : {tot_L_R:.3f} log10(L☉)")
+print(f"Total stellar mass (R)               : {tot_M_R:.3f} log10(M☉)")
+print(f"Integrated stellar M/L_R             : {integrated_ml_r:.4f} M☉/L☉")
 median_logmstar_err = finite_median(logM_star_err)
 if np.isfinite(median_logmstar_err):
     p16_logm, p50_logm, p84_logm = finite_percentiles(logM_star_err)
@@ -1069,7 +1462,7 @@ with np.errstate(divide="ignore", invalid="ignore"):
         / (stellar_mass_surface_density_corrected.value * np.log(10.0)),
         np.nan,
     )
-log_stellar_mass_surface_density_err[nan_mask] = np.nan
+log_stellar_mass_surface_density_err[~pixel_valid_for_binned_maps] = np.nan
 median_logsigma_err = finite_median(log_stellar_mass_surface_density_err)
 if np.isfinite(median_logsigma_err):
     p16_logsig, p50_logsig, p84_logsig = finite_percentiles(log_stellar_mass_surface_density_err)

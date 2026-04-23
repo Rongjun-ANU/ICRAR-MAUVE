@@ -669,11 +669,14 @@ def print_sec34_summary(result):
         print("=" * 132)
 
 
-def plot_sec34_style_null_test(result, reference_curve=None):
+def plot_sec34_style_null_test(result, reference_curve=None, panel_mode="full"):
     observed = result["observed"]
     mock = result["null"]["example_cloud"]
     centers = observed["centers"]
     error_model = result.get("direct_error_model")
+
+    if panel_mode not in {"full", "rho_only", "rho_and_error"}:
+        raise ValueError(f"Unsupported panel_mode={panel_mode!r}.")
 
     all_dx = [observed["delta_sfr"]]
     all_dz = [observed["delta_oh"]]
@@ -686,47 +689,57 @@ def plot_sec34_style_null_test(result, reference_curve=None):
     x_lim = max(x_lim, 0.1)
     y_lim = max(y_lim, 0.05)
 
-    fig, axes = plt.subplots(2, 2, figsize=(15.5, 10.0))
-    axes = axes.ravel()
+    if panel_mode == "full":
+        fig, axes = plt.subplots(2, 2, figsize=(15.5, 10.0))
+        axes = axes.ravel()
+        observed_ax = axes[0]
+        null_ax = axes[1]
+        rho_ax = axes[2]
+        error_ax = axes[3]
 
-    hb1 = axes[0].hexbin(
-        observed["delta_sfr"],
-        observed["delta_oh"],
-        gridsize=55,
-        mincnt=1,
-        cmap="Greys",
-        linewidths=0.0,
-    )
-    axes[0].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[0].axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[0].set_xlim(-x_lim, x_lim)
-    axes[0].set_ylim(-y_lim, y_lim)
-    axes[0].set_title("Observed residual cloud", fontsize=12)
-    axes[0].set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
-    axes[0].set_ylabel(r"$\Delta$[O/H]", fontsize=11)
-    axes[0].grid(True, alpha=0.2)
-    fig.colorbar(hb1, ax=axes[0], label="N")
-
-    if mock is not None:
-        hb2 = axes[1].hexbin(
-            mock["delta_sfr"],
-            mock["delta_oh"],
+        hb1 = observed_ax.hexbin(
+            observed["delta_sfr"],
+            observed["delta_oh"],
             gridsize=55,
             mincnt=1,
-            cmap="Oranges",
+            cmap="Greys",
             linewidths=0.0,
         )
-        fig.colorbar(hb2, ax=axes[1], label="N")
-    axes[1].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[1].axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[1].set_xlim(-x_lim, x_lim)
-    axes[1].set_ylim(-y_lim, y_lim)
-    axes[1].set_title("Null cloud (one realization)", fontsize=12)
-    axes[1].set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
-    axes[1].set_ylabel(r"$\Delta$[O/H]", fontsize=11)
-    axes[1].grid(True, alpha=0.2)
+        observed_ax.axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        observed_ax.axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        observed_ax.set_xlim(-x_lim, x_lim)
+        observed_ax.set_ylim(-y_lim, y_lim)
+        observed_ax.set_title("Observed residual cloud", fontsize=12)
+        observed_ax.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
+        observed_ax.set_ylabel(r"$\Delta$[O/H]", fontsize=11)
+        observed_ax.grid(True, alpha=0.2)
+        fig.colorbar(hb1, ax=observed_ax, label="N")
 
-    axes[2].fill_between(
+        if mock is not None:
+            hb2 = null_ax.hexbin(
+                mock["delta_sfr"],
+                mock["delta_oh"],
+                gridsize=55,
+                mincnt=1,
+                cmap="Oranges",
+                linewidths=0.0,
+            )
+            fig.colorbar(hb2, ax=null_ax, label="N")
+        null_ax.axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        null_ax.axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        null_ax.set_xlim(-x_lim, x_lim)
+        null_ax.set_ylim(-y_lim, y_lim)
+        null_ax.set_title("Null cloud (one realization)", fontsize=12)
+        null_ax.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
+        null_ax.set_ylabel(r"$\Delta$[O/H]", fontsize=11)
+        null_ax.grid(True, alpha=0.2)
+    elif panel_mode == "rho_and_error":
+        fig, (rho_ax, error_ax) = plt.subplots(1, 2, figsize=(12.4, 4.8))
+    else:
+        fig, rho_ax = plt.subplots(1, 1, figsize=(6.6, 4.8))
+        error_ax = None
+
+    rho_ax.fill_between(
         centers,
         result["null"]["p16_rho"],
         result["null"]["p84_rho"],
@@ -734,14 +747,14 @@ def plot_sec34_style_null_test(result, reference_curve=None):
         alpha=0.25,
         label="Null 16-84%",
     )
-    axes[2].plot(
+    rho_ax.plot(
         centers,
         result["null"]["median_rho"],
         color="tab:orange",
         linewidth=2.0,
         label="Null median",
     )
-    axes[2].plot(
+    rho_ax.plot(
         centers,
         observed["rho"],
         color="black",
@@ -754,7 +767,7 @@ def plot_sec34_style_null_test(result, reference_curve=None):
         ref_rho = np.asarray(reference_curve["rho"], dtype=float)
         ref_valid = np.isfinite(ref_centers) & np.isfinite(ref_rho)
         if np.any(ref_valid):
-            axes[2].plot(
+            rho_ax.plot(
                 ref_centers[ref_valid],
                 ref_rho[ref_valid],
                 color="tab:blue",
@@ -764,14 +777,14 @@ def plot_sec34_style_null_test(result, reference_curve=None):
                 markersize=4,
                 label=reference_curve.get("label", "Reference observed curve"),
             )
-    axes[2].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[2].set_xlabel(r"$\log\,\Sigma_*$ bin center", fontsize=11)
-    axes[2].set_ylabel(r"Spearman $\rho$", fontsize=11)
-    axes[2].set_title(r"Observed vs null $\rho(\log\,\Sigma_*)$", fontsize=12)
-    axes[2].grid(True, alpha=0.25)
-    axes[2].legend(loc="best", fontsize=10)
+    rho_ax.axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+    rho_ax.set_xlabel(r"$\log\,\Sigma_*$ bin center", fontsize=11)
+    rho_ax.set_ylabel(r"Spearman $\rho$", fontsize=11)
+    rho_ax.set_title(r"Observed vs null $\rho(\log\,\Sigma_*)$", fontsize=12)
+    rho_ax.grid(True, alpha=0.25)
+    rho_ax.legend(loc="best", fontsize=10)
 
-    if error_model is not None:
+    if panel_mode in {"full", "rho_and_error"} and error_model is not None:
         error_scale = float(result.get("config", {}).get("error_scale", 1.0))
         obs_sigma_y = np.asarray(error_model["observed_sigma_log_sfr"], dtype=float)
         obs_sigma_z = np.asarray(error_model["observed_sigma_oh"], dtype=float)
@@ -780,7 +793,7 @@ def plot_sec34_style_null_test(result, reference_curve=None):
 
         n_obs_plot = min(obs_sigma_y.size, 5000)
         obs_stride = max(1, obs_sigma_y.size // n_obs_plot)
-        axes[3].scatter(
+        error_ax.scatter(
             obs_sigma_y[::obs_stride],
             obs_sigma_z[::obs_stride],
             s=5,
@@ -792,7 +805,7 @@ def plot_sec34_style_null_test(result, reference_curve=None):
 
         n_plot = min(sim_sigma_y.size, 4000)
         stride = max(1, sim_sigma_y.size // n_plot)
-        axes[3].scatter(
+        error_ax.scatter(
             sim_sigma_y[::stride],
             sim_sigma_z[::stride],
             s=6,
@@ -805,7 +818,7 @@ def plot_sec34_style_null_test(result, reference_curve=None):
         y_range = (0.0, 0.15)
 
         _plot_smoothed_density_contour(
-            axes[3],
+            error_ax,
             obs_sigma_y,
             obs_sigma_z,
             x_range=x_range,
@@ -814,15 +827,15 @@ def plot_sec34_style_null_test(result, reference_curve=None):
             coverage=0.95,
         )
 
-        axes[3].set_xlim(0.0, 0.15 * max(1.0, error_scale))
-        axes[3].set_ylim(0.0, 0.15 * max(1.0, error_scale))
-        axes[3].set_title("Observed vs simulated error-error relation", fontsize=12)
-        axes[3].set_xlabel(r"Err[$\log\,\Sigma_{\rm SFR}$]", fontsize=11)
-        axes[3].set_ylabel(r"Err[[O/H]]", fontsize=11)
-        axes[3].grid(True, alpha=0.2)
-        axes[3].legend(loc="best", fontsize=9)
-    else:
-        axes[3].axis("off")
+        error_ax.set_xlim(0.0, 0.15 * max(1.0, error_scale))
+        error_ax.set_ylim(0.0, 0.15 * max(1.0, error_scale))
+        error_ax.set_title("Observed vs simulated error-error relation", fontsize=12)
+        error_ax.set_xlabel(r"Err[$\log\,\Sigma_{\rm SFR}$]", fontsize=11)
+        error_ax.set_ylabel(r"Err[[O/H]]", fontsize=11)
+        error_ax.grid(True, alpha=0.2)
+        error_ax.legend(loc="best", fontsize=9)
+    elif panel_mode == "full":
+        error_ax.axis("off")
 
     if result["config"]["include_mass_error_proxy"]:
         mass_label = (
@@ -832,11 +845,24 @@ def plot_sec34_style_null_test(result, reference_curve=None):
     else:
         mass_label = "Mass distribution fixed; no extra mass-error proxy"
 
-    fig.suptitle(
-        f"Null test: independent primary relations + direct correlated error model (simulated errors x{result['config'].get('error_scale', 1.0):g})\n",
-        fontsize=13,
-    )
-    plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.965))
+    if panel_mode == "rho_only":
+        fig.suptitle(
+            "Null test: observed vs null Spearman $\\rho$",
+            fontsize=13,
+        )
+        plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
+    elif panel_mode == "rho_and_error":
+        fig.suptitle(
+            f"Null test: Spearman $\\rho$ + error-error relation (simulated errors x{result['config'].get('error_scale', 1.0):g})",
+            fontsize=13,
+        )
+        plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
+    else:
+        fig.suptitle(
+            f"Null test: independent primary relations + direct correlated error model (simulated errors x{result['config'].get('error_scale', 1.0):g})\n",
+            fontsize=13,
+        )
+        plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.965))
     plt.show()
     return fig
 

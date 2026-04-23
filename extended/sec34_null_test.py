@@ -537,10 +537,13 @@ def print_sec34_summary(result):
     print("=" * 132)
 
 
-def plot_sec34_style_null_test(result, reference_curve=None):
+def plot_sec34_style_null_test(result, reference_curve=None, panel_mode="full"):
     observed = result["observed"]
     mock = result["null"]["example_cloud"]
     centers = observed["centers"]
+
+    if panel_mode not in {"full", "rho_only"}:
+        raise ValueError(f"Unsupported panel_mode={panel_mode!r}.")
 
     all_dx = [observed["delta_sfr"]]
     all_dz = [observed["delta_oh"]]
@@ -553,46 +556,51 @@ def plot_sec34_style_null_test(result, reference_curve=None):
     x_lim = max(x_lim, 0.1)
     y_lim = max(y_lim, 0.05)
 
-    fig, axes = plt.subplots(1, 3, figsize=(17, 5.2))
+    if panel_mode == "rho_only":
+        fig, rho_ax = plt.subplots(1, 1, figsize=(6.6, 5.2))
+    else:
+        fig, axes = plt.subplots(1, 3, figsize=(17, 5.2))
 
-    hb1 = axes[0].hexbin(
-        observed["delta_sfr"],
-        observed["delta_oh"],
-        gridsize=55,
-        mincnt=1,
-        cmap="Greys",
-        linewidths=0.0,
-    )
-    axes[0].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[0].axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[0].set_xlim(-x_lim, x_lim)
-    axes[0].set_ylim(-y_lim, y_lim)
-    axes[0].set_title("Observed residual cloud", fontsize=12)
-    axes[0].set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
-    axes[0].set_ylabel(r"$\Delta$[O/H]", fontsize=11)
-    axes[0].grid(True, alpha=0.2)
-    fig.colorbar(hb1, ax=axes[0], label="N")
-
-    if mock is not None:
-        hb2 = axes[1].hexbin(
-            mock["delta_sfr"],
-            mock["delta_oh"],
+        hb1 = axes[0].hexbin(
+            observed["delta_sfr"],
+            observed["delta_oh"],
             gridsize=55,
             mincnt=1,
-            cmap="Oranges",
+            cmap="Greys",
             linewidths=0.0,
         )
-        fig.colorbar(hb2, ax=axes[1], label="N")
-    axes[1].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[1].axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[1].set_xlim(-x_lim, x_lim)
-    axes[1].set_ylim(-y_lim, y_lim)
-    axes[1].set_title("Null cloud (one realization)", fontsize=12)
-    axes[1].set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
-    axes[1].set_ylabel(r"$\Delta$[O/H]", fontsize=11)
-    axes[1].grid(True, alpha=0.2)
+        axes[0].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        axes[0].axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        axes[0].set_xlim(-x_lim, x_lim)
+        axes[0].set_ylim(-y_lim, y_lim)
+        axes[0].set_title("Observed residual cloud", fontsize=12)
+        axes[0].set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
+        axes[0].set_ylabel(r"$\Delta$[O/H]", fontsize=11)
+        axes[0].grid(True, alpha=0.2)
+        fig.colorbar(hb1, ax=axes[0], label="N")
 
-    axes[2].fill_between(
+        if mock is not None:
+            hb2 = axes[1].hexbin(
+                mock["delta_sfr"],
+                mock["delta_oh"],
+                gridsize=55,
+                mincnt=1,
+                cmap="Oranges",
+                linewidths=0.0,
+            )
+            fig.colorbar(hb2, ax=axes[1], label="N")
+        axes[1].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        axes[1].axvline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+        axes[1].set_xlim(-x_lim, x_lim)
+        axes[1].set_ylim(-y_lim, y_lim)
+        axes[1].set_title("Null cloud (one realization)", fontsize=12)
+        axes[1].set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=11)
+        axes[1].set_ylabel(r"$\Delta$[O/H]", fontsize=11)
+        axes[1].grid(True, alpha=0.2)
+
+        rho_ax = axes[2]
+
+    rho_ax.fill_between(
         centers,
         result["null"]["p16_rho"],
         result["null"]["p84_rho"],
@@ -600,14 +608,14 @@ def plot_sec34_style_null_test(result, reference_curve=None):
         alpha=0.25,
         label="Null 16-84%",
     )
-    axes[2].plot(
+    rho_ax.plot(
         centers,
         result["null"]["median_rho"],
         color="tab:orange",
         linewidth=2.0,
         label="Null median",
     )
-    axes[2].plot(
+    rho_ax.plot(
         centers,
         observed["rho"],
         color="black",
@@ -620,7 +628,7 @@ def plot_sec34_style_null_test(result, reference_curve=None):
         ref_rho = np.asarray(reference_curve["rho"], dtype=float)
         ref_valid = np.isfinite(ref_centers) & np.isfinite(ref_rho)
         if np.any(ref_valid):
-            axes[2].plot(
+            rho_ax.plot(
                 ref_centers[ref_valid],
                 ref_rho[ref_valid],
                 color="tab:blue",
@@ -630,12 +638,12 @@ def plot_sec34_style_null_test(result, reference_curve=None):
                 markersize=4,
                 label=reference_curve.get("label", "Reference observed curve"),
             )
-    axes[2].axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
-    axes[2].set_xlabel(r"$\log\,\Sigma_*$ bin center", fontsize=11)
-    axes[2].set_ylabel(r"Spearman $\rho$", fontsize=11)
-    axes[2].set_title(r"Observed vs null $\rho(\log\,\Sigma_*)$", fontsize=12)
-    axes[2].grid(True, alpha=0.25)
-    axes[2].legend(loc="best", fontsize=10)
+    rho_ax.axhline(0.0, color="gray", linestyle="--", linewidth=1.0, alpha=0.6)
+    rho_ax.set_xlabel(r"$\log\,\Sigma_*$ bin center", fontsize=11)
+    rho_ax.set_ylabel(r"Spearman $\rho$", fontsize=11)
+    rho_ax.set_title(r"Observed vs null $\rho(\log\,\Sigma_*)$", fontsize=12)
+    rho_ax.grid(True, alpha=0.25)
+    rho_ax.legend(loc="best", fontsize=10)
 
     if result["config"]["include_mass_error_proxy"]:
         mass_label = (
@@ -645,13 +653,20 @@ def plot_sec34_style_null_test(result, reference_curve=None):
     else:
         mass_label = "Mass distribution fixed; no extra mass-error proxy"
 
-    fig.suptitle(
-        "Null test: independent primary relations + propagated errors\n"
-        # + mass_label
-        ,
-        fontsize=13,
-    )
-    plt.tight_layout()
+    if panel_mode == "rho_only":
+        fig.suptitle(
+            "Null test: observed vs null Spearman $\\rho$",
+            fontsize=13,
+        )
+        plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.94))
+    else:
+        fig.suptitle(
+            "Null test: independent primary relations + propagated errors\n"
+            # + mass_label
+            ,
+            fontsize=13,
+        )
+        plt.tight_layout()
     plt.show()
     return fig
 
@@ -879,6 +894,7 @@ def plot_sec34_galaxy_grid(
     excluded_galaxies=("NGC4383",),
     max_cols=6,
     mask_null_to_observed=True,
+    panel_mode="full",
 ):
     from matplotlib.lines import Line2D
     from matplotlib.patches import Patch
@@ -886,18 +902,32 @@ def plot_sec34_galaxy_grid(
     if galaxy_order is None:
         galaxy_order = list(galaxy_results.keys())
 
-    n_panels_per_galaxy = 3
-    galaxies_per_row = max_cols // n_panels_per_galaxy
-    if galaxies_per_row < 1:
-        raise ValueError("max_cols must be at least 3.")
+    if panel_mode not in {"full", "rho_only"}:
+        raise ValueError(f"Unsupported panel_mode={panel_mode!r}.")
 
-    n_rows = int(np.ceil(len(galaxy_order) / galaxies_per_row))
-    fig, axes = plt.subplots(
-        n_rows,
-        max_cols,
-        figsize=(max_cols * 3.15, n_rows * 3.35),
-        squeeze=False,
-    )
+    if panel_mode == "rho_only":
+        galaxies_per_row = max(1, max_cols // 3)
+        n_cols = galaxies_per_row
+        n_rows = int(np.ceil(len(galaxy_order) / galaxies_per_row))
+        fig, axes = plt.subplots(
+            n_rows,
+            n_cols,
+            figsize=(n_cols * 4.2, n_rows * 3.35),
+            squeeze=False,
+        )
+    else:
+        n_panels_per_galaxy = 3
+        galaxies_per_row = max_cols // n_panels_per_galaxy
+        if galaxies_per_row < 1:
+            raise ValueError("max_cols must be at least 3.")
+
+        n_rows = int(np.ceil(len(galaxy_order) / galaxies_per_row))
+        fig, axes = plt.subplots(
+            n_rows,
+            max_cols,
+            figsize=(max_cols * 3.15, n_rows * 3.35),
+            squeeze=False,
+        )
 
     for ax in axes.ravel():
         ax.set_visible(False)
@@ -908,14 +938,18 @@ def plot_sec34_galaxy_grid(
         result = galaxy_results[galaxy]
         row = idx // galaxies_per_row
         block = idx % galaxies_per_row
-        col0 = block * n_panels_per_galaxy
 
-        ax_obs = axes[row, col0]
-        ax_null = axes[row, col0 + 1]
-        ax_rho = axes[row, col0 + 2]
-        ax_obs.set_visible(True)
-        ax_null.set_visible(True)
-        ax_rho.set_visible(True)
+        if panel_mode == "rho_only":
+            ax_rho = axes[row, block]
+            ax_rho.set_visible(True)
+        else:
+            col0 = block * n_panels_per_galaxy
+            ax_obs = axes[row, col0]
+            ax_null = axes[row, col0 + 1]
+            ax_rho = axes[row, col0 + 2]
+            ax_obs.set_visible(True)
+            ax_null.set_visible(True)
+            ax_rho.set_visible(True)
 
         observed = result["observed"]
         mock = result["null"]["example_cloud"]
@@ -931,64 +965,65 @@ def plot_sec34_galaxy_grid(
             null_p84 = result["null"]["p84_rho"]
             null_median = result["null"]["median_rho"]
 
-        dx_arrays = []
-        dz_arrays = []
-        if observed["delta_sfr"].size > 0 and observed["delta_oh"].size > 0:
-            dx_arrays.append(observed["delta_sfr"])
-            dz_arrays.append(observed["delta_oh"])
-        if mock is not None and mock["delta_sfr"].size > 0 and mock["delta_oh"].size > 0:
-            dx_arrays.append(mock["delta_sfr"])
-            dz_arrays.append(mock["delta_oh"])
+        if panel_mode != "rho_only":
+            dx_arrays = []
+            dz_arrays = []
+            if observed["delta_sfr"].size > 0 and observed["delta_oh"].size > 0:
+                dx_arrays.append(observed["delta_sfr"])
+                dz_arrays.append(observed["delta_oh"])
+            if mock is not None and mock["delta_sfr"].size > 0 and mock["delta_oh"].size > 0:
+                dx_arrays.append(mock["delta_sfr"])
+                dz_arrays.append(mock["delta_oh"])
 
-        if dx_arrays and dz_arrays:
-            x_lim = np.nanpercentile(np.abs(np.concatenate(dx_arrays)), 99.0)
-            y_lim = np.nanpercentile(np.abs(np.concatenate(dz_arrays)), 99.0)
-        else:
-            x_lim = 1.0
-            y_lim = 0.1
-        x_lim = max(float(x_lim), 0.1)
-        y_lim = max(float(y_lim), 0.05)
+            if dx_arrays and dz_arrays:
+                x_lim = np.nanpercentile(np.abs(np.concatenate(dx_arrays)), 99.0)
+                y_lim = np.nanpercentile(np.abs(np.concatenate(dz_arrays)), 99.0)
+            else:
+                x_lim = 1.0
+                y_lim = 0.1
+            x_lim = max(float(x_lim), 0.1)
+            y_lim = max(float(y_lim), 0.05)
 
-        if observed["delta_sfr"].size > 0 and observed["delta_oh"].size > 0:
-            ax_obs.hexbin(
-                observed["delta_sfr"],
-                observed["delta_oh"],
-                gridsize=28,
-                mincnt=1,
-                cmap="Greys",
-                linewidths=0.0,
-            )
-        ax_obs.axhline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
-        ax_obs.axvline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
-        ax_obs.set_xlim(-x_lim, x_lim)
-        ax_obs.set_ylim(-y_lim, y_lim)
-        ax_obs.grid(True, alpha=0.15)
-        if galaxy in excluded:
-            ax_obs.set_title(f"{galaxy} (excluded)\nObserved", fontsize=9)
-        else:
-            ax_obs.set_title(f"{galaxy}\nObserved", fontsize=9)
-        ax_obs.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=7)
-        ax_obs.set_ylabel(r"$\Delta$[O/H]", fontsize=7)
-        ax_obs.tick_params(labelsize=7)
+            if observed["delta_sfr"].size > 0 and observed["delta_oh"].size > 0:
+                ax_obs.hexbin(
+                    observed["delta_sfr"],
+                    observed["delta_oh"],
+                    gridsize=28,
+                    mincnt=1,
+                    cmap="Greys",
+                    linewidths=0.0,
+                )
+            ax_obs.axhline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+            ax_obs.axvline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+            ax_obs.set_xlim(-x_lim, x_lim)
+            ax_obs.set_ylim(-y_lim, y_lim)
+            ax_obs.grid(True, alpha=0.15)
+            if galaxy in excluded:
+                ax_obs.set_title(f"{galaxy} (excluded)\nObserved", fontsize=9)
+            else:
+                ax_obs.set_title(f"{galaxy}\nObserved", fontsize=9)
+            ax_obs.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=7)
+            ax_obs.set_ylabel(r"$\Delta$[O/H]", fontsize=7)
+            ax_obs.tick_params(labelsize=7)
 
-        if mock is not None and mock["delta_sfr"].size > 0 and mock["delta_oh"].size > 0:
-            ax_null.hexbin(
-                mock["delta_sfr"],
-                mock["delta_oh"],
-                gridsize=28,
-                mincnt=1,
-                cmap="Oranges",
-                linewidths=0.0,
-            )
-        ax_null.axhline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
-        ax_null.axvline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
-        ax_null.set_xlim(-x_lim, x_lim)
-        ax_null.set_ylim(-y_lim, y_lim)
-        ax_null.grid(True, alpha=0.15)
-        ax_null.set_title("Null", fontsize=9)
-        ax_null.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=7)
-        ax_null.set_ylabel(r"$\Delta$[O/H]", fontsize=7)
-        ax_null.tick_params(labelsize=7)
+            if mock is not None and mock["delta_sfr"].size > 0 and mock["delta_oh"].size > 0:
+                ax_null.hexbin(
+                    mock["delta_sfr"],
+                    mock["delta_oh"],
+                    gridsize=28,
+                    mincnt=1,
+                    cmap="Oranges",
+                    linewidths=0.0,
+                )
+            ax_null.axhline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+            ax_null.axvline(0.0, color="gray", linestyle="--", linewidth=0.8, alpha=0.5)
+            ax_null.set_xlim(-x_lim, x_lim)
+            ax_null.set_ylim(-y_lim, y_lim)
+            ax_null.grid(True, alpha=0.15)
+            ax_null.set_title("Null", fontsize=9)
+            ax_null.set_xlabel(r"$\Delta \log\,\Sigma_{\rm SFR}$", fontsize=7)
+            ax_null.set_ylabel(r"$\Delta$[O/H]", fontsize=7)
+            ax_null.tick_params(labelsize=7)
 
         ax_rho.fill_between(
             centers,
@@ -1031,6 +1066,10 @@ def plot_sec34_galaxy_grid(
         ax_rho.set_xlabel(r"$\log\,\Sigma_*$ bin center", fontsize=7)
         ax_rho.set_ylabel(r"Spearman $\rho$", fontsize=7)
         ax_rho.tick_params(labelsize=7)
+        if galaxy in excluded:
+            ax_rho.set_title(f"{galaxy} (excluded)", fontsize=9)
+        elif panel_mode == "rho_only":
+            ax_rho.set_title(galaxy, fontsize=9)
         ax_rho.text(
             0.03,
             0.03,
@@ -1042,13 +1081,21 @@ def plot_sec34_galaxy_grid(
             bbox=dict(boxstyle="round", facecolor="white", alpha=0.75, linewidth=0.0),
         )
 
-    legend_handles = [
-        Patch(facecolor="0.5", alpha=0.6, label="Observed cloud"),
-        Patch(facecolor="tab:orange", alpha=0.25, label="Null 16-84%"),
-        Line2D([0], [0], color="tab:orange", linewidth=1.8, label="Null median"),
-        Line2D([0], [0], color="black", linewidth=1.8, label="Galaxy observed"),
-        Line2D([0], [0], color="black", linewidth=1.8, linestyle="--", label="Excluded galaxy observed"),
-    ]
+    if panel_mode == "rho_only":
+        legend_handles = [
+            Patch(facecolor="tab:orange", alpha=0.25, label="Null 16-84%"),
+            Line2D([0], [0], color="tab:orange", linewidth=1.8, label="Null median"),
+            Line2D([0], [0], color="black", linewidth=1.8, label="Galaxy observed"),
+            Line2D([0], [0], color="black", linewidth=1.8, linestyle="--", label="Excluded galaxy observed"),
+        ]
+    else:
+        legend_handles = [
+            Patch(facecolor="0.5", alpha=0.6, label="Observed cloud"),
+            Patch(facecolor="tab:orange", alpha=0.25, label="Null 16-84%"),
+            Line2D([0], [0], color="tab:orange", linewidth=1.8, label="Null median"),
+            Line2D([0], [0], color="black", linewidth=1.8, label="Galaxy observed"),
+            Line2D([0], [0], color="black", linewidth=1.8, linestyle="--", label="Excluded galaxy observed"),
+        ]
     if combined_curve is not None:
         legend_handles.append(
             Line2D(
@@ -1069,12 +1116,20 @@ def plot_sec34_galaxy_grid(
         fontsize=9,
         bbox_to_anchor=(0.5, 0.995),
     )
-    fig.suptitle(
-        "Per-galaxy null tests\nObserved residual cloud, one null realization, and galaxy-specific rho trend",
-        fontsize=14,
-        y=1.015,
-    )
-    plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.965])
+    if panel_mode == "rho_only":
+        fig.suptitle(
+            "Per-galaxy null tests\nGalaxy-specific Spearman $\\rho$ trends",
+            fontsize=14,
+            y=1.015,
+        )
+        plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.955])
+    else:
+        fig.suptitle(
+            "Per-galaxy null tests\nObserved residual cloud, one null realization, and galaxy-specific rho trend",
+            fontsize=14,
+            y=1.015,
+        )
+        plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.965])
     plt.show()
     return fig
 
