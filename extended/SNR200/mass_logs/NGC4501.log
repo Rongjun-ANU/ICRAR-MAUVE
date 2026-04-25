@@ -15,8 +15,8 @@ Cube         : /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_DATACUBE_FIN
 Binning map  : /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_spatial_binning_maps.fits
 SFH map      : /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_sfh_maps.fits
 Weights      : /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_sfh_weights.fits
-Photometry   : BaSTI+Chabrier.dat
-Output       : NGC4501_v3tk_SNR200_spatial_binning_maps_extended.fits 
+Photometry   : /arc/home/RongjunHuang/ICRAR/extended/SNR200/BaSTI+Chabrier.dat
+Output       : NGC4501_SPATIAL_BINNING_maps_extended.fits 
 
 Thread control: forcing 16 BLAS/OpenMP threads
 Vectorized processing row-block size: 16
@@ -39,6 +39,12 @@ No.    Name      Ver    Type      Cards   Dimensions   Format
   2  GRID          1 BinTableHDU     35   477R x 3C   [D, D, D]   
 None
 Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
+Raw SFH weight-sum [min, p16, p50, p84, max] = [1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00]
+Normalized SFH weight-sum check [min, max] = [1.000000, 1.000000]
+Composite ML_R candidates [median] (light_r, light_norm_to_r, light_v_to_r, mass_harmonic) = [2.2519, 2.3417, 2.3846, 0.6872]
+Template-library LIGHT normalization for ML_R: /arc/home/RongjunHuang/ICRAR/extended/SNR200/MILES_safe (LMIN=4800.0, LMAX=7000.0 Angstrom)
+Selected SFH-weight interpretation for ML_R: light_norm_to_r
+BINID range check for ML_R mapping: max BINID=3119, n_weight_rows=3120
 Loading: /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
 Using STAT variance extension for photometric error propagation.
 Cube dimensions (nz, ny, nx): 3761, 1236, 1205
@@ -57,113 +63,117 @@ Using contiguous filter-support slice: [641:3441] (2800 bins).
 Photometric propagation method: exact discrete first-order Jacobian through speclite AB-maggies operator (support bins=2800/3761).
 STAT assumption: independent spectral-bin variances (no covariance provided by cube).
 Computing AB maggies with vectorized blocks... (estimated support-slice stream volume: 31.07 GiB, DATA+STAT)
-Processed rows 0:16/1236 (  1.3%, block 1/78, block 1416.59s, elapsed 23.61 min, ETA 1817.96 min)
-Processed rows 16:32/1236 (  2.6%, block 2/78, block 0.81s, elapsed 23.62 min, ETA 897.69 min)
-Processed rows 32:48/1236 (  3.9%, block 3/78, block 0.74s, elapsed 23.64 min, ETA 590.89 min)
-Processed rows 48:64/1236 (  5.2%, block 4/78, block 0.74s, elapsed 23.65 min, ETA 437.49 min)
-Processed rows 64:80/1236 (  6.5%, block 5/78, block 0.76s, elapsed 23.66 min, ETA 345.45 min)
-Processed rows 80:96/1236 (  7.8%, block 6/78, block 0.74s, elapsed 23.67 min, ETA 284.08 min)
-Processed rows 96:112/1236 (  9.1%, block 7/78, block 0.81s, elapsed 23.69 min, ETA 240.25 min)
-Processed rows 112:128/1236 ( 10.4%, block 8/78, block 0.74s, elapsed 23.70 min, ETA 207.37 min)
-Processed rows 128:144/1236 ( 11.7%, block 9/78, block 0.75s, elapsed 23.71 min, ETA 181.79 min)
-Processed rows 144:160/1236 ( 12.9%, block 10/78, block 0.78s, elapsed 23.72 min, ETA 161.33 min)
-Processed rows 160:176/1236 ( 14.2%, block 11/78, block 0.77s, elapsed 23.74 min, ETA 144.58 min)
-Processed rows 176:192/1236 ( 15.5%, block 12/78, block 0.76s, elapsed 23.75 min, ETA 130.63 min)
-Processed rows 192:208/1236 ( 16.8%, block 13/78, block 0.72s, elapsed 23.76 min, ETA 118.81 min)
-Processed rows 208:224/1236 ( 18.1%, block 14/78, block 0.73s, elapsed 23.77 min, ETA 108.68 min)
-Processed rows 224:240/1236 ( 19.4%, block 15/78, block 0.73s, elapsed 23.79 min, ETA 99.90 min)
-Processed rows 240:256/1236 ( 20.7%, block 16/78, block 0.76s, elapsed 23.80 min, ETA 92.22 min)
-Processed rows 256:272/1236 ( 22.0%, block 17/78, block 0.76s, elapsed 23.81 min, ETA 85.44 min)
-Processed rows 272:288/1236 ( 23.3%, block 18/78, block 0.72s, elapsed 23.82 min, ETA 79.41 min)
-Processed rows 288:304/1236 ( 24.6%, block 19/78, block 0.73s, elapsed 23.84 min, ETA 74.02 min)
-Processed rows 304:320/1236 ( 25.9%, block 20/78, block 0.74s, elapsed 23.85 min, ETA 69.16 min)
-Processed rows 320:336/1236 ( 27.2%, block 21/78, block 0.76s, elapsed 23.86 min, ETA 64.77 min)
-Processed rows 336:352/1236 ( 28.5%, block 22/78, block 0.76s, elapsed 23.87 min, ETA 60.77 min)
-Processed rows 352:368/1236 ( 29.8%, block 23/78, block 0.73s, elapsed 23.89 min, ETA 57.12 min)
-Processed rows 368:384/1236 ( 31.1%, block 24/78, block 0.73s, elapsed 23.90 min, ETA 53.77 min)
-Processed rows 384:400/1236 ( 32.4%, block 25/78, block 0.76s, elapsed 23.91 min, ETA 50.69 min)
-Processed rows 400:416/1236 ( 33.7%, block 26/78, block 0.76s, elapsed 23.92 min, ETA 47.85 min)
-Processed rows 416:432/1236 ( 35.0%, block 27/78, block 0.77s, elapsed 23.94 min, ETA 45.21 min)
-Processed rows 432:448/1236 ( 36.2%, block 28/78, block 1.25s, elapsed 23.96 min, ETA 42.78 min)
-Processed rows 448:464/1236 ( 37.5%, block 29/78, block 0.73s, elapsed 23.97 min, ETA 40.50 min)
-Processed rows 464:480/1236 ( 38.8%, block 30/78, block 0.77s, elapsed 23.98 min, ETA 38.37 min)
-Processed rows 480:496/1236 ( 40.1%, block 31/78, block 0.78s, elapsed 24.00 min, ETA 36.38 min)
-Processed rows 496:512/1236 ( 41.4%, block 32/78, block 0.76s, elapsed 24.01 min, ETA 34.51 min)
-Processed rows 512:528/1236 ( 42.7%, block 33/78, block 0.73s, elapsed 24.02 min, ETA 32.75 min)
-Processed rows 528:544/1236 ( 44.0%, block 34/78, block 0.73s, elapsed 24.03 min, ETA 31.10 min)
-Processed rows 544:560/1236 ( 45.3%, block 35/78, block 0.76s, elapsed 24.04 min, ETA 29.54 min)
-Processed rows 560:576/1236 ( 46.6%, block 36/78, block 0.77s, elapsed 24.06 min, ETA 28.07 min)
-Processed rows 576:592/1236 ( 47.9%, block 37/78, block 0.76s, elapsed 24.07 min, ETA 26.67 min)
-Processed rows 592:608/1236 ( 49.2%, block 38/78, block 0.72s, elapsed 24.08 min, ETA 25.35 min)
-Processed rows 608:624/1236 ( 50.5%, block 39/78, block 0.72s, elapsed 24.09 min, ETA 24.09 min)
-Processed rows 624:640/1236 ( 51.8%, block 40/78, block 0.77s, elapsed 24.11 min, ETA 22.90 min)
-Processed rows 640:656/1236 ( 53.1%, block 41/78, block 0.72s, elapsed 24.12 min, ETA 21.77 min)
-Processed rows 656:672/1236 ( 54.4%, block 42/78, block 0.77s, elapsed 24.13 min, ETA 20.68 min)
-Processed rows 672:688/1236 ( 55.7%, block 43/78, block 0.73s, elapsed 24.14 min, ETA 19.65 min)
-Processed rows 688:704/1236 ( 57.0%, block 44/78, block 0.72s, elapsed 24.16 min, ETA 18.67 min)
-Processed rows 704:720/1236 ( 58.3%, block 45/78, block 0.76s, elapsed 24.17 min, ETA 17.72 min)
-Processed rows 720:736/1236 ( 59.5%, block 46/78, block 0.76s, elapsed 24.18 min, ETA 16.82 min)
-Processed rows 736:752/1236 ( 60.8%, block 47/78, block 0.76s, elapsed 24.19 min, ETA 15.96 min)
-Processed rows 752:768/1236 ( 62.1%, block 48/78, block 0.73s, elapsed 24.21 min, ETA 15.13 min)
-Processed rows 768:784/1236 ( 63.4%, block 49/78, block 0.74s, elapsed 24.22 min, ETA 14.33 min)
-Processed rows 784:800/1236 ( 64.7%, block 50/78, block 0.77s, elapsed 24.23 min, ETA 13.57 min)
-Processed rows 800:816/1236 ( 66.0%, block 51/78, block 0.75s, elapsed 24.24 min, ETA 12.84 min)
-Processed rows 816:832/1236 ( 67.3%, block 52/78, block 0.76s, elapsed 24.26 min, ETA 12.13 min)
-Processed rows 832:848/1236 ( 68.6%, block 53/78, block 0.77s, elapsed 24.27 min, ETA 11.45 min)
-Processed rows 848:864/1236 ( 69.9%, block 54/78, block 0.73s, elapsed 24.28 min, ETA 10.79 min)
-Processed rows 864:880/1236 ( 71.2%, block 55/78, block 0.76s, elapsed 24.29 min, ETA 10.16 min)
-Processed rows 880:896/1236 ( 72.5%, block 56/78, block 0.77s, elapsed 24.31 min, ETA 9.55 min)
-Processed rows 896:912/1236 ( 73.8%, block 57/78, block 0.76s, elapsed 24.32 min, ETA 8.96 min)
-Processed rows 912:928/1236 ( 75.1%, block 58/78, block 0.73s, elapsed 24.33 min, ETA 8.39 min)
-Processed rows 928:944/1236 ( 76.4%, block 59/78, block 0.73s, elapsed 24.34 min, ETA 7.84 min)
-Processed rows 944:960/1236 ( 77.7%, block 60/78, block 0.76s, elapsed 24.36 min, ETA 7.31 min)
-Processed rows 960:976/1236 ( 79.0%, block 61/78, block 0.76s, elapsed 24.37 min, ETA 6.79 min)
-Processed rows 976:992/1236 ( 80.3%, block 62/78, block 0.77s, elapsed 24.38 min, ETA 6.29 min)
-Processed rows 992:1008/1236 ( 81.6%, block 63/78, block 0.73s, elapsed 24.39 min, ETA 5.81 min)
-Processed rows 1008:1024/1236 ( 82.8%, block 64/78, block 0.73s, elapsed 24.41 min, ETA 5.34 min)
-Processed rows 1024:1040/1236 ( 84.1%, block 65/78, block 0.76s, elapsed 24.42 min, ETA 4.88 min)
-Processed rows 1040:1056/1236 ( 85.4%, block 66/78, block 0.77s, elapsed 24.43 min, ETA 4.44 min)
-Processed rows 1056:1072/1236 ( 86.7%, block 67/78, block 0.74s, elapsed 24.44 min, ETA 4.01 min)
-Processed rows 1072:1088/1236 ( 88.0%, block 68/78, block 0.72s, elapsed 24.46 min, ETA 3.60 min)
-Processed rows 1088:1104/1236 ( 89.3%, block 69/78, block 0.72s, elapsed 24.47 min, ETA 3.19 min)
-Processed rows 1104:1120/1236 ( 90.6%, block 70/78, block 0.76s, elapsed 24.48 min, ETA 2.80 min)
-Processed rows 1120:1136/1236 ( 91.9%, block 71/78, block 0.77s, elapsed 24.49 min, ETA 2.41 min)
-Processed rows 1136:1152/1236 ( 93.2%, block 72/78, block 0.75s, elapsed 24.51 min, ETA 2.04 min)
-Processed rows 1152:1168/1236 ( 94.5%, block 73/78, block 0.74s, elapsed 24.52 min, ETA 1.68 min)
-Processed rows 1168:1184/1236 ( 95.8%, block 74/78, block 0.75s, elapsed 24.53 min, ETA 1.33 min)
-Processed rows 1184:1200/1236 ( 97.1%, block 75/78, block 0.78s, elapsed 24.54 min, ETA 0.98 min)
-Processed rows 1200:1216/1236 ( 98.4%, block 76/78, block 0.78s, elapsed 24.56 min, ETA 0.65 min)
-Processed rows 1216:1232/1236 ( 99.7%, block 77/78, block 0.78s, elapsed 24.57 min, ETA 0.32 min)
-Processed rows 1232:1236/1236 (100.0%, block 78/78, block 0.20s, elapsed 24.57 min, ETA 0.00 min)
-AB maggies vectorized pass completed in 24.57 min
-Estimated effective streaming throughput: 21.6 MiB/s over support-slice read volume
+Processed rows 0:16/1236 (  1.3%, block 1/78, block 1308.38s, elapsed 21.81 min, ETA 1679.09 min)
+Processed rows 16:32/1236 (  2.6%, block 2/78, block 0.99s, elapsed 21.82 min, ETA 829.27 min)
+Processed rows 32:48/1236 (  3.9%, block 3/78, block 0.94s, elapsed 21.84 min, ETA 545.96 min)
+Processed rows 48:64/1236 (  5.2%, block 4/78, block 0.91s, elapsed 21.85 min, ETA 404.29 min)
+Processed rows 64:80/1236 (  6.5%, block 5/78, block 0.94s, elapsed 21.87 min, ETA 319.29 min)
+Processed rows 80:96/1236 (  7.8%, block 6/78, block 0.93s, elapsed 21.88 min, ETA 262.62 min)
+Processed rows 96:112/1236 (  9.1%, block 7/78, block 0.94s, elapsed 21.90 min, ETA 222.13 min)
+Processed rows 112:128/1236 ( 10.4%, block 8/78, block 0.94s, elapsed 21.92 min, ETA 191.77 min)
+Processed rows 128:144/1236 ( 11.7%, block 9/78, block 0.94s, elapsed 21.93 min, ETA 168.14 min)
+Processed rows 144:160/1236 ( 12.9%, block 10/78, block 0.93s, elapsed 21.95 min, ETA 149.24 min)
+Processed rows 160:176/1236 ( 14.2%, block 11/78, block 0.96s, elapsed 21.96 min, ETA 133.78 min)
+Processed rows 176:192/1236 ( 15.5%, block 12/78, block 0.93s, elapsed 21.98 min, ETA 120.88 min)
+Processed rows 192:208/1236 ( 16.8%, block 13/78, block 0.96s, elapsed 21.99 min, ETA 109.97 min)
+Processed rows 208:224/1236 ( 18.1%, block 14/78, block 0.96s, elapsed 22.01 min, ETA 100.62 min)
+Processed rows 224:240/1236 ( 19.4%, block 15/78, block 0.95s, elapsed 22.03 min, ETA 92.51 min)
+Processed rows 240:256/1236 ( 20.7%, block 16/78, block 0.98s, elapsed 22.04 min, ETA 85.42 min)
+Processed rows 256:272/1236 ( 22.0%, block 17/78, block 0.99s, elapsed 22.06 min, ETA 79.15 min)
+Processed rows 272:288/1236 ( 23.3%, block 18/78, block 0.98s, elapsed 22.08 min, ETA 73.58 min)
+Processed rows 288:304/1236 ( 24.6%, block 19/78, block 0.96s, elapsed 22.09 min, ETA 68.60 min)
+Processed rows 304:320/1236 ( 25.9%, block 20/78, block 0.97s, elapsed 22.11 min, ETA 64.11 min)
+Processed rows 320:336/1236 ( 27.2%, block 21/78, block 0.98s, elapsed 22.12 min, ETA 60.05 min)
+Processed rows 336:352/1236 ( 28.5%, block 22/78, block 1.00s, elapsed 22.14 min, ETA 56.36 min)
+Processed rows 352:368/1236 ( 29.8%, block 23/78, block 0.97s, elapsed 22.16 min, ETA 52.98 min)
+Processed rows 368:384/1236 ( 31.1%, block 24/78, block 0.95s, elapsed 22.17 min, ETA 49.89 min)
+Processed rows 384:400/1236 ( 32.4%, block 25/78, block 0.97s, elapsed 22.19 min, ETA 47.04 min)
+Processed rows 400:416/1236 ( 33.7%, block 26/78, block 0.98s, elapsed 22.21 min, ETA 44.41 min)
+Processed rows 416:432/1236 ( 35.0%, block 27/78, block 0.99s, elapsed 22.22 min, ETA 41.97 min)
+Processed rows 432:448/1236 ( 36.2%, block 28/78, block 1.60s, elapsed 22.25 min, ETA 39.73 min)
+Processed rows 448:464/1236 ( 37.5%, block 29/78, block 1.12s, elapsed 22.27 min, ETA 37.62 min)
+Processed rows 464:480/1236 ( 38.8%, block 30/78, block 1.16s, elapsed 22.29 min, ETA 35.66 min)
+Processed rows 480:496/1236 ( 40.1%, block 31/78, block 1.16s, elapsed 22.31 min, ETA 33.82 min)
+Processed rows 496:512/1236 ( 41.4%, block 32/78, block 1.13s, elapsed 22.32 min, ETA 32.09 min)
+Processed rows 512:528/1236 ( 42.7%, block 33/78, block 1.12s, elapsed 22.34 min, ETA 30.47 min)
+Processed rows 528:544/1236 ( 44.0%, block 34/78, block 1.14s, elapsed 22.36 min, ETA 28.94 min)
+Processed rows 544:560/1236 ( 45.3%, block 35/78, block 1.12s, elapsed 22.38 min, ETA 27.50 min)
+Processed rows 560:576/1236 ( 46.6%, block 36/78, block 1.11s, elapsed 22.40 min, ETA 26.13 min)
+Processed rows 576:592/1236 ( 47.9%, block 37/78, block 1.16s, elapsed 22.42 min, ETA 24.84 min)
+Processed rows 592:608/1236 ( 49.2%, block 38/78, block 1.12s, elapsed 22.44 min, ETA 23.62 min)
+Processed rows 608:624/1236 ( 50.5%, block 39/78, block 1.12s, elapsed 22.46 min, ETA 22.46 min)
+Processed rows 624:640/1236 ( 51.8%, block 40/78, block 1.16s, elapsed 22.48 min, ETA 21.35 min)
+Processed rows 640:656/1236 ( 53.1%, block 41/78, block 1.12s, elapsed 22.49 min, ETA 20.30 min)
+Processed rows 656:672/1236 ( 54.4%, block 42/78, block 1.12s, elapsed 22.51 min, ETA 19.30 min)
+Processed rows 672:688/1236 ( 55.7%, block 43/78, block 1.11s, elapsed 22.53 min, ETA 18.34 min)
+Processed rows 688:704/1236 ( 57.0%, block 44/78, block 1.13s, elapsed 22.55 min, ETA 17.42 min)
+Processed rows 704:720/1236 ( 58.3%, block 45/78, block 1.09s, elapsed 22.57 min, ETA 16.55 min)
+Processed rows 720:736/1236 ( 59.5%, block 46/78, block 1.06s, elapsed 22.59 min, ETA 15.71 min)
+Processed rows 736:752/1236 ( 60.8%, block 47/78, block 1.12s, elapsed 22.60 min, ETA 14.91 min)
+Processed rows 752:768/1236 ( 62.1%, block 48/78, block 1.10s, elapsed 22.62 min, ETA 14.14 min)
+Processed rows 768:784/1236 ( 63.4%, block 49/78, block 1.12s, elapsed 22.64 min, ETA 13.40 min)
+Processed rows 784:800/1236 ( 64.7%, block 50/78, block 1.10s, elapsed 22.66 min, ETA 12.69 min)
+Processed rows 800:816/1236 ( 66.0%, block 51/78, block 1.08s, elapsed 22.68 min, ETA 12.01 min)
+Processed rows 816:832/1236 ( 67.3%, block 52/78, block 1.13s, elapsed 22.70 min, ETA 11.35 min)
+Processed rows 832:848/1236 ( 68.6%, block 53/78, block 1.12s, elapsed 22.71 min, ETA 10.71 min)
+Processed rows 848:864/1236 ( 69.9%, block 54/78, block 1.11s, elapsed 22.73 min, ETA 10.10 min)
+Processed rows 864:880/1236 ( 71.2%, block 55/78, block 1.13s, elapsed 22.75 min, ETA 9.51 min)
+Processed rows 880:896/1236 ( 72.5%, block 56/78, block 1.14s, elapsed 22.77 min, ETA 8.95 min)
+Processed rows 896:912/1236 ( 73.8%, block 57/78, block 1.08s, elapsed 22.79 min, ETA 8.40 min)
+Processed rows 912:928/1236 ( 75.1%, block 58/78, block 1.12s, elapsed 22.81 min, ETA 7.86 min)
+Processed rows 928:944/1236 ( 76.4%, block 59/78, block 1.14s, elapsed 22.83 min, ETA 7.35 min)
+Processed rows 944:960/1236 ( 77.7%, block 60/78, block 1.10s, elapsed 22.85 min, ETA 6.85 min)
+Processed rows 960:976/1236 ( 79.0%, block 61/78, block 1.11s, elapsed 22.86 min, ETA 6.37 min)
+Processed rows 976:992/1236 ( 80.3%, block 62/78, block 1.08s, elapsed 22.88 min, ETA 5.90 min)
+Processed rows 992:1008/1236 ( 81.6%, block 63/78, block 1.11s, elapsed 22.90 min, ETA 5.45 min)
+Processed rows 1008:1024/1236 ( 82.8%, block 64/78, block 1.07s, elapsed 22.92 min, ETA 5.01 min)
+Processed rows 1024:1040/1236 ( 84.1%, block 65/78, block 1.09s, elapsed 22.94 min, ETA 4.59 min)
+Processed rows 1040:1056/1236 ( 85.4%, block 66/78, block 1.11s, elapsed 22.95 min, ETA 4.17 min)
+Processed rows 1056:1072/1236 ( 86.7%, block 67/78, block 1.09s, elapsed 22.97 min, ETA 3.77 min)
+Processed rows 1072:1088/1236 ( 88.0%, block 68/78, block 1.11s, elapsed 22.99 min, ETA 3.38 min)
+Processed rows 1088:1104/1236 ( 89.3%, block 69/78, block 1.07s, elapsed 23.01 min, ETA 3.00 min)
+Processed rows 1104:1120/1236 ( 90.6%, block 70/78, block 1.08s, elapsed 23.03 min, ETA 2.63 min)
+Processed rows 1120:1136/1236 ( 91.9%, block 71/78, block 1.09s, elapsed 23.04 min, ETA 2.27 min)
+Processed rows 1136:1152/1236 ( 93.2%, block 72/78, block 1.09s, elapsed 23.06 min, ETA 1.92 min)
+Processed rows 1152:1168/1236 ( 94.5%, block 73/78, block 1.03s, elapsed 23.08 min, ETA 1.58 min)
+Processed rows 1168:1184/1236 ( 95.8%, block 74/78, block 1.09s, elapsed 23.10 min, ETA 1.25 min)
+Processed rows 1184:1200/1236 ( 97.1%, block 75/78, block 1.09s, elapsed 23.12 min, ETA 0.92 min)
+Processed rows 1200:1216/1236 ( 98.4%, block 76/78, block 1.09s, elapsed 23.13 min, ETA 0.61 min)
+Processed rows 1216:1232/1236 ( 99.7%, block 77/78, block 1.12s, elapsed 23.15 min, ETA 0.30 min)
+Processed rows 1232:1236/1236 (100.0%, block 78/78, block 0.30s, elapsed 23.16 min, ETA 0.00 min)
+AB maggies vectorized pass completed in 23.16 min
+Estimated effective streaming throughput: 22.9 MiB/s over support-slice read volume
+Filter-support fraction [p16, p50, p84] = [0.000000, 0.000000, 1.000000]
+Strict all-finite support pixels vs accepted relaxed-support pixels = 665,913 vs 666,634 (threshold=0.9900)
 Finite binned flux-error bins: 3120/3120 (STAT=3120, sample=3120)
 Finite binned magnitude-error bins: 3120/3120
-Median binned relative flux error : 1.1893e-04
+Median binned relative flux error : 1.1895e-04
 Binned magnitude error min/max   : 1.0471e-04 .. 1.8113e-04 mag
-Binned magnitude error [p16, p50, p84] = [1.2100e-04, 1.2912e-04, 1.4006e-04] mag
+Binned magnitude error [p16, p50, p84] = [1.2100e-04, 1.2915e-04, 1.4006e-04] mag
 Warning: No EBV error extension found; EBV uncertainty term will be omitted.
 R-band magnitude calculation completed!
 Filter used: bessell-R
 Magnitude range: 18.00 to 25.43
 Distance modulus: 31.09 mag
-Total R-band magnitude   : 9.365 mag (AB)
-Total R-band luminosity  : 10.753 log10(L☉)
-Total stellar mass (R)   : 11.101 log10(M☉)
-Median LOGMSTAR_ERR      : 5.3934e-05 dex
-LOGMSTAR_ERR [p16, p50, p84] = [5.0164e-05, 5.3934e-05, 6.0412e-05] dex
+Total R-band magnitude (uncorrected) : 9.364 mag (AB)
+Total R-band magnitude (corrected)   : 8.814 mag (AB)
+Total R-band luminosity              : 10.753 log10(L☉)
+Total stellar mass (R)               : 11.115 log10(M☉)
+Integrated stellar M/L_R             : 2.3007 M☉/L☉
+Median LOGMSTAR_ERR      : 5.3961e-05 dex
+LOGMSTAR_ERR [p16, p50, p84] = [5.0170e-05, 5.3961e-05, 6.0528e-05] dex
 LOGMSTAR_ERR min/max     : 4.1883e-05 .. 7.2453e-05 dex
 Error budget note (LOGMSTAR): includes photometric+extinction propagation; excludes M/L model, distance, and inclination/area systematic uncertainties.
-Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_spatial_binning_maps_extended.fits
-M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_spatial_binning_maps_extended.fits
-Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_spatial_binning_maps_extended.fits
+Saved extended file to /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_SPATIAL_BINNING_maps_extended.fits
+M/L_R layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_SPATIAL_BINNING_maps_extended.fits
+Stellar-mass layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_SPATIAL_BINNING_maps_extended.fits
 Galaxy NGC4501 inclination: 65.0° (cos θ = 0.423)
 Inclination correction ENABLED: applying b/a = 0.460 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
-Median LOGMASS_SURFACE_DENSITY_ERR: 5.3934e-05 dex
-LOGMASS_SURFACE_DENSITY_ERR [p16, p50, p84] = [5.0164e-05, 5.3934e-05, 6.0412e-05] dex
+Median LOGMASS_SURFACE_DENSITY_ERR: 5.3961e-05 dex
+LOGMASS_SURFACE_DENSITY_ERR [p16, p50, p84] = [5.0170e-05, 5.3961e-05, 6.0528e-05] dex
 LOGMASS_SURFACE_DENSITY_ERR min/max: 4.1883e-05 .. 7.2453e-05 dex
 Consistency check |LOGMSTAR_ERR - LOGMASS_SURFACE_DENSITY_ERR| median=6.7763e-21 dex, max=2.7105e-20 dex
-Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_spatial_binning_maps_extended.fits
-r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_spatial_binning_maps_extended.fits
-r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_v3tk_SNR200_spatial_binning_maps_extended.fits
-✅  NGC4501 finished in 24m51s
+Stellar mass surface density layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_SPATIAL_BINNING_maps_extended.fits
+r-band magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_SPATIAL_BINNING_maps_extended.fits
+r-band uncorrected magnitude layer saved ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4501_SPATIAL_BINNING_maps_extended.fits
+✅  NGC4501 finished in 23m24s
