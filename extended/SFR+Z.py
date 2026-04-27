@@ -151,6 +151,26 @@ Changes (2026-04-14)
     as the total-region block: sum masked raw line maps first, then apply one
     integrated Balmer-decrement correction, then derive metallicities from
     integrated corrected line fluxes.
+
+Changes (2026-04-26)
+-----------------------
+* Added flexible input filename resolution for gas, kinematic, and extended
+    binning products, including upper/lower-case variants and `_bin_maps`
+    aliases, while preserving normalized `_extended` output naming.
+* Propagated emission-line flux uncertainties through the Balmer-decrement dust
+    correction before BPT and C20 metallicity error calculations.
+* Fixed C20 metallicity-error masking, included the configured calibration
+    fitting scatter in C20 errors, and corrected RS32 error propagation in
+    linear-ratio space.
+* Fixed non-log classified SFR maps to store inclination-corrected SFR surface
+    density, matching their FITS units.
+
+Changes (2026-04-27)
+-----------------------
+* Non-cube product inputs are now resolved as a matched optional-keyword group,
+    e.g. `{galaxy}_{keyword}_gas_BIN_maps.fits`,
+    `{galaxy}_{keyword}_SPATIAL_BINNING_maps_extended.fits`, and
+    `{galaxy}_{keyword}_KIN_maps_extended.fits`.
 """
 
 # ------------------------------------------------------------------
@@ -198,8 +218,38 @@ def _unique_paths(*paths: Path | None) -> list[Path]:
     return unique
 
 
+def _has_glob_chars(path: Path) -> bool:
+    return any(char in str(path) for char in "*?[")
+
+
+def _candidate_paths(*paths: Path | None) -> list[Path]:
+    candidates: list[Path] = []
+    seen: set[str] = set()
+
+    for path in paths:
+        if path is None:
+            continue
+
+        expanded = path.expanduser()
+        if _has_glob_chars(expanded):
+            path_candidates = sorted(
+                expanded.parent.glob(expanded.name), key=lambda candidate: str(candidate)
+            )
+        else:
+            path_candidates = [expanded]
+
+        for candidate in path_candidates:
+            resolved = candidate.resolve()
+            if str(resolved) in seen:
+                continue
+            seen.add(str(resolved))
+            candidates.append(resolved)
+
+    return candidates
+
+
 def find_first_existing(*paths: Path | None) -> Path | None:
-    for candidate in _unique_paths(*paths):
+    for candidate in _candidate_paths(*paths):
         if candidate.exists():
             return candidate
     return None
@@ -225,6 +275,135 @@ def build_input_candidates(
         candidates.append(root / flat_name)
 
     return candidates
+
+
+def build_named_input_candidates(
+    root: Path | None, relative_dir: Path, names: list[str]
+) -> list[Path]:
+    candidates: list[Path] = []
+    for name in names:
+        candidates.extend(build_input_candidates(root, relative_dir / name, name))
+    return candidates
+
+
+def _input_search_dirs(root: Path | None, relative_dir: Path) -> list[Path]:
+    if root is None:
+        return []
+    return _unique_paths(root / relative_dir, root)
+
+
+def _keyword_sort_key(keyword: str) -> tuple[bool, str, str]:
+    return (keyword != "", keyword.lower(), keyword)
+
+
+def _format_keyword(keyword: str) -> str:
+    return "<none>" if keyword == "" else keyword
+
+
+def extract_shared_keyword(filename: str, galaxy_name: str, suffixes: list[str]) -> str | None:
+    prefix = f"{galaxy_name}_"
+    if not filename.startswith(prefix):
+        return None
+
+    remainder = filename[len(prefix):]
+    for suffix in sorted(suffixes, key=len, reverse=True):
+        if remainder == suffix:
+            return ""
+        marker = f"_{suffix}"
+        if remainder.endswith(marker):
+            return remainder[: -len(marker)]
+
+    return None
+
+
+def collect_keyworded_input_paths(
+    root: Path | None,
+    fallback_root: Path | None,
+    relative_dir: Path,
+    galaxy_name: str,
+    suffixes: list[str],
+) -> dict[str, Path]:
+    matches: dict[str, Path] = {}
+
+    for search_root in (root, fallback_root):
+        for search_dir in _input_search_dirs(search_root, relative_dir):
+            for suffix in suffixes:
+                for pattern in (f"{galaxy_name}_{suffix}", f"{galaxy_name}_*_{suffix}"):
+                    for candidate in sorted(search_dir.glob(pattern), key=lambda path: str(path)):
+                        if not candidate.exists() or candidate.is_dir():
+                            continue
+
+                        keyword = extract_shared_keyword(
+                            candidate.name, galaxy_name, suffixes
+                        )
+                        if keyword is None or keyword in matches:
+                            continue
+                        matches[keyword] = candidate.resolve()
+
+    return matches
+
+
+def find_keyworded_input_path(
+    root: Path | None,
+    fallback_root: Path | None,
+    relative_dir: Path,
+    galaxy_name: str,
+    suffixes: list[str],
+    keyword: str,
+) -> Path | None:
+    return collect_keyworded_input_paths(
+        root, fallback_root, relative_dir, galaxy_name, suffixes
+    ).get(keyword)
+
+
+def resolve_keyworded_input_group(
+    group_label: str,
+    root: Path | None,
+    fallback_root: Path | None,
+    relative_dir: Path,
+    galaxy_name: str,
+    specs: dict[str, list[str]],
+) -> tuple[str, dict[str, Path]]:
+    matches_by_label = {
+        label: collect_keyworded_input_paths(
+            root, fallback_root, relative_dir, galaxy_name, suffixes
+        )
+        for label, suffixes in specs.items()
+    }
+
+    keyword_sets = [set(matches) for matches in matches_by_label.values()]
+    common_keywords = set.intersection(*keyword_sets) if keyword_sets else set()
+    if not common_keywords:
+        found = []
+        for label, matches in matches_by_label.items():
+            if matches:
+                keywords = ", ".join(
+                    _format_keyword(keyword)
+                    for keyword in sorted(matches, key=_keyword_sort_key)
+                )
+            else:
+                keywords = "none"
+            found.append(f"  - {label}: {keywords}")
+
+        raise FileNotFoundError(
+            f"Could not find {group_label} with a shared optional keyword.\n"
+            f"Each required product input must use the same text between "
+            f"'{galaxy_name}_' and its product suffix.\n"
+            "Found keyword groups:\n" + "\n".join(found)
+        )
+
+    chosen_keyword = sorted(common_keywords, key=_keyword_sort_key)[0]
+    return chosen_keyword, {
+        label: matches_by_label[label][chosen_keyword] for label in specs
+    }
+
+
+def build_extended_output_path(input_path: Path) -> Path:
+    suffix = input_path.suffix or ".fits"
+    stem = input_path.name[: -len(input_path.suffix)] if input_path.suffix else input_path.name
+    if stem.endswith("_extended"):
+        return Path(f"{stem}{suffix}")
+    return Path(f"{stem}_extended{suffix}")
 
 def read_galaxy_inclination(galaxy_name, inclination_file="MAUVE_Inclination.dat"):
     """
@@ -280,74 +459,47 @@ fallback_root = (
     else None
 )
 
-gas_name = f"{gal}_gas_BIN_maps.fits"
-gas_extended_name = f"{gal}_gas_BIN_maps_extended.fits"
-kin_name = f"{gal}_KIN_maps_extended.fits"
-bin_extended_name = f"{gal}_SPATIAL_BINNING_maps_extended.fits"
-
-gas_primary_candidates = [
-    *build_input_candidates(
-        root, Path("products/v0.6") / gal / gas_name, gas_name
-    ),
-    *build_input_candidates(
-        root,
-        Path("products/v0.6") / gal / gas_extended_name,
-        gas_extended_name,
-    ),
+gas_suffixes = [
+    "gas_BIN_maps.fits",
+    "gas_bin_maps.fits",
+    "BIN_maps.fits",
+    "bin_maps.fits",
+    "gas_BIN_maps_extended.fits",
+    "gas_bin_maps_extended.fits",
+    "BIN_maps_extended.fits",
+    "bin_maps_extended.fits",
 ]
-gas_fallback_candidates = [
-    *build_input_candidates(
-        fallback_root, Path("products/v0.6") / gal / gas_name, gas_name
-    ),
-    *build_input_candidates(
-        fallback_root,
-        Path("products/v0.6") / gal / gas_extended_name,
-        gas_extended_name,
-    ),
+kin_suffixes = [
+    "KIN_maps_extended.fits",
+    "kin_maps_extended.fits",
+]
+bin_extended_suffixes = [
+    "SPATIAL_BINNING_maps_extended.fits",
+    "spatial_binning_maps_extended.fits",
 ]
 
-gas_path = find_first_existing(
-    *build_input_candidates(
-        root, Path("products/v0.6") / gal / gas_name, gas_name
-    ),
-    *build_input_candidates(
-        fallback_root, Path("products/v0.6") / gal / gas_name, gas_name
-    ),
+product_dir = Path("products/v0.6") / gal
+input_keyword, product_paths = resolve_keyworded_input_group(
+    "SFR product FITS inputs",
+    root,
+    fallback_root,
+    product_dir,
+    gal,
+    {
+        "gas-line FITS": gas_suffixes,
+        "extended binning FITS": bin_extended_suffixes,
+    },
 )
-out_path = Path(f"{gal}_gas_BIN_maps_extended.fits")
-kin_path = find_first_existing(
-    *build_input_candidates(
-        root, Path("products/v0.6") / gal / kin_name, kin_name
-    ),
-    *build_input_candidates(
-        fallback_root, Path("products/v0.6") / gal / kin_name, kin_name
-    ),
-)
-gas_extended_path = find_first_existing(
-    *build_input_candidates(
-        root, Path("products/v0.6") / gal / gas_extended_name, gas_extended_name
-    ),
-    *build_input_candidates(
-        fallback_root,
-        Path("products/v0.6") / gal / gas_extended_name,
-        gas_extended_name,
-    ),
-)
-src = resolve_existing_path(
-    "gas-line FITS",
-    *gas_primary_candidates,
-    *gas_fallback_candidates,
-)
-bin_extended_path = resolve_existing_path(
-    "extended binning FITS",
-    *build_input_candidates(
-        root, Path("products/v0.6") / gal / bin_extended_name, bin_extended_name
-    ),
-    *build_input_candidates(
-        fallback_root,
-        Path("products/v0.6") / gal / bin_extended_name,
-        bin_extended_name,
-    ),
+src = product_paths["gas-line FITS"]
+out_path = build_extended_output_path(src)
+bin_extended_path = product_paths["extended binning FITS"]
+kin_path = find_keyworded_input_path(
+    root,
+    fallback_root,
+    product_dir,
+    gal,
+    kin_suffixes,
+    input_keyword,
 )
 inclination_path = Path("MAUVE_Inclination.dat")
 
@@ -359,7 +511,9 @@ noise = 20 # detection limit of FLUX, in the unit of 10^-20 erg/s
 # 1.  Load gas-line maps (extended version file if it already exists)
 # ------------------------------------------------------------------
 
+print(f"Shared input keyword ➜ {_format_keyword(input_keyword)}")
 print(f"Reading gas-line FITS ➜ {src}")
+print(f"Matched binning FITS ➜ {bin_extended_path}")
 with fits.open(src) as hdul:
     V_STARS2 = hdul['V_STARS2'].data
     SIGMA_STARS2 = hdul['SIGMA_STARS2'].data
@@ -576,6 +730,42 @@ def correct_flux_with_ebv(flux, ebv, k):
     """Correct flux with gas E(B-V) and extinction coefficient k."""
     return flux * 10**(0.4 * k * ebv)
 
+
+def correct_flux_error_with_ebv(flux_err, ebv, k):
+    """Apply the same dust-correction scale factor to 1-sigma line-flux errors."""
+    return flux_err * 10**(0.4 * k * ebv)
+
+
+def apply_metallicity_range(values, errors=None, low=7.63, high=9.23):
+    """Mask metallicities, and optional errors, outside the adopted valid range."""
+    valid = np.isfinite(values) & (values >= low) & (values <= high)
+    values_out = np.where(valid, values, np.nan)
+    if errors is None:
+        return values_out
+    errors_out = np.where(valid & np.isfinite(errors), errors, np.nan)
+    return values_out, errors_out
+
+
+def integrated_flux_error(flux_err_map, mask=None, ebv=None, k=None):
+    """Quadrature-sum a line-flux error map and optionally dust-correct the result."""
+    if mask is None:
+        err = np.sqrt(np.nansum(flux_err_map**2))
+    else:
+        err = np.sqrt(np.nansum(np.where(mask, flux_err_map, np.nan)**2))
+    if ebv is not None and k is not None:
+        err = correct_flux_error_with_ebv(err, ebv, k)
+    return err
+
+
+def as_single_pixel(value):
+    """Represent an integrated scalar as a 1x1 map for shared map solvers."""
+    return np.array([[value]], dtype=float)
+
+
+def single_pixel_value(value):
+    """Extract the scalar from a 1x1 map-like result."""
+    return float(np.asarray(value, dtype=float).ravel()[0])
+
 # Correct the fluxes with E(B-V)_BD
 HB4861_FLUX_corr = correct_flux_with_ebv(HB4861_FLUX, E_BV_BD, k_HB4861)
 HA6562_FLUX_corr = correct_flux_with_ebv(HA6562_FLUX, E_BV_BD, k_HA6562)
@@ -583,6 +773,12 @@ OIII5006_FLUX_corr = correct_flux_with_ebv(OIII5006_FLUX, E_BV_BD, k_OIII5006)
 NII6583_FLUX_corr = correct_flux_with_ebv(NII6583_FLUX, E_BV_BD, k_NII6583)
 SII6716_FLUX_corr = correct_flux_with_ebv(SII6716_FLUX, E_BV_BD, k_SII6716)
 SII6730_FLUX_corr = correct_flux_with_ebv(SII6730_FLUX, E_BV_BD, k_SII6730)
+HB4861_FLUX_ERR_corr = correct_flux_error_with_ebv(HB4861_FLUX_ERR, E_BV_BD, k_HB4861)
+HA6562_FLUX_ERR_corr = correct_flux_error_with_ebv(HA6562_FLUX_ERR, E_BV_BD, k_HA6562)
+OIII5006_FLUX_ERR_corr = correct_flux_error_with_ebv(OIII5006_FLUX_ERR, E_BV_BD, k_OIII5006)
+NII6583_FLUX_ERR_corr = correct_flux_error_with_ebv(NII6583_FLUX_ERR, E_BV_BD, k_NII6583)
+SII6716_FLUX_ERR_corr = correct_flux_error_with_ebv(SII6716_FLUX_ERR, E_BV_BD, k_SII6716)
+SII6730_FLUX_ERR_corr = correct_flux_error_with_ebv(SII6730_FLUX_ERR, E_BV_BD, k_SII6730)
 
 # ------------------------------------------------------------------
 # Metallicity [O/H] calculation (12+log(O/H)) using different methods
@@ -608,6 +804,16 @@ def bpt_error_propagation(numerator, denominator, numerator_err, denominator_err
         log_ratio = np.log10(ratio)
         log_ratio_err = 1/(np.log(10)) * np.sqrt((numerator_err / numerator)**2 + (denominator_err / denominator)**2)
         return log_ratio_err
+
+
+def ratio_linear_error(numerator, denominator, numerator_err, denominator_err):
+    """Propagate the 1-sigma error for a linear ratio numerator/denominator."""
+    with np.errstate(divide='ignore', invalid='ignore'):
+        ratio = numerator / denominator
+        ratio_err = np.abs(ratio) * np.sqrt(
+            (numerator_err / numerator)**2 + (denominator_err / denominator)**2
+        )
+    return ratio_err
 
 # Dopita et al. (2016) metallicity calculation
 y = np.log10(NII6583_FLUX_corr / (SII6716_FLUX_corr + SII6730_FLUX_corr)) + 0.264*np.log10(NII6583_FLUX_corr / HA6562_FLUX_corr)
@@ -877,20 +1083,21 @@ def calculate_o3n2_c20_metallicity(hb4861_flux, oiii5006_flux, nii6583_flux, ha6
         
         # Step 3: Return 12 + log(O/H) = x + 8.69
         oh_o3n2_c20[combined_mask] = x_final + 8.69
-        # Add intrinsic fitting error from O3S2-C20 calibration (0.09 dex)
+        # Add intrinsic fitting error from O3N2-C20 calibration (0.09 dex)
         fitting_err = 0.09  # dex
-        oh_o3n2_c20_err[combined_mask] = np.sqrt(x_err**2)
+        oh_o3n2_c20_err[combined_mask] = np.sqrt(x_err**2 + fitting_err**2)
 
     return oh_o3n2_c20, oh_o3n2_c20_err, combined_mask
 
 # Calculate O3N2-C20 metallicity with error propagation
 O_H_O3N2_C20, O_H_O3N2_C20_ERR, o3n2_c20_good_mask = calculate_o3n2_c20_metallicity(
     HB4861_FLUX_corr, OIII5006_FLUX_corr, NII6583_FLUX_corr, HA6562_FLUX_corr,
-    HB4861_FLUX_ERR, OIII5006_FLUX_ERR, NII6583_FLUX_ERR, HA6562_FLUX_ERR, 
+    HB4861_FLUX_ERR_corr, OIII5006_FLUX_ERR_corr, NII6583_FLUX_ERR_corr, HA6562_FLUX_ERR_corr,
     O_H_D16)
 # Set O_H_O3N2_C20 to be nan if outside the range of 7.63 and 9.23
-O_H_O3N2_C20 = np.where((O_H_O3N2_C20 < 7.63) | (O_H_O3N2_C20 > 9.23), np.nan, O_H_O3N2_C20)
-O_H_O3N2_C20_ERR = np.where((O_H_O3N2_C20 < 7.63) | (O_H_O3N2_C20 > 9.23), np.nan, O_H_O3N2_C20_ERR)
+O_H_O3N2_C20, O_H_O3N2_C20_ERR = apply_metallicity_range(
+    O_H_O3N2_C20, O_H_O3N2_C20_ERR
+)
 
 # O3S2-C20 (Curti et al. 2020) metallicity calculation function
 def calculate_o3s2_c20_metallicity(hb4861_flux, oiii5006_flux, sii6716_flux, sii6730_flux, 
@@ -976,7 +1183,7 @@ def calculate_o3s2_c20_metallicity(hb4861_flux, oiii5006_flux, sii6716_flux, sii
                     oh_o3s2_c20[idx_y, idx_x] = x_final + 8.69
                     # Add intrinsic fitting error from O3S2-C20 calibration (0.11 dex)
                     fitting_err = 0.11  # dex
-                    oh_o3s2_c20_err[idx_y, idx_x] = np.sqrt(x_err**2)
+                    oh_o3s2_c20_err[idx_y, idx_x] = np.sqrt(x_err**2 + fitting_err**2)
                 else:
                     combined_mask[idx_y, idx_x] = False
             else:
@@ -990,11 +1197,12 @@ def calculate_o3s2_c20_metallicity(hb4861_flux, oiii5006_flux, sii6716_flux, sii
 # Calculate O3S2-C20 metallicity with error propagation
 O_H_O3S2_C20, O_H_O3S2_C20_ERR, o3s2_c20_good_mask = calculate_o3s2_c20_metallicity(
     HB4861_FLUX_corr, OIII5006_FLUX_corr, SII6716_FLUX_corr, SII6730_FLUX_corr,
-    HB4861_FLUX_ERR, OIII5006_FLUX_ERR, SII6716_FLUX_ERR, SII6730_FLUX_ERR, 
+    HB4861_FLUX_ERR_corr, OIII5006_FLUX_ERR_corr, SII6716_FLUX_ERR_corr, SII6730_FLUX_ERR_corr,
     O_H_D16)
 # Set O_H_O3S2_C20 to be nan if outside the range of 7.63 and 9.23
-O_H_O3S2_C20 = np.where((O_H_O3S2_C20 < 7.63) | (O_H_O3S2_C20 > 9.23), np.nan, O_H_O3S2_C20)
-O_H_O3S2_C20_ERR = np.where((O_H_O3S2_C20 < 7.63) | (O_H_O3S2_C20 > 9.23), np.nan, O_H_O3S2_C20_ERR)
+O_H_O3S2_C20, O_H_O3S2_C20_ERR = apply_metallicity_range(
+    O_H_O3S2_C20, O_H_O3S2_C20_ERR
+)
 
 # RS32-C20 (Curti et al. 2020) metallicity calculation function
 def calculate_rs32_c20_metallicity(hb4861_flux, ha6563_flux,
@@ -1039,11 +1247,15 @@ def calculate_rs32_c20_metallicity(hb4861_flux, ha6563_flux,
         r_lin = np.where(r_lin > 0, r_lin, np.nan)
         y = np.log10(r_lin)
         
-        # Calculate errors for the line ratios using error propagation
-        oiii_hb_err = bpt_error_propagation(oiii5006_flux[good_mask], hb4861_flux[good_mask], 
-                                            oiii5006_flux_err[good_mask], hb4861_flux_err[good_mask])
-        sii_ha_err = bpt_error_propagation(sii_total, ha6563_flux[good_mask], 
-                                           sii_total_err, ha6563_flux_err[good_mask])
+        # Calculate linear-ratio errors before propagating through log10(A + B).
+        oiii_hb_err = ratio_linear_error(
+            oiii5006_flux[good_mask], hb4861_flux[good_mask],
+            oiii5006_flux_err[good_mask], hb4861_flux_err[good_mask]
+        )
+        sii_ha_err = ratio_linear_error(
+            sii_total, ha6563_flux[good_mask],
+            sii_total_err, ha6563_flux_err[good_mask]
+        )
         
         # Error for RS32 = log10(OIII/Hb + SII/Ha)
         # For f = A + B, df = sqrt(dA^2 + dB^2)
@@ -1080,7 +1292,7 @@ def calculate_rs32_c20_metallicity(hb4861_flux, ha6563_flux,
                 oh_rs32_c20[iy, ix] = x_final + 8.69
                 # Add intrinsic fitting error from RS32-C20 calibration (0.08 dex)
                 fitting_err = 0.08  # dex
-                oh_rs32_c20_err[iy, ix] = np.sqrt(x_err**2)
+                oh_rs32_c20_err[iy, ix] = np.sqrt(x_err**2 + fitting_err**2)
 
     combined_mask = good_mask & np.isfinite(oh_rs32_c20)
     return oh_rs32_c20, oh_rs32_c20_err, combined_mask
@@ -1088,12 +1300,13 @@ def calculate_rs32_c20_metallicity(hb4861_flux, ha6563_flux,
 # Calculate RS32-C20 metallicity
 O_H_RS32_C20, O_H_RS32_C20_ERR, rs32_c20_good_mask = calculate_rs32_c20_metallicity(HB4861_FLUX_corr, HA6562_FLUX_corr, 
                                                                   OIII5006_FLUX_corr, SII6716_FLUX_corr, SII6730_FLUX_corr,
-                                                                  HB4861_FLUX_ERR, HA6562_FLUX_ERR,
-                                                                  OIII5006_FLUX_ERR, SII6716_FLUX_ERR, SII6730_FLUX_ERR,
+                                                                  HB4861_FLUX_ERR_corr, HA6562_FLUX_ERR_corr,
+                                                                  OIII5006_FLUX_ERR_corr, SII6716_FLUX_ERR_corr, SII6730_FLUX_ERR_corr,
                                                                   None)
 # Set O_H_RS32_C20 to be nan if outside the range of 7.63 and 9.23
-O_H_RS32_C20 = np.where((O_H_RS32_C20 < 7.63) | (O_H_RS32_C20 > 9.23), np.nan, O_H_RS32_C20)
-O_H_RS32_C20_ERR = np.where((O_H_RS32_C20 < 7.63) | (O_H_RS32_C20 > 9.23), np.nan, O_H_RS32_C20_ERR)
+O_H_RS32_C20, O_H_RS32_C20_ERR = apply_metallicity_range(
+    O_H_RS32_C20, O_H_RS32_C20_ERR
+)
 
 # R3-C20 (Curti et al. 2020) metallicity calculation function
 def calculate_r3_c20_metallicity(hb4861_flux, hb4861_flux_err,
@@ -1166,19 +1379,20 @@ def calculate_r3_c20_metallicity(hb4861_flux, hb4861_flux_err,
                     obs_error = derivative_x * r3_error[idx]
                     
                     # Combine observational error with fitting error
-                    total_error = np.sqrt(obs_error**2)
+                    total_error = np.sqrt(obs_error**2 + fitting_error**2)
                     oh_r3_c20_err[iy, ix] = total_error
 
     combined_mask = good_mask & np.isfinite(oh_r3_c20)
     return oh_r3_c20, oh_r3_c20_err, combined_mask
 
 # Calculate R3-C20 metallicity
-O_H_R3_C20, O_H_R3_C20_ERR, r3_c20_good_mask = calculate_r3_c20_metallicity(HB4861_FLUX_corr, HB4861_FLUX_ERR,
-                                                                             OIII5006_FLUX_corr, OIII5006_FLUX_ERR,
+O_H_R3_C20, O_H_R3_C20_ERR, r3_c20_good_mask = calculate_r3_c20_metallicity(HB4861_FLUX_corr, HB4861_FLUX_ERR_corr,
+                                                                             OIII5006_FLUX_corr, OIII5006_FLUX_ERR_corr,
                                                                              None)
 # Set O_H_R3_C20 to be nan if outside the range of 7.63 and 9.23
-O_H_R3_C20 = np.where((O_H_R3_C20 < 7.63) | (O_H_R3_C20 > 9.23), np.nan, O_H_R3_C20)
-O_H_R3_C20_ERR = np.where((O_H_R3_C20 < 7.63) | (O_H_R3_C20 > 9.23), np.nan, O_H_R3_C20_ERR)
+O_H_R3_C20, O_H_R3_C20_ERR = apply_metallicity_range(
+    O_H_R3_C20, O_H_R3_C20_ERR
+)
 
 # N2-C20 (Curti et al. 2020) metallicity calculation function
 def calculate_n2_c20_metallicity(ha6563_flux, ha6563_flux_err,
@@ -1273,19 +1487,20 @@ def calculate_n2_c20_metallicity(ha6563_flux, ha6563_flux_err,
                 obs_error = derivative_x * n2_error[idx]
                 
                 # Combine observational error with fitting error
-                total_error = np.sqrt(obs_error**2)
+                total_error = np.sqrt(obs_error**2 + fitting_error**2)
                 oh_n2_c20_err[iy, ix] = total_error
 
     combined_mask = good_mask & np.isfinite(oh_n2_c20)
     return oh_n2_c20, oh_n2_c20_err, combined_mask
 
 # Calculate N2-C20 metallicity
-O_H_N2_C20, O_H_N2_C20_ERR, n2_c20_good_mask = calculate_n2_c20_metallicity(HA6562_FLUX_corr, HA6562_FLUX_ERR,
-                                                                             NII6583_FLUX_corr, NII6583_FLUX_ERR,
+O_H_N2_C20, O_H_N2_C20_ERR, n2_c20_good_mask = calculate_n2_c20_metallicity(HA6562_FLUX_corr, HA6562_FLUX_ERR_corr,
+                                                                             NII6583_FLUX_corr, NII6583_FLUX_ERR_corr,
                                                                              None)
 # Set O_H_N2_C20 to be nan if outside the range of 7.63 and 9.23
-O_H_N2_C20 = np.where((O_H_N2_C20 < 7.63) | (O_H_N2_C20 > 9.23), np.nan, O_H_N2_C20)
-O_H_N2_C20_ERR = np.where((O_H_N2_C20 < 7.63) | (O_H_N2_C20 > 9.23), np.nan, O_H_N2_C20_ERR)
+O_H_N2_C20, O_H_N2_C20_ERR = apply_metallicity_range(
+    O_H_N2_C20, O_H_N2_C20_ERR
+)
 
 def s2_error_propagation(sii6716_flux, sii6716_flux_err, sii6730_flux, sii6730_flux_err, ha6563_flux, ha6563_flux_err):
     """Calculate propagated error for log10(([SII]6716 + [SII]6730) / Hα)"""
@@ -1390,20 +1605,21 @@ def calculate_s2_c20_metallicity(ha6563_flux, ha6563_flux_err,
                 obs_error = derivative_x * s2_error[idx]
                 
                 # Combine observational error with fitting error
-                total_error = np.sqrt(obs_error**2)
+                total_error = np.sqrt(obs_error**2 + fitting_error**2)
                 oh_s2_c20_err[iy, ix] = total_error
 
     combined_mask = good_mask & np.isfinite(oh_s2_c20)
     return oh_s2_c20, oh_s2_c20_err, combined_mask
 
 # Calculate S2-C20 metallicity
-O_H_S2_C20, O_H_S2_C20_ERR, s2_c20_good_mask = calculate_s2_c20_metallicity(HA6562_FLUX_corr, HA6562_FLUX_ERR,
-                                                                             SII6716_FLUX_corr, SII6716_FLUX_ERR,
-                                                                             SII6730_FLUX_corr, SII6730_FLUX_ERR,
+O_H_S2_C20, O_H_S2_C20_ERR, s2_c20_good_mask = calculate_s2_c20_metallicity(HA6562_FLUX_corr, HA6562_FLUX_ERR_corr,
+                                                                             SII6716_FLUX_corr, SII6716_FLUX_ERR_corr,
+                                                                             SII6730_FLUX_corr, SII6730_FLUX_ERR_corr,
                                                                              None)
 # Set O_H_S2_C20 to be nan if outside the range of 7.63 and 9.23
-O_H_S2_C20 = np.where((O_H_S2_C20 < 7.63) | (O_H_S2_C20 > 9.23), np.nan, O_H_S2_C20)
-O_H_S2_C20_ERR = np.where((O_H_S2_C20 < 7.63) | (O_H_S2_C20 > 9.23), np.nan, O_H_S2_C20_ERR)
+O_H_S2_C20, O_H_S2_C20_ERR = apply_metallicity_range(
+    O_H_S2_C20, O_H_S2_C20_ERR
+)
 
 # Combined C20 metallicity calculation function
 
@@ -1428,15 +1644,15 @@ def calculate_combined_c20_metallicity(gal):
     sii6716_flux = SII6716_FLUX_corr
     sii6730_flux = SII6730_FLUX_corr
 
-    hb4861_flux_err = HB4861_FLUX_ERR
-    oiii5006_flux_err = OIII5006_FLUX_ERR
-    sii6716_flux_err = SII6716_FLUX_ERR
-    sii6730_flux_err = SII6730_FLUX_ERR
+    hb4861_flux_err = HB4861_FLUX_ERR_corr
+    oiii5006_flux_err = OIII5006_FLUX_ERR_corr
+    sii6716_flux_err = SII6716_FLUX_ERR_corr
+    sii6730_flux_err = SII6730_FLUX_ERR_corr
 
     ha6563_flux = HA6562_FLUX_corr
-    ha6563_flux_err = HA6562_FLUX_ERR
+    ha6563_flux_err = HA6562_FLUX_ERR_corr
     nii6584_flux = NII6583_FLUX_corr
-    nii6584_flux_err = NII6583_FLUX_ERR
+    nii6584_flux_err = NII6583_FLUX_ERR_corr
     oh_d16_sf = None
     
     # Calculate metallicity for all 6 methods
@@ -1489,7 +1705,11 @@ def calculate_combined_c20_metallicity(gal):
     for i in range(hb4861_flux.shape[0]):
         for j in range(hb4861_flux.shape[1]):
             # Get valid methods for this spaxel
-            valid_methods = all_masks[:, i, j]
+            valid_methods = (
+                all_masks[:, i, j]
+                & np.isfinite(all_metallicities[:, i, j])
+                & np.isfinite(all_errors[:, i, j])
+            )
             
             if np.any(valid_methods):
                 # Get errors for valid methods only
@@ -1516,8 +1736,9 @@ def calculate_combined_c20_metallicity(gal):
 # Calculate combined C20 metallicity
 O_H_COMBINED_C20, O_H_COMBINED_C20_ERR, combined_c20_method_map, combined_c20_good_mask = calculate_combined_c20_metallicity(gal)
 # Set combined C20 to be nan if outside the range of 7.63 and 9.23
-O_H_COMBINED_C20 = np.where((O_H_COMBINED_C20 < 7.63) | (O_H_COMBINED_C20 > 9.23), np.nan, O_H_COMBINED_C20)
-O_H_COMBINED_C20_ERR = np.where((O_H_COMBINED_C20 < 7.63) | (O_H_COMBINED_C20 > 9.23), np.nan, O_H_COMBINED_C20_ERR)
+O_H_COMBINED_C20, O_H_COMBINED_C20_ERR = apply_metallicity_range(
+    O_H_COMBINED_C20, O_H_COMBINED_C20_ERR
+)
 
 print(f"Combined C20 metallicity: median = {np.nanmedian(O_H_COMBINED_C20):.3f}, range = ({np.nanmin(O_H_COMBINED_C20):.3f}, {np.nanmax(O_H_COMBINED_C20):.3f})")
 print(f"Combined C20 method usage: O3N2={np.sum(combined_c20_method_map==0)}, O3S2={np.sum(combined_c20_method_map==1)}, RS32={np.sum(combined_c20_method_map==2)}, R3={np.sum(combined_c20_method_map==3)}, N2={np.sum(combined_c20_method_map==4)}, S2={np.sum(combined_c20_method_map==5)}")
@@ -1618,9 +1839,9 @@ def calzetti_sfr(luminosity):
 # Calculate the SFR map from Halpha luminosity
 SFR_map = calzetti_sfr(HA6562_LUM)
 
-# Getting the SFR surface density 
-# Convert to surface density in M☉/pc²
-# 1. Convert pixel area to physical area in pc²
+# Getting the SFR surface density
+# Convert to surface density in M☉/yr/kpc²
+# 1. Convert pixel area to physical area in kpc²
 legacy_wcs2 = WCS(gas_header).celestial  # strip spectral axis
 pixel_scale = (proj_plane_pixel_scales(legacy_wcs2) * u.deg).to(u.arcsec)
 pixel_area_Mpc = ((pixel_scale[0]).to(u.rad).value*16.5*u.Mpc)*(((pixel_scale[1]).to(u.rad).value*16.5*u.Mpc))
@@ -1777,12 +1998,12 @@ mask_S2_nonSF = mask_S2_LINER | mask_S2_Seyfert
 #         return log_ratio_err
     
 # Calculate the errors for the BPT ratios
-logN2_err = bpt_error_propagation(NII6583_FLUX, HA6562_FLUX, 
-                                   NII6583_FLUX_ERR, HA6562_FLUX_ERR)
-logS2_err = bpt_error_propagation(SII6716_FLUX + SII6730_FLUX, HA6562_FLUX, 
-                                    np.sqrt(SII6716_FLUX_ERR**2 + SII6730_FLUX_ERR**2), HA6562_FLUX_ERR)
-logO3_err = bpt_error_propagation(OIII5006_FLUX, HB4861_FLUX, 
-                                   OIII5006_FLUX_ERR, HB4861_FLUX_ERR)
+logN2_err = bpt_error_propagation(NII6583_FLUX_corr, HA6562_FLUX_corr,
+                                   NII6583_FLUX_ERR_corr, HA6562_FLUX_ERR_corr)
+logS2_err = bpt_error_propagation(SII6716_FLUX_corr + SII6730_FLUX_corr, HA6562_FLUX_corr,
+                                    np.sqrt(SII6716_FLUX_ERR_corr**2 + SII6730_FLUX_ERR_corr**2), HA6562_FLUX_ERR_corr)
+logO3_err = bpt_error_propagation(OIII5006_FLUX_corr, HB4861_FLUX_corr,
+                                   OIII5006_FLUX_ERR_corr, HB4861_FLUX_ERR_corr)
 
 mask_N2_left, mask_S2_left = apply_bpt_masks(logN2=logN2-logN2_err, logS2=logS2-logS2_err, logO3=logO3)
 mask_N2_right, mask_S2_right = apply_bpt_masks(logN2=logN2+logN2_err, logS2=logS2+logS2_err, logO3=logO3)
@@ -2132,11 +2353,11 @@ def choose_BPT(choice='both', classification=1):
     LOG_SFR_surface_density_map_unclassified1 = np.where(mask_unclassified1, LOG_SFR_surface_density_map, np.nan)
     LOG_SFR_surface_density_map_upper = np.where(mask_upper, LOG_SFR_surface_density_map, np.nan)
     
-    # Apply masks to create SFR maps (not log)
-    SFR_map_SF = np.where(mask_SF, SFR_map, np.nan)
-    SFR_map_nonSF = np.where(mask_nonSF, SFR_map, np.nan)
-    SFR_map_unclassified1 = np.where(mask_unclassified1, SFR_map, np.nan)
-    SFR_map_upper = np.where(mask_upper, SFR_map, np.nan)
+    # Apply masks to create non-log SFR surface-density maps.
+    SFR_map_SF = np.where(mask_SF, SFR_surface_density_map_corrected, np.nan)
+    SFR_map_nonSF = np.where(mask_nonSF, SFR_surface_density_map_corrected, np.nan)
+    SFR_map_unclassified1 = np.where(mask_unclassified1, SFR_surface_density_map_corrected, np.nan)
+    SFR_map_upper = np.where(mask_upper, SFR_surface_density_map_corrected, np.nan)
     
     # Apply SF mask to create metallicity maps (only for SF regions)
     O_H_D16_SF = np.where(mask_SF, O_H_D16, np.nan)
@@ -2172,12 +2393,12 @@ def choose_BPT(choice='both', classification=1):
     SII6730_FLUX_corr_SF = np.where(mask_SF, SII6730_FLUX_corr, np.nan)
     
     # Apply SF mask to create line error maps in SF regions  
-    HB4861_FLUX_ERR_SF = np.where(mask_SF, HB4861_FLUX_ERR, np.nan)
-    HA6562_FLUX_ERR_SF = np.where(mask_SF, HA6562_FLUX_ERR, np.nan)
-    OIII5006_FLUX_ERR_SF = np.where(mask_SF, OIII5006_FLUX_ERR, np.nan)
-    NII6583_FLUX_ERR_SF = np.where(mask_SF, NII6583_FLUX_ERR, np.nan)
-    SII6716_FLUX_ERR_SF = np.where(mask_SF, SII6716_FLUX_ERR, np.nan)
-    SII6730_FLUX_ERR_SF = np.where(mask_SF, SII6730_FLUX_ERR, np.nan)
+    HB4861_FLUX_ERR_SF = np.where(mask_SF, HB4861_FLUX_ERR_corr, np.nan)
+    HA6562_FLUX_ERR_SF = np.where(mask_SF, HA6562_FLUX_ERR_corr, np.nan)
+    OIII5006_FLUX_ERR_SF = np.where(mask_SF, OIII5006_FLUX_ERR_corr, np.nan)
+    NII6583_FLUX_ERR_SF = np.where(mask_SF, NII6583_FLUX_ERR_corr, np.nan)
+    SII6716_FLUX_ERR_SF = np.where(mask_SF, SII6716_FLUX_ERR_corr, np.nan)
+    SII6730_FLUX_ERR_SF = np.where(mask_SF, SII6730_FLUX_ERR_corr, np.nan)
 
     # Return SFR maps, metallicity maps, metallicity error maps, line maps, and masks
     sfr_maps = (LOG_SFR_surface_density_map_SF, LOG_SFR_surface_density_map_nonSF, 
@@ -2407,7 +2628,7 @@ if (np.isfinite(HB4861_FLUX_corr_SF_total) and np.isfinite(OIII5006_FLUX_corr_SF
         x_err_sf_total = y_err_total / derivative_x_sf_total
         
         O_H_O3N2_C20_SF_total = x_final_total + 8.69
-        O_H_O3N2_C20_SF_total_ERR = np.sqrt(x_err_sf_total**2)  # Can add fitting error here if needed
+        O_H_O3N2_C20_SF_total_ERR = np.sqrt(x_err_sf_total**2 + 0.09**2)
     else:
         O_H_O3N2_C20_SF_total = np.nan
         O_H_O3N2_C20_SF_total_ERR = np.nan
@@ -2462,7 +2683,7 @@ if (np.isfinite(OIII5006_FLUX_corr_SF_total) and np.isfinite(HB4861_FLUX_corr_SF
             x_err_sf = y_err_total / derivative_x_sf
             
             O_H_O3S2_C20_SF_total = x_final_total + 8.69
-            O_H_O3S2_C20_SF_total_ERR = np.sqrt(x_err_sf**2)  # Can add fitting error here if needed
+            O_H_O3S2_C20_SF_total_ERR = np.sqrt(x_err_sf**2 + 0.11**2)
         else:
             O_H_O3S2_C20_SF_total = np.nan
             O_H_O3S2_C20_SF_total_ERR = np.nan
@@ -2521,7 +2742,7 @@ if np.isfinite(OIII5006_FLUX_corr_SF_total) and np.isfinite(HB4861_FLUX_corr_SF_
                 # Calculate error in x using derivative approach
                 derivative_x = (np.abs(c1 + 2*c2*x_final_total + 3*c3*x_final_total**2 + 4*c4*x_final_total**3))
                 x_err_sf = y_err_sf / derivative_x
-                O_H_RS32_C20_SF_total_ERR = x_err_sf
+                O_H_RS32_C20_SF_total_ERR = np.sqrt(x_err_sf**2 + 0.08**2)
             else:
                 # Fallback to any real root if none in reasonable range
                 y_pred = c0 + c1*real_roots + c2*real_roots**2 + c3*real_roots**3 + c4*real_roots**4
@@ -2531,7 +2752,7 @@ if np.isfinite(OIII5006_FLUX_corr_SF_total) and np.isfinite(HB4861_FLUX_corr_SF_
                 # Calculate error in x using derivative approach
                 derivative_x = (np.abs(c1 + 2*c2*x_final_total + 3*c3*x_final_total**2 + 4*c4*x_final_total**3))
                 x_err_sf = y_err_sf / derivative_x
-                O_H_RS32_C20_SF_total_ERR = x_err_sf
+                O_H_RS32_C20_SF_total_ERR = np.sqrt(x_err_sf**2 + 0.08**2)
         else:
             O_H_RS32_C20_SF_total = np.nan
             O_H_RS32_C20_SF_total_ERR = np.nan
@@ -2582,7 +2803,7 @@ if np.isfinite(OIII5006_FLUX_corr_SF_total) and np.isfinite(HB4861_FLUX_corr_SF_
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * r3_error_sf
-                    O_H_R3_C20_SF_total_ERR = obs_error
+                    O_H_R3_C20_SF_total_ERR = np.sqrt(obs_error**2 + 0.07**2)
                 else:
                     O_H_R3_C20_SF_total_ERR = np.nan
             else:
@@ -2596,7 +2817,7 @@ if np.isfinite(OIII5006_FLUX_corr_SF_total) and np.isfinite(HB4861_FLUX_corr_SF_
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * r3_error_sf
-                    O_H_R3_C20_SF_total_ERR = obs_error
+                    O_H_R3_C20_SF_total_ERR = np.sqrt(obs_error**2 + 0.07**2)
                 else:
                     O_H_R3_C20_SF_total_ERR = np.nan
         else:
@@ -2658,7 +2879,7 @@ if np.isfinite(NII6583_FLUX_corr_SF_total) and np.isfinite(HA6562_FLUX_corr_SF_t
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * n2_error_sf
-                    O_H_N2_C20_SF_total_ERR = obs_error
+                    O_H_N2_C20_SF_total_ERR = np.sqrt(obs_error**2 + 0.10**2)
                 else:
                     O_H_N2_C20_SF_total_ERR = np.nan
             else:
@@ -2723,7 +2944,7 @@ if np.isfinite(SII6716_FLUX_corr_SF_total) and np.isfinite(SII6730_FLUX_corr_SF_
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * s2_error_sf
-                    O_H_S2_C20_SF_total_ERR = obs_error
+                    O_H_S2_C20_SF_total_ERR = np.sqrt(obs_error**2 + 0.06**2)
                 else:
                     O_H_S2_C20_SF_total_ERR = np.nan
             else:
@@ -2894,80 +3115,104 @@ O_H_N2_PP04_HII_total = (9.37 + 2.03 * n2_ratio_HII_total +
                        1.26 * n2_ratio_HII_total**2 + 
                        0.32 * n2_ratio_HII_total**3)
 
-# C20 metallicity calculations for HII total (same logic as SF total but using HII fluxes)
-y_O3N2_HII_total = np.log10(OIII5006_FLUX_corr_HII_total/HB4861_FLUX_corr_HII_total) - np.log10(NII6583_FLUX_corr_HII_total/HA6562_FLUX_corr_HII_total)
-y_O3S2_HII_total = np.log10(OIII5006_FLUX_corr_HII_total/HB4861_FLUX_corr_HII_total) - np.log10((SII6716_FLUX_corr_HII_total+SII6730_FLUX_corr_HII_total)/HA6562_FLUX_corr_HII_total)
-y_RS32_HII_total = np.log10(R3_HII_total/S2_HII_total)
-y_R3_HII_total = np.log10(R3_HII_total)
-y_N2_HII_total = np.log10(N2_HII_total)
-y_S2_HII_total = np.log10(S2_HII_total)
+# C20 metallicity calculations for HII total using the same polynomial solvers
+# as the spaxel maps. The old linear approximation is intentionally avoided.
+HB4861_FLUX_ERR_corr_HII_total = integrated_flux_error(
+    HB4861_FLUX_ERR, mask_HII, E_BV_BD_HII_total, k_HB4861
+)
+HA6562_FLUX_ERR_corr_HII_total = integrated_flux_error(
+    HA6562_FLUX_ERR, mask_HII, E_BV_BD_HII_total, k_HA6562
+)
+OIII5006_FLUX_ERR_corr_HII_total = integrated_flux_error(
+    OIII5006_FLUX_ERR, mask_HII, E_BV_BD_HII_total, k_OIII5006
+)
+NII6583_FLUX_ERR_corr_HII_total = integrated_flux_error(
+    NII6583_FLUX_ERR, mask_HII, E_BV_BD_HII_total, k_NII6583
+)
+SII6716_FLUX_ERR_corr_HII_total = integrated_flux_error(
+    SII6716_FLUX_ERR, mask_HII, E_BV_BD_HII_total, k_SII6716
+)
+SII6730_FLUX_ERR_corr_HII_total = integrated_flux_error(
+    SII6730_FLUX_ERR, mask_HII, E_BV_BD_HII_total, k_SII6730
+)
 
-# C20 calibration coefficients (same as before)
-a_O3N2 = 8.533; b_O3N2 = -0.214
-a_O3S2 = 8.424; b_O3S2 = -0.030
-a_RS32 = 8.072; b_RS32 = 0.789
-a_R3 = 8.678; b_R3 = -0.372
-a_N2 = 8.743; b_N2 = 0.462
-a_S2 = 8.816; b_S2 = 0.447
+_hb_hii = as_single_pixel(HB4861_FLUX_corr_HII_total)
+_ha_hii = as_single_pixel(HA6562_FLUX_corr_HII_total)
+_oiii_hii = as_single_pixel(OIII5006_FLUX_corr_HII_total)
+_nii_hii = as_single_pixel(NII6583_FLUX_corr_HII_total)
+_sii6716_hii = as_single_pixel(SII6716_FLUX_corr_HII_total)
+_sii6730_hii = as_single_pixel(SII6730_FLUX_corr_HII_total)
+_hb_hii_err = as_single_pixel(HB4861_FLUX_ERR_corr_HII_total)
+_ha_hii_err = as_single_pixel(HA6562_FLUX_ERR_corr_HII_total)
+_oiii_hii_err = as_single_pixel(OIII5006_FLUX_ERR_corr_HII_total)
+_nii_hii_err = as_single_pixel(NII6583_FLUX_ERR_corr_HII_total)
+_sii6716_hii_err = as_single_pixel(SII6716_FLUX_ERR_corr_HII_total)
+_sii6730_hii_err = as_single_pixel(SII6730_FLUX_ERR_corr_HII_total)
 
-# Calculate C20 metallicities for HII total
-if np.isfinite(y_O3N2_HII_total):
-    O_H_O3N2_C20_HII_total = a_O3N2 + b_O3N2 * y_O3N2_HII_total
-else:
-    O_H_O3N2_C20_HII_total = np.nan
-    
-if np.isfinite(y_O3S2_HII_total):
-    O_H_O3S2_C20_HII_total = a_O3S2 + b_O3S2 * y_O3S2_HII_total
-else:
-    O_H_O3S2_C20_HII_total = np.nan
-    
-if np.isfinite(y_RS32_HII_total):
-    O_H_RS32_C20_HII_total = a_RS32 + b_RS32 * y_RS32_HII_total
-else:
-    O_H_RS32_C20_HII_total = np.nan
-    
-if np.isfinite(y_R3_HII_total):
-    O_H_R3_C20_HII_total = a_R3 + b_R3 * y_R3_HII_total
-else:
-    O_H_R3_C20_HII_total = np.nan
-    
-if np.isfinite(y_N2_HII_total):
-    O_H_N2_C20_HII_total = a_N2 + b_N2 * y_N2_HII_total
-else:
-    O_H_N2_C20_HII_total = np.nan
-    
-if np.isfinite(y_S2_HII_total):
-    O_H_S2_C20_HII_total = a_S2 + b_S2 * y_S2_HII_total
-else:
-    O_H_S2_C20_HII_total = np.nan
+_oh, _err, _ = calculate_o3n2_c20_metallicity(
+    _hb_hii, _oiii_hii, _nii_hii, _ha_hii,
+    _hb_hii_err, _oiii_hii_err, _nii_hii_err, _ha_hii_err, None
+)
+_oh, _err = apply_metallicity_range(_oh, _err)
+O_H_O3N2_C20_HII_total = single_pixel_value(_oh)
+O_H_O3N2_C20_HII_total_ERR = single_pixel_value(_err)
 
-# Combined C20 metallicity for HII total (select best method with minimum error)
-valid_methods_HII = []
-valid_values_HII = []
-if np.isfinite(O_H_O3N2_C20_HII_total):
-    valid_methods_HII.append('O3N2')
-    valid_values_HII.append(O_H_O3N2_C20_HII_total)
-if np.isfinite(O_H_O3S2_C20_HII_total):
-    valid_methods_HII.append('O3S2')
-    valid_values_HII.append(O_H_O3S2_C20_HII_total)
-if np.isfinite(O_H_RS32_C20_HII_total):
-    valid_methods_HII.append('RS32')
-    valid_values_HII.append(O_H_RS32_C20_HII_total)
-if np.isfinite(O_H_R3_C20_HII_total):
-    valid_methods_HII.append('R3')
-    valid_values_HII.append(O_H_R3_C20_HII_total)
-if np.isfinite(O_H_N2_C20_HII_total):
-    valid_methods_HII.append('N2')
-    valid_values_HII.append(O_H_N2_C20_HII_total)
-if np.isfinite(O_H_S2_C20_HII_total):
-    valid_methods_HII.append('S2')
-    valid_values_HII.append(O_H_S2_C20_HII_total)
+_oh, _err, _ = calculate_o3s2_c20_metallicity(
+    _hb_hii, _oiii_hii, _sii6716_hii, _sii6730_hii,
+    _hb_hii_err, _oiii_hii_err, _sii6716_hii_err, _sii6730_hii_err, None
+)
+_oh, _err = apply_metallicity_range(_oh, _err)
+O_H_O3S2_C20_HII_total = single_pixel_value(_oh)
+O_H_O3S2_C20_HII_total_ERR = single_pixel_value(_err)
 
-if len(valid_values_HII) > 0:
-    # For simplicity, use the first valid method (could implement error-based selection)
-    O_H_COMBINED_C20_HII_total = valid_values_HII[0]
+_oh, _err, _ = calculate_rs32_c20_metallicity(
+    _hb_hii, _ha_hii, _oiii_hii, _sii6716_hii, _sii6730_hii,
+    _hb_hii_err, _ha_hii_err, _oiii_hii_err, _sii6716_hii_err, _sii6730_hii_err, None
+)
+_oh, _err = apply_metallicity_range(_oh, _err)
+O_H_RS32_C20_HII_total = single_pixel_value(_oh)
+O_H_RS32_C20_HII_total_ERR = single_pixel_value(_err)
+
+_oh, _err, _ = calculate_r3_c20_metallicity(
+    _hb_hii, _hb_hii_err, _oiii_hii, _oiii_hii_err, None
+)
+_oh, _err = apply_metallicity_range(_oh, _err)
+O_H_R3_C20_HII_total = single_pixel_value(_oh)
+O_H_R3_C20_HII_total_ERR = single_pixel_value(_err)
+
+_oh, _err, _ = calculate_n2_c20_metallicity(
+    _ha_hii, _ha_hii_err, _nii_hii, _nii_hii_err, None
+)
+_oh, _err = apply_metallicity_range(_oh, _err)
+O_H_N2_C20_HII_total = single_pixel_value(_oh)
+O_H_N2_C20_HII_total_ERR = single_pixel_value(_err)
+
+_oh, _err, _ = calculate_s2_c20_metallicity(
+    _ha_hii, _ha_hii_err, _sii6716_hii, _sii6716_hii_err, _sii6730_hii, _sii6730_hii_err, None
+)
+_oh, _err = apply_metallicity_range(_oh, _err)
+O_H_S2_C20_HII_total = single_pixel_value(_oh)
+O_H_S2_C20_HII_total_ERR = single_pixel_value(_err)
+
+valid_hii_c20 = [
+    (name, value, err)
+    for name, value, err in (
+        ("O3N2", O_H_O3N2_C20_HII_total, O_H_O3N2_C20_HII_total_ERR),
+        ("O3S2", O_H_O3S2_C20_HII_total, O_H_O3S2_C20_HII_total_ERR),
+        ("RS32", O_H_RS32_C20_HII_total, O_H_RS32_C20_HII_total_ERR),
+        ("R3", O_H_R3_C20_HII_total, O_H_R3_C20_HII_total_ERR),
+        ("N2", O_H_N2_C20_HII_total, O_H_N2_C20_HII_total_ERR),
+        ("S2", O_H_S2_C20_HII_total, O_H_S2_C20_HII_total_ERR),
+    )
+    if np.isfinite(value) and np.isfinite(err)
+]
+if valid_hii_c20:
+    _, O_H_COMBINED_C20_HII_total, O_H_COMBINED_C20_HII_total_ERR = min(
+        valid_hii_c20, key=lambda item: item[2]
+    )
 else:
     O_H_COMBINED_C20_HII_total = np.nan
+    O_H_COMBINED_C20_HII_total_ERR = np.nan
 
 # ------------------------------------------------------------------
 # 11.  Calculate the total Metallicity in total available regions
@@ -2981,13 +3226,13 @@ NII6583_FLUX_total = np.nansum(NII6583_FLUX)
 SII6716_FLUX_total = np.nansum(SII6716_FLUX)
 SII6730_FLUX_total = np.nansum(SII6730_FLUX)
 
-# Calculate total flux errors by error propagation (sqrt of sum of squares)
-HB4861_FLUX_ERR_total = np.sqrt(np.nansum(HB4861_FLUX_ERR**2))
-HA6562_FLUX_ERR_total = np.sqrt(np.nansum(HA6562_FLUX_ERR**2))
-OIII5006_FLUX_ERR_total = np.sqrt(np.nansum(OIII5006_FLUX_ERR**2))
-NII6583_FLUX_ERR_total = np.sqrt(np.nansum(NII6583_FLUX_ERR**2))
-SII6716_FLUX_ERR_total = np.sqrt(np.nansum(SII6716_FLUX_ERR**2))
-SII6730_FLUX_ERR_total = np.sqrt(np.nansum(SII6730_FLUX_ERR**2))
+# Calculate total raw flux errors by error propagation (sqrt of sum of squares).
+HB4861_FLUX_ERR_total = integrated_flux_error(HB4861_FLUX_ERR)
+HA6562_FLUX_ERR_total = integrated_flux_error(HA6562_FLUX_ERR)
+OIII5006_FLUX_ERR_total = integrated_flux_error(OIII5006_FLUX_ERR)
+NII6583_FLUX_ERR_total = integrated_flux_error(NII6583_FLUX_ERR)
+SII6716_FLUX_ERR_total = integrated_flux_error(SII6716_FLUX_ERR)
+SII6730_FLUX_ERR_total = integrated_flux_error(SII6730_FLUX_ERR)
 
 if (
     np.isfinite(HB4861_FLUX_total)
@@ -3007,6 +3252,12 @@ if (
     NII6583_FLUX_corr_total = correct_flux_with_ebv(NII6583_FLUX_total, E_BV_BD_total, k_NII6583)
     SII6716_FLUX_corr_total = correct_flux_with_ebv(SII6716_FLUX_total, E_BV_BD_total, k_SII6716)
     SII6730_FLUX_corr_total = correct_flux_with_ebv(SII6730_FLUX_total, E_BV_BD_total, k_SII6730)
+    HB4861_FLUX_ERR_total = correct_flux_error_with_ebv(HB4861_FLUX_ERR_total, E_BV_BD_total, k_HB4861)
+    HA6562_FLUX_ERR_total = correct_flux_error_with_ebv(HA6562_FLUX_ERR_total, E_BV_BD_total, k_HA6562)
+    OIII5006_FLUX_ERR_total = correct_flux_error_with_ebv(OIII5006_FLUX_ERR_total, E_BV_BD_total, k_OIII5006)
+    NII6583_FLUX_ERR_total = correct_flux_error_with_ebv(NII6583_FLUX_ERR_total, E_BV_BD_total, k_NII6583)
+    SII6716_FLUX_ERR_total = correct_flux_error_with_ebv(SII6716_FLUX_ERR_total, E_BV_BD_total, k_SII6716)
+    SII6730_FLUX_ERR_total = correct_flux_error_with_ebv(SII6730_FLUX_ERR_total, E_BV_BD_total, k_SII6730)
 else:
     BD_total = np.nan
     E_BV_BD_total = np.nan
@@ -3016,6 +3267,12 @@ else:
     NII6583_FLUX_corr_total = np.nan
     SII6716_FLUX_corr_total = np.nan
     SII6730_FLUX_corr_total = np.nan
+    HB4861_FLUX_ERR_total = np.nan
+    HA6562_FLUX_ERR_total = np.nan
+    OIII5006_FLUX_ERR_total = np.nan
+    NII6583_FLUX_ERR_total = np.nan
+    SII6716_FLUX_ERR_total = np.nan
+    SII6730_FLUX_ERR_total = np.nan
 
 # Dopita et al. (2016) metallicity calculation (total)
 y_total = np.log10(NII6583_FLUX_corr_total / (SII6716_FLUX_corr_total + SII6730_FLUX_corr_total)) + 0.264*np.log10(NII6583_FLUX_corr_total / HA6562_FLUX_corr_total)
@@ -3129,7 +3386,7 @@ if (np.isfinite(HB4861_FLUX_corr_total) and np.isfinite(OIII5006_FLUX_corr_total
         x_err_total = y_err_total_c20 / derivative_x_total
         
         O_H_O3N2_C20_total = x_final_total + 8.69
-        O_H_O3N2_C20_total_ERR = np.sqrt(x_err_total**2)  # Can add fitting error here if needed
+        O_H_O3N2_C20_total_ERR = np.sqrt(x_err_total**2 + 0.09**2)
     else:
         O_H_O3N2_C20_total = np.nan
         O_H_O3N2_C20_total_ERR = np.nan
@@ -3180,7 +3437,7 @@ if (np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total
             x_err_total = y_err_total_c20 / derivative_x_total
             
             O_H_O3S2_C20_total = x_final_total + 8.69
-            O_H_O3S2_C20_total_ERR = np.sqrt(x_err_total**2)  # Can add fitting error here if needed
+            O_H_O3S2_C20_total_ERR = np.sqrt(x_err_total**2 + 0.11**2)
         else:
             O_H_O3S2_C20_total = np.nan
             O_H_O3S2_C20_total_ERR = np.nan
@@ -3198,13 +3455,7 @@ if np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total)
    OIII5006_FLUX_corr_total > 0 and HB4861_FLUX_corr_total > 0 and \
    HA6562_FLUX_corr_total > 0 and SII6716_FLUX_corr_total > 0 and SII6730_FLUX_corr_total > 0:
     
-    # Calculate total flux errors
-    HB4861_FLUX_ERR_total = np.sqrt(np.nansum(HB4861_FLUX_ERR[~np.isnan(HB4861_FLUX_corr)]**2))
-    HA6562_FLUX_ERR_total = np.sqrt(np.nansum(HA6562_FLUX_ERR[~np.isnan(HA6562_FLUX_corr)]**2))
-    OIII5006_FLUX_ERR_total = np.sqrt(np.nansum(OIII5006_FLUX_ERR[~np.isnan(OIII5006_FLUX_corr)]**2))
-    SII6716_FLUX_ERR_total = np.sqrt(np.nansum(SII6716_FLUX_ERR[~np.isnan(SII6716_FLUX_corr)]**2))
-    SII6730_FLUX_ERR_total = np.sqrt(np.nansum(SII6730_FLUX_ERR[~np.isnan(SII6730_FLUX_corr)]**2))
-
+    # Reuse the integrated-BD-corrected total flux errors calculated above.
     oiii_hb_total_c20 = OIII5006_FLUX_corr_total / HB4861_FLUX_corr_total
     sii_total = SII6716_FLUX_corr_total + SII6730_FLUX_corr_total
     sii_total_err = np.sqrt(SII6716_FLUX_ERR_total**2 + SII6730_FLUX_ERR_total**2)
@@ -3214,11 +3465,15 @@ if np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total)
     if r_lin_total_c20 > 0:
         y_total_c20 = np.log10(r_lin_total_c20)
         
-        # Calculate errors for the line ratios using error propagation
-        oiii_hb_err_total = bpt_error_propagation(OIII5006_FLUX_corr_total, HB4861_FLUX_corr_total, 
-                                                  OIII5006_FLUX_ERR_total, HB4861_FLUX_ERR_total)
-        sii_ha_err_total = bpt_error_propagation(sii_total, HA6562_FLUX_corr_total, 
-                                                 sii_total_err, HA6562_FLUX_ERR_total)
+        # Calculate linear-ratio errors before propagating through log10(A + B).
+        oiii_hb_err_total = ratio_linear_error(
+            OIII5006_FLUX_corr_total, HB4861_FLUX_corr_total,
+            OIII5006_FLUX_ERR_total, HB4861_FLUX_ERR_total
+        )
+        sii_ha_err_total = ratio_linear_error(
+            sii_total, HA6562_FLUX_corr_total,
+            sii_total_err, HA6562_FLUX_ERR_total
+        )
         
         # Error for RS32 = log10(OIII/Hb + SII/Ha)
         r_lin_err_total = np.sqrt(oiii_hb_err_total**2 + sii_ha_err_total**2)
@@ -3238,7 +3493,7 @@ if np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total)
                 # Calculate error in x using derivative approach
                 derivative_x = (np.abs(c1 + 2*c2*x_final_total + 3*c3*x_final_total**2 + 4*c4*x_final_total**3))
                 x_err_total = y_err_total / derivative_x
-                O_H_RS32_C20_total_ERR = x_err_total
+                O_H_RS32_C20_total_ERR = np.sqrt(x_err_total**2 + 0.08**2)
             else:
                 y_pred = c0 + c1*real_roots + c2*real_roots**2 + c3*real_roots**3 + c4*real_roots**4
                 x_final_total = real_roots[np.argmin(np.abs(y_pred - y_total_c20))]
@@ -3247,7 +3502,7 @@ if np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total)
                 # Calculate error in x using derivative approach
                 derivative_x = (np.abs(c1 + 2*c2*x_final_total + 3*c3*x_final_total**2 + 4*c4*x_final_total**3))
                 x_err_total = y_err_total / derivative_x
-                O_H_RS32_C20_total_ERR = x_err_total
+                O_H_RS32_C20_total_ERR = np.sqrt(x_err_total**2 + 0.08**2)
         else:
             O_H_RS32_C20_total = np.nan
             O_H_RS32_C20_total_ERR = np.nan
@@ -3262,10 +3517,7 @@ else:
 if np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total) and \
    OIII5006_FLUX_corr_total > 0 and HB4861_FLUX_corr_total > 0:
     
-    # Calculate total flux errors
-    HB4861_FLUX_ERR_total = np.sqrt(np.nansum(HB4861_FLUX_ERR[~np.isnan(HB4861_FLUX_corr)]**2))
-    OIII5006_FLUX_ERR_total = np.sqrt(np.nansum(OIII5006_FLUX_ERR[~np.isnan(OIII5006_FLUX_corr)]**2))
-    
+    # Reuse the integrated-BD-corrected total flux errors calculated above.
     r_lin_total_c20 = OIII5006_FLUX_corr_total / HB4861_FLUX_corr_total
     if r_lin_total_c20 > 0:
         y_total_c20 = np.log10(r_lin_total_c20)
@@ -3290,7 +3542,7 @@ if np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total)
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * r3_error_total
-                    O_H_R3_C20_total_ERR = obs_error
+                    O_H_R3_C20_total_ERR = np.sqrt(obs_error**2 + 0.07**2)
                 else:
                     O_H_R3_C20_total_ERR = np.nan
             else:
@@ -3303,7 +3555,7 @@ if np.isfinite(OIII5006_FLUX_corr_total) and np.isfinite(HB4861_FLUX_corr_total)
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * r3_error_total
-                    O_H_R3_C20_total_ERR = obs_error
+                    O_H_R3_C20_total_ERR = np.sqrt(obs_error**2 + 0.07**2)
                 else:
                     O_H_R3_C20_total_ERR = np.nan
         else:
@@ -3320,10 +3572,7 @@ else:
 if np.isfinite(NII6583_FLUX_corr_total) and np.isfinite(HA6562_FLUX_corr_total) and \
    NII6583_FLUX_corr_total > 0 and HA6562_FLUX_corr_total > 0:
     
-    # Calculate total flux errors
-    HA6562_FLUX_ERR_total = np.sqrt(np.nansum(HA6562_FLUX_ERR[~np.isnan(HA6562_FLUX_corr)]**2))
-    NII6583_FLUX_ERR_total = np.sqrt(np.nansum(NII6583_FLUX_ERR[~np.isnan(NII6583_FLUX_corr)]**2))
-    
+    # Reuse the integrated-BD-corrected total flux errors calculated above.
     n2_lin_total_c20 = NII6583_FLUX_corr_total / HA6562_FLUX_corr_total
     if n2_lin_total_c20 > 0:
         y_total_c20 = np.log10(n2_lin_total_c20)
@@ -3347,7 +3596,7 @@ if np.isfinite(NII6583_FLUX_corr_total) and np.isfinite(HA6562_FLUX_corr_total) 
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * n2_error_total
-                    O_H_N2_C20_total_ERR = obs_error
+                    O_H_N2_C20_total_ERR = np.sqrt(obs_error**2 + 0.10**2)
                 else:
                     O_H_N2_C20_total_ERR = np.nan
             else:
@@ -3368,11 +3617,7 @@ if np.isfinite(SII6716_FLUX_corr_total) and np.isfinite(SII6730_FLUX_corr_total)
    np.isfinite(HA6562_FLUX_corr_total) and \
    SII6716_FLUX_corr_total > 0 and SII6730_FLUX_corr_total > 0 and HA6562_FLUX_corr_total > 0:
     
-    # Calculate total flux errors
-    HA6562_FLUX_ERR_total = np.sqrt(np.nansum(HA6562_FLUX_ERR[~np.isnan(HA6562_FLUX_corr)]**2))
-    SII6716_FLUX_ERR_total = np.sqrt(np.nansum(SII6716_FLUX_ERR[~np.isnan(SII6716_FLUX_corr)]**2))
-    SII6730_FLUX_ERR_total = np.sqrt(np.nansum(SII6730_FLUX_ERR[~np.isnan(SII6730_FLUX_corr)]**2))
-    
+    # Reuse the integrated-BD-corrected total flux errors calculated above.
     s2_lin_total_c20 = (SII6716_FLUX_corr_total + SII6730_FLUX_corr_total) / HA6562_FLUX_corr_total
     if s2_lin_total_c20 > 0:
         y_total_c20 = np.log10(s2_lin_total_c20)
@@ -3397,7 +3642,7 @@ if np.isfinite(SII6716_FLUX_corr_total) and np.isfinite(SII6730_FLUX_corr_total)
                 if derivative_y > 0:
                     derivative_x = 1.0 / derivative_y
                     obs_error = derivative_x * s2_error_total
-                    O_H_S2_C20_total_ERR = obs_error
+                    O_H_S2_C20_total_ERR = np.sqrt(obs_error**2 + 0.06**2)
                 else:
                     O_H_S2_C20_total_ERR = np.nan
             else:

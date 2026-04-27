@@ -52,12 +52,18 @@ else
   exit 1
 fi
 
+if ! "$PYTHON_BIN" -c 'import numpy, astropy, scipy, matplotlib, speclite, ppxf' >/dev/null 2>&1; then
+  echo "ERROR: $PYTHON_BIN is missing one or more required Python packages for Mass.py." >&2
+  echo "       Activate the science environment or set PYTHON_BIN to the correct interpreter." >&2
+  exit 1
+fi
+
 GALAXIES=(
   IC3392  
   NGC4064  
   NGC4192  
   NGC4293  
-  NGC4298
+  NGC429
   NGC4330 
   NGC4383  
   NGC4396  

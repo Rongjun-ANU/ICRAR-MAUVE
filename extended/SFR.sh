@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SFR.sh – run SFR.py in parallel for a list of MAUVE galaxies.
+# SFR.sh – run SFR+Z.py in parallel for a list of MAUVE galaxies.
 #
 # Usage examples:
 #   ./SFR.sh                   # default galaxy list below
@@ -33,6 +33,12 @@ elif command -v python3 >/dev/null 2>&1; then
   PYTHON_BIN="$(command -v python3)"
 else
   echo "ERROR: could not find a usable Python executable." >&2
+  exit 1
+fi
+
+if ! "$PYTHON_BIN" -c 'import numpy, astropy' >/dev/null 2>&1; then
+  echo "ERROR: $PYTHON_BIN is missing one or more required Python packages for SFR+Z.py." >&2
+  echo "       Activate the science environment or set PYTHON_BIN to the correct interpreter." >&2
   exit 1
 fi
 
@@ -78,11 +84,12 @@ process_galaxy() {
   {
     echo "Python executable: $PYTHON_BIN"
     "$PYTHON_BIN" --version
+    echo "PYTHONUNBUFFERED: 1"
     echo "CANFAR base root : $ROOT_CANFAR_BASE"
     echo "Local fallback   : $ROOT_LOCAL"
     echo
   } >"$LOGFILE" 2>&1
-  "$PYTHON_BIN" "$SCRIPT" \
+  PYTHONUNBUFFERED=1 "$PYTHON_BIN" -u "$SCRIPT" \
     -g "$GAL" \
     --root "$ROOT_CANFAR_BASE" \
     --fallback-root "$ROOT_LOCAL" \
@@ -117,7 +124,7 @@ printf "Using Python executable: %s\n" "$PYTHON_BIN"
 if command -v parallel >/dev/null 2>&1; then
   printf '%s\n' "${GALAXIES[@]}" | parallel -j "$CORES" process_galaxy
 else
-  printf '%s\n' "${GALAXIES[@]}" | xargs -n 1 -P "$CORES" -I {} bash -c 'process_galaxy "$@"' _ {}
+  printf '%s\n' "${GALAXIES[@]}" | xargs -P "$CORES" -I {} bash -c 'process_galaxy "$@"' _ {}
 fi
 
 all_end=$(date +%s)

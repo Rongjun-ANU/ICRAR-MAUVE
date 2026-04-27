@@ -116,6 +116,23 @@ Changes (2026-04-23)
 * Clarified integrated summary logging by printing both uncorrected and extinction-
   corrected R-band totals, plus the integrated stellar `M/L_R`.
 
+Changes (2026-04-26)
+-----------------------
+* Added flexible input filename resolution for datacube version suffixes and
+  upper/lower-case MAUVE product names while preserving normalized `_extended`
+  output naming.
+* Fixed the `M/L_R` BINID lookup to support weights tables with more rows than
+  the currently populated BINID range.
+* Clarified stellar-mass surface-density comments to match the stored
+  `log(Msol/kpc2)` unit.
+
+Changes (2026-04-27)
+-----------------------
+* Non-cube product inputs are now resolved as a matched optional-keyword group,
+  e.g. `{galaxy}_{keyword}_SPATIAL_BINNING_maps.fits`,
+  `{galaxy}_{keyword}_SFH_maps.fits`, and
+  `{galaxy}_{keyword}_sfh_weights.fits`.
+
 """
 
 # ------------------------------------------------------------------
@@ -170,13 +187,43 @@ def _unique_paths(*paths: Path | None) -> list[Path]:
     return unique
 
 
+def _has_glob_chars(path: Path) -> bool:
+    return any(char in str(path) for char in "*?[")
+
+
+def _candidate_paths(*paths: Path | None) -> list[Path]:
+    candidates: list[Path] = []
+    seen: set[str] = set()
+
+    for path in paths:
+        if path is None:
+            continue
+
+        expanded = path.expanduser()
+        if _has_glob_chars(expanded):
+            path_candidates = sorted(
+                expanded.parent.glob(expanded.name), key=lambda candidate: str(candidate)
+            )
+        else:
+            path_candidates = [expanded]
+
+        for candidate in path_candidates:
+            resolved = candidate.resolve()
+            if str(resolved) in seen:
+                continue
+            seen.add(str(resolved))
+            candidates.append(resolved)
+
+    return candidates
+
+
 def resolve_existing_path(label: str, *paths: Path | None) -> Path:
-    candidates = _unique_paths(*paths)
+    candidates = _candidate_paths(*paths)
     for candidate in candidates:
         if candidate.exists():
             return candidate
 
-    checked = "\n".join(f"  - {candidate}" for candidate in candidates)
+    checked = "\n".join(f"  - {candidate}" for candidate in _unique_paths(*paths))
     raise FileNotFoundError(f"Could not find {label}. Checked:\n{checked}")
 
 
@@ -191,6 +238,122 @@ def build_input_candidates(
         candidates.append(root / flat_name)
 
     return candidates
+
+
+def build_named_input_candidates(
+    root: Path | None, relative_dir: Path, names: list[str]
+) -> list[Path]:
+    candidates: list[Path] = []
+    for name in names:
+        candidates.extend(build_input_candidates(root, relative_dir / name, name))
+    return candidates
+
+
+def _input_search_dirs(root: Path | None, relative_dir: Path) -> list[Path]:
+    if root is None:
+        return []
+    return _unique_paths(root / relative_dir, root)
+
+
+def _keyword_sort_key(keyword: str) -> tuple[bool, str, str]:
+    return (keyword != "", keyword.lower(), keyword)
+
+
+def _format_keyword(keyword: str) -> str:
+    return "<none>" if keyword == "" else keyword
+
+
+def extract_shared_keyword(filename: str, galaxy_name: str, suffixes: list[str]) -> str | None:
+    prefix = f"{galaxy_name}_"
+    if not filename.startswith(prefix):
+        return None
+
+    remainder = filename[len(prefix):]
+    for suffix in sorted(suffixes, key=len, reverse=True):
+        if remainder == suffix:
+            return ""
+        marker = f"_{suffix}"
+        if remainder.endswith(marker):
+            return remainder[: -len(marker)]
+
+    return None
+
+
+def collect_keyworded_input_paths(
+    root: Path | None,
+    fallback_root: Path | None,
+    relative_dir: Path,
+    galaxy_name: str,
+    suffixes: list[str],
+) -> dict[str, Path]:
+    matches: dict[str, Path] = {}
+
+    for search_root in (root, fallback_root):
+        for search_dir in _input_search_dirs(search_root, relative_dir):
+            for suffix in suffixes:
+                for pattern in (f"{galaxy_name}_{suffix}", f"{galaxy_name}_*_{suffix}"):
+                    for candidate in sorted(search_dir.glob(pattern), key=lambda path: str(path)):
+                        if not candidate.exists() or candidate.is_dir():
+                            continue
+
+                        keyword = extract_shared_keyword(
+                            candidate.name, galaxy_name, suffixes
+                        )
+                        if keyword is None or keyword in matches:
+                            continue
+                        matches[keyword] = candidate.resolve()
+
+    return matches
+
+
+def resolve_keyworded_input_group(
+    group_label: str,
+    root: Path | None,
+    fallback_root: Path | None,
+    relative_dir: Path,
+    galaxy_name: str,
+    specs: dict[str, list[str]],
+) -> tuple[str, dict[str, Path]]:
+    matches_by_label = {
+        label: collect_keyworded_input_paths(
+            root, fallback_root, relative_dir, galaxy_name, suffixes
+        )
+        for label, suffixes in specs.items()
+    }
+
+    keyword_sets = [set(matches) for matches in matches_by_label.values()]
+    common_keywords = set.intersection(*keyword_sets) if keyword_sets else set()
+    if not common_keywords:
+        found = []
+        for label, matches in matches_by_label.items():
+            if matches:
+                keywords = ", ".join(
+                    _format_keyword(keyword)
+                    for keyword in sorted(matches, key=_keyword_sort_key)
+                )
+            else:
+                keywords = "none"
+            found.append(f"  - {label}: {keywords}")
+
+        raise FileNotFoundError(
+            f"Could not find {group_label} with a shared optional keyword.\n"
+            f"Each required product input must use the same text between "
+            f"'{galaxy_name}_' and its product suffix.\n"
+            "Found keyword groups:\n" + "\n".join(found)
+        )
+
+    chosen_keyword = sorted(common_keywords, key=_keyword_sort_key)[0]
+    return chosen_keyword, {
+        label: matches_by_label[label][chosen_keyword] for label in specs
+    }
+
+
+def build_extended_output_path(input_path: Path) -> Path:
+    suffix = input_path.suffix or ".fits"
+    stem = input_path.name[: -len(input_path.suffix)] if input_path.suffix else input_path.name
+    if stem.endswith("_extended"):
+        return Path(f"{stem}{suffix}")
+    return Path(f"{stem}_extended{suffix}")
 
 
 def parse_args() -> argparse.Namespace:
@@ -275,45 +438,44 @@ if ncpus > 0:
 # ------------------------------------------------------------------
 # 1.  File paths derived from CLI args
 # ------------------------------------------------------------------
-cube_name   = f"{galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits"
-bin_name    = f"{galaxy}_SPATIAL_BINNING_maps.fits"
-sfh_name    = f"{galaxy}_SFH_maps.fits"
-weight_name = f"{galaxy}_sfh-weights.fits"
+cube_names = [
+    f"{galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3.fits",
+    f"{galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v*.fits",
+]
+bin_suffixes = [
+    "SPATIAL_BINNING_maps.fits",
+    "spatial_binning_maps.fits",
+]
+sfh_suffixes = [
+    "SFH_maps.fits",
+    "sfh_maps.fits",
+]
+weight_suffixes = [
+    "sfh-weights.fits",
+    "sfh_weights.fits",
+]
 
 cube_path = resolve_existing_path(
     "datacube FITS",
-    *build_input_candidates(rootdir, Path("cubes/v3.0") / cube_name, cube_name),
-    *build_input_candidates(
-        fallback_root, Path("cubes/v3.0") / cube_name, cube_name
-    ),
+    *build_named_input_candidates(rootdir, Path("cubes/v3.0"), cube_names),
+    *build_named_input_candidates(fallback_root, Path("cubes/v3.0"), cube_names),
 )
-bin_path = resolve_existing_path(
-    "spatial binning FITS",
-    *build_input_candidates(
-        rootdir, Path("products/v0.6") / galaxy / bin_name, bin_name
-    ),
-    *build_input_candidates(
-        fallback_root, Path("products/v0.6") / galaxy / bin_name, bin_name
-    ),
+
+input_keyword, product_paths = resolve_keyworded_input_group(
+    "stellar-population product FITS inputs",
+    rootdir,
+    fallback_root,
+    Path("products/v0.6") / galaxy,
+    galaxy,
+    {
+        "spatial binning FITS": bin_suffixes,
+        "SFH FITS": sfh_suffixes,
+        "SFH weights FITS": weight_suffixes,
+    },
 )
-sfh_path = resolve_existing_path(
-    "SFH FITS",
-    *build_input_candidates(
-        rootdir, Path("products/v0.6") / galaxy / sfh_name, sfh_name
-    ),
-    *build_input_candidates(
-        fallback_root, Path("products/v0.6") / galaxy / sfh_name, sfh_name
-    ),
-)
-weight_path = resolve_existing_path(
-    "SFH weights FITS",
-    *build_input_candidates(
-        rootdir, Path("products/v0.6") / galaxy / weight_name, weight_name
-    ),
-    *build_input_candidates(
-        fallback_root, Path("products/v0.6") / galaxy / weight_name, weight_name
-    ),
-)
+bin_path = product_paths["spatial binning FITS"]
+sfh_path = product_paths["SFH FITS"]
+weight_path = product_paths["SFH weights FITS"]
 script_dir = Path(__file__).resolve().parent
 phot_path = resolve_existing_path(
     "photometry table",
@@ -321,7 +483,7 @@ phot_path = resolve_existing_path(
     script_dir / "BaSTI+Chabrier.dat",
     script_dir.parent / "data" / "IC3392" / "BaSTI+Chabrier.dat",
 )
-out_path    = Path(f"{galaxy}_SPATIAL_BINNING_maps_extended.fits")   # output in CWD
+out_path = build_extended_output_path(bin_path)   # output in CWD
 inclination_path = resolve_existing_path(
     "inclination table",
     Path("MAUVE_Inclination.dat"),
@@ -336,6 +498,7 @@ print("\n=== Using the following files ===")
 print("Primary root :", rootdir)
 if fallback_root is not None:
     print("Fallback root:", fallback_root)
+print("Input keyword:", _format_keyword(input_keyword))
 print("Cube         :", cube_path)
 print("Binning map  :", bin_path)
 print("SFH map      :", sfh_path)
@@ -901,7 +1064,7 @@ if binid_max >= len(ml_bin):
     )
 print(f"BINID range check for ML_R mapping: max BINID={binid_max}, n_weight_rows={len(ml_bin)}")
 ml_lut = np.full(binid_max + 1, np.nan, dtype=np.float32)
-ml_lut[: len(ml_bin)] = ml_bin.astype(np.float32)
+ml_lut[:] = ml_bin[: binid_max + 1].astype(np.float32)
 binning_MLR[valid] = ml_lut[binning_BINID[valid].astype(int)]
 
 
@@ -1417,9 +1580,9 @@ with fits.open(out_path, mode="append") as hdul:             # open existing fil
 print("Stellar-mass layer saved ➜", out_path.resolve())
 
 
-# Getting the stellar mass surface density 
-# Convert to surface density in M☉/pc²
-# 1. Convert pixel area to physical area in pc²
+# Getting the stellar mass surface density
+# Convert to surface density in M☉/kpc²
+# 1. Convert pixel area to physical area in kpc²
 legacy_wcs2 = WCS(binning_hdr).celestial  # strip spectral axis
 pixel_scale = (proj_plane_pixel_scales(legacy_wcs2) * u.deg).to(u.arcsec)
 pixel_area_Mpc = ((pixel_scale[0]).to(u.rad).value*16.5*u.Mpc)*(((pixel_scale[1]).to(u.rad).value*16.5*u.Mpc))
