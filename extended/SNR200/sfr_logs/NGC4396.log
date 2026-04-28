@@ -3,7 +3,9 @@ Python 3.13.3
 CANFAR base root : /arc/projects/mauve
 Local fallback   : /arc/home/RongjunHuang/ICRAR/extended/SNR200
 
+Shared input keyword ➜ v3tk_SNR200
 Reading gas-line FITS ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4396_v3tk_SNR200_gas_bin_maps.fits
+Matched binning FITS ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4396_v3tk_SNR200_spatial_binning_maps_extended.fits
 File not found: None
 --------------------------------------------------------------
 Extinction law for k(λ)=A(λ)/E(B−V): mw (mw_rv=3.1)
@@ -15,14 +17,14 @@ k([SII]6716) = 2.4619   at λ=0.6716 µm
 k([SII]6730) = 2.4552   at λ=0.6730 µm
 --------------------------------------------------------------
 Calculating all 6 C20 metallicities for NGC4396...
-Combined C20 metallicity: median = 8.606, range = (8.524, 8.701)
-Combined C20 method usage: O3N2=0, O3S2=0, RS32=155296, R3=0, N2=0, S2=0
+Combined C20 metallicity: median = 8.625, range = (8.493, 8.729)
+Combined C20 method usage: O3N2=0, O3S2=0, RS32=0, R3=136370, N2=0, S2=18926
 Galaxy NGC4396 inclination: 83.0° (cos θ = 0.122)
 Inclination correction ENABLED: applying b/a = 0.233 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
-Combined C20 total: Selected RS32-C20 with error 0.014
-Available methods: [('O3N2-C20', np.float64(8.600888440186662), np.float64(0.02293162496010846)), ('O3S2-C20', np.float64(8.759552192448629), np.float64(0.0215339449551311)), ('RS32-C20', np.float64(8.61853125243105), np.float64(0.014462506877782267)), ('R3-C20', np.float64(8.620275814665046), np.float64(0.03265552132448641)), ('N2-C20', np.float64(8.551625628357716), np.float64(0.05138328039259304))]
-Combined C20 total: Selected RS32-C20 with error 0.000
-Available methods: [('O3N2-C20', np.float64(8.59705517893887), np.float64(4.549581701543483e-07)), ('O3S2-C20', np.float64(8.758950471848857), np.float64(4.0928406075874907e-07)), ('RS32-C20', np.float64(8.612793934468451), np.float64(2.402037631356006e-07)), ('R3-C20', np.float64(8.61574663317665), np.float64(4.5368887157368394e-07)), ('N2-C20', np.float64(8.550145244767634), np.float64(7.28285530665072e-07))]
+Combined C20 total: Selected R3-C20 with error 0.077
+Available methods: [('O3N2-C20', np.float64(8.596762821099162), np.float64(0.09289995677385438)), ('O3S2-C20', np.float64(8.75699303566329), np.float64(0.11209948815705152)), ('RS32-C20', np.float64(8.614923896335585), np.float64(0.0813232594382023)), ('R3-C20', np.float64(8.616390270519544), np.float64(0.0773623054417052)), ('N2-C20', np.float64(8.548492152954804), np.float64(0.11237840734965662))]
+Combined C20 total: Selected R3-C20 with error 0.070
+Available methods: [('O3N2-C20', np.float64(8.59705517893887), np.float64(0.09000000000477673)), ('O3S2-C20', np.float64(8.758950471848857), np.float64(0.1100000000036494)), ('RS32-C20', np.float64(8.612793934468451), np.float64(0.08000000000606229)), ('R3-C20', np.float64(8.61574663317665), np.float64(0.07000000000757575)), ('N2-C20', np.float64(8.550145244767634), np.float64(0.10000000000852705))]
 Extended file written ➜ /arc/home/RongjunHuang/ICRAR/extended/SNR200/NGC4396_v3tk_SNR200_gas_bin_maps_extended.fits
 --------------------------------------------------------------
 Total non-nan spaxels: 155296
@@ -43,35 +45,35 @@ Total Halpha SFR: 0.27 M☉/yr or in log10 scale: -0.57 log(M☉/yr)
 Total Halpha SFR from SF region: 0.26 M☉/yr or in log10 scale: -0.59 log(M☉/yr)
 Total Halpha SFR from HII region: 0.26 M☉/yr or in log10 scale: -0.59 log(M☉/yr)
 --------------------------------------------------------------
-[O/H] D16 SF: Total metallicity in SF region:  8.22474058734235
-[O/H] PG16 SF: Total metallicity in SF region:  8.279804574260528
-[O/H] N2S2-N06 SF: Total metallicity in SF region:  8.539645348307976
-[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.385852168523812
-[O/H] N2-M13 SF: Total metallicity in SF region:  8.403757896545935
-[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.509965859474859
-[O/H] N2-PP04 SF: Total metallicity in SF region:  8.432067128643206
-[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.600888440186662
-[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.759552192448629
-[O/H] RS32-C20 SF: Total metallicity in SF region:  8.61853125243105
-[O/H] R3-C20 SF: Total metallicity in SF region:  8.620275814665046
-[O/H] N2-C20 SF: Total metallicity in SF region:  8.551625628357716
+[O/H] D16 SF: Total metallicity in SF region:  8.216978060332455
+[O/H] PG16 SF: Total metallicity in SF region:  8.275515706353886
+[O/H] N2S2-N06 SF: Total metallicity in SF region:  8.529025259636926
+[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.382010364491158
+[O/H] N2-M13 SF: Total metallicity in SF region:  8.400937450105982
+[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.504221105781172
+[O/H] N2-PP04 SF: Total metallicity in SF region:  8.42783141229963
+[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.596762821099162
+[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.75699303566329
+[O/H] RS32-C20 SF: Total metallicity in SF region:  8.614923896335585
+[O/H] R3-C20 SF: Total metallicity in SF region:  8.616390270519544
+[O/H] N2-C20 SF: Total metallicity in SF region:  8.548492152954804
 [O/H] S2-C20 SF: Total metallicity in SF region:  nan
-[O/H] Combined-C20 SF: Total metallicity in SF region:  8.61853125243105
+[O/H] Combined-C20 SF: Total metallicity in SF region:  8.616390270519544
 --------------------------------------------------------------
-[O/H] D16 HII: Total metallicity in HII region:  8.22474058734235
-[O/H] PG16 HII: Total metallicity in HII region:  8.279804574260528
-[O/H] N2S2-N06 HII: Total metallicity in HII region:  8.539645348307976
-[O/H] O3N2-M13 HII: Total metallicity in HII region:  8.385852168523812
-[O/H] N2-M13 HII: Total metallicity in HII region:  8.403757896545935
-[O/H] O3N2-PP04 HII: Total metallicity in HII region:  8.509965859474859
-[O/H] N2-PP04 HII: Total metallicity in HII region:  8.432067128643206
-[O/H] O3N2-C20 HII: Total metallicity in HII region:  8.385852168523812
-[O/H] O3S2-C20 HII: Total metallicity in HII region:  8.41390211907598
-[O/H] RS32-C20 HII: Total metallicity in HII region:  8.075220412885926
-[O/H] R3-C20 HII: Total metallicity in HII region:  8.649293480604339
-[O/H] N2-C20 HII: Total metallicity in HII region:  8.673321420696094
-[O/H] S2-C20 HII: Total metallicity in HII region:  8.848669631641036
-[O/H] Combined-C20 HII: Total metallicity in HII region:  8.385852168523812
+[O/H] D16 HII: Total metallicity in HII region:  8.216978060332455
+[O/H] PG16 HII: Total metallicity in HII region:  8.275515706353886
+[O/H] N2S2-N06 HII: Total metallicity in HII region:  8.529025259636926
+[O/H] O3N2-M13 HII: Total metallicity in HII region:  8.382010364491158
+[O/H] N2-M13 HII: Total metallicity in HII region:  8.400937450105982
+[O/H] O3N2-PP04 HII: Total metallicity in HII region:  8.504221105781172
+[O/H] N2-PP04 HII: Total metallicity in HII region:  8.42783141229963
+[O/H] O3N2-C20 HII: Total metallicity in HII region:  8.596762821099162
+[O/H] O3S2-C20 HII: Total metallicity in HII region:  8.75699303566329
+[O/H] RS32-C20 HII: Total metallicity in HII region:  8.614923896335585
+[O/H] R3-C20 HII: Total metallicity in HII region:  8.616390270519544
+[O/H] N2-C20 HII: Total metallicity in HII region:  8.548492152954804
+[O/H] S2-C20 HII: Total metallicity in HII region:  nan
+[O/H] Combined-C20 HII: Total metallicity in HII region:  8.616390270519544
 --------------------------------------------------------------
 [O/H] D16: Total metallicity in total region:  8.209956693358198
 [O/H] PG16: Total metallicity in total region:  8.272966697236432
@@ -86,7 +88,7 @@ Total Halpha SFR from HII region: 0.26 M☉/yr or in log10 scale: -0.59 log(M☉
 [O/H] R3-C20: Total metallicity in total region:  8.61574663317665
 [O/H] N2-C20: Total metallicity in total region:  8.550145244767634
 [O/H] S2-C20: Total metallicity in total region:  nan
-[O/H] Combined-C20: Total metallicity in total region:  8.612793934468451
+[O/H] Combined-C20: Total metallicity in total region:  8.61574663317665
 --------------------------------------------------------------
-Total runtime: 121.8 s
-✅  NGC4396 finished in 2m3s
+Total runtime: 150.4 s
+✅  NGC4396 finished in 3m18s

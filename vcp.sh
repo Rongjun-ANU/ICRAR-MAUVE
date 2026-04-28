@@ -64,4 +64,26 @@ for gal in "${GALAXIES[@]}"; do
 done
 wait
 
+# Download comparison maps from v0.7dev
+mkdir -p /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7
+GALAXIES=("IC3392" "NGC4064" "NGC4192" "NGC4293" "NGC4298" "NGC4330" "NGC4383" "NGC4396" "NGC4419" "NGC4457" "NGC4501" "NGC4522" "NGC4694" "NGC4698")
+for gal in "${GALAXIES[@]}"; do
+    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_gas_BIN_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
+    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_KIN_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
+    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_SFH_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
+    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_SPATIAL_BINNING_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
+done
+wait
+
+# Download comparison maps from v0.6
+mkdir -p /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6
+GALAXIES=("IC3392" "NGC4064" "NGC4192" "NGC4293" "NGC4298" "NGC4330" "NGC4383" "NGC4396" "NGC4419" "NGC4457" "NGC4501" "NGC4522" "NGC4694" "NGC4698")
+for gal in "${GALAXIES[@]}"; do
+    vcp -v "arc:projects/mauve/products/v0.6/${gal}/${gal}_gas_BIN_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
+    vcp -v "arc:projects/mauve/products/v0.6/${gal}/${gal}_KIN_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
+    vcp -v "arc:projects/mauve/products/v0.6/${gal}/${gal}_SFH_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
+    vcp -v "arc:projects/mauve/products/v0.6/${gal}/${gal}_SPATIAL_BINNING_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
+done
+wait
+
 vcp -v arc:/projects/mauve/products/v0.6/IC3392/IC3392_CONTcube.fits /Users/Igniz/Desktop/ICRAR/extended/IC3392_CONTcube.fits
