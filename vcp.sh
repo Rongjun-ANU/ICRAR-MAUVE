@@ -72,6 +72,8 @@ for gal in "${GALAXIES[@]}"; do
     vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_KIN_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
     vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_SFH_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
     vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/${gal}_v0.7dev_SPATIAL_BINNING_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
+    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/CONFIG" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
+    vcp -v "arc:projects/mauve/toby_sandbox/products/${gal}_v0.7dev/LOGFILE" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.7/ &
 done
 wait
 
@@ -83,6 +85,8 @@ for gal in "${GALAXIES[@]}"; do
     vcp -v "arc:projects/mauve/products/v0.6/${gal}/${gal}_KIN_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
     vcp -v "arc:projects/mauve/products/v0.6/${gal}/${gal}_SFH_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
     vcp -v "arc:projects/mauve/products/v0.6/${gal}/${gal}_SPATIAL_BINNING_maps.fits" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
+    vcp -v "arc:projects/mauve/products/v0.6/${gal}/CONFIG" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
+    vcp -v "arc:projects/mauve/products/v0.6/${gal}/LOGFILE" /Users/Igniz/Desktop/ICRAR/v0.6_v0.7_comparison/v0.6/ &
 done
 wait
 
