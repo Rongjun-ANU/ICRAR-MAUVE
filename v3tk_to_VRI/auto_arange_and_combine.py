@@ -181,14 +181,14 @@ def _minimal_square_side(sizes: list[tuple[int, int]]) -> int:
 	return lower
 
 
-def _parse_ratio(args: list[str]) -> tuple[int, int, list[str]]:
+def _parse_ratio(args: list[str]) -> tuple[int, int, bool, list[str]]:
 	"""Parse optional trailing ratio args.
 
 	Accepts:
 	  - no ratio provided -> 1:1
 	  - trailing two integers X Y -> X:Y
 	  - special '-1 -1' -> 1:1
-	Returns (x, y, remaining_args).
+	Returns (x, y, ratio_explicitly_given, remaining_args).
 	"""
 
 	if len(args) >= 3:
@@ -197,17 +197,17 @@ def _parse_ratio(args: list[str]) -> tuple[int, int, list[str]]:
 			x = int(a)
 			y = int(b)
 		except ValueError:
-			return 1, 1, args
+			return 1, 1, False, args
 
 		rest = args[:-2]
 		if x == -1 and y == -1:
-			return 1, 1, rest
+			return 1, 1, False, rest
 
 		if x <= 0 or y <= 0:
 			raise SystemExit(f"Invalid ratio {x}:{y}. Use positive integers (e.g. 16 9) or -1 -1.")
-		return x, y, rest
+		return x, y, True, rest
 
-	return 1, 1, args
+	return 1, 1, False, args
 
 
 def _ceil_div(a: int, b: int) -> int:
@@ -239,11 +239,11 @@ def main(argv: list[str]) -> int:
 		)
 		return 2
 
-	ratio_x, ratio_y, image_args = _parse_ratio(argv[1:])
+	ratio_x, ratio_y, ratio_given, image_args = _parse_ratio(argv[1:])
 	paths = _expand_args_to_files(image_args)
-	paths = [p for p in paths if p.is_file() and not p.name.startswith("ALL_")]
+	paths = [p for p in paths if p.is_file() and not (p.name.startswith("ALL_") or p.name.startswith("All_"))]
 	if not paths:
-		print("No input files found (or all were skipped because they start with 'ALL_').", file=sys.stderr)
+		print("No input files found (or all were skipped because they start with 'ALL_' or 'All_').", file=sys.stderr)
 		return 2
 
 	basenames = [p.name for p in paths]
@@ -252,10 +252,13 @@ def main(argv: list[str]) -> int:
 		# Fallback: use extension of the first input
 		suffix = Path(basenames[0]).suffix
 	if suffix.startswith("_") or suffix.startswith("."):
-		out_name = f"ALL{suffix}"
+		out_name = f"All{suffix}"
 	else:
-		out_name = f"ALL_{suffix}"
+		out_name = f"All_{suffix}"
+	
 	out_path = Path(out_name)
+	if ratio_given:
+		out_path = out_path.with_name(f"{out_path.stem}_{ratio_x}_{ratio_y}{out_path.suffix}")
 
 	images: list[Image.Image] = []
 	sizes: list[tuple[int, int]] = []
