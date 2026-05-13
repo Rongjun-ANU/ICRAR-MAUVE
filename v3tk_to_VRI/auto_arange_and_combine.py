@@ -295,9 +295,19 @@ def main(argv: list[str]) -> int:
 	width = ratio_x * k
 	height = ratio_y * k
 
+	if placements and sizes:
+		min_x = min(x for x, _ in placements)
+		min_y = min(y for _, y in placements)
+		max_x = max(x + w for (x, _), (w, _) in zip(placements, sizes))
+		max_y = max(y + h for (_, y), (_, h) in zip(placements, sizes))
+		offset_x = (width - (max_x - min_x)) // 2 - min_x
+		offset_y = (height - (max_y - min_y)) // 2 - min_y
+	else:
+		offset_x = offset_y = 0
+
 	canvas = Image.new("RGBA", (width, height), (0, 0, 0, 255))
 	for img, (x, y) in zip(images, placements, strict=True):
-		canvas.paste(img, (x, y), img)
+		canvas.paste(img, (x + offset_x, y + offset_y), img)
 
 	ext = out_path.suffix.lower()
 	save_kwargs: dict[str, object] = {}
