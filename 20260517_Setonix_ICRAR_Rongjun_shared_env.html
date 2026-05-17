@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>20260517 Setonix ICRAR_Rongjun Shared Environment Guide</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #52616b;
+      --rule: #d8dee5;
+      --code: #f4f7f9;
+      --accent: #0b6b79;
+      --warn: #8a5a00;
+      --warn-bg: #fff7dc;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 40px 22px 72px;
+    }
+    h1 {
+      font-size: 2rem;
+      line-height: 1.2;
+      margin: 0 0 10px;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin: 34px 0 12px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rule);
+    }
+    p, li {
+      font-size: 1rem;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+    .note {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn);
+      padding: 12px 14px;
+      margin: 18px 0;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+      background: var(--code);
+      padding: 0.1em 0.28em;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.9rem;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+    a {
+      color: var(--accent);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin: 18px 0;
+    }
+    .box {
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .box strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Setonix shared ICRAR_Rongjun environment guide</h1>
+  <p class="subtitle">Generated 2026-05-17 from the local <code>/opt/miniconda3/envs/ICRAR</code> environment.</p>
+
+  <div class="note">
+    Pawsey policy from the earlier Setonix setup note: do not install a normal Conda directory directly under <code>/software/projects/pawsey1308</code>. Build the environment inside a Singularity overlay.
+  </div>
+
+  <div class="grid">
+    <div class="box"><strong>Shared base</strong><code>/software/projects/pawsey1308</code></div>
+    <div class="box"><strong>Overlay</strong><code>containers/ICRAR_Rongjun_overlay.img</code></div>
+    <div class="box"><strong>Conda prefix inside overlay</strong><code>/ICRAR_Rongjun</code></div>
+    <div class="box"><strong>User command</strong><code>ICRAR_Rongjun python script.py</code></div>
+  </div>
+
+  <h2>Local source environment</h2>
+  <ul>
+    <li>Local Conda: <code>/opt/miniconda3/bin/conda</code>, version <code>26.1.1</code></li>
+    <li>Local environment: <code>/opt/miniconda3/envs/ICRAR</code></li>
+    <li>Local Python: <code>3.13.3</code></li>
+    <li>Local Mamba: available after <code>conda activate ICRAR</code>, version <code>2.1.1</code></li>
+    <li>Package source split: <code>404</code> total, <code>388</code> Conda/Mamba-sourced, <code>16</code> Pip-sourced</li>
+  </ul>
+  <p>The local machine is macOS arm64, while Setonix is Linux. A literal full macOS export is not valid on Setonix because low-level runtime packages differ by platform. Use the stricter Linux-target recipe <code>20260517_ICRAR_Rongjun_environment.yml</code>; it pins the Python/science package layer exactly and lets Mamba solve native Linux runtime libraries.</p>
+  <p>The full local package list is in <code>20260517_ICRAR_local_env_full_package_list.md</code>. The machine-readable reference is <code>20260517_ICRAR_local_conda_list_reference.json</code>.</p>
+
+  <h2>Copy the recipe and verifier</h2>
+  <pre><code>scp \
+  /Users/Igniz/Desktop/ICRAR/20260517_ICRAR_Rongjun_environment.yml \
+  /Users/Igniz/Desktop/ICRAR/20260517_ICRAR_local_conda_list_reference.json \
+  /Users/Igniz/Desktop/ICRAR/20260517_compare_ICRAR_env.py \
+  &lt;pawsey_user&gt;@setonix-03.pawsey.org.au:/software/projects/pawsey1308/docs/</code></pre>
+
+  <h2>Prepare Setonix paths</h2>
+  <pre><code>ssh &lt;pawsey_user&gt;@setonix-03.pawsey.org.au
+module load singularity/4.1.0-slurm
+
+BASE=/software/projects/pawsey1308
+SCR=/scratch/pawsey1308/$USER
+IMG=$BASE/containers/mambaforge_latest.sif
+OVERLAY=$BASE/containers/ICRAR_Rongjun_overlay.img
+ENVYML=$BASE/docs/20260517_ICRAR_Rongjun_environment.yml
+
+mkdir -p $BASE/bin $BASE/containers $BASE/docs
+mkdir -p $SCR/fake_home_ICRAR_Rongjun
+mkdir -p $SCR/pip_cache_ICRAR_Rongjun
+mkdir -p $SCR/conda_pkgs_ICRAR_Rongjun
+mkdir -p $SCR/singularity_cache_ICRAR_Rongjun
+mkdir -p $SCR/singularity_tmp_ICRAR_Rongjun</code></pre>
+
+  <h2>Container and overlay</h2>
+  <pre><code>cd $BASE/containers
+
+# Run this only if mambaforge_latest.sif does not already exist.
+singularity pull docker://condaforge/mambaforge:latest
+
+# 50 GB overlay for the shared environment.
+singularity overlay create --size 51200 "$OVERLAY"</code></pre>
+
+  <h2>Build the environment</h2>
+  <pre><code>singularity exec --cleanenv \
+  --bind $BASE:/work \
+  --bind $SCR:$SCR \
+  --overlay $OVERLAY \
+  $IMG \
+  bash -lc "
+    export HOME=$SCR/fake_home_ICRAR_Rongjun
+    export XDG_CACHE_HOME=$SCR/pip_cache_ICRAR_Rongjun
+    export PIP_CACHE_DIR=$SCR/pip_cache_ICRAR_Rongjun
+    export CONDA_PKGS_DIRS=$SCR/conda_pkgs_ICRAR_Rongjun
+    export PYTHONNOUSERSITE=1
+
+    source /opt/conda/etc/profile.d/conda.sh
+    mamba env create -p /ICRAR_Rongjun -f /work/docs/20260517_ICRAR_Rongjun_environment.yml
+    /ICRAR_Rongjun/bin/python -m pip check
+  "</code></pre>
+
+  <h2>Test the environment</h2>
+  <pre><code>singularity exec --cleanenv \
+  --bind $BASE:/work \
+  --bind $SCR:$SCR \
+  --overlay $OVERLAY \
+  $IMG \
+  bash -lc "
+    export PYTHONNOUSERSITE=1
+    /ICRAR_Rongjun/bin/python -V
+    /ICRAR_Rongjun/bin/mamba --version
+    /ICRAR_Rongjun/bin/python -m pip check
+    /ICRAR_Rongjun/bin/python -c 'import numpy, pandas, astropy, matplotlib, reproject, spectral_cube, ppxf, mpdaf, specutils; print(\"ICRAR_Rongjun import test OK\")'
+  "</code></pre>
+
+  <h2>Verify against the local reference</h2>
+  <pre><code>singularity exec --cleanenv \
+  --bind $BASE:/work \
+  --bind $SCR:$SCR \
+  --overlay $OVERLAY \
+  $IMG \
+  bash -lc "
+    /opt/conda/bin/conda list -p /ICRAR_Rongjun --json &gt; /work/docs/20260517_ICRAR_Rongjun_setonix_conda_list.json
+    /ICRAR_Rongjun/bin/python /work/docs/20260517_compare_ICRAR_env.py \
+      /work/docs/20260517_ICRAR_local_conda_list_reference.json \
+      /work/docs/20260517_ICRAR_Rongjun_setonix_conda_list.json
+  "</code></pre>
+  <p>Expected result: the Python-facing Conda packages and Pip packages match exactly. Low-level system libraries are allowed to differ because macOS and linux-64 use different runtime packages.</p>
+
+  <h2>Create the wrapper</h2>
+  <pre><code>cat &gt; /software/projects/pawsey1308/bin/ICRAR_Rongjun &lt;&lt;'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+module load singularity/4.1.0-slurm &gt;/dev/null 2&gt;&amp;1 || true
+
+BASE=/software/projects/pawsey1308
+IMG=$BASE/containers/mambaforge_latest.sif
+OVERLAY=$BASE/containers/ICRAR_Rongjun_overlay.img
+
+SCR=/scratch/pawsey1308/${USER}
+FAKE_HOME=$SCR/fake_home_ICRAR_Rongjun
+CACHE=$SCR/singularity_cache_ICRAR_Rongjun
+TMP=$SCR/singularity_tmp_ICRAR_Rongjun
+PIP_CACHE=$SCR/pip_cache_ICRAR_Rongjun
+PKGS=$SCR/conda_pkgs_ICRAR_Rongjun
+
+mkdir -p "$FAKE_HOME" "$CACHE" "$TMP" "$PIP_CACHE" "$PKGS"
+
+export SINGULARITY_TMPDIR="$TMP"
+export SINGULARITY_CACHEDIR="$CACHE"
+
+exec singularity exec --cleanenv \
+  --bind "$BASE:/work" \
+  --bind "$SCR:$SCR" \
+  --overlay "$OVERLAY" \
+  "$IMG" \
+  bash -lc '
+    export HOME='"$FAKE_HOME"'
+    export XDG_CACHE_HOME='"$PIP_CACHE"'
+    export PIP_CACHE_DIR='"$PIP_CACHE"'
+    export CONDA_PKGS_DIRS='"$PKGS"'
+    export PYTHONNOUSERSITE=1
+    export PATH=/ICRAR_Rongjun/bin:/opt/conda/bin:$PATH
+    exec "$@"
+  ' bash "$@"
+EOF
+
+chmod 755 /software/projects/pawsey1308/bin/ICRAR_Rongjun</code></pre>
+
+  <h2>Use it</h2>
+  <pre><code>export PATH=/software/projects/pawsey1308/bin:$PATH
+
+ICRAR_Rongjun python -V
+ICRAR_Rongjun mamba --version
+ICRAR_Rongjun python -c "import numpy, pandas, astropy; print('ok')"
+ICRAR_Rongjun python my_script.py
+ICRAR_Rongjun jupyter lab --no-browser</code></pre>
+
+  <h2>Slurm pattern</h2>
+  <pre><code>#!/bin/bash -l
+#SBATCH --account=pawsey1308
+#SBATCH --partition=work
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH --time=04:00:00
+#SBATCH --job-name=ICRAR_Rongjun_test
+#SBATCH --output=slurm-%j.out
+#SBATCH --error=slurm-%j.err
+
+set -euo pipefail
+
+module load singularity/4.1.0-slurm
+export PATH=/software/projects/pawsey1308/bin:$PATH
+
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+
+srun -n 1 -c $SLURM_CPUS_PER_TASK \
+  ICRAR_Rongjun python -c "import numpy, pandas, astropy, ppxf, mpdaf, specutils; print('Slurm import test OK')"</code></pre>
+
+  <h2>Maintenance</h2>
+  <p>Edit <code>/software/projects/pawsey1308/docs/20260517_ICRAR_Rongjun_environment.yml</code>, then run <code>mamba env update -p /ICRAR_Rongjun -f /work/docs/20260517_ICRAR_Rongjun_environment.yml</code> inside the same overlay/container pattern.</p>
+</main>
+</body>
+</html>
