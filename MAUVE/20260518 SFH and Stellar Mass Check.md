@@ -8,13 +8,13 @@
 
 ![image-20260519114012278](assets/image-20260519114012278.png)
 
-![image-20260519114024145](assets/image-20260519114024145.png)
+![image-20260519180717257](assets/image-20260519180717257.png)
 
 ### 1.2 IC3392 SFH weights: Age and stellar metallicity [M/H]
 
-![image-20260519114249239](assets/image-20260519114249239.png)
+![image-20260519180731278](assets/image-20260519180731278.png)
 
-![image-20260519114331680](assets/image-20260519114331680.png)
+![image-20260519180748966](assets/image-20260519180748966.png)
 
 ![image-20260519114409607](assets/image-20260519114409607.png)
 
@@ -96,13 +96,13 @@ The spatial `AGE` and `METAL` maps show the same trend. The median fitted age in
 
 ![image-20260519130451863](assets/image-20260519130451863.png)
 
-![image-20260519130505232](assets/image-20260519130505232.png)
+![image-20260519180819842](assets/image-20260519180819842.png)
 
 ### 2.2 NGC4383 SFH weights: Age and stellar metallicity [M/H]
 
-![image-20260519130533225](assets/image-20260519130533225.png)
+![image-20260519180835042](assets/image-20260519180835042.png)
 
-![image-20260519130546664](assets/image-20260519130546664.png)
+![image-20260519180846703](assets/image-20260519180846703.png)
 
 ![image-20260519130652880](assets/image-20260519130652880.png)
 
@@ -187,15 +187,13 @@ The spatial `AGE` and `METAL` products provide the map-level view of the same SF
 
 ![image-20260519131521700](assets/image-20260519131521700.png)
 
-![image-20260519131546478](assets/image-20260519131546478.png)![image-20260519131600021](assets/image-20260519131600021.png)
-
-
+![image-20260519131546478](assets/image-20260519131546478.png)![image-20260519180907912](assets/image-20260519180907912.png)
 
 ### 3.2 NGC4419 SFH weights: Age and stellar metallicity [M/H]
 
-![image-20260519131637183](assets/image-20260519131637183.png)
+![image-20260519180942854](assets/image-20260519180942854.png)
 
-![image-20260519131652556](assets/image-20260519131652556.png)
+![image-20260519180954552](assets/image-20260519180954552.png)
 
 ![image-20260519131705999](assets/image-20260519131705999.png)
 
