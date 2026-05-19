@@ -90,7 +90,7 @@ GAS:
   LIBRARY: EMILES_baseFe_EMLINES/
   NORM_TEMP: LIGHT
 SFH:
-  METHOD: false
+  METHOD: ppxf
   LMIN: 4800
   LMAX: 9100
   SPEC_MASK: specMask_KIN_narrow10

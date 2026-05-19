@@ -1,32 +1,30 @@
 GENERAL:
-  RUN_ID: IC3392
-  INPUT: /scratch/pawsey1308/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
-  OUTPUT: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000_samebinning
-  REDSHIFT: 0.005566
+  RUN_ID: NGC4383
+  INPUT: /scratch/pawsey1308/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+  OUTPUT: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000_samebinning/
+  REDSHIFT: 0.005704
   PARALLEL: true
   NCPU: 128
   LSF_DATA: lsf_MUSE-WFM-MILES
   OW_CONFIG: true
   OW_OUTPUT: false
   CREATE_HTML: false
-  CONFIG_DIR: ./configFiles
-  TEMPLATE_DIR: ./spectralTemplates
 READ_DATA:
   METHOD: MUSE_WFM
   DEBUG: false
-  ORIGIN: 218,218
+  ORIGIN: 317,353
   LMIN_TOT: 4800
   LMAX_TOT: 7000
   LMIN_SNR: 4800
   LMAX_SNR: 7000
-  EBmV: 0.0317
+  EBmV: 0.0203
 SPATIAL_MASKING:
-  METHOD: false
-  MIN_SNR: 1.5
-  MASK: IC3392_mask.fits
-  THRESHOLD_METHOD: isophote
+  METHOD: default
+  MIN_SNR: -10
+  MASK: NGC4383_mask.fits
+  THRESHOLD_METHOD: actual
 SPATIAL_BINNING:
-  METHOD: false
+  METHOD: voronoi
   TARGET_SNR: 40.0
   COVARIANCE: 0.0
 PREPARE_SPECTRA:
@@ -34,11 +32,11 @@ PREPARE_SPECTRA:
   VELSCALE: 53
 KIN:
   METHOD: ppxf
-  SPEC_MASK: specMask_KIN
+  SPEC_MASK: specMask_KIN_narrow10
   LMIN: 4800
   LMAX: 7000
-  SIGMA: 66
-  BIAS: Auto
+  SIGMA: 63
+  BIAS: muse_snr_prefit
   MOM: 4
   ADEG: 12
   MDEG: 0
@@ -49,16 +47,15 @@ KIN:
   NORM_TEMP: LIGHT
   DOCLEAN: true
   OPT_TEMP: default
-  DUST_CORR: false
+  DUST_CORR: true
   NOISE: variance
   PLOT: false
   DEBUG_BIN: false
 CONT:
   METHOD: false
   SPEC_MASK: specMask_KIN
-  LMIN: 4800
   LMAX: 7000
-  SIGMA: 66
+  SIGMA: 63
   MOM: 4
   ADEG: 0
   MDEG: 8
@@ -69,7 +66,7 @@ CONT:
   NORM_TEMP: LIGHT
   DOCLEAN: true
   OPT_TEMP: default
-  DUST_CORR: false
+  DUST_CORR: true
   NOISE: variance
   PLOT: false
   DEBUG_BIN: false
@@ -108,7 +105,7 @@ SFH:
   NORM_TEMP: LIGHT
   DOCLEAN: true
   OPT_TEMP: default
-  DUST_CORR: false
+  DUST_CORR: true
   NOISE: variance
   PLOT: false
   DEBUG_BIN: false
