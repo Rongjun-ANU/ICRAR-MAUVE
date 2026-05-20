@@ -30,6 +30,13 @@ mauve_info_file = "GIST_setupinput_v1.fits"
 ### CSV file containing cube centers (ID, center_y, center_x)
 cube_centers_file = "cube_centers_v3tk.csv"
 ##
+### Combined cube IDs that are represented by separate galaxies in the setup table.
+### The generator keeps the combined cube ID for RUN_ID/INPUT/MASK, but averages
+### z, EBV, and sigma from these setup-table rows.
+combined_setup_ids = {
+    "NGC4567_8": ("NGC4567", "NGC4568"),
+}
+##
 # MUSE cube subscript
 cube_sub = "_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"
 # path
@@ -103,6 +110,31 @@ def get_center_from_csv(galaxy_id, csv_path):
 
     raise ValueError(f"Galaxy ID {galaxy_id} not found in cube centers CSV: {csv_path}")
 
+
+def get_setup_mask(sample_data, galaxy_id):
+    galaxy_names = np.char.strip(sample_data["Galaxy"].astype(str))
+    mask = galaxy_names == galaxy_id
+    if np.any(mask):
+        return mask, (galaxy_id,)
+
+    setup_ids = combined_setup_ids.get(galaxy_id)
+    if setup_ids is None:
+        return mask, ()
+
+    mask = np.isin(galaxy_names, setup_ids)
+    found = set(galaxy_names[mask])
+    missing = [setup_id for setup_id in setup_ids if setup_id not in found]
+    if missing:
+        raise ValueError(
+            f"Combined cube {galaxy_id} is missing setup rows: {', '.join(missing)}"
+        )
+
+    print(
+        f"Using combined setup rows for {galaxy_id}: "
+        f"{', '.join(setup_ids)}"
+    )
+    return mask, setup_ids
+
 ########################################################
 ########################################################
 
@@ -133,10 +165,10 @@ else:
     print(f"Using manually provided center: {setup['center']}")
 
 ### extract z and (if id is correct) also ebv and sigma
-z = mauve_sample[1].data["z"][np.where(mauve_sample[1].data["Galaxy"] == galid)]
+setup_mask, setup_ids = get_setup_mask(mauve_sample[1].data, galid)
 
 ### check id is correct
-if z.size == 0:
+if not np.any(setup_mask):
     print("--ERROR--")
     print(
         "No MAUVE galaxy found with id",
@@ -145,10 +177,19 @@ if z.size == 0:
     )
     sys.exit()
 
-ebv = mauve_sample[1].data["EBV"][np.where(mauve_sample[1].data["Galaxy"] == galid)]
+z = mauve_sample[1].data["z"][setup_mask]
+ebv = mauve_sample[1].data["EBV"][setup_mask]
+sigma = mauve_sample[1].data["sigma"][setup_mask]
 
+z_value = float(np.mean(z))
+ebv_value = float(np.mean(ebv))
+sigma_value = float(np.mean(sigma))
 
-sigma = mauve_sample[1].data["sigma"][np.where(mauve_sample[1].data["Galaxy"] == galid)]
+if len(setup_ids) > 1:
+    print(
+        "Using mean setup values: "
+        f"z={z_value:.6f}, EBV={ebv_value:.6f}, sigma={sigma_value:.1f}"
+    )
 
 ######################################
 ### Modify the YAML config file
@@ -157,17 +198,17 @@ sigma = mauve_sample[1].data["sigma"][np.where(mauve_sample[1].data["Galaxy"] ==
 configfile["GENERAL"]["RUN_ID"] = galid
 configfile["GENERAL"]["INPUT"] = pathcube + galid + cube_sub
 configfile["GENERAL"]["OUTPUT"] = pathproducts
-configfile["GENERAL"]["REDSHIFT"] = round(z.item(), 6)
+configfile["GENERAL"]["REDSHIFT"] = round(z_value, 6)
 configfile["GENERAL"]["NCPU"] = int(setup["cpu"])
 
 configfile["READ_DATA"]["ORIGIN"] = setup["center"]
-configfile["READ_DATA"]["EBmV"] = round(ebv.item(), 6)
+configfile["READ_DATA"]["EBmV"] = round(ebv_value, 6)
 
 configfile["SPATIAL_MASKING"]["MASK"] = galid + "_mask.fits"
 
-configfile["KIN"]["SIGMA"] = round(sigma.item(), 0)
+configfile["KIN"]["SIGMA"] = int(round(sigma_value))
 
-configfile["CONT"]["SIGMA"] = round(sigma.item(), 0)
+configfile["CONT"]["SIGMA"] = int(round(sigma_value))
 
 
 ### write output

@@ -17,9 +17,9 @@ READ_DATA :
   DEBUG : FALSE # Switch to activate debug mode [True/False]: Pipeline runs on one, central line of pixels. Keep in mind to clean output directory after running in DEBUG mode!
   ORIGIN : 218,218 # Origin of the coordinate system in pixel coordinates: x,y (Indexing starts at 0).
   LMIN_TOT : 4800 # Spectra are shortened to the rest-frame wavelength range defined by LMIN_TOT and LMAX_TOT. Note that this wavelength range should be longer than all other wavelength ranges supplied to the modules [in Angst.]
-  LMAX_TOT : 9100
+  LMAX_TOT : 8900
   LMIN_SNR : 4800 # Rest-frame wavelength range used for the signal-to-noise calculation [in Angst.]
-  LMAX_SNR : 9100
+  LMAX_SNR : 8900
   EBmV : # Enter the E(B-V) value for the galaxy here (or use null for no Galactic dust correction)
 
 # Spatial masking module
@@ -46,7 +46,7 @@ KIN :
   #SPEC_PREMASK : 'specMask_KIN' # Optional mask if you want the first steps to use a different mask as compared to the final fit
   SPEC_MASK : 'specMask_KIN_narrow10' # File to define wavelength ranges to be masked during the stellar kinematics fit. The specified path is relative to the configDir path in defaultDir.
   LMIN : 4800 # Rest-frame wavelength range used for the stellar kinematics analysis [in Angst.]
-  LMAX : 9100
+  LMAX : 8900
   SIGMA :  # Initial guess of the velocity dispersion of the system [in km/s]
   BIAS : 'muse_snr_prefit' # Bias value for if MOM > 2. If set to 'Auto', bias is automaticalculated by Cappellari & Emsellem (2004): bias = 0.7*np.sqrt(500./self.goodpixels.size)
   MOM : 4 # Number of kinematic moments to be extracted
@@ -70,7 +70,7 @@ CONT :
   #SPEC_PREMASK : 'specMask_KIN' # Optional mask if you want the first steps to use a different mask as compared to the final fit
   SPEC_MASK : 'specMask_KIN_narrow10' # File to define wavelength ranges to be masked during the stellar kinematics fit. The specified path is relative to the configDir path in defaultDir.
   LMIN : 4800 # Rest-frame wavelength range used for the stellar kinematics analysis [in Angst.]
-  LMAX : 9100
+  LMAX : 8900
   SIGMA :  # Initial guess of the velocity dispersion of the system [in km/s]
   MOM : 4 # Number of kinematic moments to be extracted
   ADEG : 0 # Degree of the additive Legendre polynomial. Set '0' to not include any additive polynomials
@@ -94,14 +94,14 @@ GAS :
   SPEC_MASK : 'specMask_GAS_narrow10'
   LEVEL : 'BOTH' # Set 'BIN' to perform the analysis bin-by-bin, 'SPAXEL' for a spaxel-by-spaxel analysis, and 'BOTH' to perform a spaxel-by-spaxel analysis that is informed by a previous bin-by-bin analysis.
   LMIN : 4800 # Rest-frame wavelength range used for the emission-line analysis [in Angst.]
-  LMAX : 9100
+  LMAX : 8900
   ERRORS : 0 # Derive errors on the emission-line analysis (0 No / 1 Yes). Note: Due to limitations in pyGandALF, this is currently not possible. We expect a new pyGandALF version to be published soon.
   DUST_CORR : False # Include the effect of reddening by dust in the pyGandALF fit. Put in the form 0.1,0.1 without any spaces. If you intend to use multiplicative polynomials instead, set REDDENING to False and add a MDEG keyword in the GAS section to set the polynomial order. Additive polynomials cannot be used with pyGandALF.
   MDEG : 23 # Degree of the multiplicative Legendre polynomial. Set '0' to not include any multiplicative polynomials.
   FIXED : True # Fix the stellar kinematics to the results obtained with the stellar kinematics module [True / False]
   MOM : 2 # Gas moments. Set to 2 for V and sigma. Higher orders not yet tested 
   EBmV : null # As opposed to None. De-redden the spectra for the Galactic extinction in the direction of the target previously to the analysis. Use e.g. EBmV = A_v / 3.2
-  EMI_FILE : 'emissionLines_ppxf_full.config' # Emission line set-up file for emline fitter. The specified path is relative to the configDir path in defaultDir. Set to 'emissionLines_ppxf.config' when using the 'ppxf' routine, and 'emissionLines_gandalf.config' when using the 'gandalf' routine.
+  EMI_FILE : 'emissionLines_ppxf_8900.config' # Emission line set-up file for emline fitter. The specified path is relative to the configDir path in defaultDir. Set to 'emissionLines_ppxf.config' when using the 'ppxf' routine, and 'emissionLines_gandalf.config' when using the 'gandalf' routine.
   LSF_TEMP : 'lsf_MILES' # Path of the file specifying the line-spread-function of the spectral templates. The specified path is relative to the configDir path in defaultDir.
   TEMPLATE_SET : 'miles' # options are 'miles' or 'IndoUS'
   LIBRARY : 'EMILES_baseFe_EMLINES/' # options are 'MILES_EMLINES/' (contains asmaller subset of templates sim to that used by PHANGS) 'MILES/', 'miles_ssp_ch', or 'IndoUS'
@@ -111,7 +111,7 @@ GAS :
 SFH :
   METHOD : 'ppxf' # Name of the routine in starFormationHistories/ (without .py) to perform the tasks. Set False to turn off module. Set 'ppxf' to use the standard GIST implementation, exploiting the pPXF routine of Cappellari & Emsellem (2004).
   LMIN : 4800 # Rest-frame wavelength range used for the star formation histories analysis [in Angst.]
-  LMAX : 9100
+  LMAX : 8900
   #SPEC_PREMASK : 'specMask_SFH' # Optional mask if you want the first steps to use a different mask as compared to the final fit
   SPEC_MASK : 'specMask_KIN_narrow10' # File to define wavelength ranges to be masked during the star formation histories analysis. The specified path is relative to the configDir path in defaultDir. 
   SPEC_EMICLEAN : False # Keyword (True/False) to enable/disable the use of emission line cleaned spectra from the Emission Line Fitting Module.   
