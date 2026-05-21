@@ -180,16 +180,18 @@ if not np.any(setup_mask):
 z = mauve_sample[1].data["z"][setup_mask]
 ebv = mauve_sample[1].data["EBV"][setup_mask]
 sigma = mauve_sample[1].data["sigma"][setup_mask]
+galaxies_matched = np.char.strip(mauve_sample[1].data["Galaxy"].astype(str))[setup_mask]
+
+print("Recorded values in FITS file:")
+for g_id, g_z, g_ebv, g_sigma in zip(galaxies_matched, z, ebv, sigma):
+    print(f"  {g_id}: z={g_z:.6f}, EBV={g_ebv:.6f}, sigma={g_sigma:.1f}")
 
 z_value = float(np.mean(z))
 ebv_value = float(np.mean(ebv))
 sigma_value = float(np.mean(sigma))
 
-if len(setup_ids) > 1:
-    print(
-        "Using mean setup values: "
-        f"z={z_value:.6f}, EBV={ebv_value:.6f}, sigma={sigma_value:.1f}"
-    )
+print("Final values used in YAML:")
+print(f"  z={z_value:.6f}, EBV={ebv_value:.6f}, sigma={sigma_value:.1f}")
 
 ######################################
 ### Modify the YAML config file

@@ -1,0 +1,102 @@
+[Thu May 21 13:11:31 AWST 2026] Starting pipeline in: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI
+[Thu May 21 13:11:31 AWST 2026] NCPU=10
+[Thu May 21 13:11:31 AWST 2026] MAX_DL=2
+[Thu May 21 13:11:31 AWST 2026] Log: v3tk_VRI_image_20260521_131131.log
+
+[Thu May 21 13:11:33 AWST 2026] Step 1/3: observed R images
+Found 26 file(s)
+Workers: 10
+Pattern: *_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+OK  IC3392 -> IC3392_observed_VRI.png, IC3392_observed_VRI.pdf
+OK  NGC4064 -> NGC4064_observed_VRI.png, NGC4064_observed_VRI.pdf
+OK  NGC4330 -> NGC4330_observed_VRI.png, NGC4330_observed_VRI.pdf
+OK  NGC4351 -> NGC4351_observed_VRI.png, NGC4351_observed_VRI.pdf
+OK  NGC4189 -> NGC4189_observed_VRI.png, NGC4189_observed_VRI.pdf
+OK  NGC4293 -> NGC4293_observed_VRI.png, NGC4293_observed_VRI.pdf
+OK  NGC4294 -> NGC4294_observed_VRI.png, NGC4294_observed_VRI.pdf
+OK  NGC4302 -> NGC4302_observed_VRI.png, NGC4302_observed_VRI.pdf
+OK  NGC4298 -> NGC4298_observed_VRI.png, NGC4298_observed_VRI.pdf
+OK  NGC4192 -> NGC4192_observed_VRI.png, NGC4192_observed_VRI.pdf
+OK  NGC4383 -> NGC4383_observed_VRI.png, NGC4383_observed_VRI.pdf
+OK  NGC4394 -> NGC4394_observed_VRI.png, NGC4394_observed_VRI.pdf
+OK  NGC4388 -> NGC4388_observed_VRI.png, NGC4388_observed_VRI.pdf
+OK  NGC4419 -> NGC4419_observed_VRI.png, NGC4419_observed_VRI.pdf
+OK  NGC4405 -> NGC4405_observed_VRI.png, NGC4405_observed_VRI.pdf
+OK  NGC4396 -> NGC4396_observed_VRI.png, NGC4396_observed_VRI.pdf
+OK  NGC4457 -> NGC4457_observed_VRI.png, NGC4457_observed_VRI.pdf
+OK  NGC4522 -> NGC4522_observed_VRI.png, NGC4522_observed_VRI.pdf
+OK  NGC4694 -> NGC4694_observed_VRI.png, NGC4694_observed_VRI.pdf
+OK  NGC4580 -> NGC4580_observed_VRI.png, NGC4580_observed_VRI.pdf
+OK  NGC4402 -> NGC4402_observed_VRI.png, NGC4402_observed_VRI.pdf
+OK  NGC4606 -> NGC4606_observed_VRI.png, NGC4606_observed_VRI.pdf
+OK  NGC4607 -> NGC4607_observed_VRI.png, NGC4607_observed_VRI.pdf
+OK  NGC4698 -> NGC4698_observed_VRI.png, NGC4698_observed_VRI.pdf
+OK  NGC4567_8 -> NGC4567_8_observed_VRI.png, NGC4567_8_observed_VRI.pdf
+OK  NGC4501 -> NGC4501_observed_VRI.png, NGC4501_observed_VRI.pdf
+Done. ok=26 fail=0 runtime=9.10s
+
+[Thu May 21 13:11:42 AWST 2026] Step 2/3: legacy download + reproject
+Found 26 file(s)
+Layer: ls-dr9
+Legacy pixscale: 0.262 arcsec/pix
+Margin factor: 1.02
+[NGC4293] wrote: NGC4293_legacy_reprojected.jpg (923x532) | muse-center RA=185.303791 Dec=18.382926 | legacy-center offset (arcsec): dRA=-0.000 dDec=-0.000 | cutout=718x414
+[NGC4298] wrote: NGC4298_legacy_reprojected.jpg (1042x995) | muse-center RA=185.387932 Dec=14.604104 | legacy-center offset (arcsec): dRA=+0.000 dDec=+0.000 | cutout=811x775
+[IC3392] wrote: IC3392_legacy_reprojected.jpg (437x438) | muse-center RA=187.181156 Dec=14.999433 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=340x341
+[NGC4064] wrote: NGC4064_legacy_reprojected.jpg (566x665) | muse-center RA=181.045802 Dec=18.444971 | legacy-center offset (arcsec): dRA=+0.000 dDec=+0.000 | cutout=440x518
+[NGC4294] wrote: NGC4294_legacy_reprojected.jpg (567x663) | muse-center RA=185.324332 Dec=11.510069 | legacy-center offset (arcsec): dRA=-0.000 dDec=-0.000 | cutout=441x516
+[NGC4302] wrote: NGC4302_legacy_reprojected.jpg (322x1420) | muse-center RA=185.426820 Dec=14.594373 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=250x1105
+[NGC4189] wrote: NGC4189_legacy_reprojected.jpg (598x319) | muse-center RA=183.448527 Dec=13.426249 | legacy-center offset (arcsec): dRA=+0.000 dDec=+0.000 | cutout=465x248
+[NGC4192] wrote: NGC4192_legacy_reprojected.jpg (1092x1629) | muse-center RA=183.452348 Dec=14.900141 | legacy-center offset (arcsec): dRA=+0.000 dDec=+0.000 | cutout=850x1268
+[NGC4351] wrote: NGC4351_legacy_reprojected.jpg (591x323) | muse-center RA=186.005646 Dec=12.205008 | legacy-center offset (arcsec): dRA=-0.000 dDec=-0.000 | cutout=460x251
+[NGC4330] wrote: NGC4330_legacy_reprojected.jpg (881x760) | muse-center RA=185.822859 Dec=11.367914 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=686x592
+[NGC4388] wrote: NGC4388_legacy_reprojected.jpg (870x323) | muse-center RA=186.448343 Dec=12.662135 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=677x251
+[NGC4394] wrote: NGC4394_legacy_reprojected.jpg (624x647) | muse-center RA=186.481337 Dec=18.213673 | legacy-center offset (arcsec): dRA=-0.000 dDec=+0.000 | cutout=486x504
+[NGC4383] wrote: NGC4383_legacy_reprojected.jpg (633x705) | muse-center RA=186.356629 Dec=16.473690 | legacy-center offset (arcsec): dRA=-0.000 dDec=-0.000 | cutout=493x549
+[NGC4402] wrote: NGC4402_legacy_reprojected.jpg (1152x318) | muse-center RA=186.528756 Dec=13.113676 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=897x247
+[NGC4419] wrote: NGC4419_legacy_reprojected.jpg (629x643) | muse-center RA=186.734955 Dec=15.047724 | legacy-center offset (arcsec): dRA=-0.000 dDec=+0.000 | cutout=489x500
+[NGC4405] wrote: NGC4405_legacy_reprojected.jpg (522x663) | muse-center RA=186.530141 Dec=16.180478 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=406x516
+[NGC4396] wrote: NGC4396_legacy_reprojected.jpg (883x755) | muse-center RA=186.497746 Dec=15.671309 | legacy-center offset (arcsec): dRA=-0.000 dDec=+0.000 | cutout=687x588
+[NGC4501] wrote: NGC4501_legacy_reprojected.jpg (1205x1236) | muse-center RA=187.996572 Dec=14.419375 | legacy-center offset (arcsec): dRA=-0.000 dDec=-0.000 | cutout=938x962
+[NGC4457] wrote: NGC4457_legacy_reprojected.jpg (725x725) | muse-center RA=187.246207 Dec=3.570134 | legacy-center offset (arcsec): dRA=-0.000 dDec=+0.000 | cutout=564x564
+[NGC4522] wrote: NGC4522_legacy_reprojected.jpg (590x659) | muse-center RA=188.414273 Dec=9.175661 | legacy-center offset (arcsec): dRA=-0.000 dDec=+0.000 | cutout=459x513
+[NGC4580] wrote: NGC4580_legacy_reprojected.jpg (647x619) | muse-center RA=189.450925 Dec=5.368230 | legacy-center offset (arcsec): dRA=+0.000 dDec=+0.000 | cutout=503x482
+[NGC4606] wrote: NGC4606_legacy_reprojected.jpg (434x435) | muse-center RA=190.240621 Dec=11.911643 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=338x338
+[NGC4607] wrote: NGC4607_legacy_reprojected.jpg (315x598) | muse-center RA=190.302091 Dec=11.887175 | legacy-center offset (arcsec): dRA=+0.000 dDec=+0.000 | cutout=245x465
+[NGC4694] wrote: NGC4694_legacy_reprojected.jpg (439x441) | muse-center RA=192.063656 Dec=10.985228 | legacy-center offset (arcsec): dRA=-0.000 dDec=-0.000 | cutout=342x343
+[NGC4698] wrote: NGC4698_legacy_reprojected.jpg (608x1189) | muse-center RA=192.095027 Dec=8.486058 | legacy-center offset (arcsec): dRA=+0.000 dDec=+0.000 | cutout=473x926
+[NGC4567_8] wrote: NGC4567_8_legacy_reprojected.jpg (971x1059) | muse-center RA=189.138265 Dec=11.243891 | legacy-center offset (arcsec): dRA=+0.000 dDec=-0.000 | cutout=756x824
+Workers: 10
+Max concurrent downloads: 2
+Done: 26/26 processed in 422.4s
+
+[Thu May 21 13:18:45 AWST 2026] Step 3/3: combine observed on legacy
+[IC3392] wrote: IC3392_combined_VRI.png (437x438)
+[NGC4189] wrote: NGC4189_combined_VRI.png (598x319)
+[NGC4351] wrote: NGC4351_combined_VRI.png (591x323)
+[NGC4064] wrote: NGC4064_combined_VRI.png (566x665)
+[NGC4294] wrote: NGC4294_combined_VRI.png (567x663)
+[NGC4293] wrote: NGC4293_combined_VRI.png (923x532)
+[NGC4388] wrote: NGC4388_combined_VRI.png (870x323)
+[NGC4383] wrote: NGC4383_combined_VRI.png (633x705)
+[NGC4302] wrote: NGC4302_combined_VRI.png (322x1420)
+[NGC4394] wrote: NGC4394_combined_VRI.png (624x647)
+[NGC4330] wrote: NGC4330_combined_VRI.png (881x760)
+[NGC4405] wrote: NGC4405_combined_VRI.png (522x663)
+[NGC4457] wrote: NGC4457_combined_VRI.png (725x725)
+[NGC4419] wrote: NGC4419_combined_VRI.png (629x643)
+[NGC4298] wrote: NGC4298_combined_VRI.png (1042x995)
+[NGC4606] wrote: NGC4606_combined_VRI.png (434x435)
+[NGC4607] wrote: NGC4607_combined_VRI.png (315x598)
+[NGC4522] wrote: NGC4522_combined_VRI.png (590x659)
+[NGC4402] wrote: NGC4402_combined_VRI.png (1152x318)
+[NGC4396] wrote: NGC4396_combined_VRI.png (883x755)
+[NGC4580] wrote: NGC4580_combined_VRI.png (647x619)
+[NGC4694] wrote: NGC4694_combined_VRI.png (439x441)
+[NGC4192] wrote: NGC4192_combined_VRI.png (1092x1629)
+[NGC4698] wrote: NGC4698_combined_VRI.png (608x1189)
+[NGC4567_8] wrote: NGC4567_8_combined_VRI.png (971x1059)
+[NGC4501] wrote: NGC4501_combined_VRI.png (1205x1236)
+Done. ok=26 fail=0 workers=10 runtime=2.66s
+
+[Thu May 21 13:18:48 AWST 2026] DONE in 437s

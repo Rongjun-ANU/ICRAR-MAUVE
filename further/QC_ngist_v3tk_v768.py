@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import sys
 from matplotlib import pyplot as plt
 import numpy as np
 import astropy.io.fits as pyfits
@@ -14,6 +15,8 @@ data_folder='/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8'
 # On Pawsey these products are stored in:
 # /scratch/pawsey1308/mauve/products/v3tk_v7.6.8
 galaxyid = 'IC3392'
+if len(sys.argv) > 1:
+    galaxyid = sys.argv[1]
 gas_bin_sub = '_gas_bin_maps'
 gas_spaxel_sub = '_gas_spaxel_maps'
 stars_sub ='_kin_maps'
@@ -91,7 +94,31 @@ plot_id = []
 for j in range(0, 35, 5):
     plot_id.extend([(k, 'BIN', id[k]) for k in range(j, j+5)])
     plot_id.extend([(k, 'SPAXELS', id[k]) for k in range(j, j+5)])
-plot_id.extend([(j, 'BIN', id[j]) for j in range(35, len(id))])
+plot_id.extend([(j, 'BIN', id[j]) for j in range(35, 40)])
+plot_id.extend([(j, 'SPAXELS', id[j]) for j in range(35, 40)])
+plot_id.extend([(j, 'BIN', id[j]) for j in range(40, 45)])
+plot_id.extend([(j, 'BIN', id[j]) for j in range(45, 50)])
+plot_id.extend([(j, 'SPAXELS', id[j]) for j in range(45, 50)])
+plot_id.extend([(j, 'BIN', id[j]) for j in range(50, len(id))])
+
+gas_limits = {}
+for k in range(0, 35):
+    if id[k].endswith('_VEL') or id[k].endswith('_SIGMA') or id[k].endswith('_SIGMA_ERR'):
+        bin_data = gas_bin_image[id[k]].data
+        spaxel_data = gas_spaxel_image[id[k]].data
+        values = np.concatenate([bin_data[np.isfinite(bin_data)], spaxel_data[np.isfinite(spaxel_data)]])
+        if len(values) == 0:
+            continue
+        if id[k].endswith('_VEL'):
+            mean = np.nanmean(values)
+            std = np.nanstd(values)
+            gas_limits[id[k]] = (mean - 1 * std, mean + 1 * std)
+        elif id[k].endswith('_SIGMA'):
+            vmin, vmax = np.nanpercentile(values, [5, 95])
+            gas_limits[id[k]] = (max(0, vmin), vmax)
+        elif id[k].endswith('_SIGMA_ERR'):
+            vmax = min(500, np.nanpercentile(values, 80))
+            gas_limits[id[k]] = (1, max(30, vmax))
 
 
 with PdfPages(out) as pdf:
@@ -132,38 +159,44 @@ with PdfPages(out) as pdf:
                     img=ax.imshow(to_plot, origin='lower', norm=LogNorm())
             elif count == 3:
                 if (~np.isnan(mean)):
-                    img=ax.imshow(to_plot, origin='lower', vmin=mean - 1 * std, vmax=mean + 1 * std, cmap='PiYG_r')
+                    vmin, vmax = gas_limits.get(id_name, (mean - 1 * std, mean + 1 * std))
+                    img=ax.imshow(to_plot, origin='lower', vmin=vmin, vmax=vmax, cmap='PiYG_r')
             elif count == 4:
                 if (~np.isnan(mean)):
-                    img=ax.imshow(to_plot, origin='lower', vmin=50, vmax=100, cmap='magma')
+                    vmin, vmax = gas_limits.get(id_name, (50, 100))
+                    img=ax.imshow(to_plot, origin='lower', vmin=vmin, vmax=vmax, cmap='magma')
             elif count == 5:
                 if (~np.isnan(mean)):
-                    img=ax.imshow(to_plot, origin='lower', vmin=1, vmax=30, cmap='cividis')
+                    vmin, vmax = gas_limits.get(id_name, (1, 30))
+                    img=ax.imshow(to_plot, origin='lower', vmin=vmin, vmax=vmax, cmap='cividis')
                     
                 
                 
         ######
         ######
         if ((id_i>=35) & (id_i<40)):
+            gas_image = gas_bin_image
+            if level == 'SPAXELS':
+                gas_image = gas_spaxel_image
             if count==1:
-                to_plot= gas_bin_image['HA6562_FLUX'].data / gas_bin_image['HB4861_FLUX'].data
+                to_plot= gas_image['HA6562_FLUX'].data / gas_image['HB4861_FLUX'].data
                 img=ax.imshow(to_plot,origin='lower',norm=LogNorm(vmin=2.5,vmax=8),cmap='plasma')
 
             elif count==2:
-                to_plot= gas_bin_image['NII6583_FLUX'].data / gas_bin_image['HA6562_FLUX'].data
+                to_plot= gas_image['NII6583_FLUX'].data / gas_image['HA6562_FLUX'].data
                 img=ax.imshow(to_plot,origin='lower',norm=LogNorm(vmin=0.1,vmax=1))
         
             elif count==3:
-                to_plot= gas_bin_image['SII6716_FLUX'].data / gas_bin_image['NII6583_FLUX'].data
+                to_plot= gas_image['SII6716_FLUX'].data / gas_image['NII6583_FLUX'].data
                 mean=np.nanmedian(to_plot)
                 vmin=mean/2.
                 vmax=mean*2.
                 img=ax.imshow(to_plot,origin='lower',norm=LogNorm(vmin=vmin,vmax=vmax),cmap='magma')
             elif count==4:
-                to_plot= gas_bin_image['HA6562_VEL'].data - gas_bin_image['HB4861_VEL'].data
+                to_plot= gas_image['HA6562_VEL'].data - gas_image['HB4861_VEL'].data
                 img=ax.imshow(to_plot,origin='lower',vmin=-3,vmax=+3,cmap='PiYG_r')
             elif count==5:
-                to_plot= gas_bin_image['HA6562_SIGMA'].data / gas_bin_image['HB4861_SIGMA'].data
+                to_plot= gas_image['HA6562_SIGMA'].data / gas_image['HB4861_SIGMA'].data
                 img=ax.imshow(to_plot,origin='lower',vmin=0.6,vmax=1.2,cmap='PiYG')
     
        #######
@@ -184,24 +217,33 @@ with PdfPages(out) as pdf:
                 img=ax.imshow(to_plot,origin='lower',vmin=10,vmax=50,cmap='cividis')
             
         if ((id_i>=45) & (id_i<50)):
+            gas_image = gas_bin_image
+            if level == 'SPAXELS':
+                gas_image = gas_spaxel_image
             if count==1:
-                to_plot= gas_bin_image['HA6562_VEL'].data - stars_bin_image['V'].data
+                if level == 'SPAXELS':
+                    to_plot= gas_image['HA6562_VEL'].data - gas_image['V_STARS2'].data
+                else:
+                    to_plot= gas_image['HA6562_VEL'].data - stars_bin_image['V'].data
                 img=ax.imshow(to_plot,origin='lower',vmin=-20,vmax=+20,cmap='PuOr_r')
 
             elif count==2:
-                to_plot= gas_bin_image['HA6562_SIGMA'].data - stars_bin_image['SIGMA'].data
+                if level == 'SPAXELS':
+                    to_plot= gas_image['HA6562_SIGMA'].data - gas_image['SIGMA_STARS2'].data
+                else:
+                    to_plot= gas_image['HA6562_SIGMA'].data - stars_bin_image['SIGMA'].data
                 img=ax.imshow(to_plot,origin='lower',vmin=-30, vmax=30, cmap='PRGn')
         
             elif count==3:
-                to_plot= gas_bin_image['SII6716_FLUX'].data / gas_bin_image['SII6730_FLUX'].data
+                to_plot= gas_image['SII6716_FLUX'].data / gas_image['SII6730_FLUX'].data
                 img=ax.imshow(to_plot,origin='lower',vmin=0.6, vmax=1.7)
 
             elif count==4:
-                to_plot= gas_bin_image['HA6562_VEL'].data - gas_bin_image['NII6583_VEL'].data
+                to_plot= gas_image['HA6562_VEL'].data - gas_image['NII6583_VEL'].data
                 img=ax.imshow(to_plot,origin='lower',vmin=-20,vmax=+20,cmap='BrBG_r')
         
             elif count==5:
-                to_plot= gas_bin_image['HA6562_SIGMA'].data - gas_bin_image['NII6583_SIGMA'].data
+                to_plot= gas_image['HA6562_SIGMA'].data - gas_image['NII6583_SIGMA'].data
                 img=ax.imshow(to_plot,origin='lower',vmin=-20,vmax=+20,cmap='BrBG_r')
         
        #######
@@ -260,7 +302,7 @@ with PdfPages(out) as pdf:
         
         # Set title or other subplot details as needed
         title = id_name
-        if id_i < 35:
+        if id_i < 40 or ((id_i>=45) & (id_i<50)):
             title = level+' '+id_name
         ax.set_title(f"{title}")
         if img is not None:

@@ -194,7 +194,7 @@ def _combine_one(job: Job, overwrite: bool) -> tuple[str, str]:
 
 	out = leg_u8.copy()
 	out[mask] = obs_u8[mask]
-	Image.fromarray(out, mode="RGB").save(job.output_png, format="PNG")
+	Image.fromarray(out).save(job.output_png, format="PNG")
 	return (job.galaxy_id, f"wrote: {job.output_png.name} ({nx}x{ny})")
 
 

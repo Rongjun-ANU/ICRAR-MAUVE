@@ -770,8 +770,23 @@ def query_gaia_sources(center: SkyCoord, radius: u.Quantity, cfg: Config):
             AND phot_g_mean_mag < {cfg.gaia_gmag_max}
             {where_quality}
         """
-        job = Gaia.launch_job_async(query, dump_to_file=False)
-        return job.get_results()
+
+        import time
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                job = Gaia.launch_job_async(query, dump_to_file=False)
+                return job.get_results()
+            except Exception as e:
+                # Catch general exceptions including requests.exceptions.HTTPError
+                error_msg = str(e)
+                if "500" in error_msg or "503" in error_msg or "504" in error_msg or "timeout" in error_msg.lower():
+                    if attempt < max_retries - 1:
+                        print(f"WARNING: Gaia query failed with server error ({error_msg}). Retrying {attempt+1}/{max_retries}...")
+                        time.sleep(2 * (attempt + 1))
+                        continue
+                print(f"WARNING: Gaia query failed: {e}")
+                return None
 
 
 def _gaia_row_is_foreground_by_kinematics(row, cfg: Config) -> bool:
@@ -1086,11 +1101,22 @@ def query_legacy_dr9_tractor_and_photoz(center: SkyCoord, radius: u.Quantity, cf
         return _tap_service.svc
 
     def _run_sync(query: str, maxrec: int | None = None):
-        # NOIRLab Data Lab TAP behaves like a SQL endpoint (JSQLParser + Postgres).
-        # `run_sync` provides a clean maxrec cap.
-        if maxrec is None:
-            return _tap_service().run_sync(query).to_table()
-        return _tap_service().run_sync(query, maxrec=int(maxrec)).to_table()
+        import time
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                if maxrec is None:
+                    return _tap_service().run_sync(query).to_table()
+                return _tap_service().run_sync(query, maxrec=int(maxrec)).to_table()
+            except Exception as e:
+                # Catch general exceptions including requests.exceptions.HTTPError
+                error_msg = str(e)
+                if "500" in error_msg or "503" in error_msg or "504" in error_msg or "timeout" in error_msg.lower() or "connection" in error_msg.lower() or "Error 500" in error_msg:
+                    if attempt < max_retries - 1:
+                        print(f"WARNING: Legacy TAP query failed ({error_msg}). Retrying {attempt+1}/{max_retries}...")
+                        time.sleep(2 * (attempt + 1))
+                        continue
+                raise
 
     # 1) tractor-like table (morphology/type + potential sizes)
     tractor_table = str(getattr(cfg, "legacy_tractor_table", "ls_dr9.tractor"))

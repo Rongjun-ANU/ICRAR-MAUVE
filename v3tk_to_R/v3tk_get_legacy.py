@@ -281,7 +281,7 @@ def _download_file(url: str, out_path: pathlib.Path, timeout_s: float) -> None:
 		sem = threading.Semaphore(2)
 
 	last_exc = None
-	for attempt in range(6):
+	for attempt in range(20):
 		with sem:
 			try:
 				with urllib.request.urlopen(req, timeout=timeout_s) as resp:
@@ -289,18 +289,21 @@ def _download_file(url: str, out_path: pathlib.Path, timeout_s: float) -> None:
 				out_path.write_bytes(data)
 				return
 			except urllib.error.HTTPError as exc:
-				# 429/503: exponential backoff.
+				# 429/503: exponential backoff with jitter
 				last_exc = exc
 				code = getattr(exc, "code", None)
 				if code in (429, 503):
-					sleep_s = min(60.0, 2.0 ** attempt)
+					# Random jitter to prevent thundering herd
+					import random
+					sleep_s = min(120.0, 5.0 + (1.5 ** attempt)) + random.uniform(0.0, 5.0)
 					time.sleep(sleep_s)
 					continue
 				# Anything else: fail immediately with a picklable/printable error.
 				raise RuntimeError(f"HTTP {code} for {url}") from None
 			except Exception as exc:
 				last_exc = exc
-				sleep_s = min(30.0, 1.0 + attempt)
+				import random
+				sleep_s = min(30.0, 1.0 + attempt) + random.uniform(0.0, 2.0)
 				time.sleep(sleep_s)
 
 	raise RuntimeError(f"Failed to download after retries: {url} ({last_exc})") from None
@@ -549,7 +552,7 @@ def _process_one(job: Job, args: argparse.Namespace) -> tuple[str, str]:
 		)
 	_verify_expected_size(galaxy_id=job.galaxy_id, shape=shape_out, observed_png=job.observed_png)
 
-	out_im = Image.fromarray(stack_u8, mode="RGB")
+	out_im = Image.fromarray(stack_u8)
 	out_im.save(job.legacy_reprojected_jpg, format="JPEG", quality=95)
 
 	if not args.keep_cutout:
