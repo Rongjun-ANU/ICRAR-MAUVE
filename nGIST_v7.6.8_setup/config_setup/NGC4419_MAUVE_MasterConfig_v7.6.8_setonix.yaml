@@ -14,9 +14,9 @@ READ_DATA:
   DEBUG: false
   ORIGIN: 315,322
   LMIN_TOT: 4800
-  LMAX_TOT: 9100
+  LMAX_TOT: 8900
   LMIN_SNR: 4800
-  LMAX_SNR: 9100
+  LMAX_SNR: 8900
   EBmV: 0.0284
 SPATIAL_MASKING:
   METHOD: default
@@ -34,7 +34,7 @@ KIN:
   METHOD: ppxf
   SPEC_MASK: specMask_KIN_narrow10
   LMIN: 4800
-  LMAX: 9100
+  LMAX: 8900
   SIGMA: 107
   BIAS: muse_snr_prefit
   MOM: 4
@@ -55,7 +55,7 @@ CONT:
   METHOD: ppxf
   SPEC_MASK: specMask_KIN_narrow10
   LMIN: 4800
-  LMAX: 9100
+  LMAX: 8900
   SIGMA: 107
   MOM: 4
   ADEG: 0
@@ -77,14 +77,14 @@ GAS:
   SPEC_MASK: specMask_GAS_narrow10
   LEVEL: BOTH
   LMIN: 4800
-  LMAX: 9100
+  LMAX: 8900
   ERRORS: 0
   DUST_CORR: false
   MDEG: 23
   FIXED: true
   MOM: 2
   EBmV: null
-  EMI_FILE: emissionLines_ppxf_full.config
+  EMI_FILE: emissionLines_ppxf_8900.config
   LSF_TEMP: lsf_MILES
   TEMPLATE_SET: miles
   LIBRARY: EMILES_baseFe_EMLINES/
@@ -92,7 +92,7 @@ GAS:
 SFH:
   METHOD: ppxf
   LMIN: 4800
-  LMAX: 9100
+  LMAX: 8900
   SPEC_MASK: specMask_KIN_narrow10
   SPEC_EMICLEAN: false
   MOM: 4
