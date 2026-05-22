@@ -63,6 +63,21 @@ class OptimizeResult:
 	best_objective: float | None
 
 
+@dataclass(frozen=True)
+class StoredLayout:
+	proof_path: Path
+	output_path: Path | None
+	status: str
+	ratio_x: int
+	ratio_y: int
+	k: int
+	width: int
+	height: int
+	paths: list[Path]
+	sizes: list[tuple[int, int]]
+	placements: list[tuple[int, int]]
+
+
 def _elapsed(start_time: float) -> str:
 	return f"{time.monotonic() - start_time:8.1f}s"
 
@@ -310,7 +325,7 @@ def _expand_args_to_files(args: Iterable[str]) -> list[Path]:
 	files: list[Path] = []
 	for a in args:
 		# Support both shell-expanded arguments and literal globs.
-		matches = glob.glob(a)
+		matches = sorted(glob.glob(a))
 		if matches:
 			files.extend(Path(m) for m in matches)
 		else:
@@ -425,6 +440,62 @@ def _call_model_method(model: object, snake_name: str, camel_name: str, *args: o
 	return getattr(model, camel_name)(*args)
 
 
+def _configure_solver(
+	solver: object,
+	cp_model: object,
+	time_limit: float,
+	progress: Callable[[str], None] | None,
+	verbose_solver: bool,
+) -> None:
+	solver.parameters.max_time_in_seconds = float(time_limit)
+	solver.parameters.num_search_workers = max(1, min(os.cpu_count() or 1, 8))
+	solver.parameters.random_seed = 0
+	if progress is not None and verbose_solver:
+		solver.parameters.log_search_progress = True
+		if hasattr(solver.parameters, "log_to_stdout"):
+			solver.parameters.log_to_stdout = False
+		if hasattr(solver, "log_callback"):
+			def _solver_log_callback(msg: str) -> None:
+				text = msg.strip()
+				if text:
+					progress(f"CP-SAT: {text}")
+
+			solver.log_callback = _solver_log_callback
+
+
+def _add_redundant_cumulative_constraints(
+	model: object,
+	x_intervals: list[object],
+	y_intervals: list[object],
+	sizes: list[tuple[int, int]],
+	width: int,
+	height: int,
+) -> None:
+	if not (hasattr(model, "add_cumulative") or hasattr(model, "AddCumulative")):
+		return
+	heights = [h for _, h in sizes]
+	widths = [w for w, _ in sizes]
+	_call_model_method(model, "add_cumulative", "AddCumulative", x_intervals, heights, height)
+	_call_model_method(model, "add_cumulative", "AddCumulative", y_intervals, widths, width)
+
+
+def _add_decision_strategy(model: object, cp_model: object, vars_to_branch: list[object]) -> None:
+	if not vars_to_branch:
+		return
+	if not (hasattr(model, "add_decision_strategy") or hasattr(model, "AddDecisionStrategy")):
+		return
+	if not hasattr(cp_model, "CHOOSE_MIN_DOMAIN_SIZE") or not hasattr(cp_model, "SELECT_MIN_VALUE"):
+		return
+	_call_model_method(
+		model,
+		"add_decision_strategy",
+		"AddDecisionStrategy",
+		vars_to_branch,
+		cp_model.CHOOSE_MIN_DOMAIN_SIZE,
+		cp_model.SELECT_MIN_VALUE,
+	)
+
+
 def solve_with_ortools(
 	sizes: list[tuple[int, int]],
 	ratio_x: int,
@@ -480,6 +551,7 @@ def solve_with_ortools(
 
 	_call_model_method(model, "add_no_overlap_2d", "AddNoOverlap2D", x_intervals, y_intervals)
 	_call_model_method(model, "minimize", "Minimize", k_var)
+	_add_decision_strategy(model, cp_model, [k_var, *x_vars, *y_vars])
 
 	if hasattr(model, "add_hint"):
 		model.add_hint(k_var, upper.k)
@@ -495,20 +567,7 @@ def solve_with_ortools(
 			model.AddHint(var, y)
 
 	solver = cp_model.CpSolver()
-	solver.parameters.max_time_in_seconds = float(time_limit)
-	solver.parameters.num_search_workers = max(1, min(os.cpu_count() or 1, 8))
-	solver.parameters.random_seed = 0
-	if progress is not None and verbose_solver:
-		solver.parameters.log_search_progress = True
-		if hasattr(solver.parameters, "log_to_stdout"):
-			solver.parameters.log_to_stdout = False
-		if hasattr(solver, "log_callback"):
-			def _solver_log_callback(msg: str) -> None:
-				text = msg.strip()
-				if text:
-					progress(f"CP-SAT: {text}")
-
-			solver.log_callback = _solver_log_callback
+	_configure_solver(solver, cp_model, time_limit, progress, verbose_solver)
 
 	status = solver.Solve(model)
 	status_name = _status_name(cp_model, solver, status)
@@ -553,6 +612,214 @@ def solve_with_ortools(
 		objective_bound=objective_bound,
 		wall_time=wall_time,
 		best_objective=best_objective,
+	)
+
+
+def _solve_fixed_k_candidate(
+	sizes: list[tuple[int, int]],
+	ratio_x: int,
+	ratio_y: int,
+	k: int,
+	hint_placements: list[tuple[int, int]],
+	time_limit: float,
+	progress: Callable[[str], None] | None = None,
+	verbose_solver: bool = False,
+) -> tuple[str, list[tuple[int, int]] | None, float | None]:
+	try:
+		from ortools.sat.python import cp_model
+	except ModuleNotFoundError as e:  # pragma: no cover
+		raise SystemExit(
+			"Missing dependency: ortools.\n"
+			f"Interpreter: {sys.executable}\n"
+			"Certified mode requires OR-Tools CP-SAT. Install it into this interpreter with:\n"
+			f"  {sys.executable} -m pip install ortools\n"
+			"Use --fast for heuristic-only output without a mathematical optimality proof."
+		) from e
+	except ImportError as e:  # pragma: no cover
+		raise SystemExit(
+			"Could not import OR-Tools CP-SAT.\n"
+			f"Interpreter: {sys.executable}\n"
+			f"Import error: {e}\n"
+			"Certified mode requires a working OR-Tools CP-SAT install. Use --fast for heuristic-only "
+			"output, or reinstall OR-Tools in this environment."
+		) from e
+
+	width = ratio_x * k
+	height = ratio_y * k
+	model = cp_model.CpModel()
+
+	new_int_var = lambda lb, ub, name: _call_model_method(model, "new_int_var", "NewIntVar", lb, ub, name)
+	new_fixed_interval = lambda start, size, name: _call_model_method(
+		model, "new_fixed_size_interval_var", "NewFixedSizeIntervalVar", start, size, name
+	)
+
+	x_vars = []
+	y_vars = []
+	x_intervals = []
+	y_intervals = []
+	for i, (w, h) in enumerate(sizes):
+		x_var = new_int_var(0, width - w, f"x_{i}")
+		y_var = new_int_var(0, height - h, f"y_{i}")
+		x_vars.append(x_var)
+		y_vars.append(y_var)
+		x_intervals.append(new_fixed_interval(x_var, w, f"x_interval_{i}"))
+		y_intervals.append(new_fixed_interval(y_var, h, f"y_interval_{i}"))
+
+	_call_model_method(model, "add_no_overlap_2d", "AddNoOverlap2D", x_intervals, y_intervals)
+	_add_redundant_cumulative_constraints(model, x_intervals, y_intervals, sizes, width, height)
+	_add_decision_strategy(model, cp_model, [*x_vars, *y_vars])
+
+	if hasattr(model, "add_hint"):
+		for var, (x_hint, _), (w, _) in zip(x_vars, hint_placements, sizes, strict=True):
+			model.add_hint(var, max(0, min(int(x_hint), width - w)))
+		for var, (_, y_hint), (_, h) in zip(y_vars, hint_placements, sizes, strict=True):
+			model.add_hint(var, max(0, min(int(y_hint), height - h)))
+	elif hasattr(model, "AddHint"):
+		for var, (x_hint, _), (w, _) in zip(x_vars, hint_placements, sizes, strict=True):
+			model.AddHint(var, max(0, min(int(x_hint), width - w)))
+		for var, (_, y_hint), (_, h) in zip(y_vars, hint_placements, sizes, strict=True):
+			model.AddHint(var, max(0, min(int(y_hint), height - h)))
+
+	solver = cp_model.CpSolver()
+	_configure_solver(solver, cp_model, time_limit, progress, verbose_solver)
+	status = solver.Solve(model)
+	status_name = _status_name(cp_model, solver, status)
+	wall_time = float(solver.WallTime()) if hasattr(solver, "WallTime") else None
+
+	if status_name in {"OPTIMAL", "FEASIBLE"}:
+		placements = [(int(solver.Value(x_var)), int(solver.Value(y_var))) for x_var, y_var in zip(x_vars, y_vars, strict=True)]
+		validate_placements(width, height, sizes, placements)
+		return status_name, placements, wall_time
+	return status_name, None, wall_time
+
+
+def solve_with_fixed_k_search(
+	sizes: list[tuple[int, int]],
+	ratio_x: int,
+	ratio_y: int,
+	upper: HeuristicResult,
+	time_limit: float,
+	progress: Callable[[str], None] | None = None,
+	verbose_solver: bool = False,
+) -> OptimizeResult:
+	lower = _minimal_scale_for_ratio(sizes, ratio_x, ratio_y)
+	total_wall_time = 0.0
+	best = OptimizeResult(
+		k=upper.k,
+		width=upper.width,
+		height=upper.height,
+		placements=upper.placements,
+		status="FEASIBLE",
+		objective_bound=float(lower),
+		wall_time=total_wall_time,
+		best_objective=float(upper.k),
+	)
+
+	if upper.k <= lower:
+		if progress is not None:
+			progress(f"Current feasible k={upper.k} equals the lower bound; optimality is immediate")
+		return OptimizeResult(
+			k=upper.k,
+			width=upper.width,
+			height=upper.height,
+			placements=upper.placements,
+			status="OPTIMAL",
+			objective_bound=float(upper.k),
+			wall_time=total_wall_time,
+			best_objective=float(upper.k),
+		)
+
+	deadline = time.monotonic() + float(time_limit)
+	candidate = upper.k - 1
+	while candidate >= lower:
+		remaining = deadline - time.monotonic()
+		if remaining <= 0:
+			break
+
+		width = ratio_x * candidate
+		height = ratio_y * candidate
+		if progress is not None:
+			progress(
+				f"Fixed-k search: testing k={candidate} ({width}x{height}); "
+				f"current best k={best.k}; remaining {remaining:.1f}s"
+			)
+
+		try:
+			validate_placements(width, height, sizes, best.placements)
+		except ValueError:
+			pass
+		else:
+			if progress is not None:
+				progress(f"Existing placement already fits k={candidate}; lowering current best without solving")
+			best = OptimizeResult(
+				k=candidate,
+				width=width,
+				height=height,
+				placements=best.placements,
+				status="FEASIBLE",
+				objective_bound=float(lower),
+				wall_time=total_wall_time,
+				best_objective=float(candidate),
+			)
+			candidate = best.k - 1
+			continue
+
+		status_name, placements, wall_time = _solve_fixed_k_candidate(
+			sizes,
+			ratio_x,
+			ratio_y,
+			candidate,
+			best.placements,
+			remaining,
+			progress=progress,
+			verbose_solver=verbose_solver,
+		)
+		if wall_time is not None:
+			total_wall_time += wall_time
+
+		if status_name in {"OPTIMAL", "FEASIBLE"} and placements is not None:
+			best = OptimizeResult(
+				k=candidate,
+				width=width,
+				height=height,
+				placements=placements,
+				status="FEASIBLE",
+				objective_bound=float(lower),
+				wall_time=total_wall_time,
+				best_objective=float(candidate),
+			)
+			if progress is not None:
+				progress(f"Found feasible layout at k={candidate}; continuing search for smaller k")
+			candidate = best.k - 1
+			continue
+
+		if status_name == "INFEASIBLE":
+			if progress is not None:
+				progress(f"Proved k={candidate} infeasible; current best k={best.k} is optimal")
+			return OptimizeResult(
+				k=best.k,
+				width=best.width,
+				height=best.height,
+				placements=best.placements,
+				status="OPTIMAL",
+				objective_bound=float(best.k),
+				wall_time=total_wall_time,
+				best_objective=float(best.k),
+			)
+
+		if progress is not None:
+			progress(f"Fixed-k search was inconclusive at k={candidate} with status {status_name}")
+		break
+
+	return OptimizeResult(
+		k=best.k,
+		width=best.width,
+		height=best.height,
+		placements=best.placements,
+		status="FEASIBLE",
+		objective_bound=float(lower),
+		wall_time=total_wall_time,
+		best_objective=float(best.k),
 	)
 
 
@@ -602,6 +869,150 @@ def _report_mode(fast_mode: bool, status: str) -> str:
 	return "OR-Tools CP-SAT fallback, not certified"
 
 
+def _paths_equal(a: Path, b: Path) -> bool:
+	try:
+		return a.resolve() == b.resolve()
+	except OSError:
+		return a.absolute() == b.absolute()
+
+
+def _output_path_for_proof(proof_path: Path) -> Path | None:
+	if not proof_path.name.endswith(".proof.txt"):
+		return None
+	base = proof_path.name[: -len(".proof.txt")]
+	for suffix in (".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff"):
+		candidate = proof_path.with_name(f"{base}{suffix}")
+		if candidate.is_file():
+			return candidate
+	return None
+
+
+def _parse_int(value: str | None) -> int | None:
+	if value is None:
+		return None
+	try:
+		return int(value)
+	except ValueError:
+		return None
+
+
+def _read_layout_from_proof(proof_path: Path) -> StoredLayout | None:
+	try:
+		lines = proof_path.read_text(encoding="utf-8").splitlines()
+	except OSError:
+		return None
+
+	values: dict[str, str] = {}
+	for line in lines:
+		if "\t" in line or ":" not in line:
+			continue
+		key, value = line.split(":", 1)
+		values[key.strip()] = value.strip()
+
+	ratio_text = values.get("ratio")
+	if not ratio_text or ":" not in ratio_text:
+		return None
+	try:
+		ratio_x, ratio_y = (int(part.strip()) for part in ratio_text.split(":", 1))
+	except ValueError:
+		return None
+
+	k = _parse_int(values.get("final_k"))
+	canvas_text = values.get("final_canvas")
+	if k is None or not canvas_text or "x" not in canvas_text:
+		return None
+	try:
+		width, height = (int(part.strip()) for part in canvas_text.split("x", 1))
+	except ValueError:
+		return None
+
+	paths: list[Path] = []
+	sizes: list[tuple[int, int]] = []
+	placements: list[tuple[int, int]] = []
+	in_table = False
+	for line in lines:
+		if line == "index\tfile\tw\th\tx\ty":
+			in_table = True
+			continue
+		if not in_table:
+			continue
+		if not line.strip():
+			break
+		parts = line.split("\t")
+		if len(parts) != 6:
+			return None
+		_, file_name, w_text, h_text, x_text, y_text = parts
+		try:
+			w, h = int(w_text), int(h_text)
+			x, y = int(x_text), int(y_text)
+		except ValueError:
+			return None
+		path = Path(file_name)
+		if not path.is_absolute():
+			path = proof_path.parent / path
+		paths.append(path)
+		sizes.append((w, h))
+		placements.append((x, y))
+
+	if not placements:
+		return None
+
+	if width != ratio_x * k or height != ratio_y * k:
+		return None
+
+	try:
+		validate_placements(width, height, sizes, placements)
+	except ValueError:
+		return None
+
+	return StoredLayout(
+		proof_path=proof_path,
+		output_path=_output_path_for_proof(proof_path),
+		status=values.get("status", "UNKNOWN"),
+		ratio_x=ratio_x,
+		ratio_y=ratio_y,
+		k=k,
+		width=width,
+		height=height,
+		paths=paths,
+		sizes=sizes,
+		placements=placements,
+	)
+
+
+def _layout_sort_key(layout: StoredLayout) -> tuple[int, int, str]:
+	return (layout.k, 0 if layout.status == "OPTIMAL" else 1, layout.proof_path.name)
+
+
+def find_compatible_existing_layouts(
+	search_dir: Path,
+	sizes: list[tuple[int, int]],
+	ratio_x: int,
+	ratio_y: int,
+) -> list[StoredLayout]:
+	layouts: list[StoredLayout] = []
+	for proof_path in sorted(search_dir.glob("*.proof.txt")):
+		layout = _read_layout_from_proof(proof_path)
+		if layout is None:
+			continue
+		if layout.ratio_x != ratio_x or layout.ratio_y != ratio_y:
+			continue
+		if layout.sizes != sizes:
+			continue
+		layouts.append(layout)
+	return sorted(layouts, key=_layout_sort_key)
+
+
+def _layout_as_heuristic(layout: StoredLayout) -> HeuristicResult:
+	return HeuristicResult(
+		k=layout.k,
+		width=layout.width,
+		height=layout.height,
+		placements=layout.placements,
+		method=f"existing:{layout.proof_path.name}",
+	)
+
+
 def write_proof_report(
 	proof_path: Path,
 	paths: list[Path],
@@ -615,6 +1026,7 @@ def write_proof_report(
 	placements: list[tuple[int, int]],
 	time_limit: float,
 	fast_mode: bool,
+	notes: list[str] | None = None,
 ) -> None:
 	width = result.width
 	height = result.height
@@ -650,6 +1062,9 @@ def write_proof_report(
 				f"solver_wall_time_seconds: {result.wall_time}",
 			]
 		)
+	if notes:
+		for note in notes:
+			lines.append(f"note: {note}")
 
 	lines.extend(
 		[
@@ -717,6 +1132,82 @@ def save_canvas(
 	canvas.save(out_path, **save_kwargs)
 
 
+def sync_compatible_outputs(
+	layouts: list[StoredLayout],
+	current_out_path: Path,
+	current_proof_path: Path,
+	result: OptimizeResult | HeuristicResult,
+	placements: list[tuple[int, int]],
+	ratio_x: int,
+	ratio_y: int,
+	lower: int,
+	upper: HeuristicResult,
+	status: str,
+	time_limit: float,
+	fast_mode: bool,
+	start_time: float,
+) -> int:
+	synced = 0
+	seen_outputs: set[Path] = set()
+	for layout in layouts:
+		if layout.output_path is None:
+			continue
+		if _paths_equal(layout.output_path, current_out_path) or _paths_equal(layout.proof_path, current_proof_path):
+			continue
+		if any(_paths_equal(layout.output_path, seen) for seen in seen_outputs):
+			continue
+
+		missing = [path for path in layout.paths if not path.is_file()]
+		if missing:
+			log_progress(
+				start_time,
+				f"Skipping compatible sync target {layout.output_path.name}; missing input {missing[0].name}",
+			)
+			continue
+
+		images: list[Image.Image] = []
+		sizes: list[tuple[int, int]] = []
+		for path in layout.paths:
+			img = Image.open(path)
+			img.load()
+			img = img.convert("RGBA")
+			images.append(img)
+			sizes.append(img.size)
+
+		if sizes != layout.sizes:
+			log_progress(
+				start_time,
+				f"Skipping compatible sync target {layout.output_path.name}; input image sizes changed",
+			)
+			continue
+
+		validate_placements(result.width, result.height, sizes, placements)
+		save_canvas(layout.output_path, images, result.width, result.height, placements)
+		write_proof_report(
+			layout.proof_path,
+			layout.paths,
+			sizes,
+			ratio_x,
+			ratio_y,
+			lower,
+			upper,
+			result,
+			status,
+			placements,
+			time_limit,
+			fast_mode=fast_mode,
+			notes=[f"synchronized_layout_from: {current_out_path.name}"],
+		)
+		seen_outputs.add(layout.output_path)
+		synced += 1
+		log_progress(
+			start_time,
+			f"Synchronized compatible mosaic {layout.output_path.name} to k={result.k} "
+			f"({result.width}x{result.height})",
+		)
+	return synced
+
+
 def _build_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(
 		description="Arrange images into the densest fixed-ratio non-overlapping mosaic.",
@@ -730,6 +1221,25 @@ def _build_parser() -> argparse.ArgumentParser:
 	parser.add_argument("--fast", action="store_true", help="Use heuristic packing only; no optimality proof")
 	parser.add_argument("--proof-file", type=Path, help="Path for the proof/report text file")
 	parser.add_argument("--verbose-solver", action="store_true", help="Print detailed OR-Tools CP-SAT search logs")
+	parser.add_argument(
+		"--search-mode",
+		choices=("fixed-k", "objective"),
+		default="fixed-k",
+		help=(
+			"OR-Tools search strategy: fixed-k tests k=current_best-1 first; "
+			"objective uses one minimize-k model"
+		),
+	)
+	parser.add_argument(
+		"--no-reuse-existing",
+		action="store_true",
+		help="Ignore compatible proof reports in the current directory when choosing the warm start",
+	)
+	parser.add_argument(
+		"--no-sync-compatible",
+		action="store_true",
+		help="Do not rerender other compatible mosaics in the current directory with the final layout",
+	)
 	return parser
 
 
@@ -795,10 +1305,30 @@ def main(argv: list[str]) -> int:
 		f"method={heuristic.method}",
 	)
 
+	existing_layouts: list[StoredLayout] = []
+	best_existing: StoredLayout | None = None
+	effective_upper = heuristic
+	if not args.no_reuse_existing:
+		existing_layouts = find_compatible_existing_layouts(Path.cwd(), sizes, ratio_x, ratio_y)
+		if existing_layouts:
+			best_existing = existing_layouts[0]
+			log_progress(
+				start_time,
+				f"Found {len(existing_layouts)} compatible existing layout(s) in {Path.cwd()}; "
+				f"best is {best_existing.proof_path.name} with k={best_existing.k} "
+				f"({best_existing.width}x{best_existing.height}, status={best_existing.status})",
+			)
+			if best_existing.k <= heuristic.k:
+				effective_upper = _layout_as_heuristic(best_existing)
+				validate_placements(effective_upper.width, effective_upper.height, sizes, effective_upper.placements)
+				log_progress(start_time, f"Using existing layout as warm start: {effective_upper.method}")
+			else:
+				log_progress(start_time, "Existing layouts are larger than the heuristic layout; keeping heuristic warm start")
+
 	if args.fast:
-		log_progress(start_time, "Fast mode selected; saving heuristic layout")
-		placements = center_placements(heuristic.width, heuristic.height, sizes, heuristic.placements)
-		save_canvas(out_path, images, heuristic.width, heuristic.height, placements)
+		log_progress(start_time, "Fast mode selected; saving best available heuristic/existing layout")
+		placements = center_placements(effective_upper.width, effective_upper.height, sizes, effective_upper.placements)
+		save_canvas(out_path, images, effective_upper.width, effective_upper.height, placements)
 		write_proof_report(
 			proof_path,
 			paths,
@@ -806,42 +1336,130 @@ def main(argv: list[str]) -> int:
 			ratio_x,
 			ratio_y,
 			lower,
-			heuristic,
-			heuristic,
+			effective_upper,
+			effective_upper,
 			"HEURISTIC_ONLY",
 			placements,
 			args.time_limit,
 			fast_mode=True,
+			notes=[f"warm_start_source: {effective_upper.method}"],
 		)
+		if not args.no_sync_compatible:
+			sync_compatible_outputs(
+				existing_layouts,
+				out_path,
+				proof_path,
+				effective_upper,
+				placements,
+				ratio_x,
+				ratio_y,
+				lower,
+				effective_upper,
+				"HEURISTIC_ONLY",
+				args.time_limit,
+				fast_mode=True,
+				start_time=start_time,
+			)
 		print(
-			f"Wrote {out_path} ({heuristic.width}x{heuristic.height}, ratio {ratio_x}:{ratio_y}) "
+			f"Wrote {out_path} ({effective_upper.width}x{effective_upper.height}, ratio {ratio_x}:{ratio_y}) "
 			f"from {len(images)} images [heuristic-only; proof report: {proof_path}; runtime {_elapsed(start_time)}]"
 		)
 		return 0
 
-	log_progress(start_time, f"Starting OR-Tools CP-SAT optimization with {args.time_limit:g}s time limit")
+	if best_existing is not None and best_existing.status == "OPTIMAL":
+		log_progress(start_time, "Compatible existing layout is already OPTIMAL; reusing it without a new solve")
+		placements = center_placements(effective_upper.width, effective_upper.height, sizes, effective_upper.placements)
+		validate_placements(effective_upper.width, effective_upper.height, sizes, placements)
+		reused_result = OptimizeResult(
+			k=effective_upper.k,
+			width=effective_upper.width,
+			height=effective_upper.height,
+			placements=placements,
+			status="OPTIMAL",
+			objective_bound=float(effective_upper.k),
+			wall_time=0.0,
+			best_objective=float(effective_upper.k),
+		)
+		save_canvas(out_path, images, effective_upper.width, effective_upper.height, placements)
+		write_proof_report(
+			proof_path,
+			paths,
+			sizes,
+			ratio_x,
+			ratio_y,
+			lower,
+			effective_upper,
+			reused_result,
+			"OPTIMAL",
+			placements,
+			args.time_limit,
+			fast_mode=False,
+			notes=[f"reused_existing_optimal_layout: {best_existing.proof_path.name}"],
+		)
+		if not args.no_sync_compatible:
+			sync_compatible_outputs(
+				existing_layouts,
+				out_path,
+				proof_path,
+				reused_result,
+				placements,
+				ratio_x,
+				ratio_y,
+				lower,
+				effective_upper,
+				"OPTIMAL",
+				args.time_limit,
+				fast_mode=False,
+				start_time=start_time,
+			)
+		print(
+			f"Wrote {out_path} ({effective_upper.width}x{effective_upper.height}, ratio {ratio_x}:{ratio_y}) "
+			f"from {len(images)} images [reused existing OPTIMAL layout; proof report: {proof_path}; "
+			f"runtime {_elapsed(start_time)}]"
+		)
+		return 0
+
+	if args.search_mode == "fixed-k":
+		log_progress(
+			start_time,
+			f"Starting OR-Tools fixed-k search with {args.time_limit:g}s time limit "
+			f"(first target k={effective_upper.k - 1})",
+		)
+	else:
+		log_progress(start_time, f"Starting OR-Tools minimize-k search with {args.time_limit:g}s time limit")
 	stop_heartbeat = threading.Event()
 
 	def _heartbeat() -> None:
 		while not stop_heartbeat.wait(30.0):
 			log_progress(
 				start_time,
-				f"Still optimizing; current guaranteed fallback is k={heuristic.k} "
-				f"({heuristic.width}x{heuristic.height})",
+				f"Still optimizing; current guaranteed fallback is k={effective_upper.k} "
+				f"({effective_upper.width}x{effective_upper.height})",
 			)
 
 	heartbeat_thread = threading.Thread(target=_heartbeat, daemon=True)
 	heartbeat_thread.start()
 	try:
-		result = solve_with_ortools(
-			sizes,
-			ratio_x,
-			ratio_y,
-			heuristic,
-			args.time_limit,
-			progress=lambda message: log_progress(start_time, message),
-			verbose_solver=args.verbose_solver,
-		)
+		if args.search_mode == "fixed-k":
+			result = solve_with_fixed_k_search(
+				sizes,
+				ratio_x,
+				ratio_y,
+				effective_upper,
+				args.time_limit,
+				progress=lambda message: log_progress(start_time, message),
+				verbose_solver=args.verbose_solver,
+			)
+		else:
+			result = solve_with_ortools(
+				sizes,
+				ratio_x,
+				ratio_y,
+				effective_upper,
+				args.time_limit,
+				progress=lambda message: log_progress(start_time, message),
+				verbose_solver=args.verbose_solver,
+			)
 	finally:
 		stop_heartbeat.set()
 		heartbeat_thread.join(timeout=1.0)
@@ -862,13 +1480,30 @@ def main(argv: list[str]) -> int:
 			ratio_x,
 			ratio_y,
 			lower,
-			heuristic,
+			effective_upper,
 			result,
 			result.status,
-			result.placements,
+			placements,
 			args.time_limit,
 			fast_mode=False,
+			notes=[f"warm_start_source: {effective_upper.method}", f"solver_search_mode={args.search_mode}"],
 		)
+		if not args.no_sync_compatible:
+			sync_compatible_outputs(
+				existing_layouts,
+				out_path,
+				proof_path,
+				result,
+				placements,
+				ratio_x,
+				ratio_y,
+				lower,
+				effective_upper,
+				result.status,
+				args.time_limit,
+				fast_mode=False,
+				start_time=start_time,
+			)
 		print(
 			f"Wrote {out_path} ({result.width}x{result.height}, ratio {ratio_x}:{ratio_y}) "
 			f"from {len(images)} images [fallback after OR-Tools {result.status}; "
@@ -887,13 +1522,30 @@ def main(argv: list[str]) -> int:
 		ratio_x,
 		ratio_y,
 		lower,
-		heuristic,
+		effective_upper,
 		result,
 		result.status,
 		placements,
 		args.time_limit,
 		fast_mode=False,
+		notes=[f"warm_start_source: {effective_upper.method}", f"solver_search_mode={args.search_mode}"],
 	)
+	if not args.no_sync_compatible:
+		sync_compatible_outputs(
+			existing_layouts,
+			out_path,
+			proof_path,
+			result,
+			placements,
+			ratio_x,
+			ratio_y,
+			lower,
+			effective_upper,
+			result.status,
+			args.time_limit,
+			fast_mode=False,
+			start_time=start_time,
+		)
 	print(
 		f"Wrote {out_path} ({result.width}x{result.height}, ratio {ratio_x}:{ratio_y}) "
 		f"from {len(images)} images [OR-Tools {result.status}; proof report: {proof_path}; runtime {_elapsed(start_time)}]"

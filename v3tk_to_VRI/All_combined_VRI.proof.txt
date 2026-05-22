@@ -6,8 +6,8 @@ status: FEASIBLE
 input_count: 26
 ratio: 1:1
 lower_bound_k: 3715
-heuristic_upper_k: 3851
-heuristic_method: area_chunk_shuffle_21+bssf
+heuristic_upper_k: 3819
+heuristic_method: existing:All_combined_VRI.proof.txt
 final_k: 3819
 final_canvas: 3819x3819
 total_image_area: 13799671
@@ -16,7 +16,8 @@ density: 0.946171
 time_limit_seconds: 300
 solver_objective_bound: 3715.0
 solver_best_objective: 3819.0
-solver_wall_time_seconds: 300.204266
+solver_wall_time_seconds: 300.23199700000004
+note: warm_start_source: existing:All_combined_VRI.proof.txt
 
 Lower-bound formula
 -------------------

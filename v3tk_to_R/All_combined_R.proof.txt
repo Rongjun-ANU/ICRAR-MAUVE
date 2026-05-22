@@ -1,0 +1,58 @@
+Best dense image arrangement report
+===================================
+
+mode: OR-Tools CP-SAT fallback, not certified
+status: FEASIBLE
+input_count: 26
+ratio: 1:1
+lower_bound_k: 3715
+heuristic_upper_k: 3851
+heuristic_method: area_chunk_shuffle_21+bssf
+final_k: 3813
+final_canvas: 3813x3813
+total_image_area: 13799671
+canvas_area: 14538969
+density: 0.949151
+time_limit_seconds: 300
+solver_objective_bound: 3715.0
+solver_best_objective: 3813.0
+solver_wall_time_seconds: 300.20927800000004
+
+Lower-bound formula
+-------------------
+k >= max(max_i ceil(w_i / ratio_x), max_i ceil(h_i / ratio_y),
+         ceil(sqrt(sum_i(w_i*h_i) / (ratio_x*ratio_y))))
+
+Mathematical proof statement
+----------------------------
+OR-Tools did not return OPTIMAL, so no mathematical optimality proof is claimed and the output image is a feasible fallback layout rather than a certified best layout.
+
+Placements
+----------
+index	file	w	h	x	y
+0	IC3392_combined_R.png	437	438	3241	2739
+1	NGC4064_combined_R.png	566	665	1580	1236
+2	NGC4189_combined_R.png	598	319	1925	2740
+3	NGC4192_combined_R.png	1092	1629	0	0
+4	NGC4293_combined_R.png	923	532	2887	760
+5	NGC4294_combined_R.png	567	663	3192	1292
+6	NGC4298_combined_R.png	1042	995	0	2818
+7	NGC4302_combined_R.png	322	1420	2836	1306
+8	NGC4330_combined_R.png	881	760	2921	0
+9	NGC4351_combined_R.png	591	323	2003	3059
+10	NGC4383_combined_R.png	633	705	2146	1306
+11	NGC4388_combined_R.png	870	323	2194	3382
+12	NGC4394_combined_R.png	624	647	2297	0
+13	NGC4396_combined_R.png	883	755	1042	2736
+14	NGC4402_combined_R.png	1152	318	1042	3491
+15	NGC4405_combined_R.png	522	663	1579	1901
+16	NGC4419_combined_R.png	629	643	3158	1955
+17	NGC4457_combined_R.png	725	725	2101	2012
+18	NGC4501_combined_R.png	1205	1236	1092	0
+19	NGC4522_combined_R.png	590	659	2297	647
+20	NGC4567_8_combined_R.png	971	1059	608	1677
+21	NGC4580_combined_R.png	647	619	2594	2737
+22	NGC4606_combined_R.png	434	435	3064	3378
+23	NGC4607_combined_R.png	315	598	3498	3177
+24	NGC4694_combined_R.png	439	441	1141	1236
+25	NGC4698_combined_R.png	608	1189	0	1629
