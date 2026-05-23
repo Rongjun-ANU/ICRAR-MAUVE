@@ -22,6 +22,8 @@ config_setup/
   27_creation.sh                               # create 26 YAMLs and 26 slurm scripts
   27_send.sh                                   # send generated files to Setonix
   27_setonix.sh                                # submit the 26 slurm scripts on Setonix
+  27_status.sh                                 # check completion/running/timeout status on Setonix
+  QC_ngist_v3tk_v768.py                        # post-run QC PDF generator
   GIST_setupinput_v1.fits                      # pointer to setup FITS table
   cube_centers_v3tk.csv                        # cube centers for v3tk cubes
   *_MAUVE_MasterConfig_v7.6.8_setonix.yaml     # generated galaxy configs
@@ -170,7 +172,7 @@ The send script copies:
 
 - The 26 generated YAML files to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/`
-- The 26 generated slurm scripts plus `27_setonix.sh` to
+- The 26 generated slurm scripts plus `27_setonix.sh` and `27_status.sh` to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/`
 
 It uses `tar` streamed through `ssh`, not `scp`, because Setonix prints a login
@@ -192,6 +194,199 @@ sbatch {GALID}_v3tk_v7.6.8_setonix.slurm
 
 for all 26 cube IDs. The `sbatch` commands are issued one by one, but the jobs
 can then run together according to the Setonix scheduler.
+
+To check job completion and timeout status on Setonix, run from the same
+tutorial directory:
+
+```bash
+./27_status.sh
+```
+
+The status script reads each product `LOGFILE` under:
+
+```text
+/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/{GALID}/LOGFILE
+```
+
+Finished jobs are identified by:
+
+```text
+MainPipeline: nGIST completed successfully.
+```
+
+For unfinished jobs, it checks the run log in the tutorial directory, for
+example:
+
+```text
+NGC4383_v3tk_v7.6.8.log
+```
+
+If the run log contains `DUE TO TIME LIMIT`, the status is reported as
+`TIMEOUT_RESBATCH` and the script prints the `sbatch` command to resubmit that
+galaxy. If the job is still visible in `squeue`, it is reported as `RUNNING`.
+If the run log exists but is still empty, it is reported as `RUNNING_EMPTY_LOG`.
+
+The report is printed to screen and saved in the current directory as:
+
+```text
+27_status_log_YYYYmmdd_HHMMSS.txt
+```
+
+For timeout jobs, the script also gives a conservative rough remaining-time
+estimate using finished-job LOGFILEs at the same latest detected pipeline
+stage. Because this setup runs gas fitting at `BOTH` levels, the scaling uses:
+
+```text
+GAS_WORK = SPECTRA + BINS
+```
+
+Here `SPECTRA` is the cube-read count from `Read a total of ... spectra`, used
+as the spaxel-level workload proxy, and `BINS` is the Voronoi-bin count.
+
+The estimate uses the maximum scaled remaining time from comparable finished
+jobs, not the median. These estimates are approximate because nGIST can skip
+completed modules after restart.
+
+## QC PDF script
+
+The QC plotting script is:
+
+```text
+config_setup/QC_ngist_v3tk_v768.py
+```
+
+It is a post-run diagnostic script for the `v3tk_v7.6.8` products. It reads the
+generated nGIST maps for one galaxy and writes a multi-page PDF named:
+
+```text
+{GALID}_v3tk_v7.6.8_QC.pdf
+```
+
+The script keeps `IC3392` as the visible default galaxy:
+
+```python
+galaxyid = 'IC3392'
+```
+
+but also supports a command-line override:
+
+```bash
+cd config_setup
+python QC_ngist_v3tk_v768.py NGC4419
+```
+
+Input products expected for each galaxy are:
+
+```text
+{GALID}/{GALID}_gas_bin_maps.fits
+{GALID}/{GALID}_gas_spaxel_maps.fits
+{GALID}/{GALID}_kin_maps.fits
+{GALID}/{GALID}_sfh_maps.fits
+```
+
+The current local data path in the script is:
+
+```text
+/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8
+```
+
+The corresponding Pawsey product path is noted in the script as:
+
+```text
+/scratch/pawsey1308/mauve/products/v3tk_v7.6.8
+```
+
+Change `data_folder` before running on Setonix or another filesystem.
+
+The PDF keeps the original five-subplot page structure. For each of the main
+gas lines, it plots both BIN-level and SPAXEL-level maps:
+
+```text
+HB4861
+OIII5006
+OI6300
+OI6363
+HA6562
+NII6583
+SII6716
+```
+
+For each line it shows:
+
+```text
+FLUX
+FLUX_ERR
+VEL
+SIGMA
+SIGMA_ERR
+```
+
+The script then adds derived gas diagnostic pages, again for both BIN and
+SPAXEL levels where available:
+
+```text
+Ha/Hb
+NII/Ha
+SII/NII
+Ha-Hb vel
+Ha/Hb sigma
+```
+
+It also plots BIN-level stellar kinematics from `{GALID}_kin_maps.fits`:
+
+```text
+V
+SIGMA
+H3
+H4
+FORM_ERR_SIGMA
+```
+
+and gas-vs-stellar or gas-vs-gas consistency checks:
+
+```text
+Vs-Vha
+Sigma_s - Sigma_ha
+SII6716/SII6730
+VHa-VNII
+SHa-SNII
+```
+
+For SPAXEL-level gas-vs-stellar comparisons, the script uses the stellar
+reference maps stored inside the gas SPAXEL product:
+
+```text
+V_STARS2
+SIGMA_STARS2
+```
+
+The final maps come from `{GALID}_sfh_maps.fits`:
+
+```text
+AGE
+METAL
+EBV
+```
+
+Gas velocity, sigma, and sigma-error color limits are shared between BIN and
+SPAXEL maps for the same quantity. This makes the two levels easier to compare
+directly. Some ratio and residual maps keep fixed limits, for example H-alpha
+minus H-beta velocity, H-alpha over H-beta sigma, SII6716/SII6730, and H-alpha
+minus NII kinematics.
+
+The script was kept intentionally close to the older `QC_ngist.py` workflow:
+the page structure, repeated `AGE`/`METAL` style, and five-map layout are
+preserved so the new v7.6.8 outputs can be checked against the familiar QC
+format with minimal changes.
+
+The QC script requires:
+
+```bash
+python
+astropy
+numpy
+matplotlib
+```
 
 ## Why `make_gist_config_try.py`
 

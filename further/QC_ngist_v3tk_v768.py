@@ -83,10 +83,6 @@ id= ['HB4861_FLUX',
      'SHa-SNII',
      'AGE',
      'METAL',
-     'AGE',
-     'METAL',
-     'ALPHA',
-     'NAD',
      'EBV',
     ]
 
@@ -261,29 +257,7 @@ with PdfPages(out) as pdf:
                 img=ax.imshow(to_plot,origin='lower',vmin=mean-1*std,vmax=mean+1*std,cmap='plasma')
             elif count==3:
                 to_plot= sfh_bin_image[id_name].data
-                mean=np.nanmean(to_plot)
-                std=np.nanstd(to_plot)
-                img=ax.imshow(to_plot,origin='lower',vmin=mean-1*std,vmax=mean+1*std,cmap='cividis')
-            elif count==4:
-                to_plot= sfh_bin_image[id_name].data
-                mean=np.nanmean(to_plot)
-                std=np.nanstd(to_plot)
-                img=ax.imshow(to_plot,origin='lower',vmin=mean-1*std,vmax=mean+1*std,cmap='magma')
-            elif count==5:
-                to_plot= sfh_bin_image[id_name].data
-                mean=np.nanmean(to_plot)
-                std=np.nanstd(to_plot)
-                img=ax.imshow(to_plot,origin='lower',vmin=mean-1*std,vmax=mean+1*std,cmap='plasma')
-             
-        
-       #######
-       #######
-        if ((id_i>=55) & (id_i<60)):
-            if count==2:
-                to_plot= sfh_bin_image[id_name].data
-                mean=np.nanmedian(to_plot)
-                std=np.nanstd(to_plot)
-                img=ax.imshow(to_plot,origin='lower',vmin=mean-1*std,vmax=mean+1*std,cmap='magma')
+                img=ax.imshow(to_plot,origin='lower',vmin=0,vmax=0.3,cmap='magma')
        
         
         

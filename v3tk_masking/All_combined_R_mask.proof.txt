@@ -1,0 +1,59 @@
+Best dense image arrangement report
+===================================
+
+mode: OR-Tools CP-SAT fallback, not certified
+status: FEASIBLE
+input_count: 25
+ratio: 1:1
+lower_bound_k: 3690
+heuristic_upper_k: 3815
+heuristic_method: existing:All_combined_R_mask.proof.txt
+final_k: 3797
+final_canvas: 3797x3797
+total_image_area: 13611301
+canvas_area: 14417209
+density: 0.944101
+time_limit_seconds: 300
+solver_objective_bound: 3690.0
+solver_best_objective: 3797.0
+solver_wall_time_seconds: 296.20247600000005
+note: warm_start_source: existing:All_combined_R_mask.proof.txt
+note: solver_search_mode=fixed-k
+
+Lower-bound formula
+-------------------
+k >= max(max_i ceil(w_i / ratio_x), max_i ceil(h_i / ratio_y),
+         ceil(sqrt(sum_i(w_i*h_i) / (ratio_x*ratio_y))))
+
+Mathematical proof statement
+----------------------------
+OR-Tools did not return OPTIMAL, so no mathematical optimality proof is claimed and the output image is a feasible fallback layout rather than a certified best layout.
+
+Placements
+----------
+index	file	w	h	x	y
+0	IC3392_combined_R_mask.png	437	438	3331	2836
+1	NGC4064_combined_R_mask.png	566	665	0	2458
+2	NGC4189_combined_R_mask.png	598	319	0	2139
+3	NGC4192_combined_R_mask.png	1092	1629	598	2155
+4	NGC4293_combined_R_mask.png	923	532	2284	1245
+5	NGC4294_combined_R_mask.png	567	663	2259	1777
+6	NGC4298_combined_R_mask.png	1042	995	608	0
+7	NGC4302_combined_R_mask.png	322	1420	1690	2376
+8	NGC4330_combined_R_mask.png	881	760	2916	0
+9	NGC4351_combined_R_mask.png	591	323	609	1061
+10	NGC4383_combined_R_mask.png	633	705	2012	3070
+11	NGC4388_combined_R_mask.png	870	323	2878	760
+12	NGC4394_combined_R_mask.png	624	647	1634	1236
+13	NGC4396_combined_R_mask.png	883	755	0	1384
+14	NGC4402_combined_R_mask.png	1152	318	2645	3479
+15	NGC4405_combined_R_mask.png	522	663	0	3133
+16	NGC4419_combined_R_mask.png	629	643	2702	2836
+17	NGC4457_combined_R_mask.png	725	725	883	1430
+18	NGC4501_combined_R_mask.png	1205	1236	1673	0
+19	NGC4522_combined_R_mask.png	590	659	3207	1083
+20	NGC4567_8_combined_R_mask.png	971	1059	2826	1777
+21	NGC4580_combined_R_mask.png	647	619	2012	2451
+22	NGC4606_combined_R_mask.png	434	435	1200	995
+23	NGC4694_combined_R_mask.png	439	441	1820	1883
+24	NGC4698_combined_R_mask.png	608	1189	0	0

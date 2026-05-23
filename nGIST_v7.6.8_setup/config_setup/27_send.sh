@@ -76,10 +76,17 @@ for galid in "${GALIDS[@]}"; do
   slurm_files+=("$slurm_file")
 done
 
-if [[ ! -f 27_setonix.sh ]]; then
-  echo "ERROR: missing submit script: 27_setonix.sh" >&2
-  exit 1
-fi
+control_files=(
+  27_setonix.sh
+  27_status.sh
+)
+
+for control_file in "${control_files[@]}"; do
+  if [[ ! -f "$control_file" ]]; then
+    echo "ERROR: missing control script: $control_file" >&2
+    exit 1
+  fi
+done
 
 echo "Remote login: ${REMOTE_LOGIN}"
 echo "Creating remote directories if needed"
@@ -89,8 +96,8 @@ echo "Sending ${#yaml_files[@]} YAML files to ${REMOTE_CONFIG_DIR}"
 COPYFILE_DISABLE=1 tar -cf - "${yaml_files[@]}" | ssh "$REMOTE_LOGIN" \
   "tar -xf - -C '$REMOTE_CONFIG_DIR' && find '$REMOTE_CONFIG_DIR' -maxdepth 1 -type f -name '._*' -delete"
 
-echo "Sending ${#slurm_files[@]} slurm scripts and 27_setonix.sh to ${REMOTE_RUN_DIR}"
-COPYFILE_DISABLE=1 tar -cf - "${slurm_files[@]}" 27_setonix.sh | ssh "$REMOTE_LOGIN" \
-  "tar -xf - -C '$REMOTE_RUN_DIR' && chmod +x '$REMOTE_RUN_DIR'/27_setonix.sh '$REMOTE_RUN_DIR'/*_v3tk_v7.6.8_setonix.slurm && find '$REMOTE_RUN_DIR' -maxdepth 1 -type f -name '._*' -delete"
+echo "Sending ${#slurm_files[@]} slurm scripts plus control scripts to ${REMOTE_RUN_DIR}"
+COPYFILE_DISABLE=1 tar -cf - "${slurm_files[@]}" "${control_files[@]}" | ssh "$REMOTE_LOGIN" \
+  "tar -xf - -C '$REMOTE_RUN_DIR' && chmod +x '$REMOTE_RUN_DIR'/27_setonix.sh '$REMOTE_RUN_DIR'/27_status.sh '$REMOTE_RUN_DIR'/*_v3tk_v7.6.8_setonix.slurm && find '$REMOTE_RUN_DIR' -maxdepth 1 -type f -name '._*' -delete"
 
 echo "Done."

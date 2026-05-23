@@ -1,0 +1,60 @@
+Best dense image arrangement report
+===================================
+
+mode: OR-Tools CP-SAT fallback, not certified
+status: FEASIBLE
+input_count: 26
+ratio: 1:1
+lower_bound_k: 3715
+heuristic_upper_k: 3851
+heuristic_method: area_chunk_shuffle_21+bssf
+final_k: 3808
+final_canvas: 3808x3808
+total_image_area: 13799671
+canvas_area: 14500864
+density: 0.951645
+time_limit_seconds: 300
+solver_objective_bound: 3715.0
+solver_best_objective: 3808.0
+solver_wall_time_seconds: 299.171408
+note: warm_start_source: area_chunk_shuffle_21+bssf
+note: solver_search_mode=fixed-k
+
+Lower-bound formula
+-------------------
+k >= max(max_i ceil(w_i / ratio_x), max_i ceil(h_i / ratio_y),
+         ceil(sqrt(sum_i(w_i*h_i) / (ratio_x*ratio_y))))
+
+Mathematical proof statement
+----------------------------
+OR-Tools did not return OPTIMAL, so no mathematical optimality proof is claimed and the output image is a feasible fallback layout rather than a certified best layout.
+
+Placements
+----------
+index	file	w	h	x	y
+0	IC3392_combined_R.png	437	438	2199	3370
+1	NGC4064_combined_R.png	566	665	3227	1787
+2	NGC4189_combined_R.png	598	319	1461	3484
+3	NGC4192_combined_R.png	1092	1629	0	1236
+4	NGC4293_combined_R.png	923	532	0	2865
+5	NGC4294_combined_R.png	567	663	2199	2616
+6	NGC4298_combined_R.png	1042	995	2766	2482
+7	NGC4302_combined_R.png	322	1420	1838	0
+8	NGC4330_combined_R.png	881	760	2160	1059
+9	NGC4351_combined_R.png	591	323	0	3397
+10	NGC4383_combined_R.png	633	705	1205	647
+11	NGC4388_combined_R.png	870	323	591	3484
+12	NGC4394_combined_R.png	624	647	1205	0
+13	NGC4396_combined_R.png	883	755	1817	1861
+14	NGC4402_combined_R.png	1152	318	2643	3477
+15	NGC4405_combined_R.png	522	663	2700	1819
+16	NGC4419_combined_R.png	629	643	1570	2736
+17	NGC4457_combined_R.png	725	725	1092	2011
+18	NGC4501_combined_R.png	1205	1236	0	0
+19	NGC4522_combined_R.png	590	659	1092	1352
+20	NGC4567_8_combined_R.png	971	1059	2160	0
+21	NGC4580_combined_R.png	647	619	923	2865
+22	NGC4606_combined_R.png	434	435	3356	1189
+23	NGC4607_combined_R.png	315	598	3041	1189
+24	NGC4694_combined_R.png	439	441	1682	1420
+25	NGC4698_combined_R.png	608	1189	3131	0
