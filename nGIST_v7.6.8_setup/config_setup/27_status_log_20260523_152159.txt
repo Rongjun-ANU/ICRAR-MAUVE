@@ -1,0 +1,62 @@
+nGIST v7.6.8 batch status
+Generated: 2026-05-23 15:21:59 AWST
+Run directory: /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial
+Product directory: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8
+Status log: /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/27_status_log_20260523_152159.txt
+
+GALID        STATUS            SQUEUE                             LAST_TIME         SPECTRA   BINS     GAS_WORK   EST_REMAIN     STAGE_OR_ACTION
+------------ ----------------- ---------------------------------- ----------------- --------- -------- ---------- -------------- ----------------
+IC3392       FINISHED          -                                  05/22/26 09:34:42 191406    4062     195468     NA             done
+NGC4064      FINISHED          -                                  05/23/26 00:45:04 376390    8954     385344     NA             done
+NGC4189      FINISHED          -                                  05/22/26 10:35:28 190762    4893     195655     NA             done
+NGC4192      RUNNING           RUNNING jobid=43065227 elapsed=23:28:40 left=3-00:31:20 05/23/26 00:20:25 1778868   34395    1813263    NA             not complete; still in scheduler
+NGC4293      TIMEOUT_RESBATCH  -                                  05/22/26 05:35:30 491036    20458    511494     1d 03h 31m     timeout; resubmit with sbatch NGC4293_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4294      TIMEOUT_RESBATCH  -                                  05/22/26 08:02:57 375921    4531     380452     20h 28m        timeout; resubmit with sbatch NGC4294_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4298      TIMEOUT_RESBATCH  -                                  05/22/26 06:05:07 1036790   11808    1048598    2d 08h 24m     timeout; resubmit with sbatch NGC4298_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4302      TIMEOUT_RESBATCH  -                                  05/22/26 05:48:02 457240    10734    467974     1d 01h 10m     timeout; resubmit with sbatch NGC4302_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4330      TIMEOUT_RESBATCH  -                                  05/22/26 05:14:02 669560    2851     672411     1d 12h 10m     timeout; resubmit with sbatch NGC4330_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4351      FINISHED          -                                  05/22/26 14:31:37 190893    2170     193063     NA             done
+NGC4383      TIMEOUT_RESBATCH  -                                  05/22/26 05:07:30 446265    8842     455107     1d 00h 29m     timeout; resubmit with sbatch NGC4383_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4388      FINISHED          -                                  05/22/26 18:23:08 281010    15475    296485     NA             done
+NGC4394      FINISHED          -                                  05/22/26 15:31:03 403728    13298    417026     NA             done
+NGC4396      TIMEOUT_RESBATCH  -                                  05/22/26 05:06:22 666665    1947     668612     1d 11h 58m     timeout; resubmit with sbatch NGC4396_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4402      FINISHED          -                                  05/22/26 13:31:10 366336    7515     373851     NA             done
+NGC4405      FINISHED          -                                  05/22/26 17:54:38 346086    5665     351751     NA             done
+NGC4419      TIMEOUT_RESBATCH  -                                  05/22/26 05:31:57 404447    17543    421990     22h 42m        timeout; resubmit with sbatch NGC4419_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4457      TIMEOUT_RESBATCH  -                                  05/22/26 06:00:12 525625    19306    544931     1d 05h 18m     timeout; resubmit with sbatch NGC4457_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4501      RUNNING           RUNNING jobid=43065232 elapsed=23:28:35 left=3-00:31:25 05/23/26 02:10:15 1489380   73938    1563318    NA             not complete; still in scheduler
+NGC4522      FINISHED          -                                  05/23/26 01:50:09 388810    2558     391368     NA             done
+NGC4567_8    TIMEOUT_RESBATCH  -                                  05/22/26 07:25:29 1028289   31715    1060004    2d 09h 01m     timeout; resubmit with sbatch NGC4567_8_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4580      TIMEOUT_RESBATCH  -                                  05/22/26 08:27:06 400493    7560     408053     21h 57m        timeout; resubmit with sbatch NGC4580_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+NGC4606      FINISHED          -                                  05/22/26 11:06:52 188790    4678     193468     NA             done
+NGC4607      FINISHED          -                                  05/22/26 11:46:02 188370    2121     190491     NA             done
+NGC4694      FINISHED          -                                  05/22/26 14:33:41 193599    7639     201238     NA             done
+NGC4698      TIMEOUT_RESBATCH  -                                  05/22/26 06:03:36 722912    23862    746774     1d 16h 10m     timeout; resubmit with sbatch NGC4698_v3tk_v7.6.8_setonix.slurm; latest stage: gas/emission stage reached
+
+Summary
+  Finished: 12
+  Still running or queued: 2
+  Timed out and should be resubmitted: 12
+  Unfinished with unknown state: 0
+  Missing logs: 0
+
+Resubmit commands for timeout jobs
+  sbatch NGC4293_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4294_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4298_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4302_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4330_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4383_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4396_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4419_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4457_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4567_8_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4580_v3tk_v7.6.8_setonix.slurm
+  sbatch NGC4698_v3tk_v7.6.8_setonix.slurm
+
+Notes
+  Finished means the product LOGFILE contains: MainPipeline: nGIST completed successfully.
+  TIMEOUT_RESBATCH means the run log contains: DUE TO TIME LIMIT
+  GAS_WORK = SPECTRA + BINS, matching GAS LEVEL=BOTH spaxel-level plus bin-level fitting.
+  Estimates use the maximum finished-job remainder at the same reached stage, scaled by GAS_WORK when available.
+  Because nGIST can skip completed modules on restart, timeout estimates are for the remaining pipeline from the latest detected stage.

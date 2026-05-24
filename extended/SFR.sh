@@ -106,6 +106,7 @@ process_galaxy() {
     msg="🛑  $GAL failed (exit $status) after ${mins}m${secs}s – see $LOGFILE"
   fi
   echo "$msg" | tee -a "$LOGFILE"
+  return "$status"
 }
 
 # Export function and variables for parallel execution
@@ -121,13 +122,23 @@ printf "Running %d galaxies in parallel using %d cores...\n" "${#GALAXIES[@]}" "
 printf "Using Python executable: %s\n" "$PYTHON_BIN"
 
 # Use GNU parallel if available, otherwise use xargs
+set +e
 if command -v parallel >/dev/null 2>&1; then
   printf '%s\n' "${GALAXIES[@]}" | parallel -j "$CORES" process_galaxy
 else
   printf '%s\n' "${GALAXIES[@]}" | xargs -P "$CORES" -I {} bash -c 'process_galaxy "$@"' _ {}
 fi
+run_status=$?
+set -e
 
 all_end=$(date +%s)
 tot=$((all_end - all_start))
-printf "\n🏁  SFR.sh completed in %dh%02dm%02ds using %d cores\n" \
-     $((tot/3600)) $(((tot/60)%60)) $((tot%60)) "$CORES"
+if [[ $run_status -eq 0 ]]; then
+  printf "\n🏁  SFR.sh completed in %dh%02dm%02ds using %d cores\n" \
+       $((tot/3600)) $(((tot/60)%60)) $((tot%60)) "$CORES"
+else
+  printf "\n🛑  SFR.sh completed with one or more failures in %dh%02dm%02ds using %d cores\n" \
+       $((tot/3600)) $(((tot/60)%60)) $((tot%60)) "$CORES" >&2
+fi
+
+exit "$run_status"

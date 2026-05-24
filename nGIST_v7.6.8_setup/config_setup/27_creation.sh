@@ -38,12 +38,38 @@ HIGHMEM_GALIDS=(
   NGC4501
 )
 
+LONG_GALIDS=(
+  NGC4293
+  NGC4298
+  NGC4302
+  NGC4330
+  NGC4383
+  NGC4396
+  NGC4419
+  NGC4457
+  NGC4567_8
+  NGC4698
+)
+
 uses_highmem_queue() {
   local galid="$1"
   local highmem_galid
 
   for highmem_galid in "${HIGHMEM_GALIDS[@]}"; do
     if [[ "$galid" == "$highmem_galid" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+uses_long_queue() {
+  local galid="$1"
+  local long_galid
+
+  for long_galid in "${LONG_GALIDS[@]}"; do
+    if [[ "$galid" == "$long_galid" ]]; then
       return 0
     fi
   done
@@ -75,6 +101,14 @@ for galid in "${GALIDS[@]}"; do
     sed \
       -e 's/^#SBATCH --partition=work$/#SBATCH --partition=highmem/' \
       -e 's/^#SBATCH --mem=220G$/#SBATCH --mem=980G/' \
+      -e 's/^#SBATCH --time=24:00:00$/#SBATCH --time=96:00:00/' \
+      "$slurm_out" > "$tmp_slurm"
+    mv "$tmp_slurm" "$slurm_out"
+  elif uses_long_queue "$galid"; then
+    echo "Updating ${slurm_out} for Setonix long queue"
+    tmp_slurm="${slurm_out}.tmp"
+    sed \
+      -e 's/^#SBATCH --partition=work$/#SBATCH --partition=long/' \
       -e 's/^#SBATCH --time=24:00:00$/#SBATCH --time=96:00:00/' \
       "$slurm_out" > "$tmp_slurm"
     mv "$tmp_slurm" "$slurm_out"

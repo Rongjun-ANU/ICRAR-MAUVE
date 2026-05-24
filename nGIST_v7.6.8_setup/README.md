@@ -124,6 +124,35 @@ slurm scripts are special-cased for Setonix `highmem` instead of `work`:
 #SBATCH --time=96:00:00
 ```
 
+Several galaxies reached the gas module more than once without completing it
+within the normal 24-hour `work` walltime. Their generated slurm scripts are
+special-cased for Setonix `long`:
+
+```text
+#SBATCH --partition=long
+#SBATCH --cpus-per-task=128
+#SBATCH --mem=220G
+#SBATCH --time=96:00:00
+```
+
+The current `long` queue list is:
+
+```text
+NGC4293
+NGC4298
+NGC4302
+NGC4330
+NGC4383
+NGC4396
+NGC4419
+NGC4457
+NGC4567_8
+NGC4698
+```
+
+`NGC4580` is intentionally not in this list: its second run completed the gas
+module and advanced to the SFH module, so the next restart should skip gas.
+
 The 26 cube IDs are:
 
 ```text
@@ -232,9 +261,12 @@ The report is printed to screen and saved in the current directory as:
 27_status_log_YYYYmmdd_HHMMSS.txt
 ```
 
-For timeout jobs, the script also gives a conservative rough remaining-time
-estimate using finished-job LOGFILEs at the same latest detected pipeline
-stage. Because this setup runs gas fitting at `BOTH` levels, the scaling uses:
+For unfinished jobs, the script also gives a conservative rough remaining-time
+estimate using the product `CONFIG` beside the `LOGFILE`. It checks which
+modules are enabled and which enabled modules have not completed yet, then
+sums the estimated remaining module times.
+
+For gas fitting, this setup runs `GAS.LEVEL: BOTH`, so the full gas workload is:
 
 ```text
 GAS_WORK = SPECTRA + BINS
@@ -242,10 +274,27 @@ GAS_WORK = SPECTRA + BINS
 
 Here `SPECTRA` is the cube-read count from `Read a total of ... spectra`, used
 as the spaxel-level workload proxy, and `BINS` is the Voronoi-bin count.
+If BIN-level gas has already completed, the gas estimate switches to the
+SPAXEL-only resume case and scales by `SPECTRA`. SFH estimates scale by `BINS`.
+If LS or user modules are enabled but no estimator is implemented, they are
+listed as `NA` in the remaining-module breakdown.
 
-The estimate uses the maximum scaled remaining time from comparable finished
-jobs, not the median. These estimates are approximate because nGIST can skip
-completed modules after restart.
+Each module estimate uses the maximum scaled module time from comparable
+finished jobs, not the median. These estimates are approximate because nGIST
+can skip completed modules after restart, but it does not checkpoint every
+internal step within a module.
+
+The status script also prints `long` queue warnings when either:
+
+- the same module has restarted more than once without completing, which means
+  another 24-hour `work` job may repeat the same failure mode;
+- at least one remaining module estimate is longer than 22 hours;
+- the summed `EST_REMAIN` is longer than 22 hours, leaving too little margin for
+  the 24-hour `work` walltime.
+
+The warning text reads the local `{GALID}_v3tk_v7.6.8_setonix.slurm` file. If
+the job is still on `work`, it recommends switching to `long`; if it is already
+on `long` or `highmem`, it warns not to resubmit that galaxy on `work`.
 
 ## QC PDF script
 

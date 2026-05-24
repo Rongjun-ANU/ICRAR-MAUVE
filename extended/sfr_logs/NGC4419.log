@@ -1,14 +1,14 @@
-Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python executable: /opt/miniconda3/envs/ICRAR/bin/python
 Python 3.13.3
 PYTHONUNBUFFERED: 1
 CANFAR base root : /arc/projects/mauve
-Local fallback   : /arc/home/RongjunHuang/ICRAR/extended
+Local fallback   : /Users/Igniz/Desktop/ICRAR/extended
 
 Shared input keyword ➜ <none>
-Reading gas-line FITS ➜ /arc/projects/mauve/products/v0.6/NGC4419/NGC4419_gas_BIN_maps.fits
-Matched binning FITS ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
+Reading gas-line FITS ➜ /Users/Igniz/Desktop/ICRAR/extended/NGC4419_gas_BIN_maps.fits
+Matched binning FITS ➜ /Users/Igniz/Desktop/ICRAR/extended/NGC4419_SPATIAL_BINNING_maps_extended.fits
 File not found: None
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:595: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:618: RuntimeWarning: divide by zero encountered in divide
   BD = HA6562_FLUX / HB4861_FLUX
 --------------------------------------------------------------
 Extinction law for k(λ)=A(λ)/E(B−V): mw (mw_rv=3.1)
@@ -19,115 +19,109 @@ k([NII]6583) = 2.5255   at λ=0.6583 µm
 k([SII]6716) = 2.4619   at λ=0.6716 µm
 k([SII]6730) = 2.4552   at λ=0.6730 µm
 --------------------------------------------------------------
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:819: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:984: RuntimeWarning: divide by zero encountered in divide
   y = np.log10(NII6583_FLUX_corr / (SII6716_FLUX_corr + SII6730_FLUX_corr)) + 0.264*np.log10(NII6583_FLUX_corr / HA6562_FLUX_corr)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:830: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:995: RuntimeWarning: divide by zero encountered in divide
   N2 = NII_scaled / HB4861_FLUX_corr   # N2 = I([N II]λ6548 + λ6584)/I(Hβ)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:831: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:996: RuntimeWarning: divide by zero encountered in divide
   S2 = (SII6716_FLUX_corr + SII6730_FLUX_corr) / HB4861_FLUX_corr  # S2 = I([S II]λ6717 + λ6731)/I(Hβ)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:832: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:997: RuntimeWarning: divide by zero encountered in divide
   R3 = OIII_scaled / HB4861_FLUX_corr  # R3 = I([O III]λ4959 + λ5007)/I(Hβ) (same value as R2 in this case)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:832: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:997: RuntimeWarning: invalid value encountered in divide
   R3 = OIII_scaled / HB4861_FLUX_corr  # R3 = I([O III]λ4959 + λ5007)/I(Hβ) (same value as R2 in this case)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:834: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:999: RuntimeWarning: divide by zero encountered in divide
   log_R3_S2 = np.log10(R3/S2)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:834: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:999: RuntimeWarning: invalid value encountered in divide
   log_R3_S2 = np.log10(R3/S2)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:834: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:999: RuntimeWarning: divide by zero encountered in log10
   log_R3_S2 = np.log10(R3/S2)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:836: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1001: RuntimeWarning: divide by zero encountered in log10
   log_S2 = np.log10(S2)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:859: RuntimeWarning: invalid value encountered in add
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1024: RuntimeWarning: invalid value encountered in add
   O_H_PG16[upper_mask] = (a1_upper + a2_upper * log_R3_S2[upper_mask] + a3_upper * log_N2[upper_mask] +
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:884: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1049: RuntimeWarning: divide by zero encountered in divide
   n2s2_ratio = np.log10(nii6583_flux / sii_total)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:929: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1094: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:929: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1094: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:931: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1096: RuntimeWarning: divide by zero encountered in log10
   o3n2_ratio = np.log10(oiii_hb / nii_ha)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:974: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1141: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:974: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1141: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:976: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1143: RuntimeWarning: divide by zero encountered in log10
   o3n2_ratio = np.log10(oiii_hb / nii_ha)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1031: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1200: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1031: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1200: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1033: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1202: RuntimeWarning: divide by zero encountered in log10
   o3n2_ratio = np.log10(oiii_hb / nii_ha)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1123: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1302: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1123: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1302: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1126: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1305: RuntimeWarning: divide by zero encountered in divide
   sii_hb = sii_total / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1129: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1308: RuntimeWarning: divide by zero encountered in divide
   o3s2_ratio = np.log10(oiii_hb / sii_hb)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1129: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1308: RuntimeWarning: invalid value encountered in divide
   o3s2_ratio = np.log10(oiii_hb / sii_hb)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1129: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:1308: RuntimeWarning: divide by zero encountered in log10
   o3s2_ratio = np.log10(oiii_hb / sii_hb)
 Calculating all 6 C20 metallicities for NGC4419...
-Combined C20 metallicity: median = 8.557, range = (8.228, 8.888)
-Combined C20 method usage: O3N2=14974, O3S2=0, RS32=4634, R3=121695, N2=22, S2=10992
+Combined C20 metallicity: median = 8.644, range = (8.076, 8.885)
+Combined C20 dominant-weight method usage: O3N2=99570, O3S2=0, RS32=3098, R3=38828, N2=0, S2=10640
 Galaxy NGC4419 inclination: 74.0° (cos θ = 0.276)
 Inclination correction ENABLED: applying b/a = 0.336 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1922: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:2017: RuntimeWarning: divide by zero encountered in log10
   logS2  = np.log10((SII6716_FLUX_corr+SII6730_FLUX_corr) / HA6562_FLUX_corr)   # Σ[S II]/Hα
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1923: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:2018: RuntimeWarning: divide by zero encountered in divide
   logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1923: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:2018: RuntimeWarning: invalid value encountered in divide
   logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:1923: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:2018: RuntimeWarning: divide by zero encountered in log10
   logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:2009: RuntimeWarning: invalid value encountered in add
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:2104: RuntimeWarning: invalid value encountered in add
   mask_N2_right, mask_S2_right = apply_bpt_masks(logN2=logN2+logN2_err, logS2=logS2+logS2_err, logO3=logO3)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:2010: RuntimeWarning: invalid value encountered in subtract
-  mask_N2_down, mask_S2_down = apply_bpt_masks(logN2=logN2, logS2=logS2, logO3=logO3-logO3_err)
-/arc/home/RongjunHuang/ICRAR/extended/SFR+Z.py:2011: RuntimeWarning: invalid value encountered in add
+/Users/Igniz/Desktop/ICRAR/extended/SFR+Z.py:2106: RuntimeWarning: invalid value encountered in add
   mask_N2_up, mask_S2_up = apply_bpt_masks(logN2=logN2, logS2=logS2, logO3=logO3+logO3_err)
-Combined C20 total: Selected R3-C20 with error 0.075
-Available methods: [('O3N2-C20', np.float64(8.755352154321882), np.float64(0.09214308588027573)), ('O3S2-C20', np.float64(8.791657732696352), np.float64(0.1119514592455159)), ('RS32-C20', np.float64(8.713546000903198), np.float64(0.08087898132903207)), ('R3-C20', np.float64(8.705637655566015), np.float64(0.0751376149194772)), ('S2-C20', np.float64(8.525194114200996), np.float64(0.10953437962858519))]
-Combined C20 total: Selected R3-C20 with error 0.070
-Available methods: [('O3N2-C20', np.float64(8.724222048394019), np.float64(0.09000001399366124)), ('O3S2-C20', np.float64(8.75781285243478), np.float64(0.11000002020747761)), ('RS32-C20', np.float64(8.581171824100721), np.float64(0.08000003918266836)), ('R3-C20', np.float64(8.591852261171768), np.float64(0.07000004911983006))]
-Extended file written ➜ /arc/home/RongjunHuang/ICRAR/extended/NGC4419_gas_BIN_maps_extended.fits
+Extended file written ➜ /Users/Igniz/Desktop/ICRAR/extended/NGC4419_gas_BIN_maps_extended.fits
 --------------------------------------------------------------
 Total non-nan spaxels: 154533
 Number of pixels with Halpha not detected: 11508
 Number of pixels with Halpha detected, Hbeta not detected: 73965
 Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII not detected and unclassified1: 0
-Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII detected and unclassified1: 0
-Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII not detected and unclassified1: 1732
-Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII detected and unclassified1: 3680
-Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII not detected and unclassified1: 900
-Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII detected and unclassified1: 373
-Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII not detected and unclassified1: 832
-Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII detected and unclassified1: 3307
+Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII detected and unclassified1: 67
+Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII not detected and unclassified1: 4124
+Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII detected and unclassified1: 23898
+Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII not detected and unclassified1: 2586
+Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII detected and unclassified1: 3870
+Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII not detected and unclassified1: 1538
+Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII detected and unclassified1: 20095
 --------------------------------------------------------------
-Total corrected Halpha luminosity: 9.18e+40 erg/s
-Total corrected Halpha luminosity from SF region: 5.21e+40 erg/s
-Total Halpha SFR: 0.46 M☉/yr or in log10 scale: -0.34 log(M☉/yr)
-Total Halpha SFR from SF region: 0.26 M☉/yr or in log10 scale: -0.59 log(M☉/yr)
+Total Halpha luminosity map sum (detections + upper-limit substitutions): 9.18e+40 erg/s
+Total corrected Halpha luminosity from SF region: 4.52e+40 erg/s
+Total Halpha SFR map sum (detections + upper-limit substitutions): 0.46 M☉/yr or in log10 scale: -0.34 log(M☉/yr)
+Total Halpha SFR from SF region: 0.23 M☉/yr or in log10 scale: -0.65 log(M☉/yr)
 Total Halpha SFR from HII region: 0.09 M☉/yr or in log10 scale: -1.05 log(M☉/yr)
 --------------------------------------------------------------
-[O/H] D16 SF: Total metallicity in SF region:  8.925656712024217
-[O/H] PG16 SF: Total metallicity in SF region:  8.651644645612183
-[O/H] N2S2-N06 SF: Total metallicity in SF region:  9.146892527632879
-[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.541579137117939
-[O/H] N2-M13 SF: Total metallicity in SF region:  8.607499565409848
-[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.742828616251124
-[O/H] N2-PP04 SF: Total metallicity in SF region:  8.874930792643289
-[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.755352154321882
-[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.791657732696352
-[O/H] RS32-C20 SF: Total metallicity in SF region:  8.713546000903198
-[O/H] R3-C20 SF: Total metallicity in SF region:  8.705637655566015
+[O/H] D16 SF: Total metallicity in SF region:  8.917059469698614
+[O/H] PG16 SF: Total metallicity in SF region:  8.636129361404544
+[O/H] N2S2-N06 SF: Total metallicity in SF region:  9.147381398592069
+[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.545908991792418
+[O/H] N2-M13 SF: Total metallicity in SF region:  8.592475175415021
+[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.749303165297075
+[O/H] N2-PP04 SF: Total metallicity in SF region:  8.83128836238317
+[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.759342493696824
+[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.79571901567577
+[O/H] RS32-C20 SF: Total metallicity in SF region:  8.730360090510544
+[O/H] R3-C20 SF: Total metallicity in SF region:  8.719841639787761
 [O/H] N2-C20 SF: Total metallicity in SF region:  nan
-[O/H] S2-C20 SF: Total metallicity in SF region:  8.525194114200996
-[O/H] Combined-C20 SF: Total metallicity in SF region:  8.705637655566015
+[O/H] S2-C20 SF: Total metallicity in SF region:  8.791105044500572
+[O/H] Combined-C20 SF: Total metallicity in SF region:  8.758441401430394 (weighted 5 methods; dominant S2)
 --------------------------------------------------------------
 [O/H] D16 HII: Total metallicity in HII region:  8.868687563292408
 [O/H] PG16 HII: Total metallicity in HII region:  8.57955802618651
@@ -141,23 +135,23 @@ Total Halpha SFR from HII region: 0.09 M☉/yr or in log10 scale: -1.05 log(M☉
 [O/H] RS32-C20 HII: Total metallicity in HII region:  8.79996575833999
 [O/H] R3-C20 HII: Total metallicity in HII region:  8.780350135418265
 [O/H] N2-C20 HII: Total metallicity in HII region:  8.700897457627512
-[O/H] S2-C20 HII: Total metallicity in HII region:  8.396548303412292
-[O/H] Combined-C20 HII: Total metallicity in HII region:  8.396548303412292
+[O/H] S2-C20 HII: Total metallicity in HII region:  8.848496148615032
+[O/H] Combined-C20 HII: Total metallicity in HII region:  8.798055144918203 (weighted 6 methods; dominant S2)
 --------------------------------------------------------------
 [O/H] D16: Total metallicity in total region:  8.994253275917176
 [O/H] PG16: Total metallicity in total region:  8.79083413133033
 [O/H] N2S2-N06: Total metallicity in total region:  9.150053497284132
 [O/H] O3N2-M13: Total metallicity in total region:  8.508330984281367
-[O/H] N2-M13: Total metallicity in total region:  8.707133438452523
+[O/H] N2-M13: Total metallicity in total region:  nan
 [O/H] O3N2-PP04: Total metallicity in total region:  8.693111752196439
-[O/H] N2-PP04: Total metallicity in total region:  9.219848698766638
+[O/H] N2-PP04: Total metallicity in total region:  nan
 [O/H] O3N2-C20: Total metallicity in total region:  8.724222048394019
 [O/H] O3S2-C20: Total metallicity in total region:  8.75781285243478
 [O/H] RS32-C20: Total metallicity in total region:  8.581171824100721
 [O/H] R3-C20: Total metallicity in total region:  8.591852261171768
 [O/H] N2-C20: Total metallicity in total region:  nan
 [O/H] S2-C20: Total metallicity in total region:  nan
-[O/H] Combined-C20: Total metallicity in total region:  8.591852261171768
+[O/H] Combined-C20: Total metallicity in total region:  8.641971311426529 (weighted 4 methods; dominant R3)
 --------------------------------------------------------------
-Total runtime: 155.2 s
-✅  NGC4419 finished in 3m9s
+Total runtime: 81.0 s
+✅  NGC4419 finished in 1m24s

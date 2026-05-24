@@ -7,6 +7,7 @@ RUN_DIR="$(pwd)"
 PRODUCT_BASE="/scratch/pawsey1308/mauve/products/v3tk_v7.6.8"
 COMPLETION_STRING="MainPipeline: nGIST completed successfully."
 STATUS_LOG="27_status_log_$(date +%Y%m%d_%H%M%S).txt"
+LONG_QUEUE_ESTIMATE_WARNING_SECONDS=$((22 * 3600))
 
 exec > >(tee "$STATUS_LOG") 2>&1
 
@@ -45,7 +46,7 @@ timestamp_to_epoch() {
     return 1
   fi
 
-  date -d "$stamp" +%s 2>/dev/null
+  date -d "$stamp" +%s 2>/dev/null || date -j -f "%m/%d/%y %H:%M:%S" "$stamp" +%s 2>/dev/null
 }
 
 format_seconds() {
@@ -116,6 +117,49 @@ extract_gas_work_units() {
   fi
 }
 
+config_method() {
+  local config_file="$1"
+  local section="$2"
+
+  if [[ ! -f "$config_file" ]]; then
+    return
+  fi
+
+  awk -v section="$section" '
+    $0 ~ "^" section ":" {
+      in_section = 1
+      next
+    }
+    in_section && $0 ~ /^[A-Z0-9_]+:/ {
+      exit
+    }
+    in_section && $0 ~ /^[[:space:]]+METHOD:/ {
+      value = $0
+      sub(/^[[:space:]]+METHOD:[[:space:]]*/, "", value)
+      gsub(/[[:space:]]+$/, "", value)
+      print value
+      exit
+    }
+  ' "$config_file" 2>/dev/null
+}
+
+method_is_enabled() {
+  local method="$1"
+  local normalised
+
+  normalised="$(printf "%s" "$method" | tr '[:upper:]' '[:lower:]')"
+  [[ -n "$normalised" && "$normalised" != "false" && "$normalised" != "none" && "$normalised" != "null" && "$normalised" != "off" ]]
+}
+
+module_is_enabled() {
+  local config_file="$1"
+  local module="$2"
+  local method
+
+  method="$(config_method "$config_file" "$module")"
+  method_is_enabled "$method"
+}
+
 last_info_line() {
   local log_file="$1"
   grep -E " - INFO[[:space:]]+- " "$log_file" 2>/dev/null | tail -1 | sed -E 's/[[:space:]]+/ /g'
@@ -140,6 +184,48 @@ job_state() {
       exit
     }
   '
+}
+
+slurm_partition() {
+  local galid="$1"
+  local slurm_file="${RUN_DIR}/${galid}_v3tk_v7.6.8_setonix.slurm"
+
+  awk -F= '/^#SBATCH --partition=/ {print $2; exit}' "$slurm_file" 2>/dev/null
+}
+
+slurm_walltime() {
+  local galid="$1"
+  local slurm_file="${RUN_DIR}/${galid}_v3tk_v7.6.8_setonix.slurm"
+
+  awk -F= '/^#SBATCH --time=/ {print $2; exit}' "$slurm_file" 2>/dev/null
+}
+
+queue_warning_message() {
+  local galid="$1"
+  local reason="$2"
+  local partition walltime
+
+  partition="$(slurm_partition "$galid")"
+  walltime="$(slurm_walltime "$galid")"
+
+  if [[ "$partition" == "work" ]]; then
+    echo "WARNING: ${reason}; update slurm from partition=work to partition=long time=96:00:00"
+  elif [[ "$partition" == "long" || "$partition" == "highmem" ]]; then
+    echo "WARNING: ${reason}; current slurm uses partition=${partition} time=${walltime:-unknown}, do not resubmit on work"
+  else
+    echo "WARNING: ${reason}; use a 96h queue, normally partition=long unless highmem is required"
+  fi
+}
+
+append_warning_text() {
+  local current="$1"
+  local extra="$2"
+
+  if [[ -n "$current" ]]; then
+    printf "%s; %s" "$current" "$extra"
+  else
+    printf "%s" "$extra"
+  fi
 }
 
 classify_status() {
@@ -184,6 +270,10 @@ stage_label() {
     echo "no product LOGFILE"
   elif contains_completion "$log_file"; then
     echo "completed"
+  elif grep -Fq "Produced SFH maps" "$log_file"; then
+    echo "SFH maps done"
+  elif grep -Eq "_starFormationHistories|ppxf_sfh_wrapper" "$log_file"; then
+    echo "SFH stage reached"
   elif grep -Eiq "_emission|emissionLines|Produced .*gas|gas.*maps" "$log_file"; then
     echo "gas/emission stage reached"
   elif grep -Eq "_continuumCube|ppxf_cont_wrapper" "$log_file"; then
@@ -205,29 +295,95 @@ stage_label() {
   fi
 }
 
-stage_pattern() {
+count_pattern() {
   local log_file="$1"
+  local pattern="$2"
 
-  if [[ ! -f "$log_file" ]]; then
-    echo ""
-  elif grep -Eiq "_emission|emissionLines|Produced .*gas|gas.*maps" "$log_file"; then
-    echo "_emission|emissionLines|Produced .*gas|gas.*maps"
-  elif grep -Eq "_continuumCube|ppxf_cont_wrapper" "$log_file"; then
-    echo "_continuumCube|ppxf_cont_wrapper"
-  elif grep -Fq "Produced stellar kinematics maps" "$log_file"; then
-    echo "Produced stellar kinematics maps"
-  elif grep -Fq "_stellarKinematics" "$log_file"; then
-    echo "_stellarKinematics"
-  elif grep -Fq "_bin_spectra.hdf5" "$log_file"; then
-    echo "_bin_spectra.hdf5"
-  elif grep -Fq "_all_spectra.hdf5" "$log_file"; then
-    echo "_all_spectra.hdf5"
-  elif grep -Fq "Voronoi bins generated" "$log_file"; then
-    echo "Voronoi bins generated"
-  elif grep -Fq "Finished reading the MUSE cube" "$log_file"; then
-    echo "Finished reading the MUSE cube"
+  awk -v pattern="$pattern" '$0 ~ pattern {count++} END {print count + 0}' "$log_file" 2>/dev/null
+}
+
+last_line_number_for_pattern() {
+  local log_file="$1"
+  local pattern="$2"
+
+  awk -v pattern="$pattern" '$0 ~ pattern {line = NR} END {if (line != "") print line}' "$log_file" 2>/dev/null
+}
+
+has_pattern_after_line() {
+  local log_file="$1"
+  local line_number="$2"
+  local pattern="$3"
+
+  awk -v line_number="$line_number" -v pattern="$pattern" '
+    NR > line_number && $0 ~ pattern {
+      found = 1
+      exit
+    }
+    END {
+      exit(found ? 0 : 1)
+    }
+  ' "$log_file" 2>/dev/null
+}
+
+repeated_unfinished_module_label() {
+  local log_file="$1"
+  local count last_start
+
+  if [[ ! -f "$log_file" ]] || contains_completion "$log_file"; then
+    return
+  fi
+
+  count="$(count_pattern "$log_file" "_emissionLines: Using the emissionLines routine")"
+  if (( count >= 2 )); then
+    last_start="$(last_line_number_for_pattern "$log_file" "_emissionLines: Using the emissionLines routine")"
+    if [[ -n "$last_start" ]] && ! has_pattern_after_line "$log_file" "$last_start" "Emission Line Fitting done|_starFormationHistories: Using the starFormationHistories routine|MainPipeline: nGIST completed successfully"; then
+      echo "emissionLines"
+      return
+    fi
+  fi
+
+  count="$(count_pattern "$log_file" "_starFormationHistories: Using the starFormationHistories routine")"
+  if (( count >= 2 )); then
+    last_start="$(last_line_number_for_pattern "$log_file" "_starFormationHistories: Using the starFormationHistories routine")"
+    if [[ -n "$last_start" ]] && ! has_pattern_after_line "$log_file" "$last_start" "Produced SFH maps|_lineStrengths:|_userModules:|MainPipeline: nGIST completed successfully"; then
+      echo "starFormationHistories"
+      return
+    fi
+  fi
+}
+
+module_is_complete() {
+  local module="$1"
+  local log_file="$2"
+
+  case "$module" in
+    GAS)
+      grep -Fq "Emission Line Fitting done" "$log_file" 2>/dev/null || contains_completion "$log_file"
+      ;;
+    SFH)
+      grep -Fq "Produced SFH maps" "$log_file" 2>/dev/null || contains_completion "$log_file"
+      ;;
+    LS)
+      grep -Fq "Produced line-strength maps" "$log_file" 2>/dev/null || contains_completion "$log_file"
+      ;;
+    UMOD)
+      contains_completion "$log_file"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+gas_resume_level() {
+  local galid="$1"
+  local log_file="$2"
+  local product_dir="${PRODUCT_BASE}/${galid}"
+
+  if [[ -f "${product_dir}/${galid}_gas_bin.fits" ]] || grep -Fq "${galid}_gas_bin.fits" "$log_file" 2>/dev/null; then
+    echo "SPAXEL"
   else
-    echo ""
+    echo "BOTH"
   fi
 }
 
@@ -246,43 +402,136 @@ max_from_stdin() {
   '
 }
 
-estimate_remaining_seconds() {
-  local pattern="$1"
-  local target_work="$2"
-  local completion_ts marker_ts completion_epoch marker_epoch duration ref_work finished_log
+estimate_module_seconds() {
+  local module="$1"
+  local galid="$2"
+  local log_file="$3"
+  local start_pattern end_pattern target_work ref_work finished_log
+  local start_ts end_ts start_epoch end_epoch duration gas_level
 
-  if [[ -z "$pattern" || ${#FINISHED_LOGS[@]} -eq 0 ]]; then
+  case "$module" in
+    GAS)
+      gas_level="$(gas_resume_level "$galid" "$log_file")"
+      if [[ "$gas_level" == "SPAXEL" ]]; then
+        start_pattern="Using full spectral library for ppxf on SPAXEL level"
+        target_work="$(extract_spectra_count "$log_file")"
+      else
+        start_pattern="_emissionLines: Using the emissionLines routine"
+        target_work="$(extract_gas_work_units "$log_file")"
+      fi
+      end_pattern="Emission Line Fitting done"
+      ;;
+    SFH)
+      start_pattern="_starFormationHistories: Using the starFormationHistories routine"
+      end_pattern="Produced SFH maps"
+      target_work="$(extract_bin_count "$log_file")"
+      ;;
+    *)
+      echo ""
+      return
+      ;;
+  esac
+
+  if [[ -z "$start_pattern" || -z "$end_pattern" || ${#FINISHED_LOGS[@]} -eq 0 ]]; then
     echo ""
     return
   fi
 
   for finished_log in "${FINISHED_LOGS[@]}"; do
-    marker_ts="$(last_timestamp_for_pattern "$finished_log" "$pattern")"
-    completion_ts="$(last_timestamp_for_pattern "$finished_log" "$COMPLETION_STRING")"
+    start_ts="$(last_timestamp_for_pattern "$finished_log" "$start_pattern")"
+    end_ts="$(last_timestamp_for_pattern "$finished_log" "$end_pattern")"
 
-    if [[ -z "$marker_ts" || -z "$completion_ts" ]]; then
+    if [[ -z "$start_ts" || -z "$end_ts" ]]; then
       continue
     fi
 
-    marker_epoch="$(timestamp_to_epoch "$marker_ts" || true)"
-    completion_epoch="$(timestamp_to_epoch "$completion_ts" || true)"
+    start_epoch="$(timestamp_to_epoch "$start_ts" || true)"
+    end_epoch="$(timestamp_to_epoch "$end_ts" || true)"
 
-    if [[ -z "$marker_epoch" || -z "$completion_epoch" ]]; then
+    if [[ -z "$start_epoch" || -z "$end_epoch" ]]; then
       continue
     fi
 
-    duration=$((completion_epoch - marker_epoch))
+    duration=$((end_epoch - start_epoch))
     if (( duration <= 0 )); then
       continue
     fi
 
-    ref_work="$(extract_gas_work_units "$finished_log")"
+    case "$module" in
+      GAS)
+        if [[ "$(gas_resume_level "$galid" "$log_file")" == "SPAXEL" ]]; then
+          ref_work="$(extract_spectra_count "$finished_log")"
+        else
+          ref_work="$(extract_gas_work_units "$finished_log")"
+        fi
+        ;;
+      SFH)
+        ref_work="$(extract_bin_count "$finished_log")"
+        ;;
+    esac
+
     if [[ "$target_work" =~ ^[0-9]+$ && "$ref_work" =~ ^[0-9]+$ && "$ref_work" -gt 0 ]]; then
       awk -v duration="$duration" -v target_work="$target_work" -v ref_work="$ref_work" 'BEGIN {print int(duration * target_work / ref_work + 0.5)}'
     else
       echo "$duration"
     fi
   done | max_from_stdin
+}
+
+remaining_module_estimates() {
+  local galid="$1"
+  local log_file="$2"
+  local config_file="$3"
+  local module module_seconds module_text
+  local total_seconds=0
+  local has_estimate=0
+  local has_remaining=0
+  local over_limit=0
+  local breakdown=""
+
+  if [[ ! -f "$log_file" || ! -f "$config_file" ]] || contains_completion "$log_file"; then
+    return
+  fi
+
+  for module in GAS SFH LS UMOD; do
+    if ! module_is_enabled "$config_file" "$module"; then
+      continue
+    fi
+
+    if module_is_complete "$module" "$log_file"; then
+      continue
+    fi
+
+    has_remaining=1
+    module_seconds="$(estimate_module_seconds "$module" "$galid" "$log_file")"
+
+    if [[ "$module_seconds" =~ ^[0-9]+$ ]]; then
+      has_estimate=1
+      total_seconds=$((total_seconds + module_seconds))
+      module_text="${module}~$(format_seconds "$module_seconds")"
+      if (( module_seconds > LONG_QUEUE_ESTIMATE_WARNING_SECONDS )); then
+        over_limit=1
+      fi
+    else
+      module_text="${module}~NA"
+    fi
+
+    if [[ -n "$breakdown" ]]; then
+      breakdown="${breakdown} + ${module_text}"
+    else
+      breakdown="$module_text"
+    fi
+  done
+
+  if (( has_remaining == 0 )); then
+    return
+  fi
+
+  if (( has_estimate == 1 )); then
+    printf "%s|%s|%s\n" "$total_seconds" "$breakdown" "$over_limit"
+  else
+    printf "|%s|%s\n" "$breakdown" "$over_limit"
+  fi
 }
 
 FINISHED_LOGS=()
@@ -299,6 +548,7 @@ timeout_count=0
 unknown_count=0
 missing_count=0
 resbatch_list=()
+long_queue_warning_list=()
 
 echo "nGIST v7.6.8 batch status"
 echo "Generated: $(date '+%Y-%m-%d %H:%M:%S %Z')"
@@ -314,6 +564,7 @@ printf "%-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
 
 for galid in "${GALIDS[@]}"; do
   product_log="${PRODUCT_BASE}/${galid}/LOGFILE"
+  config_file="${PRODUCT_BASE}/${galid}/CONFIG"
   run_log="${RUN_DIR}/${galid}_v3tk_v7.6.8.log"
   status="$(classify_status "$galid")"
   state="$(job_state "$galid")"
@@ -323,7 +574,22 @@ for galid in "${GALIDS[@]}"; do
   gas_work="$(extract_gas_work_units "$product_log")"
   last_ts="$(last_timestamp_for_pattern "$product_log" ".*")"
   estimate="NA"
+  estimate_seconds=""
   action="$stage"
+  warning_text=""
+  repeated_module="$(repeated_unfinished_module_label "$product_log")"
+  remaining_info="$(remaining_module_estimates "$galid" "$product_log" "$config_file")"
+  remaining_total_seconds=""
+  remaining_breakdown=""
+  remaining_over_limit=0
+
+  if [[ -n "$remaining_info" ]]; then
+    IFS='|' read -r remaining_total_seconds remaining_breakdown remaining_over_limit <<< "$remaining_info"
+    if [[ "$remaining_total_seconds" =~ ^[0-9]+$ ]]; then
+      estimate_seconds="$remaining_total_seconds"
+      estimate="$(format_seconds "$estimate_seconds")"
+    fi
+  fi
 
   [[ -z "$state" ]] && state="-"
   [[ -z "$spectra" ]] && spectra="-"
@@ -347,11 +613,6 @@ for galid in "${GALIDS[@]}"; do
     TIMEOUT_RESBATCH)
       timeout_count=$((timeout_count + 1))
       resbatch_list+=("$galid")
-      pattern="$(stage_pattern "$product_log")"
-      estimate_seconds="$(estimate_remaining_seconds "$pattern" "$gas_work")"
-      if [[ -n "$estimate_seconds" ]]; then
-        estimate="$(format_seconds "$estimate_seconds")"
-      fi
       action="timeout; resubmit with sbatch ${galid}_v3tk_v7.6.8_setonix.slurm; latest stage: ${stage}"
       ;;
     MISSING_LOGS)
@@ -363,6 +624,25 @@ for galid in "${GALIDS[@]}"; do
       action="not complete; inspect product LOGFILE and ${run_log}"
       ;;
   esac
+
+  if [[ -n "$remaining_breakdown" && "$status" != "FINISHED" ]]; then
+    action="${action}; remaining active modules: ${remaining_breakdown}"
+  fi
+
+  if [[ -n "$repeated_module" ]]; then
+    warning_text="$(queue_warning_message "$galid" "repeated unfinished ${repeated_module} module")"
+  fi
+
+  if [[ "$remaining_over_limit" == "1" ]]; then
+    warning_text="$(append_warning_text "$warning_text" "$(queue_warning_message "$galid" "at least one remaining module estimate > 22h")")"
+  elif [[ "$estimate_seconds" =~ ^[0-9]+$ ]] && (( estimate_seconds > LONG_QUEUE_ESTIMATE_WARNING_SECONDS )); then
+    warning_text="$(append_warning_text "$warning_text" "$(queue_warning_message "$galid" "EST_REMAIN > 22h")")"
+  fi
+
+  if [[ -n "$warning_text" ]]; then
+    action="${action}; ${warning_text}"
+    long_queue_warning_list+=("${galid}: ${warning_text}")
+  fi
 
   printf "%-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
     "$galid" "$status" "$state" "$last_ts" "$spectra" "$bins" "$gas_work" "$estimate" "$action"
@@ -384,10 +664,21 @@ if (( timeout_count > 0 )); then
   done
 fi
 
+if (( ${#long_queue_warning_list[@]} > 0 )); then
+  echo
+  echo "Long-queue warnings"
+  for warning in "${long_queue_warning_list[@]}"; do
+    echo "  ${warning}"
+  done
+fi
+
 echo
 echo "Notes"
 echo "  Finished means the product LOGFILE contains: ${COMPLETION_STRING}"
 echo "  TIMEOUT_RESBATCH means the run log contains: DUE TO TIME LIMIT"
 echo "  GAS_WORK = SPECTRA + BINS, matching GAS LEVEL=BOTH spaxel-level plus bin-level fitting."
-echo "  Estimates use the maximum finished-job remainder at the same reached stage, scaled by GAS_WORK when available."
-echo "  Because nGIST can skip completed modules on restart, timeout estimates are for the remaining pipeline from the latest detected stage."
+echo "  EST_REMAIN sums enabled, unfinished modules from each product CONFIG."
+echo "  GAS estimates scale by SPECTRA for SPAXEL-only resume, or SPECTRA+BINS before BIN gas is complete."
+echo "  SFH estimates scale by BINS. LS and UMOD are listed as NA if enabled but no estimator is implemented."
+echo "  Estimates use the maximum scaled module time from comparable finished jobs."
+echo "  Long-queue warnings mean the same module restarted without completing, one module estimate is longer than 22h, or total EST_REMAIN is longer than 22h."
