@@ -37,36 +37,47 @@ GALAXIES=(
     "NGC4698"
 )
 
+# Set a batch size to limit concurrent connections and avoid overwhelming Setonix
+BATCH_SIZE=5
+count=0
+
 # Loop through each galaxy
 for GALID in "${GALAXIES[@]}"; do
-    echo "Downloading files for ${GALID}..."
-    
-    # Create the local directory for the galaxy if it doesn't exist
-    mkdir -p "${LOCAL_DIR}/${GALID}"
+    (
+        echo "Downloading files for ${GALID}..."
+        
+        # Create the local directory for the galaxy if it doesn't exist
+        mkdir -p "${LOCAL_DIR}/${GALID}"
 
-    # Define the list of files to copy for this galaxy
-    FILES=(
-        "CONFIG"
-        "${GALID}_kin_maps.fits"
-        "${GALID}_sfh_weights.fits"
-        "${GALID}_gas_bin_maps.fits"
-        "${GALID}_mask.fits"
-        "${GALID}_spatial_binning_maps.fits"
-        "${GALID}_gas_spaxel_maps.fits"
-        "${GALID}_sfh_maps.fits"
-        "LOGFILE"
-    )
+        # Define the list of files to copy for this galaxy
+        FILES=(
+            "CONFIG"
+            "${GALID}_kin_maps.fits"
+            "${GALID}_sfh_weights.fits"
+            "${GALID}_gas_bin_maps.fits"
+            "${GALID}_mask.fits"
+            "${GALID}_spatial_binning_maps.fits"
+            "${GALID}_gas_spaxel_maps.fits"
+            "${GALID}_sfh_maps.fits"
+            "LOGFILE"
+        )
+        
+        # macOS recently updated `scp` to use the strict SFTP protocol by default, which crashes instantly 
+        # if the server prints any text (like the Setonix 80-line warning banner).
+        # The `-O` flag forces the legacy SCP protocol, which is much more tolerant of server text banners.
+        for FILE in "${FILES[@]}"; do
+            scp -O -q "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${FILE}" "${LOCAL_DIR}/${GALID}/"
+        done
+        echo "Finished ${GALID}"
+    ) &
 
-    # Because Pawsey's banner breaks scp/rsync easily, another alternative is forcing a pseudo-terminal (-t) with ssh and cat, 
-    # but the easiest workaround for annoying banners using rsync is to use ssh with the -e flag to suppress banners, or just pass --ignore-missing-args
-    # Wait, the best fix for "protocol version mismatch -- is your shell clean?" is to use sftp, which is inherently immune to bashrc banners.
-    
-    # macOS recently updated `scp` to use the strict SFTP protocol by default, which crashes instantly 
-    # if the server prints any text (like the Setonix 80-line warning banner).
-    # The `-O` flag forces the legacy SCP protocol, which is much more tolerant of server text banners.
-    for FILE in "${FILES[@]}"; do
-        scp -O -q "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${FILE}" "${LOCAL_DIR}/${GALID}/"
-    done
+    # Wait for the current batch to finish before starting the next
+    count=$((count + 1))
+    if (( count % BATCH_SIZE == 0 )); then
+        wait
+    fi
 done
 
+# Wait for any remaining background jobs to finish
+wait
 echo "Done!"

@@ -179,9 +179,10 @@ Changes (2026-05-24)
     uncertainty. The diagnostic method map now records the dominant-weight
     contributor instead of defining the combined metallicity as one selected
     calibration.
-* Added independent `NII_BPT` and `SII_BPT` HDUs. `NII_BPT` stores
-    0=unclassified, 1=HII, 2=Comp, 3=AGN; `SII_BPT` stores
-    0=unclassified, 1=HII, 2=LINER, 3=Seyfert.
+* Added independent `NII_BPT` and `SII_BPT` HDUs using dust-corrected line
+    fluxes. Both maps use -1=unknown/non-detection and 0=unclassified.
+    `NII_BPT` uses 1=HII, 2=Comp, 3=AGN; `SII_BPT` uses
+    1=HII, 2=LINER, 3=Seyfert.
 """
 
 # ------------------------------------------------------------------
@@ -2379,15 +2380,17 @@ mask_upper = (HA_not_detected | HA_detected_HB_not_detected)
 
 # Independent exact-class BPT maps.
 # Only full line detections whose central and +/-1 sigma BPT positions remain
-# in the same class are assigned a nonzero code.
-NII_BPT = np.zeros_like(HA6562_FLUX, dtype=np.int16)
-SII_BPT = np.zeros_like(HA6562_FLUX, dtype=np.int16)
+# in the same class are assigned a positive class code. Full detections that
+# are ambiguous remain 0; non-detections or invalid ratios remain -1.
+NII_BPT = np.full_like(HA6562_FLUX, -1, dtype=np.int16)
+SII_BPT = np.full_like(HA6562_FLUX, -1, dtype=np.int16)
 
 mask_NII_BPT_valid = (
     HA_detected_HB_detected_NII_detected_OIII_detected
     & np.isfinite(logN2) & np.isfinite(logO3)
     & np.isfinite(logN2_err) & np.isfinite(logO3_err)
 )
+NII_BPT[mask_NII_BPT_valid] = 0
 mask_NII_BPT_HII = (
     mask_NII_BPT_valid & mask_N2_HII
     & mask_N2_left_HII & mask_N2_right_HII
@@ -2412,6 +2415,7 @@ mask_SII_BPT_valid = (
     & np.isfinite(logS2) & np.isfinite(logO3)
     & np.isfinite(logS2_err) & np.isfinite(logO3_err)
 )
+SII_BPT[mask_SII_BPT_valid] = 0
 mask_SII_BPT_HII = (
     mask_SII_BPT_valid & mask_S2_HII
     & mask_S2_left_HII & mask_S2_right_HII
@@ -3319,7 +3323,7 @@ new_hdul[0].header['SFRCOEF'] = (SFR_HA_CHABRIER_COEFF, 'Halpha SFR coefficient,
 new_hdul[0].header['BPTLIMIT'] = 'Low-S/N non-Balmer lines use measured fluxes, not limit-aware BPT'
 new_hdul[0].header['SFRNOTE'] = 'All-spaxel SFR includes upper-limit substitutions where Balmer QC fails'
 new_hdul[0].header['C20COMB'] = 'ivar+scatter'
-new_hdul[0].header['BPTMAPS'] = 'NII_BPT and SII_BPT use exact stable per-diagram classes'
+new_hdul[0].header['BPTMAPS'] = '-1 unknown, 0 unclassified, positives are stable classes'
 
 # Gas E(B-V)
 hdu_E_BV_BD = fits.ImageHDU(E_BV_BD.astype(np.float64),
@@ -3336,14 +3340,14 @@ new_hdul.append(hdu_E_BV_BD_ERR)
 hdu_NII_BPT = fits.ImageHDU(NII_BPT.astype(np.int16),
                             header=gas_header, name="NII_BPT")
 hdu_NII_BPT.header['BUNIT'] = 'class'
-hdu_NII_BPT.header['COMMENT'] = '0=unclassified, 1=HII, 2=Comp, 3=AGN in [NII] BPT'
-hdu_NII_BPT.header['COMMENT'] = 'Requires full line QC and stable central +/-1sigma class'
+hdu_NII_BPT.header['COMMENT'] = '-1=unknown/non-detection, 0=unclassified, 1=HII, 2=Comp, 3=AGN'
+hdu_NII_BPT.header['COMMENT'] = 'Uses dust-corrected fluxes; positive classes require stable central +/-1sigma class'
 new_hdul.append(hdu_NII_BPT)
 hdu_SII_BPT = fits.ImageHDU(SII_BPT.astype(np.int16),
                             header=gas_header, name="SII_BPT")
 hdu_SII_BPT.header['BUNIT'] = 'class'
-hdu_SII_BPT.header['COMMENT'] = '0=unclassified, 1=HII, 2=LINER, 3=Seyfert in [SII] BPT'
-hdu_SII_BPT.header['COMMENT'] = 'Requires full line QC and stable central +/-1sigma class'
+hdu_SII_BPT.header['COMMENT'] = '-1=unknown/non-detection, 0=unclassified, 1=HII, 2=LINER, 3=Seyfert'
+hdu_SII_BPT.header['COMMENT'] = 'Uses dust-corrected fluxes; positive classes require stable central +/-1sigma class'
 new_hdul.append(hdu_SII_BPT)
 # Corrected line fluxes
 hdu_HB4861_FLUX_corr = fits.ImageHDU(HB4861_FLUX_corr.astype(np.float64),
