@@ -37,57 +37,57 @@ Te-method optional emission-line availability:
   - SIII9068: missing
 Spatial mask applied: MASKFILE[MASK] table; row-major MASK == 0; keep=178396, masked=197525, finite H-alpha after mask=178396
 --------------------------------------------------------------
-Extinction law for k(λ)=A(λ)/E(B−V): mw (mw_rv=3.1)
-k(Hβ 4861Å)  = 3.6092   at λ=0.4861 µm
-k(Hα 6562Å)  = 2.5355   at λ=0.6562 µm
-k([OIII]5006)= 3.4736   at λ=0.5006 µm
-k([NII]6583) = 2.5255   at λ=0.6583 µm
-k([SII]6716) = 2.4619   at λ=0.6716 µm
-k([SII]6730) = 2.4552   at λ=0.6730 µm
-k(OIII4958) = 3.5172   at λ=0.4958 µm
-k(NII5754) = 2.9425   at λ=0.5755 µm
-k(OI6300) = 2.6615   at λ=0.6300 µm
-k(SIII6312) = 2.6556   at λ=0.6312 µm
-k(OI6363) = 2.6310   at λ=0.6363 µm
-k(NII6548) = 2.5422   at λ=0.6548 µm
-k(OII7318) = 2.1716   at λ=0.7319 µm
-k(OII7319) = 2.1711   at λ=0.7320 µm
-k(OII7329) = 2.1668   at λ=0.7329 µm
-k(OII7330) = 2.1658   at λ=0.7331 µm
-k(SIII9068) = 1.4665   at λ=0.9069 µm (line missing; NaN placeholder)
+Extinction law for k(λ)=A(λ)/E(B−V): calzetti
+k(Hβ 4861Å)  = 4.5981   at λ=0.4861 µm
+k(Hα 6562Å)  = 3.3264   at λ=0.6562 µm
+k([OIII]5006)= 4.4647   at λ=0.5006 µm
+k([NII]6583) = 3.3130   at λ=0.6583 µm
+k([SII]6716) = 3.2298   at λ=0.6716 µm
+k([SII]6730) = 3.2212   at λ=0.6730 µm
+k(OIII4958) = 4.5083   at λ=0.4958 µm
+k(NII5754) = 3.8531   at λ=0.5755 µm
+k(OI6300) = 3.5017   at λ=0.6300 µm
+k(SIII6312) = 3.4934   at λ=0.6312 µm
+k(OI6363) = 3.4582   at λ=0.6363 µm
+k(NII6548) = 3.3355   at λ=0.6548 µm
+k(OII7318) = 2.8906   at λ=0.7319 µm
+k(OII7319) = 2.8901   at λ=0.7320 µm
+k(OII7329) = 2.8854   at λ=0.7329 µm
+k(OII7330) = 2.8844   at λ=0.7331 µm
+k(SIII9068) = 2.1615   at λ=0.9069 µm (line missing; NaN placeholder)
 --------------------------------------------------------------
 Calculating all 6 C20 metallicities for NGC4294...
-Combined C20 metallicity: median = 8.624, range = (8.327, 8.711)
-Combined C20 dominant-weight method usage: O3N2=0, O3S2=0, RS32=0, R3=162908, N2=0, S2=15488
+Combined C20 metallicity: median = 8.624, range = (8.326, 8.711)
+Combined C20 dominant-weight method usage: O3N2=0, O3S2=0, RS32=0, R3=162896, N2=0, S2=15500
 Galaxy NGC4294 inclination: 74.0° (cos θ = 0.276)
 Inclination correction ENABLED: applying b/a = 0.336 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
 Loaded SII density lookup table: /Users/Igniz/Desktop/ICRAR/further/pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096.npz
 PyNeb Te-method valid-pixel counts:
   NE_SII finite pixels: 132146
-  NE_SII fixed at 20 cm^-3: 53615/132146 (40.6%)
+  NE_SII fixed at 20 cm^-3: 53826/132146 (40.7%)
   NE_SII exact high-density fallback pixels: 0
   NE_SII_ALL finite pixels: 178396
-  Te(NII) HII pixels: 1773
-  Te(NII) SF pixels: 1773
+  Te(NII) HII pixels: 1771
+  Te(NII) SF pixels: 1771
   Brazzini+2024 direct HII pixels: 0
   Brazzini+2024 direct SF pixels: 0
-  NII+OII7325 semi-direct HII pixels: 1680
-  NII+OII7325 semi-direct SF pixels: 1680
+  NII+OII7325 semi-direct HII pixels: 1669
+  NII+OII7325 semi-direct SF pixels: 1669
   Kreckel+2025 NII-only HII pixels: 1362
   Kreckel+2025 NII-only SF pixels: 1362
 Integrated PyNeb Te-method values:
   SF:
-    NE_SII: 20.00 +/- 0.00 cm^-3 (n_pix=69001, fixed20=0, exact_high_density=0)
-    Te(NII): 10255.9 +/- 18.9 K (n_pix=1782)
+    NE_SII: 20.00 +/- 0.00 cm^-3 (n_pix=68177, fixed20=0, exact_high_density=0)
+    Te(NII): 10287.1 +/- 22.3 K (n_pix=1780)
     O_H_BR24_DIRECT: nan dex (n_pix=0)
-    O_H_NII_OII7325: 8.2471 +/- 0.0766 dex (n_pix=1680)
-    O_H_NII_K25: 8.4596 +/- 0.2077 dex (n_pix=1782)
+    O_H_NII_OII7325: 8.2416 +/- 0.0768 dex (n_pix=1678)
+    O_H_NII_K25: 8.4558 +/- 0.2080 dex (n_pix=1780)
   HII:
-    NE_SII: 20.00 +/- 0.00 cm^-3 (n_pix=69001, fixed20=0, exact_high_density=0)
-    Te(NII): 10255.9 +/- 18.9 K (n_pix=1782)
+    NE_SII: 20.00 +/- 0.00 cm^-3 (n_pix=68177, fixed20=0, exact_high_density=0)
+    Te(NII): 10287.1 +/- 22.3 K (n_pix=1780)
     O_H_BR24_DIRECT: nan dex (n_pix=0)
-    O_H_NII_OII7325: 8.2471 +/- 0.0766 dex (n_pix=1680)
-    O_H_NII_K25: 8.4596 +/- 0.2077 dex (n_pix=1782)
+    O_H_NII_OII7325: 8.2416 +/- 0.0768 dex (n_pix=1678)
+    O_H_NII_K25: 8.4558 +/- 0.2080 dex (n_pix=1780)
 Further file written ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_gas_BIN_maps_further.fits
 --------------------------------------------------------------
 Total non-nan spaxels: 178396
@@ -102,56 +102,56 @@ Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII de
 Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII not detected and unclassified1: 0
 Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII detected and unclassified1: 0
 --------------------------------------------------------------
-Total Halpha luminosity map sum (detections + upper-limit substitutions): 9.25e+40 erg/s
-Total corrected Halpha luminosity from SF region: 8.13e+40 erg/s
-Total Halpha SFR map sum (detections + upper-limit substitutions): 0.46 M☉/yr or in log10 scale: -0.34 log(M☉/yr)
-Total Halpha SFR from SF region: 0.41 M☉/yr or in log10 scale: -0.39 log(M☉/yr)
-Total Halpha SFR from HII region: 0.41 M☉/yr or in log10 scale: -0.39 log(M☉/yr)
+Total Halpha luminosity map sum (detections + upper-limit substitutions): 9.73e+40 erg/s
+Total corrected Halpha luminosity from SF region: 8.54e+40 erg/s
+Total Halpha SFR map sum (detections + upper-limit substitutions): 0.48 M☉/yr or in log10 scale: -0.31 log(M☉/yr)
+Total Halpha SFR from SF region: 0.43 M☉/yr or in log10 scale: -0.37 log(M☉/yr)
+Total Halpha SFR from HII region: 0.43 M☉/yr or in log10 scale: -0.37 log(M☉/yr)
 --------------------------------------------------------------
-[O/H] D16 SF: Total metallicity in SF region:  8.156734794620052
-[O/H] PG16 SF: Total metallicity in SF region:  8.23600495563847
-[O/H] N2S2-N06 SF: Total metallicity in SF region:  8.46997268196809
-[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.318310429251396
-[O/H] N2-M13 SF: Total metallicity in SF region:  8.352734077948462
-[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.408968866170314
-[O/H] N2-PP04 SF: Total metallicity in SF region:  8.361406569820609
-[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.525561597853097
-[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.697670432928662
-[O/H] RS32-C20 SF: Total metallicity in SF region:  8.555346581869525
-[O/H] R3-C20 SF: Total metallicity in SF region:  8.547546402116991
-[O/H] N2-C20 SF: Total metallicity in SF region:  8.495662178569768
-[O/H] S2-C20 SF: Total metallicity in SF region:  8.597856608003877
-[O/H] Combined-C20 SF: Total metallicity in SF region:  8.568408452015241 (weighted 6 methods; dominant S2)
+[O/H] D16 SF: Total metallicity in SF region:  8.15750475154651
+[O/H] PG16 SF: Total metallicity in SF region:  8.236335238917341
+[O/H] N2S2-N06 SF: Total metallicity in SF region:  8.47167720247843
+[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.317791635868929
+[O/H] N2-M13 SF: Total metallicity in SF region:  8.3525267245504
+[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.408193100364754
+[O/H] N2-PP04 SF: Total metallicity in SF region:  8.361143516607582
+[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.524958206693883
+[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.69690888679527
+[O/H] RS32-C20 SF: Total metallicity in SF region:  8.55468410819
+[O/H] R3-C20 SF: Total metallicity in SF region:  8.546781501215722
+[O/H] N2-C20 SF: Total metallicity in SF region:  8.495436661631215
+[O/H] S2-C20 SF: Total metallicity in SF region:  8.595667041060493
+[O/H] Combined-C20 SF: Total metallicity in SF region:  8.567319913422669 (weighted 6 methods; dominant S2)
 --------------------------------------------------------------
-[O/H] D16 HII: Total metallicity in HII region:  8.156734794620052
-[O/H] PG16 HII: Total metallicity in HII region:  8.23600495563847
-[O/H] N2S2-N06 HII: Total metallicity in HII region:  8.46997268196809
-[O/H] O3N2-M13 HII: Total metallicity in HII region:  8.318310429251396
-[O/H] N2-M13 HII: Total metallicity in HII region:  8.352734077948462
-[O/H] O3N2-PP04 HII: Total metallicity in HII region:  8.408968866170314
-[O/H] N2-PP04 HII: Total metallicity in HII region:  8.361406569820609
-[O/H] O3N2-C20 HII: Total metallicity in HII region:  8.525561597853097
-[O/H] O3S2-C20 HII: Total metallicity in HII region:  8.697670432928662
-[O/H] RS32-C20 HII: Total metallicity in HII region:  8.555346581869525
-[O/H] R3-C20 HII: Total metallicity in HII region:  8.547546402116991
-[O/H] N2-C20 HII: Total metallicity in HII region:  8.495662178569768
-[O/H] S2-C20 HII: Total metallicity in HII region:  8.597856608003877
-[O/H] Combined-C20 HII: Total metallicity in HII region:  8.568408452015241 (weighted 6 methods; dominant S2)
+[O/H] D16 HII: Total metallicity in HII region:  8.15750475154651
+[O/H] PG16 HII: Total metallicity in HII region:  8.236335238917341
+[O/H] N2S2-N06 HII: Total metallicity in HII region:  8.47167720247843
+[O/H] O3N2-M13 HII: Total metallicity in HII region:  8.317791635868929
+[O/H] N2-M13 HII: Total metallicity in HII region:  8.3525267245504
+[O/H] O3N2-PP04 HII: Total metallicity in HII region:  8.408193100364754
+[O/H] N2-PP04 HII: Total metallicity in HII region:  8.361143516607582
+[O/H] O3N2-C20 HII: Total metallicity in HII region:  8.524958206693883
+[O/H] O3S2-C20 HII: Total metallicity in HII region:  8.69690888679527
+[O/H] RS32-C20 HII: Total metallicity in HII region:  8.55468410819
+[O/H] R3-C20 HII: Total metallicity in HII region:  8.546781501215722
+[O/H] N2-C20 HII: Total metallicity in HII region:  8.495436661631215
+[O/H] S2-C20 HII: Total metallicity in HII region:  8.595667041060493
+[O/H] Combined-C20 HII: Total metallicity in HII region:  8.567319913422669 (weighted 6 methods; dominant S2)
 --------------------------------------------------------------
-[O/H] D16: Total metallicity in total region:  8.129700505553606
-[O/H] PG16: Total metallicity in total region:  8.225465985340373
-[O/H] N2S2-N06: Total metallicity in total region:  8.408875045788779
-[O/H] O3N2-M13: Total metallicity in total region:  8.322943382278048
-[O/H] N2-M13: Total metallicity in total region:  8.358276558716746
-[O/H] O3N2-PP04: Total metallicity in total region:  8.415896646397082
-[O/H] N2-PP04: Total metallicity in total region:  8.368505484842933
-[O/H] O3N2-C20: Total metallicity in total region:  8.530931920432558
-[O/H] O3S2-C20: Total metallicity in total region:  8.709408397355384
-[O/H] RS32-C20: Total metallicity in total region:  8.554928368380503
-[O/H] R3-C20: Total metallicity in total region:  8.551263428319295
-[O/H] N2-C20: Total metallicity in total region:  8.501692736051266
+[O/H] D16: Total metallicity in total region:  8.130193486703458
+[O/H] PG16: Total metallicity in total region:  8.225738155554982
+[O/H] N2S2-N06: Total metallicity in total region:  8.409978686942258
+[O/H] O3N2-M13: Total metallicity in total region:  8.32256104690002
+[O/H] N2-M13: Total metallicity in total region:  8.358232120676362
+[O/H] O3N2-PP04: Total metallicity in total region:  8.415324929943957
+[O/H] N2-PP04: Total metallicity in total region:  8.368448044978757
+[O/H] O3N2-C20: Total metallicity in total region:  8.53048995890796
+[O/H] O3S2-C20: Total metallicity in total region:  8.708886445099301
+[O/H] RS32-C20: Total metallicity in total region:  8.554331700899152
+[O/H] R3-C20: Total metallicity in total region:  8.550614915158459
+[O/H] N2-C20: Total metallicity in total region:  8.50164436221687
 [O/H] S2-C20: Total metallicity in total region:  nan
-[O/H] Combined-C20: Total metallicity in total region:  8.560529696786345 (weighted 5 methods; dominant R3)
+[O/H] Combined-C20: Total metallicity in total region:  8.560037350392744 (weighted 5 methods; dominant R3)
 --------------------------------------------------------------
-Total runtime: 180.2 s
-✅  NGC4294 finished in 3m11s
+Total runtime: 194.3 s
+✅  NGC4294 finished in 3m32s

@@ -133,9 +133,9 @@ Changes (2025-09-24 & 2025-09-25)
 
 Changes (2026-01-15)
 -----------------------
-* Added Milky Way (CCM89; Cardelli, Clayton & Mathis 1989) extinction curve as k(λ)=A(λ)/E(B−V).
-* Set Milky Way (CCM89, R_V=3.1) as the default extinction law for k-values (Balmer-decrement dust correction).
-* Kept Calzetti (2000) curve intact and available via `extinction_k(..., law="calzetti")`.
+* Added Milky Way (CCM89; Cardelli, Clayton & Mathis 1989) extinction curve as
+  an optional k(λ)=A(λ)/E(B−V) alternative.
+* Kept Calzetti (2000) available via `extinction_k(..., law="calzetti")`.
 
 Changes (2026-03-31)
 -----------------------
@@ -268,6 +268,12 @@ Changes (2026-05-26, corrected-line schema and CASA-friendly units)
   FITS comments to avoid CASA/CARTA unknown-unit warnings.
 * The output FITS now preserves every original input gas-map HDU first; all new
   post-processing products are appended after the original input schema.
+
+Changes (2026-05-26, Calzetti default restored)
+-----------------------
+* Restored Calzetti (2000) as the default Balmer-decrement extinction curve for
+  consistency with the original MAUVE SFR+Z products. CCM89 remains available as
+  an explicit optional law through `extinction_k(..., law="mw")`.
 """
 
 # ------------------------------------------------------------------
@@ -291,9 +297,9 @@ KROUPA_TO_CHABRIER = SALPETER_TO_CHABRIER / SALPETER_TO_KROUPA
 SFR_HA_CHABRIER_COEFF = SFR_HA_KROUPA_COEFF * KROUPA_TO_CHABRIER
 
 # Extinction-law configuration for k(λ)=A(λ)/E(B−V)
-# Supported: "mw" (CCM89 Milky Way; default), "calzetti" (Calzetti 2000)
-extinction_law = "mw"
-mw_rv = 3.1
+# Supported: "calzetti" (Calzetti 2000; default), "mw" (CCM89 Milky Way)
+extinction_law = "calzetti"
+mw_rv = 3.1  # Used only when extinction_law is "mw"/"ccm89".
 
 # PyNeb-based Te products. Set False only if you deliberately want to run the
 # legacy strong-line products without electron-density/direct-method outputs.
@@ -906,7 +912,7 @@ else:
 
 # Road map:
 # 1. Calculate the Balmer Decrement (BD) from Hβ and Hα
-# 2. Convert BD to gas E(B-V) using the selected extinction curve (default: Milky Way CCM89)
+# 2. Convert BD to gas E(B-V) using the selected extinction curve (default: Calzetti 2000)
 # 3. Use E(B-V) to correct the fluxes of the gas lines, then use different methods to calculate the metallicity [O/H] (12+log(O/H))
 # 4. Convert the corrected Hα flux to luminosity
 # 5. Calculate the star formation rate (SFR) from the Hα luminosity using the Calzetti (2007) relation
@@ -1028,8 +1034,8 @@ GAS_LINE_K = {
     for line_base, w_um in GAS_LINE_WAVELENGTH_UM.items()
 }
 
-k_HB4861  = GAS_LINE_K["HB4861"]   # CCM89(MW, Rv=3.1) approx 3.609
-k_HA6562  = GAS_LINE_K["HA6562"]   # CCM89(MW, Rv=3.1) approx 2.535
+k_HB4861  = GAS_LINE_K["HB4861"]
+k_HA6562  = GAS_LINE_K["HA6562"]
 k_OIII5006= GAS_LINE_K["OIII5006"]
 k_NII6583 = GAS_LINE_K["NII6583"]
 k_SII6716 = GAS_LINE_K["SII6716"]
@@ -1041,7 +1047,10 @@ TE_LINE_K = {
 
 # Print k(λ) values used for dust correction (this will also appear in redirected *.log outputs)
 print("--------------------------------------------------------------")
-print(f"Extinction law for k(λ)=A(λ)/E(B−V): {extinction_law} (mw_rv={mw_rv})")
+if str(extinction_law).lower() in ("mw", "milkyway", "ccm", "ccm89"):
+    print(f"Extinction law for k(λ)=A(λ)/E(B−V): {extinction_law} (mw_rv={mw_rv})")
+else:
+    print(f"Extinction law for k(λ)=A(λ)/E(B−V): {extinction_law}")
 print(f"k(Hβ 4861Å)  = {float(k_HB4861):.4f}   at λ=0.4861 µm")
 print(f"k(Hα 6562Å)  = {float(k_HA6562):.4f}   at λ=0.6562 µm")
 print(f"k([OIII]5006)= {float(k_OIII5006):.4f}   at λ=0.5006 µm")
