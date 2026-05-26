@@ -8,7 +8,7 @@ REMOTE_HOST="rhuang@setonix.pawsey.org.au"
 REMOTE_BASE_DIR="/scratch/pawsey1308/mauve/products/v3tk_v7.6.8"
 
 # List of all 26 GALIDs in alphabetical order
-GALAXIES=(
+ALL_GALAXIES=(
     "IC3392"
     "NGC4064"
     "NGC4189"
@@ -37,8 +37,14 @@ GALAXIES=(
     "NGC4698"
 )
 
+if [ "$#" -gt 0 ]; then
+    GALAXIES=("$@")
+else
+    GALAXIES=("${ALL_GALAXIES[@]}")
+fi
+
 # Set a batch size to limit concurrent connections and avoid overwhelming Setonix
-BATCH_SIZE=5
+BATCH_SIZE=10
 count=0
 
 # Loop through each galaxy
@@ -49,25 +55,19 @@ for GALID in "${GALAXIES[@]}"; do
         # Create the local directory for the galaxy if it doesn't exist
         mkdir -p "${LOCAL_DIR}/${GALID}"
 
-        # Define the list of files to copy for this galaxy
-        FILES=(
-            "CONFIG"
-            "${GALID}_kin_maps.fits"
-            "${GALID}_sfh_weights.fits"
-            "${GALID}_gas_bin_maps.fits"
-            "${GALID}_mask.fits"
-            "${GALID}_spatial_binning_maps.fits"
-            "${GALID}_gas_spaxel_maps.fits"
-            "${GALID}_sfh_maps.fits"
-            "LOGFILE"
-        )
+        # Grabs all matching files over a single SSH connection with checksum validation (-c)
+        rsync -avc --ignore-missing-args \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/CONFIG" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_kin_maps.fits" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_sfh_weights.fits" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_gas_bin_maps.fits" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_mask.fits" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_spatial_binning_maps.fits" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_gas_spaxel_maps.fits" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_sfh_maps.fits" \
+            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/LOGFILE" \
+            "${LOCAL_DIR}/${GALID}/"
         
-        # macOS recently updated `scp` to use the strict SFTP protocol by default, which crashes instantly 
-        # if the server prints any text (like the Setonix 80-line warning banner).
-        # The `-O` flag forces the legacy SCP protocol, which is much more tolerant of server text banners.
-        for FILE in "${FILES[@]}"; do
-            scp -O -q "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${FILE}" "${LOCAL_DIR}/${GALID}/"
-        done
         echo "Finished ${GALID}"
     ) &
 

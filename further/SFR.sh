@@ -58,21 +58,21 @@ GALAXIES=(
   "NGC4192"
   "NGC4293"
   "NGC4294"
-  "NGC4298"
-  "NGC4302"
-  "NGC4330"
+  # "NGC4298"
+  # "NGC4302"
+  # "NGC4330"
   "NGC4351"
-  "NGC4383"
-  "NGC4388"
+  # "NGC4383"
+  # "NGC4388"
   "NGC4394"
-  "NGC4396"
+  # "NGC4396"
   "NGC4402"
   "NGC4405"
-  "NGC4419"
-  "NGC4457"
+  # "NGC4419"
+  # "NGC4457"
   "NGC4501"
   "NGC4522"
-  "NGC4567_8"
+  # "NGC4567_8"
   "NGC4580"
   "NGC4606"
   "NGC4607"
@@ -129,6 +129,7 @@ export ROOT_PRODUCT_BASE ROOT_LOCAL PYTHON_BIN SCRIPT LOGDIR
 # 3.  Parallel execution
 # ──────────────────────────────────────────────────────────────
 all_start=$(date +%s)
+run_status=0
 
 printf "Running %d galaxies in parallel using %d cores...\n" "${#GALAXIES[@]}" "$CORES"
 printf "Using Python executable: %s\n" "$PYTHON_BIN"
@@ -137,10 +138,11 @@ printf "Using Python executable: %s\n" "$PYTHON_BIN"
 set +e
 if command -v parallel >/dev/null 2>&1; then
   printf '%s\n' "${GALAXIES[@]}" | parallel -j "$CORES" process_galaxy
+  run_status=$?
 else
   printf '%s\n' "${GALAXIES[@]}" | xargs -P "$CORES" -I {} bash -c 'process_galaxy "$@"' _ {}
+  run_status=$?
 fi
-run_status=$?
 set -e
 
 all_end=$(date +%s)

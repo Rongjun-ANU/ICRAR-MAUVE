@@ -176,6 +176,7 @@ export ROOT_PRODUCT_BASE ROOT_LOCAL CUBE_ROOT PYTHON_BIN SCRIPT LOGDIR
 # 3.  Parallel execution
 # ──────────────────────────────────────────────────────────────
 all_start=$(date +%s)
+run_status=0
 
 printf "Running %d galaxies in parallel using %d cores...\n" "${#GALAXIES[@]}" "$CORES"
 printf "Using Python executable: %s\n" "$PYTHON_BIN"
@@ -183,10 +184,11 @@ printf "Using Python executable: %s\n" "$PYTHON_BIN"
 set +e
 if command -v parallel >/dev/null 2>&1; then
   printf '%s\n' "${GALAXIES[@]}" | parallel -j "$CORES" process_galaxy
+  run_status=$?
 else
   printf '%s\n' "${GALAXIES[@]}" | xargs -n 1 -P "$CORES" -I {} bash -c 'process_galaxy "$@"' _ {}
+  run_status=$?
 fi
-run_status=$?
 set -e
 
 all_end=$(date +%s)

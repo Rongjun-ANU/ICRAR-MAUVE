@@ -195,6 +195,79 @@ Changes (2026-05-25)
   spatial mask file `{galaxy}_mask.fits`. For `MASKFILE[MASK]`, row-major
   `MASK == 0` is treated as usable/unmasked and `MASK == 1` is excluded,
   matching the finite footprint in the current v3tk products.
+
+Changes (2026-05-26)
+-----------------------
+* Added PyNeb-based electron-density and auroral-line metallicity products:
+  - `NE_SII` from the [S II] 6716/6730 density ratio, with finite values below
+    20 cm^-3 clamped to the Brazzini+2024 low-density value.
+  - HII-gated `TE_NII_HII`, `TE_SIII_BR24_HII`, `TE_OIII_BR24_HII`, and
+    `TE_OIII_NII_CHAIN_HII` temperature maps with first-order uncertainties.
+  - HII-gated `O_H_BR24_DIRECT_HII`, `O_H_NII_OII7325_HII`, and
+    `O_H_NII_K25_HII` oxygen-abundance maps with propagated uncertainties.
+* Extra auroral/red-line inputs are optional per FITS extension, but each Te
+  method only evaluates where all of its required lines pass the configured
+  detection cuts; multi-line complexes such as [O II] 7325 and [O III] 4959+5007
+  use summed-flux detection gates. Missing required lines produce empty/NaN
+  method maps.
+* The Kreckel+2025/Mendez-Delgado+2023 NII-only proxy is masked outside the
+  published 8000-13000 K Te([N II]) calibration range to avoid extrapolated
+  low-metallicity artifacts from very hot/noisy auroral detections.
+* Te products now fail fast when enabled and the active Python environment
+  cannot import PyNeb, preventing silent science-product degradation.
+
+Changes (2026-05-26, density/log refinement)
+-----------------------
+* Added `NE_SII_ALL`, which keeps measured `NE_SII` where available but assigns
+  20 cm^-3 to spatially usable pixels that fail the [S II] density detection
+  gate. Spatially masked pixels remain NaN.
+* The fast [S II] density lookup now falls back to exact PyNeb `getTemDen` for
+  suspicious high-density ratios, while keeping the lookup path for ordinary
+  low-density pixels.
+* Te logs now report the fixed-20 density count as both a count and fraction.
+
+Changes (2026-05-26, SF Te products and integrated Te logs)
+-----------------------
+* Added SF-region versions of the PyNeb Te/ionic-abundance maps, matching the
+  existing HII-region products but gated by the Classification-1 SF mask.
+* Added SF and HII valid-mask HDUs for the new Te metallicity methods.
+* Added integrated PyNeb Te-method log summaries for SF and HII regions. These
+  summaries sum raw line fluxes over the method-valid pixels, apply one
+  integrated Balmer-decrement correction, then run the same PyNeb equations as
+  the spaxel maps.
+
+Changes (2026-05-26, density lookup cache and HII valid-mask names)
+-----------------------
+* Renamed the HII Te-method validity-mask HDUs to `*_VALID_HII`, so they are
+  explicit counterparts to the existing `*_VALID_SF` maps.
+* Added a reusable PyNeb [S II] density lookup cache in the current working
+  directory. The script loads the `.npz` table when present, otherwise creates
+  it and writes a companion plasma-colormap `.png` heatmap.
+
+Changes (2026-05-26, multi-temperature density lookup plot)
+-----------------------
+* Expanded the [S II] density lookup cache to store temperature rows from
+  8000 K to 13000 K in 1000 K steps. The density maps still use the 10000 K
+  row, matching the previous calculation.
+* Replaced the lookup visualization with a line plot of electron density on the
+  x-axis and [S II] 6716/6731 ratio on the y-axis, with one plasma-colored line
+  per temperature.
+
+Changes (2026-05-26, corrected-line schema and CASA-friendly units)
+-----------------------
+* Emission lines are now discovered from every available `*_FLUX` /
+  `*_FLUX_ERR` pair in the input gas-line FITS, so dust-corrected flux and
+  error products are written for all fitted lines, not only the legacy strong
+  lines and Te lines.
+* Added HII and SF versions of every corrected line-flux and line-error map,
+  ordered as immediate HII/SF pairs in the written FITS schema.
+* Reordered the appended products into EBV, corrected lines, BPT/SFR,
+  strong-line metallicities, and then PyNeb density/Te products.
+* Abundance, ratio, class, method, mask, and logarithmic diagnostic maps now
+  use dimensionless `BUNIT = 1`, with the physical/logarithmic meaning kept in
+  FITS comments to avoid CASA/CARTA unknown-unit warnings.
+* The output FITS now preserves every original input gas-map HDU first; all new
+  post-processing products are appended after the original input schema.
 """
 
 # ------------------------------------------------------------------
@@ -222,17 +295,46 @@ SFR_HA_CHABRIER_COEFF = SFR_HA_KROUPA_COEFF * KROUPA_TO_CHABRIER
 extinction_law = "mw"
 mw_rv = 3.1
 
+# PyNeb-based Te products. Set False only if you deliberately want to run the
+# legacy strong-line products without electron-density/direct-method outputs.
+ENABLE_TE_METALLICITY_PRODUCTS = True
+SII_DENSITY_LOOKUP_TEMPERATURES = tuple(range(8000, 13001, 1000))
+SII_DENSITY_LOOKUP_BASENAME = (
+    "pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096"
+)
+SII_DENSITY_LOOKUP_NPZ = f"{SII_DENSITY_LOOKUP_BASENAME}.npz"
+SII_DENSITY_LOOKUP_PNG = f"{SII_DENSITY_LOOKUP_BASENAME}.png"
+SII_DENSITY_LOOKUP_CACHE = {}
+
 # ------------------------------------------------------------------
 # 0.  Command-line interface  (exactly as requested)
 # ------------------------------------------------------------------
 
-import argparse, logging, sys, time
+import argparse, logging, os, re, sys, time
 from pathlib import Path
 import numpy as np
 from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
+
+if ENABLE_TE_METALLICITY_PRODUCTS:
+    os.environ.setdefault(
+        "MPLCONFIGDIR",
+        str(Path(os.environ.get("TMPDIR", "/tmp")) / "matplotlib"),
+    )
+    try:
+        import pyneb as pn
+    except ImportError as exc:
+        raise RuntimeError(
+            "PyNeb-based Te metallicity products are enabled, but the active "
+            f"Python interpreter cannot import pyneb: {sys.executable}. "
+            "Install PyNeb into this interpreter, or set "
+            "ENABLE_TE_METALLICITY_PRODUCTS = False to run only legacy "
+            "strong-line products."
+        ) from exc
+else:
+    pn = None
 
 # ------------------------------------------------------------------
 # Helper function for inclination correction
@@ -444,22 +546,80 @@ def build_further_output_path(input_path: Path) -> Path:
     return input_path.parent / f"{stem}_further{suffix}"
 
 
-SPATIAL_MASKED_MAP_NAMES = (
+KNOWN_LINE_WAVELENGTH_UM = {
+    "HB4861": 0.4861,
+    "OIII4958": 0.4958,
+    "OIII5006": 0.5006,
+    "NII5754": 0.5755,
+    "OI6300": 0.6300,
+    "SIII6312": 0.6312,
+    "OI6363": 0.6363,
+    "NII6548": 0.6548,
+    "HA6562": 0.6562,
+    "NII6583": 0.6583,
+    "SII6716": 0.6716,
+    "SII6730": 0.6730,
+    "OII7318": 0.7319,
+    "OII7319": 0.7320,
+    "OII7329": 0.7329,
+    "OII7330": 0.7331,
+    "SIII9068": 0.9069,
+}
+
+REQUIRED_GAS_LINE_BASES = (
+    "HB4861",
+    "HA6562",
+    "OIII5006",
+    "NII6583",
+    "SII6716",
+    "SII6730",
+)
+
+TE_LINE_WAVELENGTH_UM = {
+    "OIII4958": 0.4958,
+    "NII5754": 0.5755,
+    "SIII6312": 0.6312,
+    "NII6548": 0.6548,
+    "OII7318": 0.7319,
+    "OII7319": 0.7320,
+    "OII7329": 0.7329,
+    "OII7330": 0.7331,
+    "SIII9068": 0.9069,
+}
+
+TE_LINE_BASES = tuple(TE_LINE_WAVELENGTH_UM)
+
+SPATIAL_BASE_MAP_NAMES = (
     "V_STARS2",
     "SIGMA_STARS2",
-    "HB4861_FLUX",
-    "HB4861_FLUX_ERR",
-    "HA6562_FLUX",
-    "HA6562_FLUX_ERR",
-    "OIII5006_FLUX",
-    "OIII5006_FLUX_ERR",
-    "NII6583_FLUX",
-    "NII6583_FLUX_ERR",
-    "SII6716_FLUX",
-    "SII6716_FLUX_ERR",
-    "SII6730_FLUX",
-    "SII6730_FLUX_ERR",
 )
+
+
+def infer_line_wavelength_um(line_base: str) -> float:
+    """Return the vacuum/air wavelength in microns from the known registry or trailing digits."""
+    if line_base in KNOWN_LINE_WAVELENGTH_UM:
+        return KNOWN_LINE_WAVELENGTH_UM[line_base]
+
+    match = re.search(r"(\d{4})$", line_base)
+    if match is None:
+        raise ValueError(
+            f"Cannot infer wavelength for emission-line base '{line_base}'. "
+            "Add it to KNOWN_LINE_WAVELENGTH_UM before dust correction."
+        )
+    return float(match.group(1)) / 10000.0
+
+
+def optional_image_or_nan(
+    hdul: fits.HDUList, extension_name: str, shape: tuple[int, int]
+) -> tuple[np.ndarray, bool]:
+    if extension_name not in hdul:
+        return np.full(shape, np.nan, dtype=float), False
+    data = np.asarray(hdul[extension_name].data, dtype=float)
+    if data.shape != shape:
+        raise ValueError(
+            f"{extension_name} has shape {data.shape}, expected {shape}"
+        )
+    return data, True
 
 
 def load_spatial_keep_mask(mask_path: Path, target_shape: tuple[int, int]) -> tuple[np.ndarray, str]:
@@ -640,22 +800,73 @@ if mask_path is not None:
 else:
     print("Spatial mask FITS ➜ <not found; leaving gas maps unchanged>")
 with fits.open(src) as hdul:
-    V_STARS2 = hdul['V_STARS2'].data
-    SIGMA_STARS2 = hdul['SIGMA_STARS2'].data
-    HB4861_FLUX = hdul['HB4861_FLUX'].data
-    HB4861_FLUX_ERR = hdul['HB4861_FLUX_ERR'].data
-    HA6562_FLUX = hdul['HA6562_FLUX'].data
-    HA6562_FLUX_ERR = hdul['HA6562_FLUX_ERR'].data
-    OIII5006_FLUX = hdul['OIII5006_FLUX'].data
-    OIII5006_FLUX_ERR = hdul['OIII5006_FLUX_ERR'].data
-    NII6583_FLUX = hdul['NII6583_FLUX'].data
-    NII6583_FLUX_ERR = hdul['NII6583_FLUX_ERR'].data
-    SII6716_FLUX = hdul['SII6716_FLUX'].data
-    SII6716_FLUX_ERR = hdul['SII6716_FLUX_ERR'].data
-    SII6730_FLUX = hdul['SII6730_FLUX'].data
-    SII6730_FLUX_ERR = hdul['SII6730_FLUX_ERR'].data
+    V_STARS2 = np.asarray(hdul['V_STARS2'].data, dtype=float)
+    SIGMA_STARS2 = np.asarray(hdul['SIGMA_STARS2'].data, dtype=float)
     gas_header = hdul['HA6562_FLUX'].header.copy()
-    hdul.close()
+
+    map_shape = np.asarray(hdul['HA6562_FLUX'].data).shape
+    gas_line_bases: list[str] = []
+    gas_line_maps: dict[str, np.ndarray] = {}
+    available_hdu_names = {hdu.name for hdu in hdul}
+
+    for hdu in hdul:
+        ext_name = hdu.name
+        if not ext_name.endswith("_FLUX"):
+            continue
+
+        line_base = ext_name[: -len("_FLUX")]
+        flux_name = f"{line_base}_FLUX"
+        err_name = f"{line_base}_FLUX_ERR"
+        if err_name not in available_hdu_names:
+            print(f"Warning: skipping {line_base}; {err_name} is missing")
+            continue
+
+        flux_data = np.asarray(hdul[flux_name].data, dtype=float)
+        err_data = np.asarray(hdul[err_name].data, dtype=float)
+        if flux_data.shape != map_shape or err_data.shape != map_shape:
+            raise ValueError(
+                f"{line_base} flux/error shape mismatch: "
+                f"{flux_data.shape}/{err_data.shape}, expected {map_shape}"
+            )
+
+        gas_line_bases.append(line_base)
+        gas_line_maps[flux_name] = flux_data
+        gas_line_maps[err_name] = err_data
+
+    GAS_LINE_BASES = tuple(gas_line_bases)
+    missing_required = [
+        line_base for line_base in REQUIRED_GAS_LINE_BASES
+        if line_base not in GAS_LINE_BASES
+    ]
+    if missing_required:
+        raise KeyError(
+            "Missing required gas-line flux/error pairs for SFR+Z.py: "
+            + ", ".join(missing_required)
+        )
+
+    globals().update(gas_line_maps)
+
+    te_line_availability: dict[str, bool] = {}
+    te_optional_maps: dict[str, np.ndarray] = {}
+    for line_base in TE_LINE_BASES:
+        te_line_availability[line_base] = line_base in GAS_LINE_BASES
+        if te_line_availability[line_base]:
+            continue
+
+        te_optional_maps[f"{line_base}_FLUX"] = np.full(map_shape, np.nan, dtype=float)
+        te_optional_maps[f"{line_base}_FLUX_ERR"] = np.full(map_shape, np.nan, dtype=float)
+
+globals().update(te_optional_maps)
+
+print("Available gas-line flux/error pairs:")
+for line_base in GAS_LINE_BASES:
+    print(f"  - {line_base}")
+
+if ENABLE_TE_METALLICITY_PRODUCTS:
+    print("Te-method optional emission-line availability:")
+    for line_base in TE_LINE_BASES:
+        status = "available" if te_line_availability[line_base] else "missing"
+        print(f"  - {line_base}: {status}")
 
 gas_header
 
@@ -667,10 +878,15 @@ if mask_path is not None:
     spatial_keep_mask, spatial_mask_source = load_spatial_keep_mask(
         mask_path, HA6562_FLUX.shape
     )
+    spatial_masked_map_names = SPATIAL_BASE_MAP_NAMES + tuple(
+        f"{line_base}_{suffix}"
+        for line_base in GAS_LINE_BASES
+        for suffix in ("FLUX", "FLUX_ERR")
+    )
     globals().update(
         apply_spatial_keep_mask(
             spatial_keep_mask,
-            {name: globals()[name] for name in SPATIAL_MASKED_MAP_NAMES},
+            {name: globals()[name] for name in spatial_masked_map_names},
         )
     )
     keep_count = int(np.count_nonzero(spatial_keep_mask))
@@ -803,12 +1019,25 @@ def extinction_k(w_um, law=None, Rv=None):
 
     raise ValueError(f"Unknown extinction law: {law}")
 
-k_HB4861  = extinction_k(0.4861)   # CCM89(MW, Rv=3.1) ≈ 3.609
-k_HA6562  = extinction_k(0.6562)   # CCM89(MW, Rv=3.1) ≈ 2.535
-k_OIII5006= extinction_k(0.5006)
-k_NII6583 = extinction_k(0.6583)
-k_SII6716 = extinction_k(0.6716)
-k_SII6730 = extinction_k(0.6730)
+GAS_LINE_WAVELENGTH_UM = {
+    line_base: infer_line_wavelength_um(line_base)
+    for line_base in GAS_LINE_BASES
+}
+GAS_LINE_K = {
+    line_base: extinction_k(w_um)
+    for line_base, w_um in GAS_LINE_WAVELENGTH_UM.items()
+}
+
+k_HB4861  = GAS_LINE_K["HB4861"]   # CCM89(MW, Rv=3.1) approx 3.609
+k_HA6562  = GAS_LINE_K["HA6562"]   # CCM89(MW, Rv=3.1) approx 2.535
+k_OIII5006= GAS_LINE_K["OIII5006"]
+k_NII6583 = GAS_LINE_K["NII6583"]
+k_SII6716 = GAS_LINE_K["SII6716"]
+k_SII6730 = GAS_LINE_K["SII6730"]
+TE_LINE_K = {
+    line_base: GAS_LINE_K.get(line_base, extinction_k(w_um))
+    for line_base, w_um in TE_LINE_WAVELENGTH_UM.items()
+}
 
 # Print k(λ) values used for dust correction (this will also appear in redirected *.log outputs)
 print("--------------------------------------------------------------")
@@ -819,6 +1048,21 @@ print(f"k([OIII]5006)= {float(k_OIII5006):.4f}   at λ=0.5006 µm")
 print(f"k([NII]6583) = {float(k_NII6583):.4f}   at λ=0.6583 µm")
 print(f"k([SII]6716) = {float(k_SII6716):.4f}   at λ=0.6716 µm")
 print(f"k([SII]6730) = {float(k_SII6730):.4f}   at λ=0.6730 µm")
+for line_base in GAS_LINE_BASES:
+    if line_base in REQUIRED_GAS_LINE_BASES:
+        continue
+    print(
+        f"k({line_base}) = {float(GAS_LINE_K[line_base]):.4f}   "
+        f"at λ={GAS_LINE_WAVELENGTH_UM[line_base]:.4f} µm"
+    )
+if ENABLE_TE_METALLICITY_PRODUCTS:
+    for line_base in TE_LINE_BASES:
+        if line_base in GAS_LINE_K:
+            continue
+        print(
+            f"k({line_base}) = {float(TE_LINE_K[line_base]):.4f}   "
+            f"at λ={TE_LINE_WAVELENGTH_UM[line_base]:.4f} µm (line missing; NaN placeholder)"
+        )
 print("--------------------------------------------------------------")
 
 R_int = 2.86
@@ -1015,19 +1259,27 @@ def c20_method_label(method_index):
         return C20_METHOD_NAMES[method_index]
     return "none"
 
-# Correct the fluxes with E(B-V)_BD
-HB4861_FLUX_corr = correct_flux_with_ebv(HB4861_FLUX, E_BV_BD, k_HB4861)
-HA6562_FLUX_corr = correct_flux_with_ebv(HA6562_FLUX, E_BV_BD, k_HA6562)
-OIII5006_FLUX_corr = correct_flux_with_ebv(OIII5006_FLUX, E_BV_BD, k_OIII5006)
-NII6583_FLUX_corr = correct_flux_with_ebv(NII6583_FLUX, E_BV_BD, k_NII6583)
-SII6716_FLUX_corr = correct_flux_with_ebv(SII6716_FLUX, E_BV_BD, k_SII6716)
-SII6730_FLUX_corr = correct_flux_with_ebv(SII6730_FLUX, E_BV_BD, k_SII6730)
-HB4861_FLUX_ERR_corr = correct_flux_error_with_ebv(HB4861_FLUX, HB4861_FLUX_ERR, E_BV_BD, k_HB4861, E_BV_BD_ERR)
-HA6562_FLUX_ERR_corr = correct_flux_error_with_ebv(HA6562_FLUX, HA6562_FLUX_ERR, E_BV_BD, k_HA6562, E_BV_BD_ERR)
-OIII5006_FLUX_ERR_corr = correct_flux_error_with_ebv(OIII5006_FLUX, OIII5006_FLUX_ERR, E_BV_BD, k_OIII5006, E_BV_BD_ERR)
-NII6583_FLUX_ERR_corr = correct_flux_error_with_ebv(NII6583_FLUX, NII6583_FLUX_ERR, E_BV_BD, k_NII6583, E_BV_BD_ERR)
-SII6716_FLUX_ERR_corr = correct_flux_error_with_ebv(SII6716_FLUX, SII6716_FLUX_ERR, E_BV_BD, k_SII6716, E_BV_BD_ERR)
-SII6730_FLUX_ERR_corr = correct_flux_error_with_ebv(SII6730_FLUX, SII6730_FLUX_ERR, E_BV_BD, k_SII6730, E_BV_BD_ERR)
+# Correct every available gas line with E(B-V)_BD.
+for line_base in GAS_LINE_BASES:
+    k_line = GAS_LINE_K[line_base]
+    globals()[f"{line_base}_FLUX_corr"] = correct_flux_with_ebv(
+        globals()[f"{line_base}_FLUX"], E_BV_BD, k_line
+    )
+    globals()[f"{line_base}_FLUX_ERR_corr"] = correct_flux_error_with_ebv(
+        globals()[f"{line_base}_FLUX"],
+        globals()[f"{line_base}_FLUX_ERR"],
+        E_BV_BD,
+        k_line,
+        E_BV_BD_ERR,
+    )
+
+# Keep missing optional Te inputs as NaN corrected maps so method-specific
+# detection gates can fail cleanly instead of becoming hard requirements.
+for line_base in TE_LINE_BASES:
+    if line_base in GAS_LINE_BASES:
+        continue
+    globals()[f"{line_base}_FLUX_corr"] = np.full(HA6562_FLUX.shape, np.nan, dtype=float)
+    globals()[f"{line_base}_FLUX_ERR_corr"] = np.full(HA6562_FLUX.shape, np.nan, dtype=float)
 
 # ------------------------------------------------------------------
 # Metallicity [O/H] calculation (12+log(O/H)) using different methods
@@ -1063,6 +1315,481 @@ def ratio_linear_error(numerator, denominator, numerator_err, denominator_err):
             (numerator_err / numerator)**2 + (denominator_err / denominator)**2
         )
     return ratio_err
+
+
+def line_detection_mask(flux, flux_err, cut_value=cut, noise_value=noise):
+    """Configured emission-line detection gate using raw line flux and error maps."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return (
+            np.isfinite(flux) & np.isfinite(flux_err) &
+            (flux_err > 0) & (flux / flux_err >= cut_value) &
+            (flux >= noise_value)
+        )
+
+
+def quadrature_sum(*arrays):
+    """Quadrature sum for independent uncertainty maps."""
+    total = np.zeros_like(np.asarray(arrays[0], dtype=float), dtype=float)
+    valid = np.zeros_like(total, dtype=bool)
+    for array in arrays:
+        arr = np.asarray(array, dtype=float)
+        total += np.where(np.isfinite(arr), arr**2, 0.0)
+        valid |= np.isfinite(arr)
+    return np.where(valid, np.sqrt(total), np.nan)
+
+
+def positive_ratio(numerator, denominator):
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = numerator / denominator
+    return np.where(
+        np.isfinite(ratio) & (numerator > 0) & (denominator > 0), ratio, np.nan
+    )
+
+
+def _values_for_mask(value, valid):
+    if isinstance(value, np.ndarray):
+        return value[valid]
+    return value
+
+
+def pyneb_temden_map(
+    atom,
+    int_ratio,
+    valid_mask,
+    *,
+    tem=-1,
+    den=-1,
+    wave1=-1,
+    wave2=-1,
+    to_eval=None,
+):
+    """Evaluate PyNeb getTemDen on valid pixels, falling back to scalar calls if needed."""
+    result = np.full_like(np.asarray(int_ratio, dtype=float), np.nan, dtype=float)
+    valid = (
+        np.asarray(valid_mask, dtype=bool) &
+        np.isfinite(int_ratio) & (int_ratio > 0)
+    )
+    if isinstance(tem, np.ndarray):
+        valid &= np.isfinite(tem) & (tem > 0)
+    if isinstance(den, np.ndarray):
+        valid &= np.isfinite(den) & (den > 0)
+    if not np.any(valid):
+        return result
+
+    try:
+        values = atom.getTemDen(
+            int_ratio[valid],
+            tem=_values_for_mask(tem, valid),
+            den=_values_for_mask(den, valid),
+            wave1=wave1,
+            wave2=wave2,
+            to_eval=to_eval,
+        )
+        result[valid] = np.asarray(values, dtype=float)
+        return result
+    except Exception:
+        pass
+
+    for iy, ix in zip(*np.where(valid)):
+        try:
+            tem_value = tem[iy, ix] if isinstance(tem, np.ndarray) else tem
+            den_value = den[iy, ix] if isinstance(den, np.ndarray) else den
+            result[iy, ix] = atom.getTemDen(
+                int_ratio[iy, ix],
+                tem=tem_value,
+                den=den_value,
+                wave1=wave1,
+                wave2=wave2,
+                to_eval=to_eval,
+            )
+        except Exception:
+            result[iy, ix] = np.nan
+    return result
+
+
+def sii_density_lookup_paths(tem, min_density, max_density, n_grid, lookup_dir=None):
+    lookup_dir = Path.cwd() if lookup_dir is None else Path(lookup_dir)
+    if (
+        int(round(float(tem))) in SII_DENSITY_LOOKUP_TEMPERATURES and
+        abs(float(min_density) - 20.0) < 1e-9 and
+        abs(float(max_density) - 1.0e5) < 1e-6 and
+        int(n_grid) == 4096
+    ):
+        basename = SII_DENSITY_LOOKUP_BASENAME
+    else:
+        basename = (
+            "pyneb_sii_6716_6731_density_lookup_"
+            f"te{float(tem):.0f}_ne{float(min_density):.0f}_"
+            f"{float(max_density):.0f}_n{int(n_grid)}"
+        )
+    return lookup_dir / f"{basename}.npz", lookup_dir / f"{basename}.png"
+
+
+def select_sii_ratio_row(temperature_grid, ratio_grid_2d, tem):
+    temperature_grid = np.asarray(temperature_grid, dtype=float)
+    ratio_grid_2d = np.asarray(ratio_grid_2d, dtype=float)
+    matches = np.where(np.isclose(temperature_grid, float(tem), rtol=0.0, atol=1e-9))[0]
+    if matches.size == 0:
+        raise ValueError(
+            f"Requested Te={tem} K is not in the cached SII lookup temperatures: "
+            f"{temperature_grid}"
+        )
+    return np.asarray(ratio_grid_2d[int(matches[0])], dtype=float)
+
+
+def save_sii_density_lookup_png(density_grid, temperature_grid, ratio_grid_2d, png_path):
+    """Write a line-plot view of the cached [S II] density-ratio grid."""
+    try:
+        import matplotlib
+        matplotlib.use("Agg", force=True)
+        import matplotlib.pyplot as plt
+
+        density_grid = np.asarray(density_grid, dtype=float)
+        temperature_grid = np.asarray(temperature_grid, dtype=float)
+        ratio_grid_2d = np.asarray(ratio_grid_2d, dtype=float)
+        colors = plt.get_cmap("plasma")(
+            np.linspace(0.08, 0.92, len(temperature_grid))
+        )
+        fig, ax = plt.subplots(figsize=(8.0, 5.0), constrained_layout=True)
+        for temp, color, ratio_row in zip(temperature_grid, colors, ratio_grid_2d):
+            ax.plot(
+                density_grid,
+                ratio_row,
+                color=color,
+                lw=2.0,
+                label=f"{temp:.0f} K",
+            )
+        ax.set_xscale("log")
+        ax.set_xlabel(r"$n_e$ (cm$^{-3}$)")
+        ax.set_ylabel(r"$I(6716) / I(6731)$")
+        ax.set_title(r"PyNeb [S II] $\lambda6716/\lambda6731$ density lookup")
+        ax.grid(True, which="both", alpha=0.25)
+        ax.legend(title=r"$T_e$", ncol=2, fontsize=8)
+        fig.savefig(png_path, dpi=180)
+        plt.close(fig)
+    except Exception as exc:
+        print(f"Warning: could not write SII density lookup PNG {png_path}: {exc}")
+
+
+def load_or_create_sii_density_lookup(
+    atom,
+    *,
+    tem,
+    min_density,
+    max_density,
+    n_grid,
+    lookup_dir=None,
+):
+    """Load the reusable PyNeb [S II] density lookup from pwd, or create it."""
+    npz_path, png_path = sii_density_lookup_paths(
+        tem, min_density, max_density, n_grid, lookup_dir=lookup_dir
+    )
+    requested_tem = int(round(float(tem)))
+    cache_key = (
+        requested_tem,
+        float(min_density),
+        float(max_density),
+        int(n_grid),
+        str(npz_path.resolve()),
+    )
+    if cache_key in SII_DENSITY_LOOKUP_CACHE:
+        return SII_DENSITY_LOOKUP_CACHE[cache_key]
+
+    if npz_path.exists():
+        try:
+            with np.load(npz_path) as cached:
+                density_grid = np.asarray(cached["density_grid"], dtype=float)
+                temperature_grid = np.asarray(cached["temperature_grid"], dtype=float)
+                ratio_grid_2d = np.asarray(cached["ratio_grid_2d"], dtype=float)
+                cached_min = float(cached["min_density"])
+                cached_max = float(cached["max_density"])
+                cached_n = int(cached["n_grid"])
+            valid_cache = (
+                ratio_grid_2d.shape == (temperature_grid.size, density_grid.size) and
+                density_grid.size == int(n_grid) and
+                np.all(np.isfinite(density_grid)) and
+                np.all(np.isfinite(temperature_grid)) and
+                np.all(np.isfinite(ratio_grid_2d)) and
+                tuple(int(round(t)) for t in temperature_grid) == SII_DENSITY_LOOKUP_TEMPERATURES and
+                requested_tem in tuple(int(round(t)) for t in temperature_grid) and
+                abs(cached_min - float(min_density)) < 1e-9 and
+                abs(cached_max - float(max_density)) < 1e-6 and
+                cached_n == int(n_grid)
+            )
+            if valid_cache:
+                if not png_path.exists():
+                    save_sii_density_lookup_png(
+                        density_grid, temperature_grid, ratio_grid_2d, png_path
+                    )
+                ratio_grid = select_sii_ratio_row(
+                    temperature_grid, ratio_grid_2d, requested_tem
+                )
+                print(f"Loaded SII density lookup table: {npz_path}")
+                SII_DENSITY_LOOKUP_CACHE[cache_key] = (density_grid, ratio_grid)
+                return density_grid, ratio_grid
+            print(f"Warning: ignoring incompatible SII density lookup table: {npz_path}")
+        except Exception as exc:
+            print(f"Warning: could not read SII density lookup table {npz_path}: {exc}")
+
+    density_grid = np.geomspace(min_density, max_density, n_grid)
+    temperature_grid = np.asarray(SII_DENSITY_LOOKUP_TEMPERATURES, dtype=float)
+    ratio_rows = []
+    for temp in temperature_grid:
+        emiss_6716 = atom.getEmissivity(tem=temp, den=density_grid, wave=6716)
+        emiss_6731 = atom.getEmissivity(tem=temp, den=density_grid, wave=6731)
+        ratio_rows.append(np.asarray(emiss_6716 / emiss_6731, dtype=float))
+    ratio_grid_2d = np.vstack(ratio_rows)
+    ratio_grid = select_sii_ratio_row(temperature_grid, ratio_grid_2d, requested_tem)
+
+    try:
+        np.savez_compressed(
+            npz_path,
+            density_grid=density_grid,
+            temperature_grid=temperature_grid,
+            ratio_grid_2d=ratio_grid_2d,
+            selected_tem=float(requested_tem),
+            selected_ratio_grid=ratio_grid,
+            min_density=float(min_density),
+            max_density=float(max_density),
+            n_grid=int(n_grid),
+            wave1=6716,
+            wave2=6731,
+            ratio_name="I(6716)/I(6731)",
+        )
+        save_sii_density_lookup_png(
+            density_grid, temperature_grid, ratio_grid_2d, png_path
+        )
+        print(f"Saved SII density lookup table: {npz_path}")
+        print(f"Saved SII density lookup line plot: {png_path}")
+    except Exception as exc:
+        print(f"Warning: could not write SII density lookup cache in {Path.cwd()}: {exc}")
+
+    SII_DENSITY_LOOKUP_CACHE[cache_key] = (density_grid, ratio_grid)
+    return density_grid, ratio_grid
+
+
+def sii_density_from_ratio_lookup(
+    atom,
+    ratio,
+    valid_mask,
+    *,
+    tem=10000.0,
+    min_density=20.0,
+    max_density=1.0e5,
+    n_grid=4096,
+    exact_high_density=False,
+    exact_high_density_threshold=1.0e4,
+    return_exact_mask=False,
+):
+    """Invert [S II] 6716/6731 using a PyNeb emissivity lookup table."""
+    ratio = np.asarray(ratio, dtype=float)
+    result = np.full_like(ratio, np.nan, dtype=float)
+    exact_mask = np.zeros_like(ratio, dtype=bool)
+    valid = np.asarray(valid_mask, dtype=bool) & np.isfinite(ratio) & (ratio > 0)
+    if not np.any(valid):
+        return (result, exact_mask) if return_exact_mask else result
+
+    density_grid, ratio_grid = load_or_create_sii_density_lookup(
+        atom,
+        tem=tem,
+        min_density=min_density,
+        max_density=max_density,
+        n_grid=n_grid,
+    )
+
+    order = np.argsort(ratio_grid)
+    sorted_ratio = ratio_grid[order]
+    sorted_density = density_grid[order]
+    low_ratio = sorted_ratio[0]
+    high_ratio = sorted_ratio[-1]
+
+    interp_density = np.interp(
+        ratio[valid],
+        sorted_ratio,
+        sorted_density,
+        left=np.nan,
+        right=min_density,
+    )
+    interp_density = np.where(
+        ratio[valid] >= high_ratio,
+        min_density,
+        np.where(ratio[valid] < low_ratio, np.nan, interp_density),
+    )
+    result[valid] = interp_density
+
+    if exact_high_density:
+        exact_mask = valid & (
+            ~np.isfinite(result) |
+            (np.isfinite(result) & (result >= exact_high_density_threshold))
+        )
+        for iy, ix in zip(*np.where(exact_mask)):
+            try:
+                exact_density = atom.getTemDen(
+                    ratio[iy, ix], tem=tem, wave1=6716, wave2=6731
+                )
+                if np.isfinite(exact_density) and exact_density > 0:
+                    result[iy, ix] = exact_density
+            except Exception:
+                pass
+
+    return (result, exact_mask) if return_exact_mask else result
+
+
+def pyneb_ion_abundance_map(atom, int_ratio, tem, den, valid_mask, *, to_eval):
+    """Evaluate PyNeb getIonAbundance with Hbeta normalized to 100."""
+    result = np.full_like(np.asarray(int_ratio, dtype=float), np.nan, dtype=float)
+    valid = (
+        np.asarray(valid_mask, dtype=bool) &
+        np.isfinite(int_ratio) & (int_ratio > 0) &
+        np.isfinite(tem) & (tem > 0) &
+        np.isfinite(den) & (den > 0)
+    )
+    if not np.any(valid):
+        return result
+
+    try:
+        values = atom.getIonAbundance(
+            int_ratio=int_ratio[valid],
+            tem=tem[valid],
+            den=den[valid],
+            to_eval=to_eval,
+            Hbeta=100.0,
+        )
+        result[valid] = np.asarray(values, dtype=float)
+        return result
+    except Exception:
+        pass
+
+    for iy, ix in zip(*np.where(valid)):
+        try:
+            result[iy, ix] = atom.getIonAbundance(
+                int_ratio=int_ratio[iy, ix],
+                tem=tem[iy, ix],
+                den=den[iy, ix],
+                to_eval=to_eval,
+                Hbeta=100.0,
+            )
+        except Exception:
+            result[iy, ix] = np.nan
+    return result
+
+
+def pyneb_ion_abundance_error_map(
+    atom,
+    int_ratio,
+    int_ratio_err,
+    tem,
+    tem_err,
+    den,
+    den_err,
+    valid_mask,
+    *,
+    to_eval,
+):
+    central = pyneb_ion_abundance_map(atom, int_ratio, tem, den, valid_mask, to_eval=to_eval)
+    valid = valid_mask & np.isfinite(central) & (central > 0)
+
+    ratio_low = np.where(np.isfinite(int_ratio_err), np.maximum(int_ratio - int_ratio_err, 1e-30), np.nan)
+    ratio_high = np.where(np.isfinite(int_ratio_err), int_ratio + int_ratio_err, np.nan)
+    abund_low = pyneb_ion_abundance_map(atom, ratio_low, tem, den, valid, to_eval=to_eval)
+    abund_high = pyneb_ion_abundance_map(atom, ratio_high, tem, den, valid, to_eval=to_eval)
+    err_ratio = finite_difference_error(abund_low, abund_high, valid)
+
+    tem_low = np.where(np.isfinite(tem_err), np.maximum(tem - tem_err, 1000.0), np.nan)
+    tem_high = np.where(np.isfinite(tem_err), tem + tem_err, np.nan)
+    abund_tem_low = pyneb_ion_abundance_map(atom, int_ratio, tem_low, den, valid, to_eval=to_eval)
+    abund_tem_high = pyneb_ion_abundance_map(atom, int_ratio, tem_high, den, valid, to_eval=to_eval)
+    err_tem = finite_difference_error(abund_tem_low, abund_tem_high, valid)
+
+    den_low = np.where(np.isfinite(den_err), np.maximum(den - den_err, 20.0), np.nan)
+    den_high = np.where(np.isfinite(den_err), den + den_err, np.nan)
+    abund_den_low = pyneb_ion_abundance_map(atom, int_ratio, tem, den_low, valid, to_eval=to_eval)
+    abund_den_high = pyneb_ion_abundance_map(atom, int_ratio, tem, den_high, valid, to_eval=to_eval)
+    err_den = finite_difference_error(abund_den_low, abund_den_high, valid)
+
+    total_err = quadrature_sum(err_ratio, err_tem, err_den)
+    return central, np.where(valid & np.isfinite(total_err), total_err, np.nan)
+
+
+def finite_difference_error(low_values, high_values, central_mask):
+    error = 0.5 * np.abs(high_values - low_values)
+    return np.where(central_mask & np.isfinite(error), error, np.nan)
+
+
+def sanitize_temperature_map(temperature, valid_mask):
+    return np.where(
+        valid_mask & np.isfinite(temperature) &
+        (temperature >= 1000.0) & (temperature <= 30000.0),
+        temperature,
+        np.nan,
+    )
+
+
+def brazzini_te_siii_from_nii(te_nii):
+    """Brazzini+2024 Te(SIII)-Te(NII); input/output in K."""
+    return 1.22 * te_nii - 2000.0
+
+
+def brazzini_te_siii_from_nii_error(te_nii, te_nii_err):
+    """Includes coefficient errors and 724 K intrinsic dispersion from Brazzini+2024."""
+    return np.sqrt(
+        (1.22 * te_nii_err)**2 +
+        (0.01 * te_nii)**2 +
+        (0.01 * 1.0e4)**2 +
+        724.0**2
+    )
+
+
+def brazzini_te_oiii_from_siii(te_siii):
+    """Brazzini+2024 Eq. Te(OIII)-Te(SIII); input/output in K."""
+    return 0.80 * te_siii + 2000.0
+
+
+def brazzini_te_oiii_from_siii_error(te_siii, te_siii_err):
+    """Includes coefficient errors and 1270 K intrinsic dispersion from Brazzini+2024."""
+    return np.sqrt(
+        (0.80 * te_siii_err)**2 +
+        (0.02 * te_siii)**2 +
+        (0.02 * 1.0e4)**2 +
+        1270.0**2
+    )
+
+
+def oxygen_abundance_log_map(o_plus, o_plus_err, o_double_plus, o_double_plus_err, valid_mask):
+    total_oxygen = o_plus + o_double_plus
+    valid = valid_mask & np.isfinite(total_oxygen) & (total_oxygen > 0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        abundance = 12.0 + np.log10(total_oxygen)
+        abundance_err = (
+            np.sqrt(o_plus_err**2 + o_double_plus_err**2) /
+            (np.log(10.0) * total_oxygen)
+        )
+    return (
+        np.where(valid, abundance, np.nan),
+        np.where(valid & np.isfinite(abundance_err), abundance_err, np.nan),
+    )
+
+
+def kreckel_mendez_nii_oh_map(te_nii, te_nii_err, valid_mask):
+    with np.errstate(invalid="ignore"):
+        te_unit = te_nii / 1.0e4
+        abundance = -1.19 * te_unit + 9.68
+        abundance_err = np.sqrt(
+            (1.19 * te_nii_err / 1.0e4)**2 +
+            (0.14 * te_unit)**2 +
+            0.15**2
+        )
+    valid = (
+        valid_mask &
+        np.isfinite(abundance) &
+        np.isfinite(te_nii) &
+        (te_nii >= 8000.0) &
+        (te_nii <= 13000.0)
+    )
+    return (
+        np.where(valid, abundance, np.nan),
+        np.where(valid & np.isfinite(abundance_err), abundance_err, np.nan),
+    )
 
 # Dopita et al. (2016) metallicity calculation
 y = np.log10(NII6583_FLUX_corr / (SII6716_FLUX_corr + SII6730_FLUX_corr)) + 0.264*np.log10(NII6583_FLUX_corr / HA6562_FLUX_corr)
@@ -2657,8 +3384,963 @@ def choose_BPT(choice='both', classification=1):
 (LOG_SFR_surface_density_map_HII, LOG_SFR_surface_density_map_nonHII, 
  LOG_SFR_surface_density_map_unclassified2, LOG_SFR_surface_density_map_upper_HII), (SFR_map_HII, SFR_map_nonHII, SFR_map_unclassified2, SFR_map_upper_HII), (O_H_D16_HII, O_H_PG16_HII, O_H_N2S2_N06_HII, O_H_O3N2_M13_HII, O_H_N2_M13_HII, O_H_O3N2_PP04_HII, O_H_N2_PP04_HII, O_H_O3N2_C20_HII, O_H_O3S2_C20_HII, O_H_RS32_C20_HII, O_H_R3_C20_HII, O_H_N2_C20_HII, O_H_S2_C20_HII, O_H_COMBINED_C20_HII), (O_H_O3N2_C20_HII_ERR, O_H_O3S2_C20_HII_ERR, O_H_RS32_C20_HII_ERR, O_H_R3_C20_HII_ERR, O_H_N2_C20_HII_ERR, O_H_S2_C20_HII_ERR, O_H_COMBINED_C20_HII_ERR), (HB4861_FLUX_corr_HII, HA6562_FLUX_corr_HII, OIII5006_FLUX_corr_HII, NII6583_FLUX_corr_HII, SII6716_FLUX_corr_HII, SII6730_FLUX_corr_HII), (mask_HII, mask_nonHII, mask_unclassified2, mask_upper_HII) = choose_BPT(classification=2)
 
+# HII/SF views for every detected gas-line correction product.  The legacy
+# choose_BPT return keeps the historical six-line names; this loop extends the
+# same convention to optional lines and to corrected line-error maps.
+for line_base in GAS_LINE_BASES:
+    for product_suffix in ("FLUX_corr", "FLUX_ERR_corr"):
+        source_name = f"{line_base}_{product_suffix}"
+        source_map = globals()[source_name]
+        globals()[f"{source_name}_HII"] = np.where(mask_HII, source_map, np.nan)
+        globals()[f"{source_name}_SF"] = np.where(mask_SF, source_map, np.nan)
+
 # ------------------------------------------------------------------
-# 10.  Calculate the total Metallicity in SF regions (Classification 1)
+# 10.  PyNeb electron density and Te-based HII metallicity products
+# ------------------------------------------------------------------
+
+if ENABLE_TE_METALLICITY_PRODUCTS:
+    PYNEB_S2 = pn.Atom("S", 2)
+    PYNEB_N2 = pn.Atom("N", 2)
+    PYNEB_S3 = pn.Atom("S", 3)
+    PYNEB_O2 = pn.Atom("O", 2)
+    PYNEB_O3 = pn.Atom("O", 3)
+
+    TE_DETECTED = {
+        "HB4861": line_detection_mask(HB4861_FLUX, HB4861_FLUX_ERR),
+        "HA6562": line_detection_mask(HA6562_FLUX, HA6562_FLUX_ERR),
+        "OIII5006": line_detection_mask(OIII5006_FLUX, OIII5006_FLUX_ERR),
+        "NII6583": line_detection_mask(NII6583_FLUX, NII6583_FLUX_ERR),
+        "SII6716": line_detection_mask(SII6716_FLUX, SII6716_FLUX_ERR),
+        "SII6730": line_detection_mask(SII6730_FLUX, SII6730_FLUX_ERR),
+    }
+    for line_base in TE_LINE_BASES:
+        TE_DETECTED[line_base] = line_detection_mask(
+            globals()[f"{line_base}_FLUX"],
+            globals()[f"{line_base}_FLUX_ERR"],
+        )
+    TE_DETECTED["NII6548_6583"] = line_detection_mask(
+        NII6548_FLUX + NII6583_FLUX,
+        quadrature_sum(NII6548_FLUX_ERR, NII6583_FLUX_ERR),
+    )
+    TE_DETECTED["OIII4959_5007"] = line_detection_mask(
+        OIII4958_FLUX + OIII5006_FLUX,
+        quadrature_sum(OIII4958_FLUX_ERR, OIII5006_FLUX_ERR),
+    )
+    TE_DETECTED["OII7325"] = line_detection_mask(
+        OII7318_FLUX + OII7319_FLUX + OII7329_FLUX + OII7330_FLUX,
+        quadrature_sum(
+            OII7318_FLUX_ERR,
+            OII7319_FLUX_ERR,
+            OII7329_FLUX_ERR,
+            OII7330_FLUX_ERR,
+        ),
+    )
+
+    SII_DENSITY_VALID = TE_DETECTED["SII6716"] & TE_DETECTED["SII6730"]
+    SII_DENSITY_RATIO = positive_ratio(SII6716_FLUX_corr, SII6730_FLUX_corr)
+    SII_DENSITY_RATIO_ERR = ratio_linear_error(
+        SII6716_FLUX_corr,
+        SII6730_FLUX_corr,
+        SII6716_FLUX_ERR_corr,
+        SII6730_FLUX_ERR_corr,
+    )
+
+    NE_SII_RAW, NE_SII_EXACT_HIGH_DENSITY = sii_density_from_ratio_lookup(
+        PYNEB_S2,
+        SII_DENSITY_RATIO,
+        SII_DENSITY_VALID,
+        tem=10000.0,
+        exact_high_density=True,
+        return_exact_mask=True,
+    )
+    sii_low_density_ratio = PYNEB_S2.getLowDensRatio(wave1=6716, wave2=6731)
+    NE_SII_FIXED20 = (
+        SII_DENSITY_VALID &
+        (
+            (SII_DENSITY_RATIO >= sii_low_density_ratio) |
+            (np.isfinite(NE_SII_RAW) & (NE_SII_RAW < 20.0))
+        )
+    )
+    NE_SII = np.where(NE_SII_FIXED20, 20.0, NE_SII_RAW)
+    NE_SII = np.where(
+        SII_DENSITY_VALID & np.isfinite(NE_SII) & (NE_SII >= 20.0),
+        NE_SII,
+        np.nan,
+    )
+    NE_SII_ALL = np.where(
+        np.isfinite(V_STARS2),
+        np.where(np.isfinite(NE_SII), NE_SII, 20.0),
+        np.nan,
+    )
+
+    ne_ratio_low = np.maximum(SII_DENSITY_RATIO - SII_DENSITY_RATIO_ERR, 1e-30)
+    ne_ratio_high = SII_DENSITY_RATIO + SII_DENSITY_RATIO_ERR
+    NE_SII_LOW = sii_density_from_ratio_lookup(
+        PYNEB_S2,
+        ne_ratio_low,
+        SII_DENSITY_VALID,
+        tem=10000.0,
+        exact_high_density=True,
+    )
+    NE_SII_HIGH = sii_density_from_ratio_lookup(
+        PYNEB_S2,
+        ne_ratio_high,
+        SII_DENSITY_VALID,
+        tem=10000.0,
+        exact_high_density=True,
+    )
+    NE_SII_LOW = np.where(np.isfinite(NE_SII_LOW) & (NE_SII_LOW >= 20.0), NE_SII_LOW, 20.0)
+    NE_SII_HIGH = np.where(np.isfinite(NE_SII_HIGH) & (NE_SII_HIGH >= 20.0), NE_SII_HIGH, 20.0)
+    NE_SII_ERR = finite_difference_error(NE_SII_LOW, NE_SII_HIGH, SII_DENSITY_VALID)
+    NE_SII_ERR = np.where(NE_SII_FIXED20, 0.0, NE_SII_ERR)
+
+    NII_TE_DENOM = NII6548_FLUX_corr + NII6583_FLUX_corr
+    NII_TE_DENOM_ERR = quadrature_sum(NII6548_FLUX_ERR_corr, NII6583_FLUX_ERR_corr)
+    NII_TE_RATIO = positive_ratio(NII5754_FLUX_corr, NII_TE_DENOM)
+    NII_TE_RATIO_ERR = ratio_linear_error(
+        NII5754_FLUX_corr,
+        NII_TE_DENOM,
+        NII5754_FLUX_ERR_corr,
+        NII_TE_DENOM_ERR,
+    )
+    SIII_TE_DENOM = 3.5 * SIII9068_FLUX_corr
+    SIII_TE_DENOM_ERR = 3.5 * SIII9068_FLUX_ERR_corr
+    SIII_TE_RATIO = positive_ratio(SIII6312_FLUX_corr, SIII_TE_DENOM)
+    SIII_TE_RATIO_ERR = ratio_linear_error(
+        SIII6312_FLUX_corr,
+        SIII_TE_DENOM,
+        SIII6312_FLUX_ERR_corr,
+        SIII_TE_DENOM_ERR,
+    )
+    OII7325_FLUX_CORR = (
+        OII7318_FLUX_corr + OII7319_FLUX_corr +
+        OII7329_FLUX_corr + OII7330_FLUX_corr
+    )
+    OII7325_FLUX_ERR_CORR = quadrature_sum(
+        OII7318_FLUX_ERR_corr,
+        OII7319_FLUX_ERR_corr,
+        OII7329_FLUX_ERR_corr,
+        OII7330_FLUX_ERR_corr,
+    )
+    OIII4959_5007_FLUX_CORR = OIII4958_FLUX_corr + OIII5006_FLUX_corr
+    OIII4959_5007_FLUX_ERR_CORR = quadrature_sum(
+        OIII4958_FLUX_ERR_corr,
+        OIII5006_FLUX_ERR_corr,
+    )
+    OII7325_HBETA_RATIO = 100.0 * positive_ratio(OII7325_FLUX_CORR, HB4861_FLUX_corr)
+    OII7325_HBETA_RATIO_ERR = 100.0 * ratio_linear_error(
+        OII7325_FLUX_CORR,
+        HB4861_FLUX_corr,
+        OII7325_FLUX_ERR_CORR,
+        HB4861_FLUX_ERR_corr,
+    )
+    OIII_HBETA_RATIO = 100.0 * positive_ratio(OIII4959_5007_FLUX_CORR, HB4861_FLUX_corr)
+    OIII_HBETA_RATIO_ERR = 100.0 * ratio_linear_error(
+        OIII4959_5007_FLUX_CORR,
+        HB4861_FLUX_corr,
+        OIII4959_5007_FLUX_ERR_CORR,
+        HB4861_FLUX_ERR_corr,
+    )
+
+    def compute_te_region_products(region_mask):
+        common_te = (
+            region_mask &
+            TE_DETECTED["HB4861"] &
+            TE_DETECTED["HA6562"] &
+            SII_DENSITY_VALID &
+            np.isfinite(NE_SII)
+        )
+        nii_te_valid = (
+            common_te &
+            TE_DETECTED["NII5754"] &
+            TE_DETECTED["NII6548_6583"]
+        )
+        siii_te_valid = (
+            common_te &
+            TE_DETECTED["SIII6312"] &
+            TE_DETECTED["SIII9068"]
+        )
+        oii7325_valid = TE_DETECTED["OII7325"]
+        oiii_valid = TE_DETECTED["OIII4959_5007"]
+        br24_direct_valid = (
+            nii_te_valid & siii_te_valid & oii7325_valid & oiii_valid
+        )
+        nii_oii7325_valid = nii_te_valid & oii7325_valid & oiii_valid
+        nii_k25_valid = nii_te_valid
+
+        te_nii = pyneb_temden_map(
+            PYNEB_N2,
+            NII_TE_RATIO,
+            nii_te_valid,
+            den=NE_SII,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_nii = sanitize_temperature_map(te_nii, nii_te_valid)
+        te_nii_ratio_low = pyneb_temden_map(
+            PYNEB_N2,
+            np.maximum(NII_TE_RATIO - NII_TE_RATIO_ERR, 1e-30),
+            nii_te_valid,
+            den=NE_SII,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_nii_ratio_high = pyneb_temden_map(
+            PYNEB_N2,
+            NII_TE_RATIO + NII_TE_RATIO_ERR,
+            nii_te_valid,
+            den=NE_SII,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_nii_den_low = pyneb_temden_map(
+            PYNEB_N2,
+            NII_TE_RATIO,
+            nii_te_valid,
+            den=np.maximum(NE_SII - NE_SII_ERR, 20.0),
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_nii_den_high = pyneb_temden_map(
+            PYNEB_N2,
+            NII_TE_RATIO,
+            nii_te_valid,
+            den=NE_SII + NE_SII_ERR,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_nii_err = quadrature_sum(
+            finite_difference_error(
+                te_nii_ratio_low, te_nii_ratio_high, np.isfinite(te_nii)
+            ),
+            finite_difference_error(
+                te_nii_den_low, te_nii_den_high, np.isfinite(te_nii)
+            ),
+        )
+        nii_k25_valid = (
+            nii_k25_valid &
+            np.isfinite(te_nii) &
+            (te_nii >= 8000.0) &
+            (te_nii <= 13000.0)
+        )
+
+        te_siii = pyneb_temden_map(
+            PYNEB_S3,
+            SIII_TE_RATIO,
+            siii_te_valid,
+            den=NE_SII,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_siii = sanitize_temperature_map(te_siii, siii_te_valid)
+        te_siii_ratio_low = pyneb_temden_map(
+            PYNEB_S3,
+            np.maximum(SIII_TE_RATIO - SIII_TE_RATIO_ERR, 1e-30),
+            siii_te_valid,
+            den=NE_SII,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_siii_ratio_high = pyneb_temden_map(
+            PYNEB_S3,
+            SIII_TE_RATIO + SIII_TE_RATIO_ERR,
+            siii_te_valid,
+            den=NE_SII,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_siii_den_low = pyneb_temden_map(
+            PYNEB_S3,
+            SIII_TE_RATIO,
+            siii_te_valid,
+            den=np.maximum(NE_SII - NE_SII_ERR, 20.0),
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_siii_den_high = pyneb_temden_map(
+            PYNEB_S3,
+            SIII_TE_RATIO,
+            siii_te_valid,
+            den=NE_SII + NE_SII_ERR,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_siii_err = quadrature_sum(
+            finite_difference_error(
+                te_siii_ratio_low, te_siii_ratio_high, np.isfinite(te_siii)
+            ),
+            finite_difference_error(
+                te_siii_den_low, te_siii_den_high, np.isfinite(te_siii)
+            ),
+        )
+
+        te_siii_nii_chain = sanitize_temperature_map(
+            brazzini_te_siii_from_nii(te_nii),
+            nii_te_valid & np.isfinite(te_nii),
+        )
+        te_siii_nii_chain_err = np.where(
+            np.isfinite(te_siii_nii_chain),
+            brazzini_te_siii_from_nii_error(te_nii, te_nii_err),
+            np.nan,
+        )
+        te_oiii_br24 = sanitize_temperature_map(
+            brazzini_te_oiii_from_siii(te_siii),
+            br24_direct_valid & np.isfinite(te_siii),
+        )
+        te_oiii_br24_err = np.where(
+            np.isfinite(te_oiii_br24),
+            brazzini_te_oiii_from_siii_error(te_siii, te_siii_err),
+            np.nan,
+        )
+        te_oiii_nii_chain = sanitize_temperature_map(
+            brazzini_te_oiii_from_siii(te_siii_nii_chain),
+            nii_oii7325_valid & np.isfinite(te_siii_nii_chain),
+        )
+        te_oiii_nii_chain_err = np.where(
+            np.isfinite(te_oiii_nii_chain),
+            brazzini_te_oiii_from_siii_error(
+                te_siii_nii_chain, te_siii_nii_chain_err
+            ),
+            np.nan,
+        )
+
+        o_plus_br24, o_plus_br24_err = pyneb_ion_abundance_error_map(
+            PYNEB_O2,
+            OII7325_HBETA_RATIO,
+            OII7325_HBETA_RATIO_ERR,
+            te_nii,
+            te_nii_err,
+            NE_SII,
+            NE_SII_ERR,
+            br24_direct_valid & np.isfinite(te_nii),
+            to_eval="L(7318)+L(7319)+L(7329)+L(7330)",
+        )
+        o_doubleplus_br24, o_doubleplus_br24_err = pyneb_ion_abundance_error_map(
+            PYNEB_O3,
+            OIII_HBETA_RATIO,
+            OIII_HBETA_RATIO_ERR,
+            te_oiii_br24,
+            te_oiii_br24_err,
+            NE_SII,
+            NE_SII_ERR,
+            br24_direct_valid & np.isfinite(te_oiii_br24),
+            to_eval="L(4959)+L(5007)",
+        )
+        o_h_br24_direct, o_h_br24_direct_err = oxygen_abundance_log_map(
+            o_plus_br24,
+            o_plus_br24_err,
+            o_doubleplus_br24,
+            o_doubleplus_br24_err,
+            br24_direct_valid,
+        )
+
+        o_plus_nii_oii7325, o_plus_nii_oii7325_err = pyneb_ion_abundance_error_map(
+            PYNEB_O2,
+            OII7325_HBETA_RATIO,
+            OII7325_HBETA_RATIO_ERR,
+            te_nii,
+            te_nii_err,
+            NE_SII,
+            NE_SII_ERR,
+            nii_oii7325_valid & np.isfinite(te_nii),
+            to_eval="L(7318)+L(7319)+L(7329)+L(7330)",
+        )
+        (
+            o_doubleplus_nii_oii7325,
+            o_doubleplus_nii_oii7325_err,
+        ) = pyneb_ion_abundance_error_map(
+            PYNEB_O3,
+            OIII_HBETA_RATIO,
+            OIII_HBETA_RATIO_ERR,
+            te_oiii_nii_chain,
+            te_oiii_nii_chain_err,
+            NE_SII,
+            NE_SII_ERR,
+            nii_oii7325_valid & np.isfinite(te_oiii_nii_chain),
+            to_eval="L(4959)+L(5007)",
+        )
+        o_h_nii_oii7325, o_h_nii_oii7325_err = oxygen_abundance_log_map(
+            o_plus_nii_oii7325,
+            o_plus_nii_oii7325_err,
+            o_doubleplus_nii_oii7325,
+            o_doubleplus_nii_oii7325_err,
+            nii_oii7325_valid,
+        )
+
+        o_h_nii_k25, o_h_nii_k25_err = kreckel_mendez_nii_oh_map(
+            te_nii,
+            te_nii_err,
+            nii_k25_valid,
+        )
+
+        return {
+            "COMMON_TE": common_te,
+            "NII_TE_VALID": nii_te_valid,
+            "SIII_TE_VALID": siii_te_valid,
+            "BR24_DIRECT_VALID": br24_direct_valid,
+            "NII_OII7325_VALID": nii_oii7325_valid,
+            "NII_K25_VALID": nii_k25_valid,
+            "TE_NII": te_nii,
+            "TE_NII_ERR": te_nii_err,
+            "TE_SIII_BR24": te_siii,
+            "TE_SIII_BR24_ERR": te_siii_err,
+            "TE_SIII_NII_CHAIN": te_siii_nii_chain,
+            "TE_SIII_NII_CHAIN_ERR": te_siii_nii_chain_err,
+            "TE_OIII_BR24": te_oiii_br24,
+            "TE_OIII_BR24_ERR": te_oiii_br24_err,
+            "TE_OIII_NII_CHAIN": te_oiii_nii_chain,
+            "TE_OIII_NII_CHAIN_ERR": te_oiii_nii_chain_err,
+            "O_PLUS_BR24": o_plus_br24,
+            "O_PLUS_BR24_ERR": o_plus_br24_err,
+            "O_DOUBLEPLUS_BR24": o_doubleplus_br24,
+            "O_DOUBLEPLUS_BR24_ERR": o_doubleplus_br24_err,
+            "O_H_BR24_DIRECT": o_h_br24_direct,
+            "O_H_BR24_DIRECT_ERR": o_h_br24_direct_err,
+            "O_PLUS_NII_OII7325": o_plus_nii_oii7325,
+            "O_PLUS_NII_OII7325_ERR": o_plus_nii_oii7325_err,
+            "O_DOUBLEPLUS_NII_OII7325": o_doubleplus_nii_oii7325,
+            "O_DOUBLEPLUS_NII_OII7325_ERR": o_doubleplus_nii_oii7325_err,
+            "O_H_NII_OII7325": o_h_nii_oii7325,
+            "O_H_NII_OII7325_ERR": o_h_nii_oii7325_err,
+            "O_H_NII_K25": o_h_nii_k25,
+            "O_H_NII_K25_ERR": o_h_nii_k25_err,
+        }
+
+    te_hii_products = compute_te_region_products(mask_HII)
+    te_sf_products = compute_te_region_products(mask_SF)
+
+    NII_TE_VALID = te_hii_products["NII_TE_VALID"]
+    SIII_TE_VALID = te_hii_products["SIII_TE_VALID"]
+    BR24_DIRECT_VALID = te_hii_products["BR24_DIRECT_VALID"]
+    NII_OII7325_VALID = te_hii_products["NII_OII7325_VALID"]
+    NII_K25_VALID = te_hii_products["NII_K25_VALID"]
+    TE_NII_HII = te_hii_products["TE_NII"]
+    TE_NII_HII_ERR = te_hii_products["TE_NII_ERR"]
+    TE_SIII_BR24_HII = te_hii_products["TE_SIII_BR24"]
+    TE_SIII_BR24_HII_ERR = te_hii_products["TE_SIII_BR24_ERR"]
+    TE_SIII_NII_CHAIN_HII = te_hii_products["TE_SIII_NII_CHAIN"]
+    TE_SIII_NII_CHAIN_HII_ERR = te_hii_products["TE_SIII_NII_CHAIN_ERR"]
+    TE_OIII_BR24_HII = te_hii_products["TE_OIII_BR24"]
+    TE_OIII_BR24_HII_ERR = te_hii_products["TE_OIII_BR24_ERR"]
+    TE_OIII_NII_CHAIN_HII = te_hii_products["TE_OIII_NII_CHAIN"]
+    TE_OIII_NII_CHAIN_HII_ERR = te_hii_products["TE_OIII_NII_CHAIN_ERR"]
+    O_PLUS_BR24_HII = te_hii_products["O_PLUS_BR24"]
+    O_PLUS_BR24_HII_ERR = te_hii_products["O_PLUS_BR24_ERR"]
+    O_DOUBLEPLUS_BR24_HII = te_hii_products["O_DOUBLEPLUS_BR24"]
+    O_DOUBLEPLUS_BR24_HII_ERR = te_hii_products["O_DOUBLEPLUS_BR24_ERR"]
+    O_H_BR24_DIRECT_HII = te_hii_products["O_H_BR24_DIRECT"]
+    O_H_BR24_DIRECT_HII_ERR = te_hii_products["O_H_BR24_DIRECT_ERR"]
+    O_PLUS_NII_OII7325_HII = te_hii_products["O_PLUS_NII_OII7325"]
+    O_PLUS_NII_OII7325_HII_ERR = te_hii_products["O_PLUS_NII_OII7325_ERR"]
+    O_DOUBLEPLUS_NII_OII7325_HII = te_hii_products["O_DOUBLEPLUS_NII_OII7325"]
+    O_DOUBLEPLUS_NII_OII7325_HII_ERR = te_hii_products["O_DOUBLEPLUS_NII_OII7325_ERR"]
+    O_H_NII_OII7325_HII = te_hii_products["O_H_NII_OII7325"]
+    O_H_NII_OII7325_HII_ERR = te_hii_products["O_H_NII_OII7325_ERR"]
+    O_H_NII_K25_HII = te_hii_products["O_H_NII_K25"]
+    O_H_NII_K25_HII_ERR = te_hii_products["O_H_NII_K25_ERR"]
+
+    BR24_DIRECT_VALID_SF = te_sf_products["BR24_DIRECT_VALID"]
+    NII_OII7325_VALID_SF = te_sf_products["NII_OII7325_VALID"]
+    NII_K25_VALID_SF = te_sf_products["NII_K25_VALID"]
+    BR24_DIRECT_VALID_HII = BR24_DIRECT_VALID
+    NII_OII7325_VALID_HII = NII_OII7325_VALID
+    NII_K25_VALID_HII = NII_K25_VALID
+    TE_NII_SF = te_sf_products["TE_NII"]
+    TE_NII_SF_ERR = te_sf_products["TE_NII_ERR"]
+    TE_SIII_BR24_SF = te_sf_products["TE_SIII_BR24"]
+    TE_SIII_BR24_SF_ERR = te_sf_products["TE_SIII_BR24_ERR"]
+    TE_SIII_NII_CHAIN_SF = te_sf_products["TE_SIII_NII_CHAIN"]
+    TE_SIII_NII_CHAIN_SF_ERR = te_sf_products["TE_SIII_NII_CHAIN_ERR"]
+    TE_OIII_BR24_SF = te_sf_products["TE_OIII_BR24"]
+    TE_OIII_BR24_SF_ERR = te_sf_products["TE_OIII_BR24_ERR"]
+    TE_OIII_NII_CHAIN_SF = te_sf_products["TE_OIII_NII_CHAIN"]
+    TE_OIII_NII_CHAIN_SF_ERR = te_sf_products["TE_OIII_NII_CHAIN_ERR"]
+    O_PLUS_BR24_SF = te_sf_products["O_PLUS_BR24"]
+    O_PLUS_BR24_SF_ERR = te_sf_products["O_PLUS_BR24_ERR"]
+    O_DOUBLEPLUS_BR24_SF = te_sf_products["O_DOUBLEPLUS_BR24"]
+    O_DOUBLEPLUS_BR24_SF_ERR = te_sf_products["O_DOUBLEPLUS_BR24_ERR"]
+    O_H_BR24_DIRECT_SF = te_sf_products["O_H_BR24_DIRECT"]
+    O_H_BR24_DIRECT_SF_ERR = te_sf_products["O_H_BR24_DIRECT_ERR"]
+    O_PLUS_NII_OII7325_SF = te_sf_products["O_PLUS_NII_OII7325"]
+    O_PLUS_NII_OII7325_SF_ERR = te_sf_products["O_PLUS_NII_OII7325_ERR"]
+    O_DOUBLEPLUS_NII_OII7325_SF = te_sf_products["O_DOUBLEPLUS_NII_OII7325"]
+    O_DOUBLEPLUS_NII_OII7325_SF_ERR = te_sf_products["O_DOUBLEPLUS_NII_OII7325_ERR"]
+    O_H_NII_OII7325_SF = te_sf_products["O_H_NII_OII7325"]
+    O_H_NII_OII7325_SF_ERR = te_sf_products["O_H_NII_OII7325_ERR"]
+    O_H_NII_K25_SF = te_sf_products["O_H_NII_K25"]
+    O_H_NII_K25_SF_ERR = te_sf_products["O_H_NII_K25_ERR"]
+
+    INTEGRATED_TE_LINE_K = {
+        "HB4861": k_HB4861,
+        "HA6562": k_HA6562,
+        "OIII5006": k_OIII5006,
+        "NII6583": k_NII6583,
+        "SII6716": k_SII6716,
+        "SII6730": k_SII6730,
+    }
+    INTEGRATED_TE_LINE_K.update(TE_LINE_K)
+
+    def finite_scalar(value):
+        value = float(np.asarray(value, dtype=float).ravel()[0])
+        return value if np.isfinite(value) else np.nan
+
+    def finite_positive(value):
+        return np.isfinite(value) and value > 0
+
+    def sum_raw_line(line_base, valid_mask):
+        flux = np.asarray(globals()[f"{line_base}_FLUX"], dtype=float)
+        flux_err = np.asarray(globals()[f"{line_base}_FLUX_ERR"], dtype=float)
+        selected = np.asarray(valid_mask, dtype=bool) & np.isfinite(flux)
+        if not np.any(selected):
+            return np.nan, np.nan
+        return (
+            float(np.nansum(np.where(selected, flux, np.nan))),
+            float(integrated_flux_error(flux_err, selected)),
+        )
+
+    def integrated_ebv_for_mask(valid_mask):
+        hb, hb_err = sum_raw_line("HB4861", valid_mask)
+        ha, ha_err = sum_raw_line("HA6562", valid_mask)
+        if not (finite_positive(hb) and finite_positive(ha)):
+            return np.nan, np.nan
+        bd = ha / hb
+        if bd < R_int:
+            bd = R_int
+        ebv = convert_bd_to_ebv(bd, k_HB4861, k_HA6562, R_int)
+        ebv_err = convert_bd_to_ebv_error(
+            ha, hb, ha_err, hb_err, k_HB4861, k_HA6562
+        )
+        return finite_scalar(ebv), finite_scalar(ebv_err)
+
+    def corrected_integrated_lines(line_bases, valid_mask):
+        ebv, ebv_err = integrated_ebv_for_mask(valid_mask)
+        corrected = {}
+        for line_base in line_bases:
+            raw_flux, raw_err = sum_raw_line(line_base, valid_mask)
+            if np.isfinite(ebv) and np.isfinite(raw_flux):
+                k_line = INTEGRATED_TE_LINE_K[line_base]
+                flux_corr = correct_flux_with_ebv(raw_flux, ebv, k_line)
+                err_corr = correct_flux_error_with_ebv(
+                    raw_flux, raw_err, ebv, k_line, ebv_err
+                )
+                corrected[line_base] = (
+                    finite_scalar(flux_corr),
+                    finite_scalar(err_corr),
+                )
+            else:
+                corrected[line_base] = (np.nan, np.nan)
+        return corrected, ebv, ebv_err
+
+    def line_value(lines, line_base):
+        return lines.get(line_base, (np.nan, np.nan))
+
+    def compute_integrated_density(valid_mask):
+        n_pix = int(np.count_nonzero(valid_mask))
+        s6716, s6716_err = sum_raw_line("SII6716", valid_mask)
+        s6730, s6730_err = sum_raw_line("SII6730", valid_mask)
+        ratio = s6716 / s6730 if finite_positive(s6716) and finite_positive(s6730) else np.nan
+        ratio_err = finite_scalar(
+            ratio_linear_error(
+                as_single_pixel(s6716),
+                as_single_pixel(s6730),
+                as_single_pixel(s6716_err),
+                as_single_pixel(s6730_err),
+            )
+        )
+        valid = np.array([[finite_positive(ratio)]])
+        ne_raw_map, exact_mask = sii_density_from_ratio_lookup(
+            PYNEB_S2,
+            as_single_pixel(ratio),
+            valid,
+            tem=10000.0,
+            exact_high_density=True,
+            return_exact_mask=True,
+        )
+        ne_raw = finite_scalar(ne_raw_map)
+        fixed20 = bool(
+            valid[0, 0] and (
+                ratio >= sii_low_density_ratio or
+                (np.isfinite(ne_raw) and ne_raw < 20.0)
+            )
+        )
+        ne = 20.0 if fixed20 else ne_raw
+        ne = ne if np.isfinite(ne) and ne >= 20.0 else np.nan
+
+        ratio_low = max(ratio - ratio_err, 1e-30) if np.isfinite(ratio_err) else np.nan
+        ratio_high = ratio + ratio_err if np.isfinite(ratio_err) else np.nan
+        ne_low = sii_density_from_ratio_lookup(
+            PYNEB_S2,
+            as_single_pixel(ratio_low),
+            np.array([[finite_positive(ratio_low)]]),
+            tem=10000.0,
+            exact_high_density=True,
+        )
+        ne_high = sii_density_from_ratio_lookup(
+            PYNEB_S2,
+            as_single_pixel(ratio_high),
+            np.array([[finite_positive(ratio_high)]]),
+            tem=10000.0,
+            exact_high_density=True,
+        )
+        ne_low = max(finite_scalar(ne_low), 20.0) if np.isfinite(finite_scalar(ne_low)) else 20.0
+        ne_high = max(finite_scalar(ne_high), 20.0) if np.isfinite(finite_scalar(ne_high)) else 20.0
+        ne_err = 0.0 if fixed20 else 0.5 * abs(ne_high - ne_low)
+        ne_err = ne_err if np.isfinite(ne) and np.isfinite(ne_err) else np.nan
+        return {
+            "n_pix": n_pix,
+            "value": ne,
+            "err": ne_err,
+            "fixed20": fixed20,
+            "exact_high_density": bool(np.any(exact_mask)),
+        }
+
+    def compute_integrated_nii_te(valid_mask):
+        line_bases = ["HB4861", "HA6562", "NII5754", "NII6548", "NII6583"]
+        lines, ebv, ebv_err = corrected_integrated_lines(line_bases, valid_mask)
+        density = compute_integrated_density(valid_mask)
+        n5755, n5755_err = line_value(lines, "NII5754")
+        n6548, n6548_err = line_value(lines, "NII6548")
+        n6583, n6583_err = line_value(lines, "NII6583")
+        denom = n6548 + n6583
+        denom_err = np.sqrt(n6548_err**2 + n6583_err**2)
+        ratio = positive_ratio(as_single_pixel(n5755), as_single_pixel(denom))
+        ratio_err = ratio_linear_error(
+            as_single_pixel(n5755),
+            as_single_pixel(denom),
+            as_single_pixel(n5755_err),
+            as_single_pixel(denom_err),
+        )
+        valid = np.array([[finite_positive(single_pixel_value(ratio))]])
+        ne = as_single_pixel(density["value"])
+        ne_err = as_single_pixel(density["err"])
+        te = pyneb_temden_map(
+            PYNEB_N2,
+            ratio,
+            valid,
+            den=ne,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te = sanitize_temperature_map(te, valid)
+        te_ratio_low = pyneb_temden_map(
+            PYNEB_N2,
+            np.maximum(ratio - ratio_err, 1e-30),
+            valid,
+            den=ne,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_ratio_high = pyneb_temden_map(
+            PYNEB_N2,
+            ratio + ratio_err,
+            valid,
+            den=ne,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_den_low = pyneb_temden_map(
+            PYNEB_N2,
+            ratio,
+            valid,
+            den=np.maximum(ne - ne_err, 20.0),
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_den_high = pyneb_temden_map(
+            PYNEB_N2,
+            ratio,
+            valid,
+            den=ne + ne_err,
+            to_eval="L(5755)/(L(6548)+L(6584))",
+        )
+        te_err = quadrature_sum(
+            finite_difference_error(te_ratio_low, te_ratio_high, np.isfinite(te)),
+            finite_difference_error(te_den_low, te_den_high, np.isfinite(te)),
+        )
+        return {
+            "n_pix": int(np.count_nonzero(valid_mask)),
+            "ebv": ebv,
+            "ebv_err": ebv_err,
+            "density": density,
+            "lines": lines,
+            "value": finite_scalar(te),
+            "err": finite_scalar(te_err),
+        }
+
+    def compute_integrated_siii_te(valid_mask):
+        line_bases = ["HB4861", "HA6562", "SIII6312", "SIII9068"]
+        lines, ebv, ebv_err = corrected_integrated_lines(line_bases, valid_mask)
+        density = compute_integrated_density(valid_mask)
+        s6312, s6312_err = line_value(lines, "SIII6312")
+        s9068, s9068_err = line_value(lines, "SIII9068")
+        denom = 3.5 * s9068
+        denom_err = 3.5 * s9068_err
+        ratio = positive_ratio(as_single_pixel(s6312), as_single_pixel(denom))
+        ratio_err = ratio_linear_error(
+            as_single_pixel(s6312),
+            as_single_pixel(denom),
+            as_single_pixel(s6312_err),
+            as_single_pixel(denom_err),
+        )
+        valid = np.array([[finite_positive(single_pixel_value(ratio))]])
+        ne = as_single_pixel(density["value"])
+        ne_err = as_single_pixel(density["err"])
+        te = pyneb_temden_map(
+            PYNEB_S3,
+            ratio,
+            valid,
+            den=ne,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te = sanitize_temperature_map(te, valid)
+        te_ratio_low = pyneb_temden_map(
+            PYNEB_S3,
+            np.maximum(ratio - ratio_err, 1e-30),
+            valid,
+            den=ne,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_ratio_high = pyneb_temden_map(
+            PYNEB_S3,
+            ratio + ratio_err,
+            valid,
+            den=ne,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_den_low = pyneb_temden_map(
+            PYNEB_S3,
+            ratio,
+            valid,
+            den=np.maximum(ne - ne_err, 20.0),
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_den_high = pyneb_temden_map(
+            PYNEB_S3,
+            ratio,
+            valid,
+            den=ne + ne_err,
+            to_eval="L(6312)/(L(9069)+2.5*L(9069))",
+        )
+        te_err = quadrature_sum(
+            finite_difference_error(te_ratio_low, te_ratio_high, np.isfinite(te)),
+            finite_difference_error(te_den_low, te_den_high, np.isfinite(te)),
+        )
+        return {
+            "n_pix": int(np.count_nonzero(valid_mask)),
+            "ebv": ebv,
+            "ebv_err": ebv_err,
+            "density": density,
+            "lines": lines,
+            "value": finite_scalar(te),
+            "err": finite_scalar(te_err),
+        }
+
+    def compute_integrated_oxygen(valid_mask, *, use_measured_siii):
+        line_bases = [
+            "HB4861", "HA6562", "NII5754", "NII6548", "NII6583",
+            "OIII4958", "OIII5006", "OII7318", "OII7319", "OII7329",
+            "OII7330",
+        ]
+        if use_measured_siii:
+            line_bases += ["SIII6312", "SIII9068"]
+        lines, ebv, ebv_err = corrected_integrated_lines(line_bases, valid_mask)
+        density = compute_integrated_density(valid_mask)
+        nii = compute_integrated_nii_te(valid_mask)
+        te_nii = as_single_pixel(nii["value"])
+        te_nii_err = as_single_pixel(nii["err"])
+        if use_measured_siii:
+            siii = compute_integrated_siii_te(valid_mask)
+            te_oiii_value = finite_scalar(
+                sanitize_temperature_map(
+                    as_single_pixel(brazzini_te_oiii_from_siii(siii["value"])),
+                    np.array([[np.isfinite(siii["value"])]]),
+                )
+            )
+            te_oiii_err_value = finite_scalar(
+                brazzini_te_oiii_from_siii_error(siii["value"], siii["err"])
+            )
+        else:
+            te_siii_chain = finite_scalar(
+                sanitize_temperature_map(
+                    as_single_pixel(brazzini_te_siii_from_nii(nii["value"])),
+                    np.array([[np.isfinite(nii["value"])]]),
+                )
+            )
+            te_siii_chain_err = finite_scalar(
+                brazzini_te_siii_from_nii_error(nii["value"], nii["err"])
+            )
+            te_oiii_value = finite_scalar(
+                sanitize_temperature_map(
+                    as_single_pixel(brazzini_te_oiii_from_siii(te_siii_chain)),
+                    np.array([[np.isfinite(te_siii_chain)]]),
+                )
+            )
+            te_oiii_err_value = finite_scalar(
+                brazzini_te_oiii_from_siii_error(te_siii_chain, te_siii_chain_err)
+            )
+
+        hb, hb_err = line_value(lines, "HB4861")
+        oii_flux = sum(line_value(lines, line)[0] for line in ["OII7318", "OII7319", "OII7329", "OII7330"])
+        oii_err = np.sqrt(
+            sum(line_value(lines, line)[1] ** 2 for line in ["OII7318", "OII7319", "OII7329", "OII7330"])
+        )
+        oiii_flux = line_value(lines, "OIII4958")[0] + line_value(lines, "OIII5006")[0]
+        oiii_err = np.sqrt(line_value(lines, "OIII4958")[1] ** 2 + line_value(lines, "OIII5006")[1] ** 2)
+        oii_ratio = 100.0 * positive_ratio(as_single_pixel(oii_flux), as_single_pixel(hb))
+        oii_ratio_err = 100.0 * ratio_linear_error(
+            as_single_pixel(oii_flux),
+            as_single_pixel(hb),
+            as_single_pixel(oii_err),
+            as_single_pixel(hb_err),
+        )
+        oiii_ratio = 100.0 * positive_ratio(as_single_pixel(oiii_flux), as_single_pixel(hb))
+        oiii_ratio_err = 100.0 * ratio_linear_error(
+            as_single_pixel(oiii_flux),
+            as_single_pixel(hb),
+            as_single_pixel(oiii_err),
+            as_single_pixel(hb_err),
+        )
+        valid = np.array([[np.isfinite(nii["value"]) and np.isfinite(te_oiii_value)]])
+        ne = as_single_pixel(density["value"])
+        ne_err = as_single_pixel(density["err"])
+        o_plus, o_plus_err = pyneb_ion_abundance_error_map(
+            PYNEB_O2,
+            oii_ratio,
+            oii_ratio_err,
+            te_nii,
+            te_nii_err,
+            ne,
+            ne_err,
+            valid,
+            to_eval="L(7318)+L(7319)+L(7329)+L(7330)",
+        )
+        o_doubleplus, o_doubleplus_err = pyneb_ion_abundance_error_map(
+            PYNEB_O3,
+            oiii_ratio,
+            oiii_ratio_err,
+            as_single_pixel(te_oiii_value),
+            as_single_pixel(te_oiii_err_value),
+            ne,
+            ne_err,
+            valid,
+            to_eval="L(4959)+L(5007)",
+        )
+        oh, oh_err = oxygen_abundance_log_map(
+            o_plus, o_plus_err, o_doubleplus, o_doubleplus_err, valid
+        )
+        return {
+            "n_pix": int(np.count_nonzero(valid_mask)),
+            "ebv": ebv,
+            "ebv_err": ebv_err,
+            "ne": density["value"],
+            "ne_err": density["err"],
+            "te_nii": nii["value"],
+            "te_nii_err": nii["err"],
+            "te_oiii": te_oiii_value,
+            "te_oiii_err": te_oiii_err_value,
+            "value": finite_scalar(oh),
+            "err": finite_scalar(oh_err),
+        }
+
+    def compute_integrated_k25(valid_mask):
+        nii = compute_integrated_nii_te(valid_mask)
+        te = nii["value"]
+        te_err = nii["err"]
+        valid = np.isfinite(te) and 8000.0 <= te <= 13000.0
+        if valid:
+            te_unit = te / 1.0e4
+            abundance = -1.19 * te_unit + 9.68
+            abundance_err = np.sqrt(
+                (1.19 * te_err / 1.0e4) ** 2 +
+                (0.14 * te_unit) ** 2 +
+                0.15 ** 2
+            )
+        else:
+            abundance = np.nan
+            abundance_err = np.nan
+        return {
+            "n_pix": nii["n_pix"],
+            "ne": nii["density"]["value"],
+            "ne_err": nii["density"]["err"],
+            "te_nii": te,
+            "te_nii_err": te_err,
+            "value": abundance,
+            "err": abundance_err,
+        }
+
+    def compute_integrated_te_summary(products):
+        density = compute_integrated_density(products["COMMON_TE"])
+        return {
+            "NE_SII": density,
+            "TE_NII": compute_integrated_nii_te(products["NII_TE_VALID"]),
+            "BR24_DIRECT": compute_integrated_oxygen(
+                products["BR24_DIRECT_VALID"], use_measured_siii=True
+            ),
+            "NII_OII7325": compute_integrated_oxygen(
+                products["NII_OII7325_VALID"], use_measured_siii=False
+            ),
+            "NII_K25": compute_integrated_k25(products["NII_TE_VALID"]),
+        }
+
+    def format_measurement(value, err=None, precision=4):
+        if not np.isfinite(value):
+            return "nan"
+        if err is not None and np.isfinite(err):
+            return f"{value:.{precision}f} +/- {err:.{precision}f}"
+        return f"{value:.{precision}f}"
+
+    def print_integrated_te_summary(label, summary):
+        ne = summary["NE_SII"]
+        te = summary["TE_NII"]
+        br24 = summary["BR24_DIRECT"]
+        nii_oii = summary["NII_OII7325"]
+        k25 = summary["NII_K25"]
+        print(f"  {label}:")
+        print(
+            "    NE_SII: "
+            f"{format_measurement(ne['value'], ne['err'], 2)} cm^-3 "
+            f"(n_pix={ne['n_pix']}, fixed20={int(ne['fixed20'])}, "
+            f"exact_high_density={int(ne['exact_high_density'])})"
+        )
+        print(
+            "    Te(NII): "
+            f"{format_measurement(te['value'], te['err'], 1)} K "
+            f"(n_pix={te['n_pix']})"
+        )
+        print(
+            "    O_H_BR24_DIRECT: "
+            f"{format_measurement(br24['value'], br24['err'], 4)} dex "
+            f"(n_pix={br24['n_pix']})"
+        )
+        print(
+            "    O_H_NII_OII7325: "
+            f"{format_measurement(nii_oii['value'], nii_oii['err'], 4)} dex "
+            f"(n_pix={nii_oii['n_pix']})"
+        )
+        print(
+            "    O_H_NII_K25: "
+            f"{format_measurement(k25['value'], k25['err'], 4)} dex "
+            f"(n_pix={k25['n_pix']})"
+        )
+
+    TE_INTEGRATED_SF = compute_integrated_te_summary(te_sf_products)
+    TE_INTEGRATED_HII = compute_integrated_te_summary(te_hii_products)
+
+    ne_sii_finite_count = int(np.count_nonzero(np.isfinite(NE_SII)))
+    ne_sii_fixed_count = int(np.count_nonzero(NE_SII_FIXED20))
+    ne_sii_fixed_fraction = (
+        ne_sii_fixed_count / ne_sii_finite_count
+        if ne_sii_finite_count > 0 else np.nan
+    )
+    print("PyNeb Te-method valid-pixel counts:")
+    print(f"  NE_SII finite pixels: {ne_sii_finite_count}")
+    print(
+        "  NE_SII fixed at 20 cm^-3: "
+        f"{ne_sii_fixed_count}/{ne_sii_finite_count} "
+        f"({100.0 * ne_sii_fixed_fraction:.1f}%)"
+    )
+    print(f"  NE_SII exact high-density fallback pixels: {int(np.count_nonzero(NE_SII_EXACT_HIGH_DENSITY))}")
+    print(f"  NE_SII_ALL finite pixels: {int(np.count_nonzero(np.isfinite(NE_SII_ALL)))}")
+    print(f"  Te(NII) HII pixels: {int(np.count_nonzero(np.isfinite(TE_NII_HII)))}")
+    print(f"  Te(NII) SF pixels: {int(np.count_nonzero(np.isfinite(TE_NII_SF)))}")
+    print(f"  Brazzini+2024 direct HII pixels: {int(np.count_nonzero(np.isfinite(O_H_BR24_DIRECT_HII)))}")
+    print(f"  Brazzini+2024 direct SF pixels: {int(np.count_nonzero(np.isfinite(O_H_BR24_DIRECT_SF)))}")
+    print(f"  NII+OII7325 semi-direct HII pixels: {int(np.count_nonzero(np.isfinite(O_H_NII_OII7325_HII)))}")
+    print(f"  NII+OII7325 semi-direct SF pixels: {int(np.count_nonzero(np.isfinite(O_H_NII_OII7325_SF)))}")
+    print(f"  Kreckel+2025 NII-only HII pixels: {int(np.count_nonzero(np.isfinite(O_H_NII_K25_HII)))}")
+    print(f"  Kreckel+2025 NII-only SF pixels: {int(np.count_nonzero(np.isfinite(O_H_NII_K25_SF)))}")
+    print("Integrated PyNeb Te-method values:")
+    print_integrated_te_summary("SF", TE_INTEGRATED_SF)
+    print_integrated_te_summary("HII", TE_INTEGRATED_HII)
+
+# ------------------------------------------------------------------
+# 11.  Calculate the total Metallicity in SF regions (Classification 1)
 # ------------------------------------------------------------------
 
 # Sum raw line maps in SF regions first, then apply one integrated BD correction.
@@ -3394,6 +5076,7 @@ O_H_S2_C20_total_ERR = single_pixel_value(_err)
 
 with fits.open(src) as hdul:
     new_hdul = fits.HDUList([hdu.copy() for hdu in hdul])
+ORIGINAL_GAS_HDU_COUNT = len(new_hdul)
 
 # Add provenance information to primary header
 new_hdul[0].header['BPTMODE'] = 'both'
@@ -3829,6 +5512,475 @@ hdu_O_H_COMBINED_C20_HII_ERR.header['BUNIT'] = '12+log(O/H)'
 hdu_O_H_COMBINED_C20_HII_ERR.header['COMMENT'] = 'Combined C20 error including formal weight and method scatter'
 new_hdul.append(hdu_O_H_COMBINED_C20_HII_ERR)
 
+if ENABLE_TE_METALLICITY_PRODUCTS:
+    te_hdu_specs = [
+        ("NE_SII", NE_SII, "cm-3", "PyNeb [S II] 6716/6730 density; finite values below 20 cm-3 are clamped"),
+        ("NE_SII_ALL", NE_SII_ALL, "cm-3", "NE_SII where measured; otherwise 20 cm-3 for spatially usable pixels"),
+        ("NE_SII_ERR", NE_SII_ERR, "cm-3", "First-order [S II] density uncertainty from line-ratio error"),
+        ("TE_NII_HII", TE_NII_HII, "K", "HII-gated Te([N II]) from 5755/(6548+6584) using PyNeb"),
+        ("TE_NII_HII_ERR", TE_NII_HII_ERR, "K", "First-order Te([N II]) uncertainty from line-ratio and density errors"),
+        ("TE_SIII_BR24_HII", TE_SIII_BR24_HII, "K", "HII-gated Te([S III]) from 6312/(9069+9532); 9532=2.5*9069"),
+        ("TE_SIII_BR24_HII_ERR", TE_SIII_BR24_HII_ERR, "K", "First-order Te([S III]) uncertainty from line-ratio and density errors"),
+        ("TE_OIII_BR24_HII", TE_OIII_BR24_HII, "K", "Brazzini+2024 Te([O III]) inferred from measured Te([S III])"),
+        ("TE_OIII_BR24_HII_ERR", TE_OIII_BR24_HII_ERR, "K", "Includes Brazzini+2024 relation coefficient errors and intrinsic scatter"),
+        ("TE_OIII_NII_CHAIN_HII", TE_OIII_NII_CHAIN_HII, "K", "MAUVE semi-direct Te([O III]) from Te([N II]) via Brazzini+2024 Te chains"),
+        ("TE_OIII_NII_CHAIN_HII_ERR", TE_OIII_NII_CHAIN_HII_ERR, "K", "Includes propagated Te([N II]) error and Brazzini+2024 relation scatters"),
+        ("O_PLUS_BR24_HII", O_PLUS_BR24_HII, "O+/H+", "Brazzini-style O+ from [O II] 7318+7319+7329+7330"),
+        ("O_PLUS_BR24_HII_ERR", O_PLUS_BR24_HII_ERR, "O+/H+", "Propagated O+ uncertainty"),
+        ("O_DPLUS_BR24_HII", O_DOUBLEPLUS_BR24_HII, "O++/H+", "Brazzini-style O++ from [O III] 4959+5007"),
+        ("O_DPLUS_BR24_HII_ERR", O_DOUBLEPLUS_BR24_HII_ERR, "O++/H+", "Propagated O++ uncertainty"),
+        ("O_H_BR24_DIRECT_HII", O_H_BR24_DIRECT_HII, "12+log(O/H)", "Brazzini+2024 multi-zone direct-style O/H in HII regions"),
+        ("O_H_BR24_DIRECT_HII_ERR", O_H_BR24_DIRECT_HII_ERR, "dex", "Propagated Brazzini+2024 direct-style O/H uncertainty"),
+        ("O_PLUS_NII_OII7325_HII", O_PLUS_NII_OII7325_HII, "O+/H+", "Semi-direct O+ from [O II] 7325 using Te([N II])"),
+        ("O_PLUS_NII_OII7325_HII_ERR", O_PLUS_NII_OII7325_HII_ERR, "O+/H+", "Propagated semi-direct O+ uncertainty"),
+        ("O_DPLUS_NII_OII7325_HII", O_DOUBLEPLUS_NII_OII7325_HII, "O++/H+", "Semi-direct O++ from [O III] with Te([O III]) inferred from Te([N II])"),
+        ("O_DPLUS_NII_OII7325_HII_ERR", O_DOUBLEPLUS_NII_OII7325_HII_ERR, "O++/H+", "Propagated semi-direct O++ uncertainty"),
+        ("O_H_NII_OII7325_HII", O_H_NII_OII7325_HII, "12+log(O/H)", "MAUVE NII+OII7325 semi-direct ionic-sum O/H in HII regions"),
+        ("O_H_NII_OII7325_HII_ERR", O_H_NII_OII7325_HII_ERR, "dex", "Propagated NII+OII7325 semi-direct O/H uncertainty"),
+        ("O_H_NII_K25_HII", O_H_NII_K25_HII, "12+log(O/H)", "Kreckel+2025/Mendez-Delgado+2023 Te([N II]) metallicity proxy"),
+        ("O_H_NII_K25_HII_ERR", O_H_NII_K25_HII_ERR, "dex", "Includes Te([N II]) and calibration coefficient uncertainties"),
+        ("TE_NII_SF", TE_NII_SF, "K", "SF-gated Te([N II]) from 5755/(6548+6584) using PyNeb"),
+        ("TE_NII_SF_ERR", TE_NII_SF_ERR, "K", "First-order Te([N II]) uncertainty from line-ratio and density errors"),
+        ("TE_SIII_BR24_SF", TE_SIII_BR24_SF, "K", "SF-gated Te([S III]) from 6312/(9069+9532); 9532=2.5*9069"),
+        ("TE_SIII_BR24_SF_ERR", TE_SIII_BR24_SF_ERR, "K", "First-order Te([S III]) uncertainty from line-ratio and density errors"),
+        ("TE_OIII_BR24_SF", TE_OIII_BR24_SF, "K", "Brazzini+2024 Te([O III]) inferred from measured Te([S III]) in SF regions"),
+        ("TE_OIII_BR24_SF_ERR", TE_OIII_BR24_SF_ERR, "K", "Includes Brazzini+2024 relation coefficient errors and intrinsic scatter"),
+        ("TE_OIII_NII_CHAIN_SF", TE_OIII_NII_CHAIN_SF, "K", "MAUVE semi-direct Te([O III]) from Te([N II]) via Brazzini+2024 Te chains in SF regions"),
+        ("TE_OIII_NII_CHAIN_SF_ERR", TE_OIII_NII_CHAIN_SF_ERR, "K", "Includes propagated Te([N II]) error and Brazzini+2024 relation scatters"),
+        ("O_PLUS_BR24_SF", O_PLUS_BR24_SF, "O+/H+", "Brazzini-style O+ from [O II] 7318+7319+7329+7330 in SF regions"),
+        ("O_PLUS_BR24_SF_ERR", O_PLUS_BR24_SF_ERR, "O+/H+", "Propagated O+ uncertainty"),
+        ("O_DPLUS_BR24_SF", O_DOUBLEPLUS_BR24_SF, "O++/H+", "Brazzini-style O++ from [O III] 4959+5007 in SF regions"),
+        ("O_DPLUS_BR24_SF_ERR", O_DOUBLEPLUS_BR24_SF_ERR, "O++/H+", "Propagated O++ uncertainty"),
+        ("O_H_BR24_DIRECT_SF", O_H_BR24_DIRECT_SF, "12+log(O/H)", "Brazzini+2024 multi-zone direct-style O/H in SF regions"),
+        ("O_H_BR24_DIRECT_SF_ERR", O_H_BR24_DIRECT_SF_ERR, "dex", "Propagated Brazzini+2024 direct-style O/H uncertainty"),
+        ("O_PLUS_NII_OII7325_SF", O_PLUS_NII_OII7325_SF, "O+/H+", "Semi-direct O+ from [O II] 7325 using Te([N II]) in SF regions"),
+        ("O_PLUS_NII_OII7325_SF_ERR", O_PLUS_NII_OII7325_SF_ERR, "O+/H+", "Propagated semi-direct O+ uncertainty"),
+        ("O_DPLUS_NII_OII7325_SF", O_DOUBLEPLUS_NII_OII7325_SF, "O++/H+", "Semi-direct O++ from [O III] with Te([O III]) inferred from Te([N II]) in SF regions"),
+        ("O_DPLUS_NII_OII7325_SF_ERR", O_DOUBLEPLUS_NII_OII7325_SF_ERR, "O++/H+", "Propagated semi-direct O++ uncertainty"),
+        ("O_H_NII_OII7325_SF", O_H_NII_OII7325_SF, "12+log(O/H)", "MAUVE NII+OII7325 semi-direct ionic-sum O/H in SF regions"),
+        ("O_H_NII_OII7325_SF_ERR", O_H_NII_OII7325_SF_ERR, "dex", "Propagated NII+OII7325 semi-direct O/H uncertainty"),
+        ("O_H_NII_K25_SF", O_H_NII_K25_SF, "12+log(O/H)", "Kreckel+2025/Mendez-Delgado+2023 Te([N II]) metallicity proxy in SF regions"),
+        ("O_H_NII_K25_SF_ERR", O_H_NII_K25_SF_ERR, "dex", "Includes Te([N II]) and calibration coefficient uncertainties"),
+    ]
+    for name, data, bunit, comment in te_hdu_specs:
+        hdu = fits.ImageHDU(np.asarray(data, dtype=np.float64), header=gas_header, name=name)
+        hdu.header["BUNIT"] = bunit
+        hdu.header["REF1"] = "Brazzini+2024 A&A 691 A173"
+        hdu.header["REF2"] = "Kreckel+2025 A&A 703 A42"
+        hdu.header["REF3"] = "Mendez-Delgado+2023 Nature"
+        hdu.header["COMMENT"] = comment
+        new_hdul.append(hdu)
+
+    te_mask_specs = [
+        ("NE_SII_FIXED20", NE_SII_FIXED20, "1 where NE_SII was fixed to 20 cm-3"),
+        ("NE_SII_EXACT_HIDEN", NE_SII_EXACT_HIGH_DENSITY, "1 where NE_SII used exact PyNeb getTemDen high-density fallback"),
+        ("BR24_DIRECT_VALID_HII", BR24_DIRECT_VALID_HII, "1 where all HII Brazzini+2024 direct-style inputs passed detection gates"),
+        ("BR24_DIRECT_VALID_SF", BR24_DIRECT_VALID_SF, "1 where all SF Brazzini+2024 direct-style inputs passed detection gates"),
+        ("NII_OII7325_VALID_HII", NII_OII7325_VALID_HII, "1 where all HII NII+OII7325 semi-direct inputs passed detection gates"),
+        ("NII_OII7325_VALID_SF", NII_OII7325_VALID_SF, "1 where all SF NII+OII7325 semi-direct inputs passed detection gates"),
+        ("NII_K25_VALID_HII", NII_K25_VALID_HII, "1 where all HII Kreckel+2025 NII-only inputs passed detection gates"),
+        ("NII_K25_VALID_SF", NII_K25_VALID_SF, "1 where all SF Kreckel+2025 NII-only inputs passed detection gates"),
+    ]
+    for name, data, comment in te_mask_specs:
+        hdu = fits.ImageHDU(np.asarray(data, dtype=np.int16), header=gas_header, name=name)
+        hdu.header["BUNIT"] = "0/1"
+        hdu.header["COMMENT"] = comment
+        new_hdul.append(hdu)
+
+
+CARTA_DIMENSIONLESS_BUNIT = "1"
+FLUX_BUNIT = "1e-20 erg s-1 cm-2"
+
+
+def append_ordered_image(
+    hdul: fits.HDUList,
+    name: str,
+    data,
+    bunit: str,
+    comment: str | list[str] | tuple[str, ...] | None = None,
+    dtype=np.float64,
+    refs: bool = False,
+) -> None:
+    hdu = fits.ImageHDU(np.asarray(data, dtype=dtype), header=gas_header, name=name)
+    hdu.header["BUNIT"] = bunit
+    if refs:
+        hdu.header["REF1"] = "Brazzini+2024 A&A 691 A173"
+        hdu.header["REF2"] = "Kreckel+2025 A&A 703 A42"
+        hdu.header["REF3"] = "Mendez-Delgado+2023 Nature"
+    if comment is not None:
+        comments = comment if isinstance(comment, (list, tuple)) else (comment,)
+        for item in comments:
+            hdu.header["COMMENT"] = item
+    hdul.append(hdu)
+
+
+def append_region_pair(
+    hdul: fits.HDUList,
+    stem: str,
+    hii_data,
+    sf_data,
+    bunit: str,
+    hii_comment: str,
+    sf_comment: str,
+    dtype=np.float64,
+    refs: bool = False,
+) -> None:
+    append_ordered_image(hdul, f"{stem}_HII", hii_data, bunit, hii_comment, dtype, refs)
+    append_ordered_image(hdul, f"{stem}_SF", sf_data, bunit, sf_comment, dtype, refs)
+
+
+def append_named_hii_sf_pair(
+    hdul: fits.HDUList,
+    hii_name: str,
+    sf_name: str,
+    hii_data,
+    sf_data,
+    bunit: str,
+    hii_comment: str,
+    sf_comment: str,
+    dtype=np.float64,
+    refs: bool = False,
+) -> None:
+    append_ordered_image(hdul, hii_name, hii_data, bunit, hii_comment, dtype, refs)
+    append_ordered_image(hdul, sf_name, sf_data, bunit, sf_comment, dtype, refs)
+
+
+def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
+    ordered_hdul = fits.HDUList([hdu.copy() for hdu in base_hdus])
+
+    # 1. Gas E(B-V).
+    append_ordered_image(ordered_hdul, "Gas_E_BV_BD", E_BV_BD, "mag")
+    append_ordered_image(
+        ordered_hdul,
+        "Gas_E_BV_BD_ERR",
+        E_BV_BD_ERR,
+        "mag",
+        "1-sigma uncertainty from Halpha/Hbeta flux errors",
+    )
+
+    # 2. Dust-corrected line fluxes and errors for every fitted line.
+    for line_base in GAS_LINE_BASES:
+        append_ordered_image(
+            ordered_hdul,
+            f"{line_base}_FLUX_corr",
+            globals()[f"{line_base}_FLUX_corr"],
+            FLUX_BUNIT,
+            f"{line_base} dust-corrected flux from Balmer-decrement E(B-V)",
+        )
+        append_ordered_image(
+            ordered_hdul,
+            f"{line_base}_FLUX_ERR_corr",
+            globals()[f"{line_base}_FLUX_ERR_corr"],
+            FLUX_BUNIT,
+            f"{line_base} dust-corrected 1-sigma flux uncertainty",
+        )
+        append_region_pair(
+            ordered_hdul,
+            f"{line_base}_FLUX_corr",
+            globals()[f"{line_base}_FLUX_corr_HII"],
+            globals()[f"{line_base}_FLUX_corr_SF"],
+            FLUX_BUNIT,
+            f"{line_base} dust-corrected flux in HII regions (Classification 2)",
+            f"{line_base} dust-corrected flux in SF regions (Classification 1)",
+        )
+        append_region_pair(
+            ordered_hdul,
+            f"{line_base}_FLUX_ERR_corr",
+            globals()[f"{line_base}_FLUX_ERR_corr_HII"],
+            globals()[f"{line_base}_FLUX_ERR_corr_SF"],
+            FLUX_BUNIT,
+            f"{line_base} dust-corrected flux uncertainty in HII regions",
+            f"{line_base} dust-corrected flux uncertainty in SF regions",
+        )
+
+    # 3. BPT and SFR products.
+    append_ordered_image(
+        ordered_hdul,
+        "NII_BPT",
+        NII_BPT,
+        CARTA_DIMENSIONLESS_BUNIT,
+        [
+            "Class map: -1=unknown/non-detection, 0=unclassified, 1=HII, 2=Comp, 3=AGN",
+            "Uses dust-corrected fluxes; positive classes require stable central +/-1sigma class",
+        ],
+        dtype=np.int16,
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "SII_BPT",
+        SII_BPT,
+        CARTA_DIMENSIONLESS_BUNIT,
+        [
+            "Class map: -1=unknown/non-detection, 0=unclassified, 1=HII, 2=LINER, 3=Seyfert",
+            "Uses dust-corrected fluxes; positive classes require stable central +/-1sigma class",
+        ],
+        dtype=np.int16,
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "Halpha_Luminosity_corr",
+        HA6562_LUM,
+        "erg/s",
+        "Includes Balmer-corrected detections plus upper-limit substitutions where Balmer QC fails",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "Halpha_SFR_corr",
+        SFR_map,
+        "M_sun/yr",
+        "Uses Chabrier coefficient; all-spaxel map includes upper-limit substitutions",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "LOGSFR_SURFACE_DENSITY",
+        LOG_SFR_surface_density_map,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "log10 SFR surface density in M_sun/yr/kpc2",
+    )
+    append_region_pair(
+        ordered_hdul,
+        "LOGSFR_SURFACE_DENSITY",
+        LOG_SFR_surface_density_map_HII,
+        LOG_SFR_surface_density_map_SF,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "log10 SFR surface density in HII regions (M_sun/yr/kpc2)",
+        "log10 SFR surface density in SF regions (M_sun/yr/kpc2)",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "LOGSFR_SURFACE_DENSITY_NONHII",
+        LOG_SFR_surface_density_map_nonHII,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "log10 SFR surface density in non-HII regions (M_sun/yr/kpc2)",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "LOGSFR_SURFACE_DENSITY_NONSF",
+        LOG_SFR_surface_density_map_nonSF,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "log10 SFR surface density in non-SF regions (M_sun/yr/kpc2)",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "LOGSFR_SURFACE_DENSITY_UNCLASSIFIED2",
+        LOG_SFR_surface_density_map_unclassified2,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "log10 SFR surface density in Classification-2 unclassified regions",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "LOGSFR_SURFACE_DENSITY_UNCLASSIFIED1",
+        LOG_SFR_surface_density_map_unclassified1,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "log10 SFR surface density in Classification-1 unclassified regions",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "LOGSFR_SURFACE_DENSITY_UPPER",
+        LOG_SFR_surface_density_map_upper,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "log10 SFR surface density upper-limit map",
+    )
+    append_region_pair(
+        ordered_hdul,
+        "Halpha_SFR_corr",
+        SFR_map_HII,
+        SFR_map_SF,
+        "M_sun/yr/kpc2",
+        "SFR surface density in HII regions (Classification 2)",
+        "SFR surface density in SF regions (Classification 1)",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "Halpha_SFR_corr_nonHII",
+        SFR_map_nonHII,
+        "M_sun/yr/kpc2",
+        "SFR surface density in non-HII regions (Classification 2)",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "Halpha_SFR_corr_nonSF",
+        SFR_map_nonSF,
+        "M_sun/yr/kpc2",
+        "SFR surface density in non-SF regions (Classification 1)",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "Halpha_SFR_corr_unclassified2",
+        SFR_map_unclassified2,
+        "M_sun/yr/kpc2",
+        "SFR surface density in Classification-2 unclassified regions",
+    )
+    append_ordered_image(
+        ordered_hdul,
+        "Halpha_SFR_corr_unclassified1",
+        SFR_map_unclassified1,
+        "M_sun/yr/kpc2",
+        "SFR surface density in Classification-1 unclassified regions",
+    )
+
+    # 4. Strong-line metallicities, always as immediate HII/SF pairs.
+    strong_metallicity_specs = [
+        ("O_H_D16", O_H_D16_HII, O_H_D16_SF, "Dopita+2016 strong-line oxygen abundance"),
+        ("O_H_PG16", O_H_PG16_HII, O_H_PG16_SF, "Pilyugin & Grebel 2016 strong-line oxygen abundance"),
+        ("O_H_N2S2_N06", O_H_N2S2_N06_HII, O_H_N2S2_N06_SF, "N2S2-N06 oxygen abundance"),
+        ("O_H_O3N2_M13", O_H_O3N2_M13_HII, O_H_O3N2_M13_SF, "O3N2-M13 oxygen abundance"),
+        ("O_H_N2_M13", O_H_N2_M13_HII, O_H_N2_M13_SF, "N2-M13 oxygen abundance"),
+        ("O_H_O3N2_PP04", O_H_O3N2_PP04_HII, O_H_O3N2_PP04_SF, "O3N2-PP04 oxygen abundance"),
+        ("O_H_N2_PP04", O_H_N2_PP04_HII, O_H_N2_PP04_SF, "N2-PP04 oxygen abundance"),
+        ("O_H_O3N2_C20", O_H_O3N2_C20_HII, O_H_O3N2_C20_SF, "O3N2-C20 oxygen abundance"),
+        ("O_H_O3S2_C20", O_H_O3S2_C20_HII, O_H_O3S2_C20_SF, "O3S2-C20 oxygen abundance"),
+        ("O_H_RS32_C20", O_H_RS32_C20_HII, O_H_RS32_C20_SF, "RS32-C20 oxygen abundance"),
+        ("O_H_R3_C20", O_H_R3_C20_HII, O_H_R3_C20_SF, "R3-C20 oxygen abundance"),
+        ("O_H_N2_C20", O_H_N2_C20_HII, O_H_N2_C20_SF, "N2-C20 oxygen abundance"),
+        ("O_H_S2_C20", O_H_S2_C20_HII, O_H_S2_C20_SF, "S2-C20 oxygen abundance"),
+        ("O_H_COMBINED_C20", O_H_COMBINED_C20_HII, O_H_COMBINED_C20_SF, "Inverse-variance combined C20 oxygen abundance"),
+    ]
+    for stem, hii_data, sf_data, description in strong_metallicity_specs:
+        append_region_pair(
+            ordered_hdul,
+            stem,
+            hii_data,
+            sf_data,
+            CARTA_DIMENSIONLESS_BUNIT,
+            f"12+log(O/H); {description} in HII regions",
+            f"12+log(O/H); {description} in SF regions",
+        )
+
+    c20_error_specs = [
+        ("O_H_O3N2_C20", O_H_O3N2_C20_HII_ERR, O_H_O3N2_C20_SF_ERR, "O3N2-C20"),
+        ("O_H_O3S2_C20", O_H_O3S2_C20_HII_ERR, O_H_O3S2_C20_SF_ERR, "O3S2-C20"),
+        ("O_H_RS32_C20", O_H_RS32_C20_HII_ERR, O_H_RS32_C20_SF_ERR, "RS32-C20"),
+        ("O_H_R3_C20", O_H_R3_C20_HII_ERR, O_H_R3_C20_SF_ERR, "R3-C20"),
+        ("O_H_N2_C20", O_H_N2_C20_HII_ERR, O_H_N2_C20_SF_ERR, "N2-C20"),
+        ("O_H_S2_C20", O_H_S2_C20_HII_ERR, O_H_S2_C20_SF_ERR, "S2-C20"),
+        ("O_H_COMBINED_C20", O_H_COMBINED_C20_HII_ERR, O_H_COMBINED_C20_SF_ERR, "Combined C20"),
+    ]
+    for stem, hii_data, sf_data, description in c20_error_specs:
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            f"{stem}_HII_ERR",
+            f"{stem}_SF_ERR",
+            hii_data,
+            sf_data,
+            CARTA_DIMENSIONLESS_BUNIT,
+            f"1-sigma dex uncertainty for {description} 12+log(O/H) in HII regions",
+            f"1-sigma dex uncertainty for {description} 12+log(O/H) in SF regions",
+        )
+
+    append_ordered_image(
+        ordered_hdul,
+        "COMBINED_C20_METHOD",
+        combined_c20_method_map,
+        CARTA_DIMENSIONLESS_BUNIT,
+        "Dominant C20 weight: -1=none, 0=O3N2, 1=O3S2, 2=RS32, 3=R3, 4=N2, 5=S2",
+        dtype=np.int16,
+    )
+
+    # 5. PyNeb density, temperature, ionic-abundance, and Te-metallicity products.
+    if ENABLE_TE_METALLICITY_PRODUCTS:
+        append_ordered_image(
+            ordered_hdul,
+            "NE_SII",
+            NE_SII,
+            "cm-3",
+            "PyNeb [S II] 6716/6730 density; finite values below 20 cm-3 are clamped",
+            refs=True,
+        )
+        append_ordered_image(
+            ordered_hdul,
+            "NE_SII_ALL",
+            NE_SII_ALL,
+            "cm-3",
+            "NE_SII where measured; otherwise 20 cm-3 for spatially usable pixels",
+            refs=True,
+        )
+        append_ordered_image(
+            ordered_hdul,
+            "NE_SII_ERR",
+            NE_SII_ERR,
+            "cm-3",
+            "First-order [S II] density uncertainty from line-ratio error",
+            refs=True,
+        )
+
+        te_pair_specs = [
+            ("TE_NII_HII", "TE_NII_SF", TE_NII_HII, TE_NII_SF, "K", "Te([N II]) from 5755/(6548+6584) using PyNeb"),
+            ("TE_NII_HII_ERR", "TE_NII_SF_ERR", TE_NII_HII_ERR, TE_NII_SF_ERR, "K", "First-order Te([N II]) uncertainty"),
+            ("TE_SIII_BR24_HII", "TE_SIII_BR24_SF", TE_SIII_BR24_HII, TE_SIII_BR24_SF, "K", "Te([S III]) from 6312/(9069+9532); 9532=2.5*9069"),
+            ("TE_SIII_BR24_HII_ERR", "TE_SIII_BR24_SF_ERR", TE_SIII_BR24_HII_ERR, TE_SIII_BR24_SF_ERR, "K", "First-order Te([S III]) uncertainty"),
+            ("TE_OIII_BR24_HII", "TE_OIII_BR24_SF", TE_OIII_BR24_HII, TE_OIII_BR24_SF, "K", "Brazzini+2024 Te([O III]) inferred from Te([S III])"),
+            ("TE_OIII_BR24_HII_ERR", "TE_OIII_BR24_SF_ERR", TE_OIII_BR24_HII_ERR, TE_OIII_BR24_SF_ERR, "K", "Brazzini+2024 Te([O III]) uncertainty"),
+            ("TE_OIII_NII_CHAIN_HII", "TE_OIII_NII_CHAIN_SF", TE_OIII_NII_CHAIN_HII, TE_OIII_NII_CHAIN_SF, "K", "Te([O III]) inferred from Te([N II]) via Brazzini+2024 Te chains"),
+            ("TE_OIII_NII_CHAIN_HII_ERR", "TE_OIII_NII_CHAIN_SF_ERR", TE_OIII_NII_CHAIN_HII_ERR, TE_OIII_NII_CHAIN_SF_ERR, "K", "Te([O III]) from Te([N II]) uncertainty"),
+            ("O_PLUS_BR24_HII", "O_PLUS_BR24_SF", O_PLUS_BR24_HII, O_PLUS_BR24_SF, CARTA_DIMENSIONLESS_BUNIT, "O+/H+ from [O II] 7325 in the Brazzini-style method"),
+            ("O_PLUS_BR24_HII_ERR", "O_PLUS_BR24_SF_ERR", O_PLUS_BR24_HII_ERR, O_PLUS_BR24_SF_ERR, CARTA_DIMENSIONLESS_BUNIT, "1-sigma O+/H+ uncertainty for the Brazzini-style method"),
+            ("O_DPLUS_BR24_HII", "O_DPLUS_BR24_SF", O_DOUBLEPLUS_BR24_HII, O_DOUBLEPLUS_BR24_SF, CARTA_DIMENSIONLESS_BUNIT, "O++/H+ from [O III] 4959+5007 in the Brazzini-style method"),
+            ("O_DPLUS_BR24_HII_ERR", "O_DPLUS_BR24_SF_ERR", O_DOUBLEPLUS_BR24_HII_ERR, O_DOUBLEPLUS_BR24_SF_ERR, CARTA_DIMENSIONLESS_BUNIT, "1-sigma O++/H+ uncertainty for the Brazzini-style method"),
+            ("O_H_BR24_DIRECT_HII", "O_H_BR24_DIRECT_SF", O_H_BR24_DIRECT_HII, O_H_BR24_DIRECT_SF, CARTA_DIMENSIONLESS_BUNIT, "12+log(O/H) from Brazzini+2024 multi-zone direct-style method"),
+            ("O_H_BR24_DIRECT_HII_ERR", "O_H_BR24_DIRECT_SF_ERR", O_H_BR24_DIRECT_HII_ERR, O_H_BR24_DIRECT_SF_ERR, CARTA_DIMENSIONLESS_BUNIT, "1-sigma dex uncertainty for Brazzini+2024 12+log(O/H)"),
+            ("O_PLUS_NII_OII7325_HII", "O_PLUS_NII_OII7325_SF", O_PLUS_NII_OII7325_HII, O_PLUS_NII_OII7325_SF, CARTA_DIMENSIONLESS_BUNIT, "O+/H+ from [O II] 7325 using Te([N II])"),
+            ("O_PLUS_NII_OII7325_HII_ERR", "O_PLUS_NII_OII7325_SF_ERR", O_PLUS_NII_OII7325_HII_ERR, O_PLUS_NII_OII7325_SF_ERR, CARTA_DIMENSIONLESS_BUNIT, "1-sigma O+/H+ uncertainty for the NII+OII7325 method"),
+            ("O_DPLUS_NII_OII7325_HII", "O_DPLUS_NII_OII7325_SF", O_DOUBLEPLUS_NII_OII7325_HII, O_DOUBLEPLUS_NII_OII7325_SF, CARTA_DIMENSIONLESS_BUNIT, "O++/H+ from [O III] with Te([O III]) inferred from Te([N II])"),
+            ("O_DPLUS_NII_OII7325_HII_ERR", "O_DPLUS_NII_OII7325_SF_ERR", O_DOUBLEPLUS_NII_OII7325_HII_ERR, O_DOUBLEPLUS_NII_OII7325_SF_ERR, CARTA_DIMENSIONLESS_BUNIT, "1-sigma O++/H+ uncertainty for the NII+OII7325 method"),
+            ("O_H_NII_OII7325_HII", "O_H_NII_OII7325_SF", O_H_NII_OII7325_HII, O_H_NII_OII7325_SF, CARTA_DIMENSIONLESS_BUNIT, "12+log(O/H) from MAUVE NII+OII7325 semi-direct ionic sum"),
+            ("O_H_NII_OII7325_HII_ERR", "O_H_NII_OII7325_SF_ERR", O_H_NII_OII7325_HII_ERR, O_H_NII_OII7325_SF_ERR, CARTA_DIMENSIONLESS_BUNIT, "1-sigma dex uncertainty for NII+OII7325 12+log(O/H)"),
+            ("O_H_NII_K25_HII", "O_H_NII_K25_SF", O_H_NII_K25_HII, O_H_NII_K25_SF, CARTA_DIMENSIONLESS_BUNIT, "12+log(O/H) from Kreckel+2025/Mendez-Delgado+2023 Te([N II]) proxy"),
+            ("O_H_NII_K25_HII_ERR", "O_H_NII_K25_SF_ERR", O_H_NII_K25_HII_ERR, O_H_NII_K25_SF_ERR, CARTA_DIMENSIONLESS_BUNIT, "1-sigma dex uncertainty for Kreckel+2025/Mendez-Delgado+2023 12+log(O/H)"),
+        ]
+        for hii_name, sf_name, hii_data, sf_data, bunit, description in te_pair_specs:
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                hii_name,
+                sf_name,
+                hii_data,
+                sf_data,
+                bunit,
+                f"{description} in HII regions",
+                f"{description} in SF regions",
+                refs=True,
+            )
+
+        append_ordered_image(
+            ordered_hdul,
+            "NE_SII_FIXED20",
+            NE_SII_FIXED20,
+            CARTA_DIMENSIONLESS_BUNIT,
+            "1 where NE_SII was fixed to 20 cm-3",
+            dtype=np.int16,
+            refs=True,
+        )
+        append_ordered_image(
+            ordered_hdul,
+            "NE_SII_EXACT_HIDEN",
+            NE_SII_EXACT_HIGH_DENSITY,
+            CARTA_DIMENSIONLESS_BUNIT,
+            "1 where NE_SII used exact PyNeb getTemDen high-density fallback",
+            dtype=np.int16,
+            refs=True,
+        )
+        te_mask_pairs = [
+            ("BR24_DIRECT_VALID", BR24_DIRECT_VALID_HII, BR24_DIRECT_VALID_SF, "all Brazzini+2024 direct-style inputs passed detection gates"),
+            ("NII_OII7325_VALID", NII_OII7325_VALID_HII, NII_OII7325_VALID_SF, "all NII+OII7325 semi-direct inputs passed detection gates"),
+            ("NII_K25_VALID", NII_K25_VALID_HII, NII_K25_VALID_SF, "all Kreckel+2025 NII-only inputs passed detection gates"),
+        ]
+        for stem, hii_data, sf_data, description in te_mask_pairs:
+            append_region_pair(
+                ordered_hdul,
+                stem,
+                hii_data,
+                sf_data,
+                CARTA_DIMENSIONLESS_BUNIT,
+                f"1 where HII {description}",
+                f"1 where SF {description}",
+                dtype=np.int16,
+                refs=True,
+            )
+
+    return ordered_hdul
+
+
+new_hdul = build_ordered_output_hdul(new_hdul[:ORIGINAL_GAS_HDU_COUNT])
 new_hdul.writeto(out_path, overwrite=True)
 print("Further file written ➜", out_path.resolve())
 
