@@ -7,7 +7,7 @@ output, and combined overview mosaics.
 
 The current snapshot is intended to be a self-contained record of the masking run:
 
-- 26 input `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits` files.
+- 26 input `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits` files; gzip-compressed `.fits.gz` inputs are also accepted by the masking script.
 - 26 output `*_mask.fits` files.
 - 26 original `*_combined_VRI.png` reference images.
 - 26 diagnostic `*_combined_VRI_mask.png` overlays.
@@ -20,7 +20,7 @@ The current snapshot is intended to be a self-contained record of the masking ru
 | --- | ---: | --- |
 | `make_ngist_masks_from_catalogs_VRI.py` | 1 | Main masking script. Generates binary spatial masks and diagnostic overlays from VRI FITS datacubes. |
 | `auto_arrange_and_combine.py` | 1 | Mosaic arranger. Packs per-galaxy PNGs into dense fixed-ratio overview images, with optional OR-Tools proof reports. |
-| `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits` | 26 | Input VRI FITS datacubes used for WCS, pixel geometry, and science-data footprint. |
+| `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits` or `.fits.gz` | 26 | Input VRI FITS datacubes used for WCS, pixel geometry, and science-data footprint. Compressed inputs are read directly with Astropy and do not need to be unzipped first. |
 | `*_mask.fits` | 26 | Binary nGIST-compatible spatial masks. `0` means unmasked; `1` means masked. |
 | `*_combined_VRI.png` | 26 | Per-galaxy VRI reference images. |
 | `*_combined_VRI_mask.png` | 26 | Per-galaxy diagnostic overlays showing masked foreground/background objects. |
@@ -69,16 +69,20 @@ With no command-line arguments, it processes all files matching:
 
 ```text
 *_DATACUBE*_VRI.fits
+*_DATACUBE*_VRI.fits.gz
 ```
 
 To process only selected galaxies, pass one or more shell patterns:
 
 ```bash
 python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits'
+python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits.gz'
 python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits' 'NGC4419*_DATACUBE*_VRI.fits'
 ```
 
-For each input `XXX_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits`, the script writes:
+When a command-line pattern ends in `.fits`, the script also checks the corresponding `.fits.gz` pattern. This means the common `.fits` commands above work when only compressed inputs are present.
+
+For each input `XXX_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits` or `.fits.gz`, the script writes:
 
 - `XXX_mask.fits`: binary mask in the FITS spatial grid.
 - `XXX_combined_VRI_mask.png`: diagnostic overlay image.
@@ -202,6 +206,7 @@ before committing:
 ```bash
 git lfs install
 git lfs track '*.fits'
+git lfs track '*.fits.gz'
 git lfs track '*.png'
 git add .gitattributes
 ```

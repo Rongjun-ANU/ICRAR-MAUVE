@@ -10,6 +10,8 @@ import sys
 import time
 from dataclasses import dataclass
 
+from fits_path_utils import expand_fits_glob, strip_optional_gzip_suffix
+
 
 def _require_deps():
 	try:
@@ -146,7 +148,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 
 
 def _galaxy_id_from_filename(path: pathlib.Path) -> str:
-	name = path.name
+	name = strip_optional_gzip_suffix(path)
 	marker = "_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
 	if name.endswith(marker):
 		return name[: -len(marker)]
@@ -411,7 +413,7 @@ def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, s
 
 
 def _discover_jobs(input_dir: pathlib.Path, pattern: str) -> list[Job]:
-	paths = sorted(input_dir.glob(pattern))
+	paths = expand_fits_glob(input_dir, pattern)
 	jobs: list[Job] = []
 	for p in paths:
 		gid = _galaxy_id_from_filename(p)
@@ -483,4 +485,3 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
 	raise SystemExit(main(sys.argv[1:]))
-

@@ -9,6 +9,8 @@ import sys
 import time
 from typing import Tuple
 
+from fits_path_utils import fits_stem
+
 
 __version__ = "2026-01-15.1"
 
@@ -44,7 +46,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 			"and AB magnitude maps, then write them to XXX_VRI.fits preserving spatial WCS."
 		),
 	)
-	p.add_argument("fits_path", type=pathlib.Path, help="Input cube FITS path (e.g., XXX.fits)")
+	p.add_argument("fits_path", type=pathlib.Path, help="Input cube FITS path (e.g., XXX.fits or XXX.fits.gz)")
 	p.add_argument(
 		"--data-hdu",
 		default="DATA",
@@ -98,7 +100,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 		"--output",
 		type=pathlib.Path,
 		default=None,
-		help="Output FITS path. Default: input name with _VRI.fits",
+		help="Output FITS path. Default: input name, with .fits/.fits.gz stripped, plus _VRI.fits",
 	)
 	p.add_argument(
 		"--allow-partial-overlap",
@@ -128,6 +130,10 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 		),
 	)
 	return p.parse_args(argv)
+
+
+def default_output_path(fits_path: pathlib.Path) -> pathlib.Path:
+	return fits_path.with_name(f"{fits_stem(fits_path)}_VRI.fits")
 
 
 def _spectral_wavelength_grid_aa(hdr, nz: int):
@@ -501,7 +507,7 @@ def main(argv: list[str]) -> int:
 
 		out = args.output
 		if out is None:
-			out = fits_path.with_name(f"{fits_path.stem}_VRI.fits")
+			out = default_output_path(fits_path)
 
 		(
 			primary_hdr,

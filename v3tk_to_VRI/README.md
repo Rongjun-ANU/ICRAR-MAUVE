@@ -4,7 +4,7 @@ This repository contains the scripts and generated products for converting MAUVE
 
 The repository intentionally includes the current data products as well as the code:
 
-- VRI FITS products: `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits`
+- VRI FITS products: `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits`; downstream image scripts also accept `.fits.gz` products directly.
 - observed VRI renderings: `*_observed_VRI.png` and `*_observed_VRI.pdf`
 - reprojected Legacy Survey backgrounds: `*_legacy_reprojected.jpg`
 - combined observed-on-Legacy products: `*_combined_VRI.png`
@@ -18,11 +18,11 @@ At the time this README was written, the folder contains 26 VRI FITS products an
 
 | File pattern | Purpose |
 | --- | --- |
-| `v3tk_to_VRI.py` | Converts one 3D MUSE cube into V, R, and I flux/magnitude maps. |
-| `v3tk_to_VRI.sh` | Batch wrapper that copies upstream `*_v3tk.fits.gz` cubes from `/arc/projects/mauve/cubes/v3tk`, unzips them locally, runs `v3tk_to_VRI.py`, and removes the temporary input cube. |
-| `v3tk_observed_VRI_image.py` | Renders the VRI FITS products into native-size PNG and PDF images. |
-| `v3tk_get_legacy.py` | Downloads Legacy Survey cutouts, obtains matching WCS information, and reprojects the RGB image to the MUSE grid. |
-| `v3tk_combined_VRI_image.py` | Combines the observed VRI rendering with the reprojected Legacy image, using valid MUSE pixels where available and Legacy pixels outside the MUSE footprint. |
+| `v3tk_to_VRI.py` | Converts one 3D MUSE cube into V, R, and I flux/magnitude maps. It accepts both `.fits` and `.fits.gz` inputs directly. |
+| `v3tk_to_VRI.sh` | Batch wrapper that copies upstream `*_v3tk.fits` or `*_v3tk.fits.gz` cubes from `/arc/projects/mauve/cubes/v3tk`, runs `v3tk_to_VRI.py` on the copied input without unzipping, and removes the temporary copied input cube. |
+| `v3tk_observed_VRI_image.py` | Renders the VRI FITS products into native-size PNG and PDF images. It discovers both `.fits` and `.fits.gz` products when the pattern ends in `.fits`. |
+| `v3tk_get_legacy.py` | Downloads Legacy Survey cutouts, obtains matching WCS information, and reprojects the RGB image to the MUSE grid. It uses the same `.fits`/`.fits.gz` adaptive product discovery. |
+| `v3tk_combined_VRI_image.py` | Combines the observed VRI rendering with the reprojected Legacy image, using valid MUSE pixels where available and Legacy pixels outside the MUSE footprint. It also accepts compressed VRI FITS products. |
 | `v3tk_VRI_image.sh` | Top-level image pipeline wrapper for observed rendering, Legacy reprojection, and combined image generation. |
 | `auto_arrange_and_combine.py` | Packs many per-galaxy image panels into one fixed-ratio mosaic. Uses OR-Tools when available for proof-aware layouts and can fall back to fast heuristic layouts. |
 | `v3tk_observed_R_image.py`, `v3tk_combined_R_image.py`, `v3tk_R_image.sh` | Older or parallel R-band-only workflow files. |
@@ -87,7 +87,7 @@ Each `All_combined_VRI*.png` product has a matching `*.proof.txt` report describ
 The full VRI workflow is:
 
 ```text
-raw upstream cube: *_v3tk.fits.gz
+raw upstream cube: *_v3tk.fits or *_v3tk.fits.gz
   -> v3tk_to_VRI.py
   -> *_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
   -> v3tk_observed_VRI_image.py
@@ -163,15 +163,17 @@ Use this only on a system where the upstream cube directory exists:
 The wrapper expects:
 
 ```text
+/arc/projects/mauve/cubes/v3tk/*_v3tk.fits
 /arc/projects/mauve/cubes/v3tk/*_v3tk.fits.gz
 ```
 
-It writes `v3tk_to_VRI.log`. During each per-cube run it copies the compressed cube into the working directory, unzips it, runs `v3tk_to_VRI.py`, then removes the temporary uncompressed cube.
+It also checks for matching uncompressed `*_v3tk.fits` inputs. If both compressed and uncompressed copies exist for the same cube, the wrapper processes the first matching stem once. It writes `v3tk_to_VRI.log`; during each per-cube run it copies the input into the working directory, runs `v3tk_to_VRI.py` directly on `.fits` or `.fits.gz`, then removes the temporary copied input. It no longer creates a temporary uncompressed duplicate when the upstream cube is already `.fits.gz`.
 
 To convert a single local cube directly:
 
 ```bash
 python v3tk_to_VRI.py path/to/cube.fits
+python v3tk_to_VRI.py path/to/cube.fits.gz
 ```
 
 Useful converter options:
@@ -181,6 +183,9 @@ python v3tk_to_VRI.py path/to/cube.fits --row-chunk 8
 python v3tk_to_VRI.py path/to/cube.fits --output MY_OUTPUT_VRI.fits
 python v3tk_to_VRI.py path/to/cube.fits --no-allow-partial-overlap
 ```
+
+When no `--output` is supplied, `v3tk_to_VRI.py` strips either `.fits` or `.fits.gz`
+before appending `_VRI.fits`, so `cube.fits.gz` writes `cube_VRI.fits`.
 
 ### 2. Generate observed, Legacy, and combined VRI images
 
@@ -211,6 +216,10 @@ python v3tk_observed_VRI_image.py --dry-run
 python v3tk_get_legacy.py --dry-run
 python v3tk_combined_VRI_image.py --dry-run
 ```
+
+The image-stage scripts keep their default `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits`
+pattern, but that pattern now also discovers `.fits.gz` counterparts. This lets
+archived/compressed VRI FITS products be rendered and combined without manual unzip.
 
 ### 3. Build an all-galaxy mosaic
 
@@ -278,6 +287,13 @@ branch  main
 
 Because this repository intentionally includes generated FITS/images/logs, it is larger than a code-only repository. This is acceptable for the current contents because no individual file is over 100 MB. If a future raw cube, mosaic, archive, or derived product exceeds 100 MB, GitHub will reject a normal push for that file; use Git LFS or keep that file outside the repository.
 
+If FITS products are compressed before sharing, track both FITS extensions:
+
+```bash
+git lfs track '*.fits'
+git lfs track '*.fits.gz'
+```
+
 Typical Git commands:
 
 ```bash
@@ -295,4 +311,3 @@ The dated documentation files contain deeper operational notes:
 - `20260521_auto_arrange_and_combine_documentation.md`
 
 Use those when debugging the pipeline or checking details such as default render parameters, Legacy reprojection behavior, OR-Tools runtime behavior, and proof-report interpretation.
-

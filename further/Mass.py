@@ -144,6 +144,12 @@ Changes (2026-05-25)
 * Fixed SSP-template filename parsing to accept E-MILES `Ech...` filenames as
   well as MILES `Mch...` filenames for the exact `light_norm_to_r` conversion.
 
+Changes (2026-05-28)
+-----------------------
+* FITS input lookup now accepts gzip-compressed `.fits.gz` counterparts wherever
+  a `.fits` path or glob is requested, so v3tk cubes do not need to be unzipped
+  in the shared CANFAR cube directory.
+
 """
 
 # ------------------------------------------------------------------
@@ -202,6 +208,20 @@ def _has_glob_chars(path: Path) -> bool:
     return any(char in str(path) for char in "*?[")
 
 
+def _fits_path_alternates(path: Path) -> list[Path]:
+    name = path.name
+    lower_name = name.lower()
+    if lower_name.endswith(".fits.gz"):
+        return [path, path.with_name(name[:-3])]
+    if lower_name.endswith(".fits"):
+        return [path, path.with_name(f"{name}.gz")]
+    return [path]
+
+
+def _glob_candidate_patterns(path: Path) -> list[Path]:
+    return _fits_path_alternates(path)
+
+
 def _candidate_paths(*paths: Path | None) -> list[Path]:
     candidates: list[Path] = []
     seen: set[str] = set()
@@ -212,11 +232,16 @@ def _candidate_paths(*paths: Path | None) -> list[Path]:
 
         expanded = path.expanduser()
         if _has_glob_chars(expanded):
-            path_candidates = sorted(
-                expanded.parent.glob(expanded.name), key=lambda candidate: str(candidate)
-            )
+            path_candidates: list[Path] = []
+            for pattern in _glob_candidate_patterns(expanded):
+                path_candidates.extend(
+                    sorted(
+                        pattern.parent.glob(pattern.name),
+                        key=lambda candidate: str(candidate),
+                    )
+                )
         else:
-            path_candidates = [expanded]
+            path_candidates = _fits_path_alternates(expanded)
 
         for candidate in path_candidates:
             resolved = candidate.resolve()
@@ -281,11 +306,19 @@ def extract_shared_keyword(filename: str, galaxy_name: str, suffixes: list[str])
 
     remainder = filename[len(prefix):]
     for suffix in sorted(suffixes, key=len, reverse=True):
-        if remainder == suffix:
-            return ""
-        marker = f"_{suffix}"
-        if remainder.endswith(marker):
-            return remainder[: -len(marker)]
+        suffix_variants = [suffix]
+        lower_suffix = suffix.lower()
+        if lower_suffix.endswith(".fits"):
+            suffix_variants.append(f"{suffix}.gz")
+        elif lower_suffix.endswith(".fits.gz"):
+            suffix_variants.append(suffix[:-3])
+
+        for suffix_variant in suffix_variants:
+            if remainder == suffix_variant:
+                return ""
+            marker = f"_{suffix_variant}"
+            if remainder.endswith(marker):
+                return remainder[: -len(marker)]
 
     return None
 
@@ -303,7 +336,7 @@ def collect_keyworded_input_paths(
         for search_dir in _input_search_dirs(search_root, relative_dir):
             for suffix in suffixes:
                 for pattern in (f"{galaxy_name}_{suffix}", f"{galaxy_name}_*_{suffix}"):
-                    for candidate in sorted(search_dir.glob(pattern), key=lambda path: str(path)):
+                    for candidate in _candidate_paths(search_dir / pattern):
                         if not candidate.exists() or candidate.is_dir():
                             continue
 
@@ -360,8 +393,13 @@ def resolve_keyworded_input_group(
 
 
 def build_further_output_path(input_path: Path) -> Path:
-    suffix = input_path.suffix or ".fits"
-    stem = input_path.name[: -len(input_path.suffix)] if input_path.suffix else input_path.name
+    lower_name = input_path.name.lower()
+    if lower_name.endswith(".fits.gz"):
+        suffix = ".fits"
+        stem = input_path.name[: -len(".fits.gz")]
+    else:
+        suffix = input_path.suffix or ".fits"
+        stem = input_path.name[: -len(input_path.suffix)] if input_path.suffix else input_path.name
     if stem.endswith("_further"):
         return input_path.parent / f"{stem}{suffix}"
     if stem.endswith("_extended"):

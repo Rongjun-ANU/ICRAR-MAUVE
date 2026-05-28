@@ -78,45 +78,14 @@ GALAXIES=(
 
 [[ $# -gt 0 ]] && GALAXIES=("$@")
 
-resolve_first_existing() {
-  local candidate
-  for candidate in "$@"; do
-    [[ -n "$candidate" && -e "$candidate" ]] || continue
-    printf '%s\n' "$candidate"
-    return 0
-  done
-  return 1
-}
-
 # ──────────────────────────────────────────────────────────────
 # 2.  Process function for each galaxy
 # ──────────────────────────────────────────────────────────────
 process_galaxy() {
   local GAL="$1"
   local LOGFILE="$LOGDIR/${GAL}.log"
-  local ROOT_PRODUCTS="${ROOT_PRODUCT_BASE}/v3tk_v7.6.8/${GAL}"
 
-  local BIN_FILE=""
-  local GAS_FILE=""
-  local CONT_FILE=""
   local REDSHIFT_FILE="${ROOT_LOCAL}/new_redshifts"
-
-  BIN_FILE="$(resolve_first_existing \
-    "${ROOT_PRODUCTS}/${GAL}_spatial_binning_maps_further.fits" \
-    "${ROOT_PRODUCTS}/${GAL}_SPATIAL_BINNING_maps_further.fits" \
-    "${ROOT_LOCAL}/${GAL}_spatial_binning_maps_further.fits" \
-    "${ROOT_LOCAL}/${GAL}_SPATIAL_BINNING_maps_further.fits")" || BIN_FILE=""
-
-  GAS_FILE="$(resolve_first_existing \
-    "${ROOT_PRODUCTS}/${GAL}_gas_bin_maps_further.fits" \
-    "${ROOT_PRODUCTS}/${GAL}_gas_BIN_maps_further.fits" \
-    "${ROOT_LOCAL}/${GAL}_gas_bin_maps_further.fits" \
-    "${ROOT_LOCAL}/${GAL}_gas_BIN_maps_further.fits")" || GAS_FILE=""
-
-  CONT_FILE="$(resolve_first_existing \
-    "${CUBE_ROOT}/${GAL}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits" \
-    "${ROOT_LOCAL}/cubes/v3tk/${GAL}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits" \
-    "${ROOT_LOCAL}/${GAL}_CONTcube.fits")" || CONT_FILE=""
 
   printf "\n====================  %s  ====================\n" "$GAL"
 
@@ -125,35 +94,22 @@ process_galaxy() {
   {
     echo "Python executable: $PYTHON_BIN"
     "$PYTHON_BIN" --version
-    echo "Product root        : $ROOT_PRODUCTS"
+    echo "Product root        : $ROOT_PRODUCT_BASE"
     echo "Cube root           : $CUBE_ROOT"
     echo "Local fallback root : $ROOT_LOCAL"
-    echo "Resolved bin file   : ${BIN_FILE:-<missing>}"
-    echo "Resolved gas file   : ${GAS_FILE:-<missing>}"
-    echo "Resolved cont file  : ${CONT_FILE:-<missing>}"
+    echo "Input resolution    : delegated to $SCRIPT"
     echo "Redshift file       : $REDSHIFT_FILE"
     echo
   } >"$LOGFILE" 2>&1
 
-  if [[ -z "$BIN_FILE" || -z "$GAS_FILE" || -z "$CONT_FILE" ]]; then
-    {
-      echo "ERROR: missing required input file(s)."
-      [[ -n "$BIN_FILE" ]] || echo "  - missing bin file"
-      [[ -n "$GAS_FILE" ]] || echo "  - missing gas file"
-      [[ -n "$CONT_FILE" ]] || echo "  - missing continuum cube"
-    } >>"$LOGFILE" 2>&1
-    status=1
-  else
-    "$PYTHON_BIN" "$SCRIPT" \
-      -g "$GAL" \
-      --bin-file "$BIN_FILE" \
-      --gas-file "$GAS_FILE" \
-      --cont-file "$CONT_FILE" \
-      --cube-root "$CUBE_ROOT" \
-      --redshift-file "$REDSHIFT_FILE" \
-      >>"$LOGFILE" 2>&1
-    status=$?
-  fi
+  "$PYTHON_BIN" "$SCRIPT" \
+    -g "$GAL" \
+    --root "$ROOT_PRODUCT_BASE" \
+    --fallback-root "$ROOT_LOCAL" \
+    --cube-root "$CUBE_ROOT" \
+    --redshift-file "$REDSHIFT_FILE" \
+    >>"$LOGFILE" 2>&1
+  status=$?
   set -e
   end=$(date +%s)
   dur=$((end - start))
@@ -169,7 +125,6 @@ process_galaxy() {
 }
 
 export -f process_galaxy
-export -f resolve_first_existing
 export ROOT_PRODUCT_BASE ROOT_LOCAL CUBE_ROOT PYTHON_BIN SCRIPT LOGDIR
 
 # ──────────────────────────────────────────────────────────────

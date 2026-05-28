@@ -44,7 +44,7 @@ else
 fi
 
 # Set a batch size to limit concurrent connections and avoid overwhelming Setonix
-BATCH_SIZE=10
+BATCH_SIZE=40
 count=0
 
 # Loop through each galaxy

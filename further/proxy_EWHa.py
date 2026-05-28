@@ -22,6 +22,11 @@ Changes (2026-03-31)
 *   - the default output is now `{gal}_proxy_EW_maps_further.fits` in the
 *     same galaxy product folder.
 *
+* Changes (2026-05-28)
+* --------------------
+* FITS input lookup now accepts gzip-compressed `.fits.gz` counterparts wherever
+*   a `.fits` path is requested, so continuum cubes can stay compressed.
+*
 * Inputs:
   - Observed Halpha map from:
       {gal}_gas_bin_maps_further.fits
@@ -194,6 +199,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _fits_path_alternates(path: Path) -> list[Path]:
+    name = path.name
+    lower_name = name.lower()
+    if lower_name.endswith(".fits.gz"):
+        return [path, path.with_name(name[:-3])]
+    if lower_name.endswith(".fits"):
+        return [path, path.with_name(f"{name}.gz")]
+    return [path]
+
+
 def _unique_paths(*paths: Path | None) -> list[Path]:
     unique: list[Path] = []
     seen: set[str] = set()
@@ -201,11 +216,12 @@ def _unique_paths(*paths: Path | None) -> list[Path]:
     for path in paths:
         if path is None:
             continue
-        resolved = path.expanduser().resolve()
-        if str(resolved) in seen:
-            continue
-        seen.add(str(resolved))
-        unique.append(resolved)
+        for candidate in _fits_path_alternates(path.expanduser()):
+            resolved = candidate.resolve()
+            if str(resolved) in seen:
+                continue
+            seen.add(str(resolved))
+            unique.append(resolved)
 
     return unique
 

@@ -11,9 +11,10 @@ Usage:
     python create_masks.py [pattern ...]
 
     If one or more [pattern] arguments are provided (e.g., "NGC*.fits"), it processes
-    all matching files (deduplicated, order-preserving).
-    Otherwise, it defaults to processing all "*_DATACUBE*_VRI.fits" files in the current
-    directory.
+    all matching files (deduplicated, order-preserving). A pattern ending in `.fits`
+    also checks the matching `.fits.gz` files, which Astropy can read directly.
+    Otherwise, it defaults to processing all "*_DATACUBE*_VRI.fits" and
+    "*_DATACUBE*_VRI.fits.gz" files in the current directory.
 
 --------------------------------------------------------------------------------
 I. FILE INPUTS & OUTPUTS
@@ -568,6 +569,25 @@ def safe_base_id(rfits_path: str) -> str:
     # From XXX_DATACUBE..._VRI.fits => XXX
     bn = os.path.basename(rfits_path)
     return bn.split("_DATACUBE")[0]
+
+
+def fits_path_patterns(pattern: str) -> list[str]:
+    lower_pattern = pattern.lower()
+    if lower_pattern.endswith(".fits.gz"):
+        return [pattern, pattern[:-3]]
+    if lower_pattern.endswith(".fits"):
+        return [pattern, f"{pattern}.gz"]
+    return [pattern]
+
+
+def expand_fits_input_patterns(patterns: list[str]) -> list[str]:
+    matches: list[str] = []
+    for pattern in patterns:
+        for expanded_pattern in fits_path_patterns(pattern):
+            matches.extend(sorted(glob.glob(expanded_pattern)))
+
+    seen = set()
+    return [path for path in matches if not (path in seen or seen.add(path))]
 
 
 def format_radec_hmsdms(sc: SkyCoord, precision: int = 2) -> tuple[str, str]:
@@ -3104,16 +3124,11 @@ def main():
         t_total0 = perf_counter()
 
         if len(sys.argv) > 1:
-            rfits_list: list[str] = []
-            for pat in sys.argv[1:]:
-                rfits_list.extend(sorted(glob.glob(pat)))
-            # de-dup while preserving order
-            seen = set()
-            rfits_list = [p for p in rfits_list if not (p in seen or seen.add(p))]
+            rfits_list = expand_fits_input_patterns(sys.argv[1:])
         else:
-            rfits_list = sorted(glob.glob("*_DATACUBE*_VRI.fits"))
+            rfits_list = expand_fits_input_patterns(["*_DATACUBE*_VRI.fits"])
         if len(rfits_list) == 0:
-            raise SystemExit("No *_DATACUBE*_VRI.fits files found in the current directory.")
+            raise SystemExit("No *_DATACUBE*_VRI.fits or *_DATACUBE*_VRI.fits.gz files found in the current directory.")
 
         for rfits in rfits_list:
             t0 = perf_counter()
