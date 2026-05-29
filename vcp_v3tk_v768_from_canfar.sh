@@ -22,37 +22,31 @@ else
     GALAXIES=("${ALL_GALAXIES[@]}")
 fi
 
-# Set a batch size to limit concurrent connections
-BATCH_SIZE=10
-count=0
+# Set the maximum number of concurrent workers
+BATCH_SIZE=40
 
-for GALID in "${GALAXIES[@]}"; do
-    (
-        echo "Downloading ${GALID}..."
+# Export variables so the xargs subprocess can see them
+export LOCAL_BASE REMOTE_GAL_BASE REMOTE_LOG_BASE
 
-        mkdir -p "${LOCAL_BASE}/v3tk_v7.6.8/${GALID}"
-        mkdir -p "${LOCAL_BASE}/mass_logs" "${LOCAL_BASE}/sfr_logs" "${LOCAL_BASE}/proxy_ewha_logs"
+# Use xargs to maintain a true "rolling queue" of parallel workers
+printf "%s\n" "${GALAXIES[@]}" | xargs -P "$BATCH_SIZE" -I {} bash -c '
+    GALID="$1"
+    echo "Downloading ${GALID}..."
 
-        vcp -v \
-            "${REMOTE_GAL_BASE}/${GALID}/${GALID}_gas_bin_maps_further.fits" \
-            "${REMOTE_GAL_BASE}/${GALID}/${GALID}_proxy_EW_maps_further.fits" \
-            "${REMOTE_GAL_BASE}/${GALID}/${GALID}_spatial_binning_maps_further.fits" \
-            "${LOCAL_BASE}/v3tk_v7.6.8/${GALID}/"
+    mkdir -p "${LOCAL_BASE}/v3tk_v7.6.8/${GALID}"
+    mkdir -p "${LOCAL_BASE}/mass_logs" "${LOCAL_BASE}/sfr_logs" "${LOCAL_BASE}/proxy_ewha_logs"
 
-        vcp -v "${REMOTE_LOG_BASE}/mass_logs/${GALID}.log" "${LOCAL_BASE}/mass_logs/" 2>/dev/null
-        vcp -v "${REMOTE_LOG_BASE}/sfr_logs/${GALID}.log" "${LOCAL_BASE}/sfr_logs/" 2>/dev/null
-        vcp -v "${REMOTE_LOG_BASE}/proxy_ewha_logs/${GALID}.log" "${LOCAL_BASE}/proxy_ewha_logs/" 2>/dev/null
+    vcp -v \
+        "${REMOTE_GAL_BASE}/${GALID}/${GALID}_gas_bin_maps_further.fits" \
+        "${REMOTE_GAL_BASE}/${GALID}/${GALID}_proxy_EW_maps_further.fits" \
+        "${REMOTE_GAL_BASE}/${GALID}/${GALID}_spatial_binning_maps_further.fits" \
+        "${LOCAL_BASE}/v3tk_v7.6.8/${GALID}/"
 
-        echo "Finished ${GALID}"
-    ) &
+    vcp -v "${REMOTE_LOG_BASE}/mass_logs/${GALID}.log" "${LOCAL_BASE}/mass_logs/" 2>/dev/null
+    vcp -v "${REMOTE_LOG_BASE}/sfr_logs/${GALID}.log" "${LOCAL_BASE}/sfr_logs/" 2>/dev/null
+    vcp -v "${REMOTE_LOG_BASE}/proxy_ewha_logs/${GALID}.log" "${LOCAL_BASE}/proxy_ewha_logs/" 2>/dev/null
 
-    # Wait for the current batch to finish before starting the next
-    count=$((count + 1))
-    if (( count % BATCH_SIZE == 0 )); then
-        wait
-    fi
-done
+    echo "Finished ${GALID}"
+' _ {}
 
-# Wait for any remaining background jobs to finish
-wait
 echo "Download from CANFAR finished!"

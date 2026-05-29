@@ -1,0 +1,56 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/home/RongjunHuang/ICRAR/further
+Cube root        : /arc/projects/mauve/cubes/v3tk
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+
+
+=== Using the following files ===
+Product root : /arc/home/RongjunHuang/ICRAR/further
+Cube root    : /arc/projects/mauve/cubes/v3tk
+Fallback root: /arc/home/RongjunHuang/ICRAR/further
+Input keyword: <none>
+Cube         : /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Binning map  : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_spatial_binning_maps.fits
+SFH map      : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_sfh_maps.fits
+Weights      : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_sfh_weights.fits
+Photometry   : /arc/home/RongjunHuang/ICRAR/further/BaSTI+Chabrier.dat
+Output       : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_spatial_binning_maps_further.fits 
+
+Thread control: forcing 16 BLAS/OpenMP threads
+Vectorized processing row-block size: 16
+Loading: /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_spatial_binning_maps.fits
+Filename: /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_spatial_binning_maps.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU       4   ()      
+  1  BINID         1 ImageHDU        26   (633, 705)   float64   
+  2  FLUX          1 ImageHDU        26   (633, 705)   float64   
+  3  SNR           1 ImageHDU        26   (633, 705)   float64   
+  4  SNRBIN        1 ImageHDU        26   (633, 705)   float64   
+  5  XBIN          1 ImageHDU        26   (633, 705)   float64   
+  6  YBIN          1 ImageHDU        26   (633, 705)   float64   
+None
+Loading: /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_sfh_weights.fits
+Filename: /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4383/NGC4383_sfh_weights.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU      27   ()      
+  1  WEIGHTS       1 BinTableHDU     31   8738R x 1C   [477D]   
+  2  GRID          1 BinTableHDU     35   477R x 3C   [D, D, D]   
+None
+Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
+Raw SFH weight-sum [min, p16, p50, p84, max] = [1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00]
+Normalized SFH weight-sum check [min, max] = [1.000000, 1.000000]
+Composite ML_R candidates [median] (light_r, light_norm_to_r, light_v_to_r, mass_harmonic) = [1.2159, 1.2235, 1.2856, 0.4744]
+Template-library LIGHT normalization for ML_R: /arc/home/RongjunHuang/ICRAR/further/EMILES_baseFe_safe (LMIN=4800.0, LMAX=9100.0 Angstrom)
+Selected SFH-weight interpretation for ML_R: light_norm_to_r
+Traceback (most recent call last):
+  File "/arc/home/RongjunHuang/ICRAR/further/Mass.py", line 1119, in <module>
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: BINID values exceed the number of rows in the SFH weights file: max BINID=8841, n_weight_rows=8738
+🛑  NGC4383 failed (exit 1) after 0m5s – see mass_logs/NGC4383.log

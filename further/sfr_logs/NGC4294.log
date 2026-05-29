@@ -1,13 +1,13 @@
-Python executable: /opt/miniconda3/envs/ICRAR/bin/python
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
 Python 3.13.3
 PYTHONUNBUFFERED: 1
-Product root     : /Users/Igniz/Desktop/ICRAR/further
-Local fallback   : /Users/Igniz/Desktop/ICRAR/further
+Product root     : /arc/home/RongjunHuang/ICRAR/further
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
 
 Shared input keyword ➜ <none>
-Reading gas-line FITS ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_gas_BIN_maps.fits
-Matched binning FITS ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_spatial_binning_maps_further.fits
-Spatial mask FITS ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_mask.fits
+Reading gas-line FITS ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_gas_bin_maps.fits
+Matched binning FITS ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_spatial_binning_maps_further.fits
+Spatial mask FITS ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_mask.fits
 Available gas-line flux/error pairs:
   - HB4861
   - OIII4958
@@ -61,7 +61,7 @@ Combined C20 metallicity: median = 8.624, range = (8.326, 8.711)
 Combined C20 dominant-weight method usage: O3N2=0, O3S2=0, RS32=0, R3=162896, N2=0, S2=15500
 Galaxy NGC4294 inclination: 74.0° (cos θ = 0.276)
 Inclination correction ENABLED: applying b/a = 0.336 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
-Loaded SII density lookup table: /Users/Igniz/Desktop/ICRAR/further/pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096.npz
+Loaded SII density lookup table: /arc/home/RongjunHuang/ICRAR/further/pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096.npz
 PyNeb Te-method valid-pixel counts:
   NE_SII finite pixels: 132146
   NE_SII fixed at 20 cm^-3: 53826/132146 (40.7%)
@@ -88,7 +88,7 @@ Integrated PyNeb Te-method values:
     O_H_BR24_DIRECT: nan dex (n_pix=0)
     O_H_NII_OII7325: 8.2416 +/- 0.0768 dex (n_pix=1678)
     O_H_NII_K25: 8.4558 +/- 0.2080 dex (n_pix=1780)
-Further file written ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_gas_BIN_maps_further.fits
+Further file written ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4294/NGC4294_gas_bin_maps_further.fits
 --------------------------------------------------------------
 Total non-nan spaxels: 178396
 Number of pixels with Halpha not detected: 10467
@@ -153,5 +153,5 @@ Total Halpha SFR from HII region: 0.43 M☉/yr or in log10 scale: -0.37 log(M☉
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.560037350392744 (weighted 5 methods; dominant R3)
 --------------------------------------------------------------
-Total runtime: 194.3 s
-✅  NGC4294 finished in 3m32s
+Total runtime: 226.5 s
+✅  NGC4294 finished in 4m49s

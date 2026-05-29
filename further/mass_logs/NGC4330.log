@@ -1,0 +1,32 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/home/RongjunHuang/ICRAR/further
+Cube root        : /arc/projects/mauve/cubes/v3tk
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+
+Traceback (most recent call last):
+  File "/arc/home/RongjunHuang/ICRAR/further/Mass.py", line 521, in <module>
+    input_keyword, product_paths = resolve_keyworded_input_group(
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "stellar-population product FITS inputs",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        },
+        ^^
+    )
+    ^
+  File "/arc/home/RongjunHuang/ICRAR/further/Mass.py", line 382, in resolve_keyworded_input_group
+    raise FileNotFoundError(
+    ...<4 lines>...
+    )
+FileNotFoundError: Could not find stellar-population product FITS inputs with a shared optional keyword.
+Each required product input must use the same text between 'NGC4330_' and its product suffix.
+Found keyword groups:
+  - spatial binning FITS: <none>
+  - SFH FITS: none
+  - SFH weights FITS: none
+🛑  NGC4330 failed (exit 1) after 0m0s – see mass_logs/NGC4330.log

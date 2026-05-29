@@ -19,40 +19,34 @@ else
     GALAXIES=("${ALL_GALAXIES[@]}")
 fi
 
-# Set a batch size to limit concurrent connections
-BATCH_SIZE=10
-count=0
+# Set the maximum number of concurrent workers
+BATCH_SIZE=40
 
-for GALID in "${GALAXIES[@]}"; do
-    (
-        echo "Uploading ${GALID}..."
+# Export variables so the xargs subprocess can see them
+export LOCAL_BASE REMOTE_BASE
+
+# Use xargs to maintain a true "rolling queue" of parallel workers
+printf "%s\n" "${GALAXIES[@]}" | xargs -P "$BATCH_SIZE" -I {} bash -c '
+    GALID="$1"
+    echo "Uploading ${GALID}..."
+    
+    # Create the remote directory first 
+    vmkdir "arc:home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/${GALID}" 2>/dev/null
+
+    # Upload files sequentially within this galaxy batch using a single command
+    vcp -v \
+        "${LOCAL_BASE}/${GALID}/CONFIG" \
+        "${LOCAL_BASE}/${GALID}/${GALID}_sfh_maps.fits" \
+        "${LOCAL_BASE}/${GALID}/${GALID}_gas_bin_maps.fits" \
+        "${LOCAL_BASE}/${GALID}/${GALID}_sfh_weights.fits" \
+        "${LOCAL_BASE}/${GALID}/${GALID}_gas_spaxel_maps.fits" \
+        "${LOCAL_BASE}/${GALID}/${GALID}_spatial_binning_maps.fits" \
+        "${LOCAL_BASE}/${GALID}/${GALID}_kin_maps.fits" \
+        "${LOCAL_BASE}/${GALID}/LOGFILE" \
+        "${LOCAL_BASE}/${GALID}/${GALID}_mask.fits" \
+        "${REMOTE_BASE}/${GALID}/"
         
-        # Create the remote directory first (using vmkdir or similar if vcp doesn't auto-create it)
-        vmkdir "arc:home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/${GALID}" 2>/dev/null
+    echo "Finished ${GALID}"
+' _ {}
 
-        # Upload files sequentially within this galaxy batch using a single command
-        vcp -v \
-            "${LOCAL_BASE}/${GALID}/CONFIG" \
-            "${LOCAL_BASE}/${GALID}/${GALID}_sfh_maps.fits" \
-            "${LOCAL_BASE}/${GALID}/${GALID}_gas_bin_maps.fits" \
-            "${LOCAL_BASE}/${GALID}/${GALID}_sfh_weights.fits" \
-            "${LOCAL_BASE}/${GALID}/${GALID}_gas_spaxel_maps.fits" \
-            "${LOCAL_BASE}/${GALID}/${GALID}_spatial_binning_maps.fits" \
-            "${LOCAL_BASE}/${GALID}/${GALID}_kin_maps.fits" \
-            "${LOCAL_BASE}/${GALID}/LOGFILE" \
-            "${LOCAL_BASE}/${GALID}/${GALID}_mask.fits" \
-            "${REMOTE_BASE}/${GALID}/"
-            
-        echo "Finished ${GALID}"
-    ) &
-
-    # Wait for the current batch to finish before starting the next
-    count=$((count + 1))
-    if (( count % BATCH_SIZE == 0 )); then
-        wait
-    fi
-done
-
-# Wait for any remaining background jobs to finish
-wait
 echo "Upload to CANFAR finished!"

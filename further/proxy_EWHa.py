@@ -27,6 +27,11 @@ Changes (2026-03-31)
 * FITS input lookup now accepts gzip-compressed `.fits.gz` counterparts wherever
 *   a `.fits` path is requested, so continuum cubes can stay compressed.
 *
+* Changes (2026-05-29)
+* --------------------
+* The combined NGC4567_8 cube now uses the mean of the NGC4567 and NGC4568
+*   redshifts when the redshift table has those member galaxies separately.
+*
 * Inputs:
   - Observed Halpha map from:
       {gal}_gas_bin_maps_further.fits
@@ -129,6 +134,9 @@ HALPHA_RITZ_VAC_A = 6564.608
 HALPHA_EW_VAC_RANGE_A = (6557.6, 6571.6)
 LEGACY_HALPHA_REF_A = 6562.8
 DEFAULT_REDSHIFT_FILE = "new_redshifts"
+COMBINED_REDSHIFT_IDS = {
+    "NGC4567_8": ("NGC4567", "NGC4568"),
+}
 CONT_CGS_UNIT = "erg s-1 cm-2 Angstrom-1"
 NMAGGY_TO_FNU = 3.631e-29
 C_AA_PER_S = 2.99792458e18
@@ -435,14 +443,24 @@ def read_redshift_table(redshift_path: Path) -> dict[str, float]:
 def lookup_redshift(galaxy: str, redshift_path: Path) -> float:
     table = read_redshift_table(redshift_path)
     galaxy_norm = normalize_galaxy_id(galaxy)
-    if galaxy_norm not in table:
+    if galaxy_norm in table:
+        z = float(table[galaxy_norm])
+    elif galaxy_norm in COMBINED_REDSHIFT_IDS:
+        member_ids = COMBINED_REDSHIFT_IDS[galaxy_norm]
+        missing = [member_id for member_id in member_ids if member_id not in table]
+        if missing:
+            raise KeyError(
+                f"Galaxy {galaxy_norm} needs member redshifts from {redshift_path}, "
+                f"but missing: {', '.join(missing)}"
+            )
+        z = float(np.mean([table[member_id] for member_id in member_ids]))
+    else:
         available = ", ".join(sorted(table)[:10])
         raise KeyError(
             f"Galaxy {galaxy_norm} not found in redshift file {redshift_path}. "
             f"Example entries: {available}"
         )
 
-    z = float(table[galaxy_norm])
     if 1.0 + z <= 0.0:
         raise ValueError(f"Invalid redshift for {galaxy_norm}: z={z}")
     return z

@@ -1,4 +1,4 @@
-=== v3tk masking run start: 2026-05-22T10:21:30 ===
+=== v3tk masking run start: 2026-05-29T14:10:51 ===
 [FOV] IC3392: nx=437 ny=438 pixscale=0.2000"/pix rad=1.196 arcmin
 [FOV] FoV mask coverage: 50.92%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -6,7 +6,7 @@
 [LEGACY] N(joined)=59 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote IC3392_mask.fits (shape=(438, 437), masked=0 px; stars=0, galaxies=0)
 [OK] Wrote IC3392_combined_VRI_mask.png
-[TIME] IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=8.21
+[TIME] IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=49.20
 [FOV] NGC4064: nx=566 ny=665 pixscale=0.2000"/pix rad=1.620 arcmin
 [FOV] FoV mask coverage: 49.16%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -16,7 +16,7 @@
 [LEGACY] N(joined)=264 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4064_mask.fits (shape=(665, 566), masked=2878 px; stars=2, galaxies=0)
 [OK] Wrote NGC4064_combined_VRI_mask.png
-[TIME] NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.98
+[TIME] NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=36.19
 [FOV] NGC4189: nx=598 ny=319 pixscale=0.2000"/pix rad=1.294 arcmin
 [FOV] FoV mask coverage: 95.37%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -25,18 +25,18 @@
 [LEGACY] N(joined)=108 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4189_mask.fits (shape=(319, 598), masked=528 px; stars=1, galaxies=0)
 [OK] Wrote NGC4189_combined_VRI_mask.png
-[TIME] NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.76
+[TIME] NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=33.45
 [FOV] NGC4192: nx=1092 ny=1629 pixscale=0.2000"/pix rad=3.433 arcmin
 [FOV] FoV mask coverage: 29.98%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
 [STAR] Gaia DR3 3921361151916609920 (GAIA J121355.07+145149.6) ra=183.479465 dec=14.863779 RA=12:13:55.07 DEC=+14:51:49.61 GaiaG=19.47 r_arcsec=2.50 | plx=1.581±0.358 mas (SNR=4.4) | pm=7.50±0.44 mas/yr (SNR=17.0) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
-[STAR] Gaia DR3 3921364411797467904 (GAIA J121349.46+145422.8) ra=183.456097 dec=14.906330 RA=12:13:49.46 DEC=+14:54:22.79 GaiaG=18.34 r_arcsec=2.50 | plx=0.385±0.181 mas (SNR=2.1) | pm=4.98±0.24 mas/yr (SNR=21.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3921361250701572992 (GAIA J121352.25+145138.6) ra=183.467695 dec=14.860727 RA=12:13:52.25 DEC=+14:51:38.62 GaiaG=18.41 r_arcsec=2.50 | plx=1.789±0.196 mas (SNR=9.1) | pm=6.21±0.27 mas/yr (SNR=23.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3921364411797467904 (GAIA J121349.46+145422.8) ra=183.456097 dec=14.906330 RA=12:13:49.46 DEC=+14:54:22.79 GaiaG=18.34 r_arcsec=2.50 | plx=0.385±0.181 mas (SNR=2.1) | pm=4.98±0.24 mas/yr (SNR=21.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=727 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4192_mask.fits (shape=(1629, 1092), masked=1470 px; stars=3, galaxies=0)
 [OK] Wrote NGC4192_combined_VRI_mask.png
-[TIME] NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=9.12
+[TIME] NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=41.34
 [FOV] NGC4293: nx=923 ny=532 pixscale=0.2000"/pix rad=1.940 arcmin
 [FOV] FoV mask coverage: 54.64%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -45,19 +45,19 @@
 [LEGACY] N(joined)=153 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4293_mask.fits (shape=(532, 923), masked=492 px; stars=1, galaxies=0)
 [OK] Wrote NGC4293_combined_VRI_mask.png
-[TIME] NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.52
+[TIME] NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=45.38
 [FOV] NGC4294: nx=567 ny=663 pixscale=0.2000"/pix rad=1.618 arcmin
 [FOV] FoV mask coverage: 48.88%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3907392612599891456 (GAIA J122117.61+113003.6) ra=185.323387 dec=11.501004 RA=12:21:17.61 DEC=+11:30:03.61 GaiaG=20.09 r_arcsec=2.50 | plx=0.975±0.537 mas (SNR=1.8) | pm=16.90±0.82 mas/yr (SNR=20.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3907392612600612864 (GAIA J122117.77+113014.5) ra=185.324062 dec=11.504021 RA=12:21:17.77 DEC=+11:30:14.48 GaiaG=17.22 r_arcsec=2.80 | plx=-0.008±0.085 mas (SNR=-0.1) | pm=1.75±0.13 mas/yr (SNR=13.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3907392612599891456 (GAIA J122117.61+113003.6) ra=185.323387 dec=11.501004 RA=12:21:17.61 DEC=+11:30:03.61 GaiaG=20.09 r_arcsec=2.50 | plx=0.975±0.537 mas (SNR=1.8) | pm=16.90±0.82 mas/yr (SNR=20.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=225 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [GAL][LEGACY] (LS J122117.46+112943.2) ra=185.322737 dec=11.495344 RA=12:21:17.46 DEC=+11:29:43.24 type=EXP z_l95=0.386 a=2.00" b=2.00" pa=32.2 z_mean=0.544 z_u95=0.720 sigma_z~0.085 SNR=6.3
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4294_mask.fits (shape=(663, 567), masked=1226 px; stars=2, galaxies=1)
 [OK] Wrote NGC4294_combined_VRI_mask.png
-[TIME] NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.79
+[TIME] NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=50.25
 [FOV] NGC4298: nx=1042 ny=995 pixscale=0.2000"/pix rad=2.566 arcmin
 [FOV] FoV mask coverage: 48.95%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -70,21 +70,21 @@
 [OK] Wrote NGC4298_mask.fits (shape=(995, 1042), masked=17090 px; stars=2, galaxies=1)
 WARNING: NGC4298_combined_VRI_mask.png size=(1042, 994) != FITS size=(1042, 995); resizing output PNG.
 [OK] Wrote NGC4298_combined_VRI_mask.png
-[TIME] NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=7.40
+[TIME] NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=30.68
 [FOV] NGC4302: nx=322 ny=1420 pixscale=0.2000"/pix rad=2.591 arcmin
 [FOV] FoV mask coverage: 95.53%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3921151621939509120 (GAIA J122141.74+143717.3) ra=185.423930 dec=14.621464 RA=12:21:41.74 DEC=+14:37:17.27 GaiaG=20.47 r_arcsec=2.50 | plx=-0.325±0.757 mas (SNR=-0.4) | pm=5.62±1.03 mas/yr (SNR=5.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
-[STAR] Gaia DR3 3921139291087254272 (GAIA J122141.90+143431.2) ra=185.424592 dec=14.575347 RA=12:21:41.90 DEC=+14:34:31.25 GaiaG=19.82 r_arcsec=2.50 | plx=1.257±0.440 mas (SNR=2.9) | pm=19.56±0.63 mas/yr (SNR=30.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
-[STAR] Gaia DR3 3921139870908995840 (GAIA J122144.06+143628.4) ra=185.433581 dec=14.607896 RA=12:21:44.06 DEC=+14:36:28.42 GaiaG=19.60 r_arcsec=2.50 | plx=0.460±0.359 mas (SNR=1.3) | pm=4.62±0.51 mas/yr (SNR=9.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3921139084928823936 (GAIA J122142.38+143418.9) ra=185.426595 dec=14.571924 RA=12:21:42.38 DEC=+14:34:18.93 GaiaG=16.23 r_arcsec=3.84 | plx=2.986±0.053 mas (SNR=56.4) | pm=50.09±0.08 mas/yr (SNR=632.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3921139291087254272 (GAIA J122141.90+143431.2) ra=185.424592 dec=14.575347 RA=12:21:41.90 DEC=+14:34:31.25 GaiaG=19.82 r_arcsec=2.50 | plx=1.257±0.440 mas (SNR=2.9) | pm=19.56±0.63 mas/yr (SNR=30.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3921151621939509120 (GAIA J122141.74+143717.3) ra=185.423930 dec=14.621464 RA=12:21:41.74 DEC=+14:37:17.27 GaiaG=20.47 r_arcsec=2.50 | plx=-0.325±0.757 mas (SNR=-0.4) | pm=5.62±1.03 mas/yr (SNR=5.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3921139870908995840 (GAIA J122144.06+143628.4) ra=185.433581 dec=14.607896 RA=12:21:44.06 DEC=+14:36:28.42 GaiaG=19.60 r_arcsec=2.50 | plx=0.460±0.359 mas (SNR=1.3) | pm=4.62±0.51 mas/yr (SNR=9.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3921139291087254016 (GAIA J122140.78+143415.0) ra=185.419913 dec=14.570839 RA=12:21:40.78 DEC=+14:34:15.02 GaiaG=18.14 r_arcsec=2.50 | plx=0.498±0.138 mas (SNR=3.6) | pm=8.64±0.20 mas/yr (SNR=42.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3921151694952806272 (GAIA J122140.72+143754.2) ra=185.419669 dec=14.631712 RA=12:21:40.72 DEC=+14:37:54.16 GaiaG=13.99 r_arcsec=10.96 | plx=2.780±0.021 mas (SNR=130.9) | pm=59.97±0.03 mas/yr (SNR=2165.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=702 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4302_mask.fits (shape=(1420, 322), masked=9966 px; stars=6, galaxies=0)
 [OK] Wrote NGC4302_combined_VRI_mask.png
-[TIME] NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=8.23
+[TIME] NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=28.42
 [FOV] NGC4330: nx=881 ny=760 pixscale=0.2000"/pix rad=2.104 arcmin
 [FOV] FoV mask coverage: 39.99%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -97,17 +97,17 @@ WARNING: NGC4298_combined_VRI_mask.png size=(1042, 994) != FITS size=(1042, 995)
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4330_mask.fits (shape=(760, 881), masked=1532 px; stars=0, galaxies=4)
 [OK] Wrote NGC4330_combined_VRI_mask.png
-[TIME] NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.85
+[TIME] NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=25.48
 [FOV] NGC4351: nx=591 ny=323 pixscale=0.2000"/pix rad=1.287 arcmin
 [FOV] FoV mask coverage: 96.51%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3907820661925744768 (GAIA J122358.28+121247.0) ra=185.992851 dec=12.213046 RA=12:23:58.28 DEC=+12:12:46.96 GaiaG=18.44 r_arcsec=2.50 | plx=-0.247±0.171 mas (SNR=-1.4) | pm=2.54±0.23 mas/yr (SNR=11.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3907820494422511616 (GAIA J122357.20+121202.5) ra=185.988349 dec=12.200684 RA=12:23:57.20 DEC=+12:12:02.46 GaiaG=17.52 r_arcsec=2.56 | plx=0.653±0.107 mas (SNR=6.1) | pm=6.74±0.14 mas/yr (SNR=47.6) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3907820661925744768 (GAIA J122358.28+121247.0) ra=185.992851 dec=12.213046 RA=12:23:58.28 DEC=+12:12:46.96 GaiaG=18.44 r_arcsec=2.50 | plx=-0.247±0.171 mas (SNR=-1.4) | pm=2.54±0.23 mas/yr (SNR=11.1) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=126 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4351_mask.fits (shape=(323, 591), masked=496 px; stars=2, galaxies=0)
 [OK] Wrote NGC4351_combined_VRI_mask.png
-[TIME] NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.32
+[TIME] NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=19.15
 [FOV] NGC4383: nx=633 ny=705 pixscale=0.2000"/pix rad=1.743 arcmin
 [FOV] FoV mask coverage: 52.20%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -118,7 +118,7 @@ WARNING: NGC4298_combined_VRI_mask.png size=(1042, 994) != FITS size=(1042, 995)
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4383_mask.fits (shape=(705, 633), masked=686 px; stars=0, galaxies=2)
 [OK] Wrote NGC4383_combined_VRI_mask.png
-[TIME] NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.63
+[TIME] NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=18.32
 [FOV] NGC4388: nx=870 ny=323 pixscale=0.2000"/pix rad=1.711 arcmin
 [FOV] FoV mask coverage: 96.72%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -128,32 +128,32 @@ WARNING: NGC4298_combined_VRI_mask.png size=(1042, 994) != FITS size=(1042, 995)
 [OK] Wrote NGC4388_mask.fits (shape=(323, 870), masked=196 px; stars=1, galaxies=0)
 WARNING: NGC4388_combined_VRI_mask.png size=(869, 323) != FITS size=(870, 323); resizing output PNG.
 [OK] Wrote NGC4388_combined_VRI_mask.png
-[TIME] NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.52
+[TIME] NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=16.83
 [FOV] NGC4394: nx=624 ny=647 pixscale=0.2000"/pix rad=1.662 arcmin
 [FOV] FoV mask coverage: 45.86%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3947040761380352640 (GAIA J122556.89+181238.3) ra=186.487051 dec=18.210635 RA=12:25:56.89 DEC=+18:12:38.28 GaiaG=17.92 r_arcsec=2.50 | plx=0.397±0.125 mas (SNR=3.2) | pm=9.52±0.16 mas/yr (SNR=61.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
-[STAR] Gaia DR3 3947041031962769024 (GAIA J122554.17+181346.3) ra=186.475692 dec=18.229537 RA=12:25:54.17 DEC=+18:13:46.33 GaiaG=18.99 r_arcsec=2.50 | plx=1.365±0.248 mas (SNR=5.5) | pm=15.74±0.31 mas/yr (SNR=50.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
-[STAR] Gaia DR3 3947040795740090752 (GAIA J122552.59+181303.5) ra=186.469111 dec=18.217650 RA=12:25:52.59 DEC=+18:13:03.54 GaiaG=17.40 r_arcsec=2.65 | plx=1.016±0.096 mas (SNR=10.6) | pm=44.08±0.11 mas/yr (SNR=386.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3947040830099257728 (GAIA J122556.83+181315.6) ra=186.486809 dec=18.221011 RA=12:25:56.83 DEC=+18:13:15.64 GaiaG=20.38 r_arcsec=2.50 | plx=0.627±0.796 mas (SNR=0.8) | pm=7.85±1.14 mas/yr (SNR=6.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3947040795740090752 (GAIA J122552.59+181303.5) ra=186.469111 dec=18.217650 RA=12:25:52.59 DEC=+18:13:03.54 GaiaG=17.40 r_arcsec=2.65 | plx=1.016±0.096 mas (SNR=10.6) | pm=44.08±0.11 mas/yr (SNR=386.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3947041031962769024 (GAIA J122554.17+181346.3) ra=186.475692 dec=18.229537 RA=12:25:54.17 DEC=+18:13:46.33 GaiaG=18.99 r_arcsec=2.50 | plx=1.365±0.248 mas (SNR=5.5) | pm=15.74±0.31 mas/yr (SNR=50.0) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3947040761380352640 (GAIA J122556.89+181238.3) ra=186.487051 dec=18.210635 RA=12:25:56.89 DEC=+18:12:38.28 GaiaG=17.92 r_arcsec=2.50 | plx=0.397±0.125 mas (SNR=3.2) | pm=9.52±0.16 mas/yr (SNR=61.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=263 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4394_mask.fits (shape=(647, 624), masked=1811 px; stars=4, galaxies=0)
 [OK] Wrote NGC4394_combined_VRI_mask.png
-[TIME] NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.57
+[TIME] NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=15.43
 [FOV] NGC4396: nx=883 ny=755 pixscale=0.2000"/pix rad=2.101 arcmin
 [FOV] FoV mask coverage: 40.73%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3945348819144380416 (GAIA J122555.27+154048.5) ra=186.480285 dec=15.680139 RA=12:25:55.27 DEC=+15:40:48.50 GaiaG=14.75 r_arcsec=6.60 | plx=0.914±0.028 mas (SNR=32.5) | pm=18.42±0.04 mas/yr (SNR=439.2) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3945348780488113152 (GAIA J122554.68+154041.5) ra=186.477818 dec=15.678185 RA=12:25:54.68 DEC=+15:40:41.46 GaiaG=19.91 r_arcsec=2.50 | plx=0.040±0.493 mas (SNR=0.1) | pm=8.92±0.76 mas/yr (SNR=11.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3945348819144380416 (GAIA J122555.27+154048.5) ra=186.480285 dec=15.680139 RA=12:25:55.27 DEC=+15:40:48.50 GaiaG=14.75 r_arcsec=6.60 | plx=0.914±0.028 mas (SNR=32.5) | pm=18.42±0.04 mas/yr (SNR=439.2) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=465 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [GAL][LEGACY] (LS J122555.97+154121.5) ra=186.483210 dec=15.689317 RA=12:25:55.97 DEC=+15:41:21.54 type=EXP z_l95=0.651 a=2.25" b=2.00" pa=16.2 z_mean=0.813 z_u95=1.063 sigma_z~0.105 SNR=7.6
 [GAL][LEGACY] (LS J122557.30+154117.9) ra=186.488747 dec=15.688313 RA=12:25:57.30 DEC=+15:41:17.93 type=EXP z_l95=0.637 a=2.12" b=2.00" pa=53.0 z_mean=0.957 z_u95=1.226 sigma_z~0.150 SNR=6.3
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4396_mask.fits (shape=(755, 883), masked=4417 px; stars=2, galaxies=2)
 [OK] Wrote NGC4396_combined_VRI_mask.png
-[TIME] NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.84
+[TIME] NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.22
 [FOV] NGC4402: nx=1152 ny=318 pixscale=0.2000"/pix rad=2.156 arcmin
 [FOV] FoV mask coverage: 96.39%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -166,7 +166,7 @@ WARNING: NGC4388_combined_VRI_mask.png size=(869, 323) != FITS size=(870, 323); 
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4402_mask.fits (shape=(318, 1152), masked=1194 px; stars=2, galaxies=2)
 [OK] Wrote NGC4402_combined_VRI_mask.png
-[TIME] NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=7.85
+[TIME] NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=17.17
 [FOV] NGC4405: nx=522 ny=663 pixscale=0.2000"/pix rad=1.571 arcmin
 [FOV] FoV mask coverage: 52.82%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -174,7 +174,7 @@ WARNING: NGC4388_combined_VRI_mask.png size=(869, 323) != FITS size=(870, 323); 
 [LEGACY] N(joined)=164 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4405_mask.fits (shape=(663, 522), masked=0 px; stars=0, galaxies=0)
 [OK] Wrote NGC4405_combined_VRI_mask.png
-[TIME] NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.40
+[TIME] NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.57
 [FOV] NGC4419: nx=629 ny=643 pixscale=0.2000"/pix rad=1.663 arcmin
 [FOV] FoV mask coverage: 45.73%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -183,31 +183,31 @@ WARNING: NGC4388_combined_VRI_mask.png size=(869, 323) != FITS size=(870, 323); 
 [LEGACY] N(joined)=171 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4419_mask.fits (shape=(643, 629), masked=261 px; stars=1, galaxies=0)
 [OK] Wrote NGC4419_combined_VRI_mask.png
-[TIME] NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.39
+[TIME] NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=11.70
 [FOV] NGC4457: nx=725 ny=725 pixscale=0.2000"/pix rad=1.873 arcmin
 [FOV] FoV mask coverage: 65.43%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3706835541302245248 (GAIA J122856.91+033512.7) ra=187.237119 dec=3.586863 RA=12:28:56.91 DEC=+03:35:12.71 GaiaG=18.57 r_arcsec=2.50 | plx=-0.035±0.233 mas (SNR=-0.1) | pm=6.46±0.33 mas/yr (SNR=19.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3706835506942505600 (GAIA J122856.84+033417.9) ra=187.236825 dec=3.571632 RA=12:28:56.84 DEC=+03:34:17.87 GaiaG=17.06 r_arcsec=2.94 | plx=2.071±0.099 mas (SNR=20.8) | pm=23.18±0.18 mas/yr (SNR=131.7) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3706835330847890816 (GAIA J122901.20+033424.8) ra=187.255008 dec=3.573564 RA=12:29:01.20 DEC=+03:34:24.83 GaiaG=19.41 r_arcsec=2.50 | plx=0.323±0.405 mas (SNR=0.8) | pm=5.19±0.60 mas/yr (SNR=8.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3706835541302245248 (GAIA J122856.91+033512.7) ra=187.237119 dec=3.586863 RA=12:28:56.91 DEC=+03:35:12.71 GaiaG=18.57 r_arcsec=2.50 | plx=-0.035±0.233 mas (SNR=-0.1) | pm=6.46±0.33 mas/yr (SNR=19.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=332 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [GAL][LEGACY] (LS J122902.04+033315.1) ra=187.258482 dec=3.554184 RA=12:29:02.04 DEC=+03:33:15.06 type=REX z_l95=0.593 a=3.31" b=3.31" pa=0.0 z_mean=0.810 z_u95=1.079 sigma_z~0.124 SNR=6.4
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4457_mask.fits (shape=(725, 725), masked=2072 px; stars=3, galaxies=1)
 [OK] Wrote NGC4457_combined_VRI_mask.png
-[TIME] NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.75
+[TIME] NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=12.51
 [FOV] NGC4501: nx=1205 ny=1236 pixscale=0.2000"/pix rad=3.041 arcmin
 [FOV] FoV mask coverage: 45.15%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3932952340935999872 (GAIA J123202.80+142342.2) ra=188.011677 dec=14.395067 RA=12:32:02.80 DEC=+14:23:42.24 GaiaG=20.56 r_arcsec=2.50 | plx=0.515±0.896 mas (SNR=0.6) | pm=19.14±1.35 mas/yr (SNR=14.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3932964401203975040 (GAIA J123155.51+142613.4) ra=187.981275 dec=14.437048 RA=12:31:55.51 DEC=+14:26:13.37 GaiaG=18.43 r_arcsec=2.50 | plx=0.317±0.194 mas (SNR=1.6) | pm=9.47±0.28 mas/yr (SNR=33.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3932950859178905216 (GAIA J123201.21+142337.0) ra=188.005046 dec=14.393613 RA=12:32:01.21 DEC=+14:23:37.01 GaiaG=20.04 r_arcsec=2.50 | plx=0.644±0.625 mas (SNR=1.0) | pm=10.43±0.99 mas/yr (SNR=10.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3932952340935999872 (GAIA J123202.80+142342.2) ra=188.011677 dec=14.395067 RA=12:32:02.80 DEC=+14:23:42.24 GaiaG=20.56 r_arcsec=2.50 | plx=0.515±0.896 mas (SNR=0.6) | pm=19.14±1.35 mas/yr (SNR=14.2) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=532 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4501_mask.fits (shape=(1236, 1205), masked=1471 px; stars=3, galaxies=0)
 [OK] Wrote NGC4501_combined_VRI_mask.png
-[TIME] NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=8.32
+[TIME] NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=14.32
 [FOV] NGC4522: nx=590 ny=659 pixscale=0.2000"/pix rad=1.639 arcmin
 [FOV] FoV mask coverage: 46.91%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -219,20 +219,35 @@ WARNING: NGC4388_combined_VRI_mask.png size=(869, 323) != FITS size=(870, 323); 
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4522_mask.fits (shape=(659, 590), masked=1300 px; stars=2, galaxies=1)
 [OK] Wrote NGC4522_combined_VRI_mask.png
-[TIME] NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.69
+[TIME] NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=10.99
 [FOV] NGC4567_8: nx=971 ny=1059 pixscale=0.2000"/pix rad=2.559 arcmin
 [FOV] FoV mask coverage: 50.35%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
+[STAR] Gaia DR3 3904332706099725184 (GAIA J123638.33+111443.3) ra=189.159693 dec=11.245370 RA=12:36:38.33 DEC=+11:14:43.33 GaiaG=20.51 r_arcsec=2.50 | plx=-0.108±0.991 mas (SNR=-0.1) | pm=14.33±1.66 mas/yr (SNR=8.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3904332667447448448 (GAIA J123632.81+111419.8) ra=189.136715 dec=11.238829 RA=12:36:32.81 DEC=+11:14:19.78 GaiaG=19.14 r_arcsec=2.50 | plx=0.482±0.331 mas (SNR=1.5) | pm=6.57±0.58 mas/yr (SNR=11.4) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3904332701806139776 (GAIA J123637.01+111437.4) ra=189.154219 dec=11.243717 RA=12:36:37.01 DEC=+11:14:37.38 GaiaG=18.75 r_arcsec=2.50 | plx=0.156±0.253 mas (SNR=0.6) | pm=12.95±0.39 mas/yr (SNR=32.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
-[STAR] Gaia DR3 3904332706099725184 (GAIA J123638.33+111443.3) ra=189.159693 dec=11.245370 RA=12:36:38.33 DEC=+11:14:43.33 GaiaG=20.51 r_arcsec=2.50 | plx=-0.108±0.991 mas (SNR=-0.1) | pm=14.33±1.66 mas/yr (SNR=8.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3904332701806127488 (GAIA J123635.52+111451.2) ra=189.147989 dec=11.247553 RA=12:36:35.52 DEC=+11:14:51.19 GaiaG=19.06 r_arcsec=2.50 | plx=0.606±0.316 mas (SNR=1.9) | pm=31.07±0.49 mas/yr (SNR=62.8) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3904332358208728576 (GAIA J123633.74+111328.1) ra=189.140564 dec=11.224485 RA=12:36:33.74 DEC=+11:13:28.15 GaiaG=18.97 r_arcsec=2.50 | plx=1.635±0.340 mas (SNR=4.8) | pm=36.44±0.57 mas/yr (SNR=63.5) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=313 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4567_8_mask.fits (shape=(1059, 971), masked=2205 px; stars=5, galaxies=0)
 [OK] Wrote NGC4567_8_combined_VRI_mask.png
-[TIME] NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.88
+[TIME] NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=15.28
+[FOV] NGC4569: nx=888 ny=1260 pixscale=0.2000"/pix rad=2.733 arcmin
+[FOV] FoV mask coverage: 59.62%
+[0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
+[Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
+[STAR] Gaia DR3 3931813831004784384 (GAIA J123648.96+130840.1) ra=189.203985 dec=13.144477 RA=12:36:48.96 DEC=+13:08:40.12 GaiaG=18.78 r_arcsec=2.50 | plx=0.157±0.206 mas (SNR=0.8) | pm=19.38±0.34 mas/yr (SNR=57.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3931816751582662272 (GAIA J123644.55+130815.2) ra=189.185624 dec=13.137542 RA=12:36:44.55 DEC=+13:08:15.15 GaiaG=20.35 r_arcsec=2.50 | plx=0.196±0.655 mas (SNR=0.3) | pm=10.98±1.32 mas/yr (SNR=8.3) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3931816889022029440 (GAIA J123649.69+131001.1) ra=189.207046 dec=13.166965 RA=12:36:49.69 DEC=+13:10:01.07 GaiaG=17.38 r_arcsec=2.67 | plx=0.715±0.097 mas (SNR=7.3) | pm=10.94±0.16 mas/yr (SNR=66.5) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3931816889021499392 (GAIA J123649.44+130931.4) ra=189.206011 dec=13.158711 RA=12:36:49.44 DEC=+13:09:31.36 GaiaG=18.38 r_arcsec=2.50 | plx=0.467±0.181 mas (SNR=2.6) | pm=13.92±0.29 mas/yr (SNR=47.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3931813968443751168 (GAIA J123653.40+130938.1) ra=189.222520 dec=13.160595 RA=12:36:53.40 DEC=+13:09:38.14 GaiaG=19.72 r_arcsec=2.50 | plx=0.011±0.420 mas (SNR=0.0) | pm=3.78±0.66 mas/yr (SNR=5.7) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3931816923381250944 (GAIA J123652.88+131027.1) ra=189.220328 dec=13.174190 RA=12:36:52.88 DEC=+13:10:27.08 GaiaG=20.13 r_arcsec=2.50 | plx=0.048±0.537 mas (SNR=0.1) | pm=6.14±0.93 mas/yr (SNR=6.6) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3931816785942516736 (GAIA J123646.60+130907.8) ra=189.194180 dec=13.152168 RA=12:36:46.60 DEC=+13:09:07.81 GaiaG=20.51 r_arcsec=2.50 | plx=-0.495±0.710 mas (SNR=-0.7) | pm=9.05±1.32 mas/yr (SNR=6.9) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[LEGACY] N(joined)=263 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
+[OK] Wrote NGC4569_mask.fits (shape=(1260, 888), masked=3034 px; stars=7, galaxies=0)
+[OK] Wrote NGC4569_combined_VRI_mask.png
+[TIME] NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=13.42
 [FOV] NGC4580: nx=647 ny=619 pixscale=0.2000"/pix rad=1.657 arcmin
 [FOV] FoV mask coverage: 46.17%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -241,19 +256,19 @@ WARNING: NGC4388_combined_VRI_mask.png size=(869, 323) != FITS size=(870, 323); 
 [LEGACY] N(joined)=176 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4580_mask.fits (shape=(619, 647), masked=487 px; stars=1, galaxies=0)
 [OK] Wrote NGC4580_combined_VRI_mask.png
-[TIME] NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.42
+[TIME] NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=16.67
 [FOV] NGC4606: nx=434 ny=435 pixscale=0.2000"/pix rad=1.188 arcmin
 [FOV] FoV mask coverage: 51.84%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
 [Gaia] mode=foreground (foreground thresholds: plx≥0.002 mas & SNR≥5.0 OR pm≥0.02 mas/yr & SNR≥5.0)
-[STAR] Gaia DR3 3928479699433087360 (GAIA J124057.44+115424.8) ra=190.239349 dec=11.906892 RA=12:40:57.44 DEC=+11:54:24.81 GaiaG=18.30 r_arcsec=2.50 | plx=2.412±0.194 mas (SNR=12.5) | pm=35.19±0.33 mas/yr (SNR=106.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
-[STAR] Gaia DR3 3928479699433087104 (GAIA J124056.75+115411.6) ra=190.236476 dec=11.903212 RA=12:40:56.75 DEC=+11:54:11.56 GaiaG=13.13 r_arcsec=15.78 | plx=1.487±0.038 mas (SNR=39.2) | pm=23.93±0.07 mas/yr (SNR=367.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
 [STAR] Gaia DR3 3928483028033282688 (GAIA J124058.03+115516.5) ra=190.241798 dec=11.921242 RA=12:40:58.03 DEC=+11:55:16.47 GaiaG=20.58 r_arcsec=2.50 | plx=3.826±1.125 mas (SNR=3.4) | pm=21.98±2.20 mas/yr (SNR=10.0) | foreground because PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3928479699433087104 (GAIA J124056.75+115411.6) ra=190.236476 dec=11.903212 RA=12:40:56.75 DEC=+11:54:11.56 GaiaG=13.13 r_arcsec=15.78 | plx=1.487±0.038 mas (SNR=39.2) | pm=23.93±0.07 mas/yr (SNR=367.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
+[STAR] Gaia DR3 3928479699433087360 (GAIA J124057.44+115424.8) ra=190.239349 dec=11.906892 RA=12:40:57.44 DEC=+11:54:24.81 GaiaG=18.30 r_arcsec=2.50 | plx=2.412±0.194 mas (SNR=12.5) | pm=35.19±0.33 mas/yr (SNR=106.8) | foreground because PARALLAX: plx≥0.002 mas and SNR≥5.0 OR PM: pm≥0.02 mas/yr and SNR≥5.0
 [LEGACY] N(joined)=50 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4606_mask.fits (shape=(435, 434), masked=1408 px; stars=3, galaxies=0)
 WARNING: NGC4606_combined_VRI_mask.png size=(434, 434) != FITS size=(434, 435); resizing output PNG.
 [OK] Wrote NGC4606_combined_VRI_mask.png
-[TIME] NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.03
+[TIME] NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=13.54
 [FOV] NGC4607: nx=315 ny=598 pixscale=0.2000"/pix rad=1.291 arcmin
 [FOV] FoV mask coverage: 96.71%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -264,7 +279,7 @@ WARNING: NGC4606_combined_VRI_mask.png size=(434, 434) != FITS size=(434, 435); 
 [LEGACY] Legacy masking succeeded; skipping PS1/SDSS/NED fallback catalogs.
 [OK] Wrote NGC4607_mask.fits (shape=(598, 315), masked=2286 px; stars=1, galaxies=1)
 [OK] Wrote NGC4607_combined_VRI_mask.png
-[TIME] NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.27
+[TIME] NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=10.73
 [FOV] NGC4694: nx=439 ny=441 pixscale=0.2000"/pix rad=1.201 arcmin
 [FOV] FoV mask coverage: 50.33%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -274,7 +289,7 @@ WARNING: NGC4606_combined_VRI_mask.png size=(434, 434) != FITS size=(434, 435); 
 [OK] Wrote NGC4694_mask.fits (shape=(441, 439), masked=550 px; stars=1, galaxies=0)
 WARNING: NGC4694_combined_VRI_mask.png size=(438, 441) != FITS size=(439, 441); resizing output PNG.
 [OK] Wrote NGC4694_combined_VRI_mask.png
-[TIME] NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.33
+[TIME] NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=10.48
 [FOV] NGC4698: nx=608 ny=1189 pixscale=0.2000"/pix rad=2.390 arcmin
 [FOV] FoV mask coverage: 49.65%
 [0;32mINFO[0m: Query finished. [astroquery.utils.tap.core]
@@ -283,6 +298,6 @@ WARNING: NGC4694_combined_VRI_mask.png size=(438, 441) != FITS size=(439, 441); 
 [LEGACY] N(joined)=393 cols=['ls_id', 'ra', 'dec', 'type', 'release', 'brickid', 'objid', 'shape_r', 'shape_e1', 'shape_e2', 'z_phot_l95', 'z_phot_u95', 'z_phot_mean']
 [OK] Wrote NGC4698_mask.fits (shape=(1189, 608), masked=493 px; stars=1, galaxies=0)
 [OK] Wrote NGC4698_combined_VRI_mask.png
-[TIME] NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=6.79
-[TIME] total runtime_s=180.86
-=== v3tk masking run end:   2026-05-22T10:24:30 ===
+[TIME] NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits runtime_s=10.85
+[TIME] total runtime_s=592.58
+=== v3tk masking run end:   2026-05-29T14:20:43 ===

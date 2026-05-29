@@ -1,4 +1,5 @@
 import ast
+import importlib.util
 import tempfile
 from pathlib import Path
 
@@ -28,6 +29,16 @@ def load_helpers(script_name, required_names):
     namespace = {"Path": Path}
     exec(compile(ast.Module(body=nodes, type_ignores=[]), str(source_path), "exec"), namespace)
     return namespace
+
+
+def load_script_module(script_name):
+    source_path = ROOT / script_name
+    spec = importlib.util.spec_from_file_location(source_path.stem, source_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load module spec for {source_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_astropy_reads_gzip_fits_without_manual_unzip():
@@ -123,6 +134,21 @@ def test_proxy_resolver_finds_compressed_counterpart():
         )
 
         assert resolved == compressed.resolve()
+
+
+def test_proxy_combined_ngc4567_8_redshift_uses_member_mean():
+    proxy_ewha = load_script_module("proxy_EWHa.py")
+    with tempfile.TemporaryDirectory() as tmpdir:
+        redshift_path = Path(tmpdir) / "new_redshifts"
+        redshift_path.write_text(
+            "NGC4567 0.007495\n"
+            "NGC4568 0.007446\n",
+            encoding="utf-8",
+        )
+
+        z = proxy_ewha.lookup_redshift("NGC4567_8", redshift_path)
+
+        assert np.isclose(z, (0.007495 + 0.007446) / 2.0)
 
 
 def test_proxy_shell_delegates_input_resolution_to_python():

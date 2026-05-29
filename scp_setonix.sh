@@ -43,41 +43,32 @@ else
     GALAXIES=("${ALL_GALAXIES[@]}")
 fi
 
-# Set a batch size to limit concurrent connections and avoid overwhelming Setonix
+# Set the maximum number of concurrent workers
 BATCH_SIZE=40
-count=0
 
-# Loop through each galaxy
-for GALID in "${GALAXIES[@]}"; do
-    (
-        echo "Downloading files for ${GALID}..."
-        
-        # Create the local directory for the galaxy if it doesn't exist
-        mkdir -p "${LOCAL_DIR}/${GALID}"
+export LOCAL_DIR REMOTE_HOST REMOTE_BASE_DIR
 
-        # Grabs all matching files over a single SSH connection with checksum validation (-c)
-        rsync -avc --ignore-missing-args \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/CONFIG" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_kin_maps.fits" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_sfh_weights.fits" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_gas_bin_maps.fits" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_mask.fits" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_spatial_binning_maps.fits" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_gas_spaxel_maps.fits" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_sfh_maps.fits" \
-            "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/LOGFILE" \
-            "${LOCAL_DIR}/${GALID}/"
-        
-        echo "Finished ${GALID}"
-    ) &
+# Use xargs to maintain a true "rolling queue" of parallel workers
+printf "%s\n" "${GALAXIES[@]}" | xargs -P "$BATCH_SIZE" -I {} bash -c '
+    GALID="$1"
+    echo "Downloading files for ${GALID}..."
+    
+    mkdir -p "${LOCAL_DIR}/${GALID}"
 
-    # Wait for the current batch to finish before starting the next
-    count=$((count + 1))
-    if (( count % BATCH_SIZE == 0 )); then
-        wait
-    fi
-done
+    # Grabs all matching files over a single SSH connection with checksum validation (-c)
+    rsync -avc --ignore-missing-args \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/CONFIG" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_kin_maps.fits" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_sfh_weights.fits" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_gas_bin_maps.fits" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_mask.fits" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_spatial_binning_maps.fits" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_gas_spaxel_maps.fits" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/${GALID}_sfh_maps.fits" \
+        "${REMOTE_HOST}:${REMOTE_BASE_DIR}/${GALID}/LOGFILE" \
+        "${LOCAL_DIR}/${GALID}/"
+    
+    echo "Finished ${GALID}"
+' _ {}
 
-# Wait for any remaining background jobs to finish
-wait
 echo "Done!"
