@@ -2,20 +2,37 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 USERNAME [HOST]" >&2
+  echo "Usage: $0 USERNAME [HOST] [GALID ...]" >&2
   echo "Example: $0 rhuang" >&2
   echo "Example with explicit host: $0 rhuang setonix.pawsey.org.au" >&2
+  echo "Example for selected galaxies: $0 rhuang NGC4383 NGC4419" >&2
+  echo "Example for selected galaxies and explicit host: $0 rhuang setonix.pawsey.org.au NGC4383 NGC4419" >&2
 }
 
-if [[ $# -lt 1 || $# -gt 2 ]]; then
+if [[ $# -lt 1 ]]; then
   usage
   exit 2
 fi
 
 cd "$(dirname "$0")"
 
+. ./27_galaxies.sh
+
 REMOTE_USER="$1"
-REMOTE_HOST="${2:-setonix.pawsey.org.au}"
+shift
+REMOTE_HOST="setonix.pawsey.org.au"
+
+if [[ $# -gt 0 ]]; then
+  if is_known_galid "$1" || looks_like_galid "$1"; then
+    :
+  else
+    REMOTE_HOST="$1"
+    shift
+  fi
+fi
+
+select_galids "$@"
+GALIDS=("${SELECTED_GALIDS[@]}")
 
 if [[ "$REMOTE_USER" == *@* ]]; then
   REMOTE_LOGIN="$REMOTE_USER"
@@ -25,35 +42,6 @@ fi
 
 REMOTE_RUN_DIR="/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial"
 REMOTE_CONFIG_DIR="${REMOTE_RUN_DIR}/configFiles"
-
-GALIDS=(
-  IC3392
-  NGC4064
-  NGC4189
-  NGC4192
-  NGC4293
-  NGC4294
-  NGC4298
-  NGC4302
-  NGC4330
-  NGC4351
-  NGC4383
-  NGC4388
-  NGC4394
-  NGC4396
-  NGC4402
-  NGC4405
-  NGC4419
-  NGC4457
-  NGC4501
-  NGC4522
-  NGC4567_8
-  NGC4580
-  NGC4606
-  NGC4607
-  NGC4694
-  NGC4698
-)
 
 yaml_files=()
 slurm_files=()
@@ -77,6 +65,7 @@ for galid in "${GALIDS[@]}"; do
 done
 
 control_files=(
+  27_galaxies.sh
   27_setonix.sh
   27_status.sh
 )

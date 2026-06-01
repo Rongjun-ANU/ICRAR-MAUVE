@@ -19,10 +19,11 @@ config_setup/
   make_gist_config_try.py                      # actual generator to run
   make_gist_config.py                          # older/reference generator
   v3tk_v7.6.8_setonix.slurm                    # slurm template with GALID placeholder
-  27_creation.sh                               # create 26 YAMLs and 26 slurm scripts
-  27_send.sh                                   # send generated files to Setonix
-  27_setonix.sh                                # submit the 26 slurm scripts on Setonix
-  27_status.sh                                 # check completion/running/timeout status on Setonix
+  27_galaxies.sh                               # shared cube-ID list and argument filtering
+  27_creation.sh                               # create all/selected YAMLs and slurm scripts
+  27_send.sh                                   # send all/selected generated files to Setonix
+  27_setonix.sh                                # submit all/selected slurm scripts on Setonix
+  27_status.sh                                 # check all/selected completion/running/timeout status
   QC_ngist_v3tk_v768.py                        # post-run QC PDF generator
   GIST_setupinput_v1.fits                      # pointer to setup FITS table
   cube_centers_v3tk.csv                        # cube centers for v3tk cubes
@@ -97,6 +98,15 @@ From inside `config_setup`, run:
 ```bash
 ./27_creation.sh
 ```
+
+With no galaxy arguments, this processes all 26 cube IDs. To regenerate only
+selected cube IDs, pass them as positional arguments:
+
+```bash
+./27_creation.sh NGC4383 NGC4419
+```
+
+The script rejects unknown galaxy IDs before generating files.
 
 This runs the active generator once per cube ID, for example:
 
@@ -197,11 +207,25 @@ the host if needed:
 ./27_send.sh rhuang setonix.pawsey.org.au
 ```
 
+To send only selected cube IDs, pass the galaxy IDs after the username. If the
+second argument is a known galaxy ID, the script keeps the default Setonix host:
+
+```bash
+./27_send.sh rhuang NGC4383 NGC4419
+```
+
+With an explicit host, put the host before the galaxy IDs:
+
+```bash
+./27_send.sh rhuang setonix.pawsey.org.au NGC4383 NGC4419
+```
+
 The send script copies:
 
-- The 26 generated YAML files to
+- The selected generated YAML files, all 26 by default, to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/`
-- The 26 generated slurm scripts plus `27_setonix.sh` and `27_status.sh` to
+- The selected generated slurm scripts, all 26 by default, plus
+  `27_galaxies.sh`, `27_setonix.sh`, and `27_status.sh` to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/`
 
 It uses `tar` streamed through `ssh`, not `scp`, because Setonix prints a login
@@ -215,20 +239,33 @@ On Setonix, submit all jobs from the tutorial directory with:
 ./27_setonix.sh
 ```
 
+To submit only selected cube IDs:
+
+```bash
+./27_setonix.sh NGC4383 NGC4419
+```
+
 That script sequentially runs:
 
 ```bash
 sbatch {GALID}_v3tk_v7.6.8_setonix.slurm
 ```
 
-for all 26 cube IDs. The `sbatch` commands are issued one by one, but the jobs
-can then run together according to the Setonix scheduler.
+for the selected cube IDs, or all 26 cube IDs by default. The `sbatch` commands
+are issued one by one, but the jobs can then run together according to the
+Setonix scheduler.
 
 To check job completion and timeout status on Setonix, run from the same
 tutorial directory:
 
 ```bash
 ./27_status.sh
+```
+
+To check only selected cube IDs:
+
+```bash
+./27_status.sh NGC4383 NGC4419
 ```
 
 The status script reads each product `LOGFILE` under:

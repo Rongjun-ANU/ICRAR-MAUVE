@@ -9,36 +9,9 @@ COMPLETION_STRING="MainPipeline: nGIST completed successfully."
 STATUS_LOG="27_status_log_$(date +%Y%m%d_%H%M%S).txt"
 LONG_QUEUE_ESTIMATE_WARNING_SECONDS=$((22 * 3600))
 
-exec > >(tee "$STATUS_LOG") 2>&1
-
-GALIDS=(
-  IC3392
-  NGC4064
-  NGC4189
-  NGC4192
-  NGC4293
-  NGC4294
-  NGC4298
-  NGC4302
-  NGC4330
-  NGC4351
-  NGC4383
-  NGC4388
-  NGC4394
-  NGC4396
-  NGC4402
-  NGC4405
-  NGC4419
-  NGC4457
-  NGC4501
-  NGC4522
-  NGC4567_8
-  NGC4580
-  NGC4606
-  NGC4607
-  NGC4694
-  NGC4698
-)
+. ./27_galaxies.sh
+select_galids "$@"
+GALIDS=("${SELECTED_GALIDS[@]}")
 
 timestamp_to_epoch() {
   local stamp="$1"
@@ -534,6 +507,7 @@ remaining_module_estimates() {
   fi
 }
 
+{
 FINISHED_LOGS=()
 for galid in "${GALIDS[@]}"; do
   product_log="${PRODUCT_BASE}/${galid}/LOGFILE"
@@ -682,3 +656,4 @@ echo "  GAS estimates scale by SPECTRA for SPAXEL-only resume, or SPECTRA+BINS b
 echo "  SFH estimates scale by BINS. LS and UMOD are listed as NA if enabled but no estimator is implemented."
 echo "  Estimates use the maximum scaled module time from comparable finished jobs."
 echo "  Long-queue warnings mean the same module restarted without completing, one module estimate is longer than 22h, or total EST_REMAIN is longer than 22h."
+} 2>&1 | tee "$STATUS_LOG"
