@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/IC3392/IC3392_gas_BIN_ma
 Resolved cont file  : /arc/projects/mauve/products/v0.6/IC3392/IC3392_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : IC3392
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 1664.001 km/s
-Finite Halpha velocity spaxels: 73168
-Spaxel redshift range         : 0.004668 - 0.006183
+Finite Halpha velocity pixels : 73168
+Finite Halpha velocity bins   : 4077
+Bin redshift range            : 0.004668 - 0.006183
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6586.389 - 6610.404 A
 Continuum planes in window    : 19
-Valid CONT_HA_MEAN pixels     : 191406
+Valid CONT_HA_MEAN pixels     : 73168
 Valid proxy_EWHa pixels       : 73168
 Valid pseudo_EWHa pixels      : 73168
-✅  IC3392 finished in 0m36s
+✅  IC3392 finished in 0m34s

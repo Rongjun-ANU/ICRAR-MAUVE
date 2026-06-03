@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4396/NGC4396_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4396/NGC4396_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4396
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : -125.040 km/s
-Finite Halpha velocity spaxels: 158915
-Spaxel redshift range         : -0.006551 - 0.006776
+Finite Halpha velocity pixels : 158915
+Finite Halpha velocity bins   : 2338
+Bin redshift range            : -0.006551 - 0.006776
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6512.844 - 6614.304 A
 Continuum planes in window    : 81
-Valid CONT_HA_MEAN pixels     : 666665
+Valid CONT_HA_MEAN pixels     : 158915
 Valid proxy_EWHa pixels       : 158915
 Valid pseudo_EWHa pixels      : 158915
-✅  NGC4396 finished in 0m58s
+✅  NGC4396 finished in 0m54s

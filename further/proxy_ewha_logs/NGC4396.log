@@ -6,7 +6,6 @@ Local fallback root : /arc/home/RongjunHuang/ICRAR/further
 Input resolution    : delegated to proxy_EWHa.py
 Redshift file       : /arc/home/RongjunHuang/ICRAR/further/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4396
@@ -30,12 +29,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : -125.040 km/s
-Finite Halpha velocity spaxels: 261296
-Spaxel redshift range         : -0.000975 - 0.000274
+Finite Halpha velocity pixels : 261296
+Finite Halpha velocity bins   : 1947
+Bin redshift range            : -0.000975 - 0.000274
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6549.398 - 6571.583 A
 Continuum planes in window    : 18
-Valid CONT_HA_MEAN pixels     : 269150
-Valid proxy_EWHa pixels       : 259183
-Valid pseudo_EWHa pixels      : 261283
-✅  NGC4396 finished in 1m9s
+Valid CONT_HA_MEAN pixels     : 261296
+Valid proxy_EWHa pixels       : 261296
+Valid pseudo_EWHa pixels      : 261296
+✅  NGC4396 finished in 1m8s

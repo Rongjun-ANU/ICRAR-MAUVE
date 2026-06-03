@@ -713,6 +713,76 @@ def apply_spatial_keep_mask(
     return masked_maps
 
 
+def read_spatial_binid_map(bin_path: Path, expected_shape: tuple[int, ...]) -> np.ndarray:
+    with fits.open(bin_path) as hdul:
+        if "BINID" in hdul:
+            raw_binid = np.asarray(hdul["BINID"].data, dtype=np.float64)
+        elif len(hdul) > 1:
+            raw_binid = np.asarray(hdul[1].data, dtype=np.float64)
+        else:
+            raise KeyError(f"Could not find BINID extension in {bin_path.name}.")
+
+    if raw_binid.shape != expected_shape:
+        raise ValueError(
+            f"BINID shape mismatch for {bin_path.name}: "
+            f"{raw_binid.shape} vs gas-map shape {expected_shape}."
+        )
+
+    finite_bin = np.isfinite(raw_binid) & (raw_binid >= 0)
+    if not np.any(finite_bin):
+        raise ValueError(f"BINID map in {bin_path.name} has no finite non-negative bins.")
+
+    rounded_binid = np.rint(raw_binid[finite_bin])
+    if not np.allclose(raw_binid[finite_bin], rounded_binid, rtol=0.0, atol=1.0e-6):
+        raise ValueError(f"BINID map in {bin_path.name} contains non-integer bin values.")
+
+    binid = np.full(raw_binid.shape, -1, dtype=np.int32)
+    binid[finite_bin] = rounded_binid.astype(np.int32)
+    return binid
+
+
+def collapse_map_to_spatial_bins(
+    data: np.ndarray, binid_map: np.ndarray, label: str
+) -> np.ndarray:
+    data = np.asarray(data, dtype=np.float64)
+    if data.shape != binid_map.shape:
+        raise ValueError(
+            f"{label} shape mismatch: map shape {data.shape} vs BINID shape {binid_map.shape}."
+        )
+
+    bin_pixels = binid_map >= 0
+    if not np.any(bin_pixels):
+        raise ValueError(f"Cannot bin-collapse {label}: BINID map has no valid pixels.")
+
+    valid = bin_pixels & np.isfinite(data)
+    max_binid = int(np.max(binid_map[bin_pixels]))
+    sums = np.bincount(
+        binid_map[valid].ravel(),
+        weights=data[valid].ravel(),
+        minlength=max_binid + 1,
+    )
+    counts = np.bincount(binid_map[valid].ravel(), minlength=max_binid + 1)
+    means = np.divide(
+        sums,
+        counts,
+        out=np.full(max_binid + 1, np.nan, dtype=np.float64),
+        where=counts > 0,
+    )
+
+    binned = np.full(data.shape, np.nan, dtype=np.float64)
+    binned[valid] = means[binid_map[valid]]
+    return binned
+
+
+def collapse_named_maps_to_spatial_bins(
+    binid_map: np.ndarray, maps: dict[str, np.ndarray]
+) -> dict[str, np.ndarray]:
+    return {
+        name: collapse_map_to_spatial_bins(data, binid_map, name)
+        for name, data in maps.items()
+    }
+
+
 def read_galaxy_inclination(galaxy_name, inclination_file="MAUVE_Inclination.dat"):
     """
     Read galaxy inclination from MAUVE_Inclination.dat file.
@@ -901,6 +971,23 @@ with fits.open(src) as hdul:
         te_optional_maps[f"{line_base}_FLUX_ERR"] = np.full(map_shape, np.nan, dtype=float)
 
 globals().update(te_optional_maps)
+
+gas_binid_map = read_spatial_binid_map(bin_further_path, map_shape)
+gas_bin_map_names = SPATIAL_BASE_MAP_NAMES + tuple(
+    f"{line_base}_{suffix}"
+    for line_base in GAS_LINE_BASES
+    for suffix in ("FLUX", "FLUX_ERR")
+)
+globals().update(
+    collapse_named_maps_to_spatial_bins(
+        gas_binid_map,
+        {name: globals()[name] for name in gas_bin_map_names},
+    )
+)
+print(
+    "Gas-line maps collapsed onto spatial BINID: "
+    f"{np.unique(gas_binid_map[gas_binid_map >= 0]).size} bins"
+)
 
 print("Available gas-line flux/error pairs:")
 for line_base in GAS_LINE_BASES:

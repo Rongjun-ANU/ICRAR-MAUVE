@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4522/NGC4522_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4522/NGC4522_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4522
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 2320.041 km/s
-Finite Halpha velocity spaxels: 120510
-Spaxel redshift range         : 0.001455 - 0.014892
+Finite Halpha velocity pixels : 120510
+Finite Halpha velocity bins   : 2717
+Bin redshift range            : 0.001455 - 0.014892
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6565.325 - 6667.621 A
 Continuum planes in window    : 82
-Valid CONT_HA_MEAN pixels     : 388810
+Valid CONT_HA_MEAN pixels     : 120510
 Valid proxy_EWHa pixels       : 120510
 Valid pseudo_EWHa pixels      : 120510
-✅  NGC4522 finished in 0m54s
+✅  NGC4522 finished in 0m48s

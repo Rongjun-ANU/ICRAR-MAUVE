@@ -882,6 +882,7 @@ def load_o3n2_m13_hii_galaxy_maps_with_errors(galaxy):
 
     with fits.open(spatial_path) as h_spatial, fits.open(gas_path) as h_gas:
         mass_map = h_spatial["LOGMASS_SURFACE_DENSITY"].data
+        binid_map = h_spatial["BINID"].data
         sfr_map = h_gas["LOGSFR_SURFACE_DENSITY_HII"].data
         oh_map = h_gas["O_H_O3N2_M13_HII"].data
         gas_header = h_gas["LOGSFR_SURFACE_DENSITY_HII"].header
@@ -926,6 +927,7 @@ def load_o3n2_m13_hii_galaxy_maps_with_errors(galaxy):
     return {
         "galaxy": galaxy,
         "log_sigma_star_map": np.asarray(mass_map, dtype=float),
+        "binid_map": np.asarray(binid_map, dtype=float),
         "log_sigma_sfr_map": np.asarray(sfr_map, dtype=float),
         "oh_map": np.asarray(oh_map, dtype=float),
         "sigma_log_sfr_map": np.asarray(sfr_err_map, dtype=float),
@@ -1365,26 +1367,47 @@ def compute_offset_maps_from_mass_bins(
     }
 
 
-def local_bivariate_moran(A, B, valid_mask, neighbourhood="queen"):
+def local_bivariate_moran_by_bin(A, B, valid_mask, binid_map, neighbourhood="queen"):
+    """Local bivariate Moran-style statistic on adjacent spatial bins."""
     A = np.asarray(A, dtype=float)
     B = np.asarray(B, dtype=float)
     valid_mask = np.asarray(valid_mask, dtype=bool)
+    binid_raw = np.asarray(binid_map, dtype=float)
+    if A.shape != B.shape or A.shape != valid_mask.shape or A.shape != binid_raw.shape:
+        raise ValueError("A, B, valid_mask, and binid_map must have the same shape")
 
-    ny, nx = A.shape
     I_map = np.full_like(A, np.nan, dtype=float)
     quad_map = np.zeros_like(A, dtype=int)
+    finite_bin = np.isfinite(binid_raw) & (binid_raw >= 0)
+    binid = np.full(A.shape, -1, dtype=np.int64)
+    binid[finite_bin] = np.rint(binid_raw[finite_bin]).astype(np.int64)
+    valid = valid_mask & np.isfinite(A) & np.isfinite(B) & (binid >= 0)
+    valid_bins = np.unique(binid[valid])
+    if valid_bins.size < 2:
+        return I_map, quad_map
 
-    Aval = A[valid_mask]
-    Bval = B[valid_mask]
-    Astd = np.nanstd(Aval)
-    Bstd = np.nanstd(Bval)
-    if not np.isfinite(Astd) or Astd == 0:
-        Astd = 1.0
-    if not np.isfinite(Bstd) or Bstd == 0:
-        Bstd = 1.0
+    max_bin = int(valid_bins.max())
+    flat_bins = binid[valid].ravel()
+    counts = np.bincount(flat_bins, minlength=max_bin + 1).astype(float)
+    sum_A = np.bincount(flat_bins, weights=A[valid].ravel(), minlength=max_bin + 1)
+    sum_B = np.bincount(flat_bins, weights=B[valid].ravel(), minlength=max_bin + 1)
+    A_bin = np.full(max_bin + 1, np.nan)
+    B_bin = np.full(max_bin + 1, np.nan)
+    has_data = counts > 0
+    A_bin[has_data] = sum_A[has_data] / counts[has_data]
+    B_bin[has_data] = sum_B[has_data] / counts[has_data]
 
-    Az = (A - np.nanmean(Aval)) / Astd
-    Bz = (B - np.nanmean(Bval)) / Bstd
+    A_vals = A_bin[valid_bins]
+    B_vals = B_bin[valid_bins]
+    A_std = np.nanstd(A_vals)
+    B_std = np.nanstd(B_vals)
+    if not np.isfinite(A_std) or not np.isfinite(B_std) or A_std == 0 or B_std == 0:
+        return I_map, quad_map
+
+    Az = np.full(max_bin + 1, np.nan)
+    Bz = np.full(max_bin + 1, np.nan)
+    Az[valid_bins] = (A_vals - np.nanmean(A_vals)) / A_std
+    Bz[valid_bins] = (B_vals - np.nanmean(B_vals)) / B_std
 
     if neighbourhood == "queen":
         offsets = [
@@ -1397,33 +1420,40 @@ def local_bivariate_moran(A, B, valid_mask, neighbourhood="queen"):
     else:
         raise ValueError("neighbourhood must be 'queen' or 'rook'")
 
-    for i in range(ny):
-        for j in range(nx):
-            if not valid_mask[i, j]:
-                continue
+    adjacency = {int(b): set() for b in valid_bins}
+    ny, nx = A.shape
+    for dy, dx in offsets:
+        y0 = max(0, -dy)
+        y1 = ny - max(0, dy)
+        x0 = max(0, -dx)
+        x1 = nx - max(0, dx)
+        src = (slice(y0, y1), slice(x0, x1))
+        dst = (slice(y0 + dy, y1 + dy), slice(x0 + dx, x1 + dx))
+        pair_valid = valid[src] & valid[dst] & (binid[src] != binid[dst])
+        for left, right in zip(binid[src][pair_valid], binid[dst][pair_valid]):
+            left = int(left)
+            right = int(right)
+            adjacency[left].add(right)
+            adjacency[right].add(left)
 
-            neigh_vals = []
-            for dy, dx in offsets:
-                ii = i + dy
-                jj = j + dx
-                if 0 <= ii < ny and 0 <= jj < nx and valid_mask[ii, jj]:
-                    neigh_vals.append(Bz[ii, jj])
+    for b in valid_bins:
+        b = int(b)
+        neigh = sorted(adjacency[b])
+        if not neigh:
+            continue
+        lag_B = float(np.nanmean(Bz[neigh]))
+        I_val = Az[b] * lag_B
+        pixels = valid & (binid == b)
+        I_map[pixels] = I_val
 
-            if not neigh_vals:
-                continue
-
-            lag_B = float(np.mean(neigh_vals))
-            I_val = Az[i, j] * lag_B
-            I_map[i, j] = I_val
-
-            if Az[i, j] >= 0 and lag_B >= 0:
-                quad_map[i, j] = 1
-            elif Az[i, j] < 0 and lag_B >= 0:
-                quad_map[i, j] = 2
-            elif Az[i, j] < 0 and lag_B < 0:
-                quad_map[i, j] = 3
-            else:
-                quad_map[i, j] = 4
+        if Az[b] >= 0 and lag_B >= 0:
+            quad_map[pixels] = 1
+        elif Az[b] < 0 and lag_B < 0:
+            quad_map[pixels] = 2
+        elif Az[b] >= 0 and lag_B < 0:
+            quad_map[pixels] = 3
+        else:
+            quad_map[pixels] = 4
 
     return I_map, quad_map
 
@@ -1491,10 +1521,11 @@ def build_simulated_moran_maps_for_galaxy(
         valid_mask,
         n_bins=offset_n_bins,
     )
-    I_map, quad_map = local_bivariate_moran(
+    I_map, quad_map = local_bivariate_moran_by_bin(
         offset_data["sfr_offset"],
         offset_data["oh_offset"],
         valid_mask,
+        galaxy_maps["binid_map"],
         neighbourhood=neighbourhood,
     )
 

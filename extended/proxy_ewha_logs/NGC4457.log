@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4457/NGC4457_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4457/NGC4457_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4457
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 880.692 km/s
-Finite Halpha velocity spaxels: 259370
-Spaxel redshift range         : -0.004796 - 0.006932
+Finite Halpha velocity pixels : 259370
+Finite Halpha velocity bins   : 19405
+Bin redshift range            : -0.004796 - 0.006932
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6524.346 - 6615.327 A
 Continuum planes in window    : 73
-Valid CONT_HA_MEAN pixels     : 525625
+Valid CONT_HA_MEAN pixels     : 259370
 Valid proxy_EWHa pixels       : 259370
 Valid pseudo_EWHa pixels      : 259370
-✅  NGC4457 finished in 0m56s
+✅  NGC4457 finished in 0m48s

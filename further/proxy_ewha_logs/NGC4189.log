@@ -1,22 +1,20 @@
 Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
 Python 3.13.3
-Product root        : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4189
+Product root        : /arc/home/RongjunHuang/ICRAR/further
 Cube root           : /arc/projects/mauve/cubes/v3tk
 Local fallback root : /arc/home/RongjunHuang/ICRAR/further
-Resolved bin file   : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4189/NGC4189_spatial_binning_maps_further.fits
-Resolved gas file   : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4189/NGC4189_gas_bin_maps_further.fits
-Resolved cont file  : /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+Input resolution    : delegated to proxy_EWHa.py
 Redshift file       : /arc/home/RongjunHuang/ICRAR/further/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4189
 Redshift (z)    : 0.006997
 Primary root    : /arc/home/RongjunHuang/ICRAR/further
+Fallback root   : /arc/home/RongjunHuang/ICRAR/further
 Binning FITS    : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4189/NGC4189_spatial_binning_maps_further.fits
 Gas FITS        : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4189/NGC4189_gas_bin_maps_further.fits
-Continuum FITS  : /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+Continuum FITS  : /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
 Redshift file   : /arc/home/RongjunHuang/ICRAR/further/new_redshifts
 Output FITS     : /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4189/NGC4189_proxy_EW_maps_further.fits
 Halpha window (vacuum, rest) : 6557.600 - 6571.600 A
@@ -31,12 +29,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 2090.309 km/s
-Finite Halpha velocity spaxels: 176794
-Spaxel redshift range         : 0.005833 - 0.007525
+Finite Halpha velocity pixels : 176794
+Finite Halpha velocity bins   : 4893
+Bin redshift range            : 0.005833 - 0.007525
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6594.031 - 6619.223 A
 Continuum planes in window    : 20
-Valid CONT_HA_MEAN pixels     : 180105
-Valid proxy_EWHa pixels       : 176602
-Valid pseudo_EWHa pixels      : 176791
-✅  NGC4189 finished in 0m8s
+Valid CONT_HA_MEAN pixels     : 176794
+Valid proxy_EWHa pixels       : 176794
+Valid pseudo_EWHa pixels      : 176794
+✅  NGC4189 finished in 0m43s

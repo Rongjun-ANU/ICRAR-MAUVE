@@ -6,7 +6,6 @@ Local fallback root : /arc/home/RongjunHuang/ICRAR/further
 Input resolution    : delegated to proxy_EWHa.py
 Redshift file       : /arc/home/RongjunHuang/ICRAR/further/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4567_8
@@ -30,12 +29,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 2231.234 km/s
-Finite Halpha velocity spaxels: 508484
-Spaxel redshift range         : 0.007011 - 0.010453
+Finite Halpha velocity pixels : 508484
+Finite Halpha velocity bins   : 31715
+Bin redshift range            : 0.007011 - 0.010453
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6601.752 - 6638.457 A
 Continuum planes in window    : 29
-Valid CONT_HA_MEAN pixels     : 514801
-Valid proxy_EWHa pixels       : 508428
+Valid CONT_HA_MEAN pixels     : 508484
+Valid proxy_EWHa pixels       : 508484
 Valid pseudo_EWHa pixels      : 508484
-✅  NGC4567_8 finished in 1m31s
+✅  NGC4567_8 finished in 1m34s

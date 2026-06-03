@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4383/NGC4383_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4383/NGC4383_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4383
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 1705.139 km/s
-Finite Halpha velocity spaxels: 129210
-Spaxel redshift range         : 0.000769 - 0.006021
+Finite Halpha velocity pixels : 129210
+Finite Halpha velocity bins   : 9028
+Bin redshift range            : 0.000769 - 0.006021
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6560.829 - 6609.343 A
 Continuum planes in window    : 39
-Valid CONT_HA_MEAN pixels     : 446265
+Valid CONT_HA_MEAN pixels     : 129210
 Valid proxy_EWHa pixels       : 129210
 Valid pseudo_EWHa pixels      : 129210
-✅  NGC4383 finished in 0m54s
+✅  NGC4383 finished in 0m49s

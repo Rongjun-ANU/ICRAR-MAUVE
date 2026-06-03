@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4698/NGC4698_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4698/NGC4698_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4698
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 1007.403 km/s
-Finite Halpha velocity spaxels: 283391
-Spaxel redshift range         : 0.001993 - 0.005127
+Finite Halpha velocity pixels : 283391
+Finite Halpha velocity bins   : 23672
+Bin redshift range            : 0.001993 - 0.005127
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6568.858 - 6603.471 A
 Continuum planes in window    : 27
-Valid CONT_HA_MEAN pixels     : 722912
+Valid CONT_HA_MEAN pixels     : 283391
 Valid proxy_EWHa pixels       : 283391
 Valid pseudo_EWHa pixels      : 283391
-✅  NGC4698 finished in 1m11s
+✅  NGC4698 finished in 1m7s

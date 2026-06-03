@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4293/NGC4293_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4293/NGC4293_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4293
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 898.925 km/s
-Finite Halpha velocity spaxels: 250600
-Spaxel redshift range         : -0.004023 - 0.009373
+Finite Halpha velocity pixels : 250600
+Finite Halpha velocity bins   : 21133
+Bin redshift range            : -0.004023 - 0.009373
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6529.415 - 6631.363 A
 Continuum planes in window    : 82
-Valid CONT_HA_MEAN pixels     : 491036
+Valid CONT_HA_MEAN pixels     : 250600
 Valid proxy_EWHa pixels       : 250600
 Valid pseudo_EWHa pixels      : 250600
-✅  NGC4293 finished in 0m57s
+✅  NGC4293 finished in 0m52s

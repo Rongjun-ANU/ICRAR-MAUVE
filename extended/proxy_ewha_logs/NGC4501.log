@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4501/NGC4501_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4501/NGC4501_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4501
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : 2275.418 km/s
-Finite Halpha velocity spaxels: 646174
-Spaxel redshift range         : 0.001300 - 0.014974
+Finite Halpha velocity pixels : 646174
+Finite Halpha velocity bins   : 75413
+Bin redshift range            : 0.001300 - 0.014974
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6564.315 - 6668.162 A
 Continuum planes in window    : 83
-Valid CONT_HA_MEAN pixels     : 1489380
+Valid CONT_HA_MEAN pixels     : 646174
 Valid proxy_EWHa pixels       : 646174
 Valid pseudo_EWHa pixels      : 646174
-✅  NGC4501 finished in 1m22s
+✅  NGC4501 finished in 1m15s

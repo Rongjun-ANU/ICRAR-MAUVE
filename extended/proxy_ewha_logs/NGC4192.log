@@ -8,7 +8,6 @@ Resolved gas file   : /arc/projects/mauve/products/v0.6/NGC4192/NGC4192_gas_BIN_
 Resolved cont file  : /arc/projects/mauve/products/v0.6/NGC4192/NGC4192_CONTcube.fits
 Redshift file       : /arc/home/RongjunHuang/ICRAR/extended/new_redshifts
 
-WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
 
 === proxy_EWHa inputs/outputs ===
 Galaxy          : NGC4192
@@ -31,12 +30,13 @@ Legacy R-band source          : magnitude_r_uncorrected
 Continuum cube source HDU     : DATA
 Continuum spectral axis       : AWAV
 Galaxy systemic velocity      : -142.135 km/s
-Finite Halpha velocity spaxels: 489332
-Spaxel redshift range         : -0.005834 - 0.000720
+Finite Halpha velocity pixels : 489332
+Finite Halpha velocity bins   : 34433
+Bin redshift range            : -0.005834 - 0.000720
 Selected rest-frame window    : 6555.789 - 6569.785 A
 Observed-frame window range   : 6517.546 - 6574.518 A
 Continuum planes in window    : 45
-Valid CONT_HA_MEAN pixels     : 1778868
+Valid CONT_HA_MEAN pixels     : 489332
 Valid proxy_EWHa pixels       : 489332
 Valid pseudo_EWHa pixels      : 489332
-✅  NGC4192 finished in 1m1s
+✅  NGC4192 finished in 0m56s

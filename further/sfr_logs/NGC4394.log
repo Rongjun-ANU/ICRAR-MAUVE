@@ -1,13 +1,14 @@
-Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python executable: /opt/miniconda3/envs/ICRAR/bin/python
 Python 3.13.3
 PYTHONUNBUFFERED: 1
-Product root     : /arc/home/RongjunHuang/ICRAR/further
-Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+Product root     : /Users/Igniz/Desktop/ICRAR/further
+Local fallback   : /Users/Igniz/Desktop/ICRAR/further
 
 Shared input keyword ➜ <none>
-Reading gas-line FITS ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_gas_bin_maps.fits
-Matched binning FITS ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_spatial_binning_maps_further.fits
-Spatial mask FITS ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_mask.fits
+Reading gas-line FITS ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_gas_BIN_maps.fits
+Matched binning FITS ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_spatial_binning_maps_further.fits
+Spatial mask FITS ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_mask.fits
+Gas-line maps collapsed onto spatial BINID: 13298 bins
 Available gas-line flux/error pairs:
   - HB4861
   - OIII4958
@@ -36,7 +37,7 @@ Te-method optional emission-line availability:
   - OII7330: available
   - SIII9068: missing
 Spatial mask applied: MASKFILE[MASK] table; row-major MASK == 0; keep=179299, masked=224429, finite H-alpha after mask=179299
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:924: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1049: RuntimeWarning: divide by zero encountered in divide
   BD = HA6562_FLUX / HB4861_FLUX
 --------------------------------------------------------------
 Extinction law for k(λ)=A(λ)/E(B−V): calzetti
@@ -58,80 +59,80 @@ k(OII7329) = 2.8854   at λ=0.7329 µm
 k(OII7330) = 2.8844   at λ=0.7331 µm
 k(SIII9068) = 2.1615   at λ=0.9069 µm (line missing; NaN placeholder)
 --------------------------------------------------------------
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1804: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1929: RuntimeWarning: divide by zero encountered in divide
   y = np.log10(NII6583_FLUX_corr / (SII6716_FLUX_corr + SII6730_FLUX_corr)) + 0.264*np.log10(NII6583_FLUX_corr / HA6562_FLUX_corr)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1815: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1940: RuntimeWarning: divide by zero encountered in divide
   N2 = NII_scaled / HB4861_FLUX_corr   # N2 = I([N II]λ6548 + λ6584)/I(Hβ)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1816: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1941: RuntimeWarning: divide by zero encountered in divide
   S2 = (SII6716_FLUX_corr + SII6730_FLUX_corr) / HB4861_FLUX_corr  # S2 = I([S II]λ6717 + λ6731)/I(Hβ)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1816: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1941: RuntimeWarning: invalid value encountered in divide
   S2 = (SII6716_FLUX_corr + SII6730_FLUX_corr) / HB4861_FLUX_corr  # S2 = I([S II]λ6717 + λ6731)/I(Hβ)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1817: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1942: RuntimeWarning: divide by zero encountered in divide
   R3 = OIII_scaled / HB4861_FLUX_corr  # R3 = I([O III]λ4959 + λ5007)/I(Hβ) (same value as R2 in this case)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1817: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1942: RuntimeWarning: invalid value encountered in divide
   R3 = OIII_scaled / HB4861_FLUX_corr  # R3 = I([O III]λ4959 + λ5007)/I(Hβ) (same value as R2 in this case)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1819: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1944: RuntimeWarning: divide by zero encountered in divide
   log_R3_S2 = np.log10(R3/S2)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1819: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1944: RuntimeWarning: invalid value encountered in divide
   log_R3_S2 = np.log10(R3/S2)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1819: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1944: RuntimeWarning: divide by zero encountered in log10
   log_R3_S2 = np.log10(R3/S2)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1821: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1946: RuntimeWarning: divide by zero encountered in log10
   log_S2 = np.log10(S2)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1844: RuntimeWarning: invalid value encountered in add
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1969: RuntimeWarning: invalid value encountered in add
   O_H_PG16[upper_mask] = (a1_upper + a2_upper * log_R3_S2[upper_mask] + a3_upper * log_N2[upper_mask] +
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1869: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:1994: RuntimeWarning: divide by zero encountered in divide
   n2s2_ratio = np.log10(nii6583_flux / sii_total)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1914: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2039: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1914: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2039: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1916: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2041: RuntimeWarning: divide by zero encountered in log10
   o3n2_ratio = np.log10(oiii_hb / nii_ha)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1961: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2086: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1961: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2086: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1963: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2088: RuntimeWarning: divide by zero encountered in log10
   o3n2_ratio = np.log10(oiii_hb / nii_ha)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2020: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2145: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2020: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2145: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2022: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2147: RuntimeWarning: divide by zero encountered in log10
   o3n2_ratio = np.log10(oiii_hb / nii_ha)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2122: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2247: RuntimeWarning: divide by zero encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2122: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2247: RuntimeWarning: invalid value encountered in divide
   oiii_hb = oiii5006_flux / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2125: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2250: RuntimeWarning: divide by zero encountered in divide
   sii_hb = sii_total / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2125: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2250: RuntimeWarning: invalid value encountered in divide
   sii_hb = sii_total / hb4861_flux
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2128: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2253: RuntimeWarning: divide by zero encountered in divide
   o3s2_ratio = np.log10(oiii_hb / sii_hb)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2128: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2253: RuntimeWarning: invalid value encountered in divide
   o3s2_ratio = np.log10(oiii_hb / sii_hb)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2128: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2253: RuntimeWarning: divide by zero encountered in log10
   o3s2_ratio = np.log10(oiii_hb / sii_hb)
 Calculating all 6 C20 metallicities for NGC4394...
 Combined C20 metallicity: median = 8.696, range = (8.002, 8.942)
 Combined C20 dominant-weight method usage: O3N2=73097, O3S2=10, RS32=9709, R3=65647, N2=113, S2=26389
 Galaxy NGC4394 inclination: 32.0° (cos θ = 0.848)
 Inclination correction ENABLED: applying b/a = 0.855 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2837: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2962: RuntimeWarning: divide by zero encountered in log10
   logS2  = np.log10((SII6716_FLUX_corr+SII6730_FLUX_corr) / HA6562_FLUX_corr)   # Σ[S II]/Hα
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2838: RuntimeWarning: divide by zero encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2963: RuntimeWarning: divide by zero encountered in divide
   logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2838: RuntimeWarning: invalid value encountered in divide
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2963: RuntimeWarning: invalid value encountered in divide
   logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2838: RuntimeWarning: divide by zero encountered in log10
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:2963: RuntimeWarning: divide by zero encountered in log10
   logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2924: RuntimeWarning: invalid value encountered in add
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:3049: RuntimeWarning: invalid value encountered in add
   mask_N2_right, mask_S2_right = apply_bpt_masks(logN2=logN2+logN2_err, logS2=logS2+logS2_err, logO3=logO3)
-/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2926: RuntimeWarning: invalid value encountered in add
+/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py:3051: RuntimeWarning: invalid value encountered in add
   mask_N2_up, mask_S2_up = apply_bpt_masks(logN2=logN2, logS2=logS2, logO3=logO3+logO3_err)
-Loaded SII density lookup table: /arc/home/RongjunHuang/ICRAR/further/pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096.npz
+Loaded SII density lookup table: /Users/Igniz/Desktop/ICRAR/further/pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096.npz
 PyNeb Te-method valid-pixel counts:
   NE_SII finite pixels: 49814
   NE_SII fixed at 20 cm^-3: 22755/49814 (45.7%)
@@ -158,7 +159,7 @@ Integrated PyNeb Te-method values:
     O_H_BR24_DIRECT: nan dex (n_pix=0)
     O_H_NII_OII7325: nan dex (n_pix=0)
     O_H_NII_K25: nan dex (n_pix=3)
-Further file written ➜ /arc/home/RongjunHuang/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_gas_bin_maps_further.fits
+Further file written ➜ /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4394/NGC4394_gas_BIN_maps_further.fits
 --------------------------------------------------------------
 Total non-nan spaxels: 179299
 Number of pixels with Halpha not detected: 4678
@@ -215,7 +216,7 @@ Total Halpha SFR from HII region: 0.04 M☉/yr or in log10 scale: -1.36 log(M☉
 [O/H] N2-M13: Total metallicity in total region:  8.641196815643601
 [O/H] O3N2-PP04: Total metallicity in total region:  8.67428024620976
 [O/H] N2-PP04: Total metallicity in total region:  nan
-[O/H] O3N2-C20: Total metallicity in total region:  8.712194863682832
+[O/H] O3N2-C20: Total metallicity in total region:  8.71219486368283
 [O/H] O3S2-C20: Total metallicity in total region:  8.767305981681599
 [O/H] RS32-C20: Total metallicity in total region:  8.613121492619845
 [O/H] R3-C20: Total metallicity in total region:  8.620127339656781
@@ -223,5 +224,5 @@ Total Halpha SFR from HII region: 0.04 M☉/yr or in log10 scale: -1.36 log(M☉
 [O/H] S2-C20: Total metallicity in total region:  nan
 [O/H] Combined-C20: Total metallicity in total region:  8.659735438511866 (weighted 4 methods; dominant R3)
 --------------------------------------------------------------
-Total runtime: 459.9 s
-✅  NGC4394 finished in 8m43s
+Total runtime: 436.1 s
+✅  NGC4394 finished in 7m37s

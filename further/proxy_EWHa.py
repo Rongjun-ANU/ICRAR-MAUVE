@@ -11,8 +11,8 @@ Changes (2026-03-31)
 *
 * Changes (2026-04-01)
 * --------------------
-* The proxy continuum window is now re-centered for each spaxel using the
-* Halpha velocity map `HA6562_VEL` on top of the galaxy systemic redshift.
+* The proxy continuum window is now re-centered using the Halpha velocity map
+* `HA6562_VEL` on top of the galaxy systemic redshift.
 *
 * Changes (2026-05-25)
 * --------------------
@@ -31,6 +31,12 @@ Changes (2026-03-31)
 * --------------------
 * The combined NGC4567_8 cube now uses the mean of the NGC4567 and NGC4568
 *   redshifts when the redshift table has those member galaxies separately.
+*
+* Changes (2026-06-02)
+* --------------------
+* The continuum-cube proxy is now evaluated at Voronoi-bin level. DATA cube
+* pixels, Halpha flux, Halpha velocity, and the legacy R-band proxy are grouped
+* with `BINID`, measured once per bin, and expanded back to all member pixels.
 *
 * Inputs:
   - Observed Halpha map from:
@@ -65,28 +71,29 @@ Changes (2026-03-31)
 *
 *      where sigma is the vacuum wavenumber in inverse microns.
 *
-*   3. Shift the observed continuum cube to the rest frame:
+*   3. Shift the observed continuum cube to the rest frame at bin level:
 *
 *        v_gal = Doppler velocity corresponding to the galaxy redshift z_gal
-*        v_spaxel = v_gal + v_Halpha(x, y)
-*        z_spaxel = Doppler redshift corresponding to v_spaxel
+*        v_bin = v_gal + <v_Halpha>_bin
+*        z_bin = Doppler redshift corresponding to v_bin
 *
-*        lambda_rest(x, y) = lambda_obs / (1 + z_spaxel(x, y))
+*        lambda_rest(bin) = lambda_obs / (1 + z_bin)
 *
-*      For each spaxel, convert the observed flux density to the local
+*      For each bin, convert the observed flux density to the local
 *      rest-frame flux density:
 *
-*        f_lambda,rest(x, y) = (1 + z_spaxel(x, y)) * f_lambda,obs
+*        f_lambda,rest(bin) = (1 + z_bin) * f_lambda,obs
 *
 *   4. Measure the mean continuum flux density in the rest-frame Halpha window
-*      for each spaxel:
+*      for each Voronoi bin:
 *
 *        <f_lambda,cont> =
 *            (1 / Delta_lambda) * Integral[f_lambda,rest(lambda) d lambda]
 *
 *      In the sampled cube this is implemented as the arithmetic mean of all
 *      continuum planes whose wavelength falls inside the selected Halpha EW
-*      window after shifting each spaxel by its own z_spaxel(x, y).
+*      window after shifting each bin by its own z_bin. The bin value is
+*      assigned back to every member pixel.
 *
 *   5. Compute the proxy equivalent width:
 *
@@ -395,6 +402,61 @@ def read_observed_r_flux(bin_path: Path) -> tuple[np.ndarray, fits.Header, str, 
     )
 
 
+def read_binid_map(bin_path: Path) -> tuple[np.ndarray, fits.Header]:
+    with fits.open(bin_path) as hdul:
+        if "BINID" in hdul:
+            hdu = cast(Any, hdul["BINID"])
+        elif len(hdul) > 1:
+            hdu = cast(Any, hdul[1])
+        else:
+            raise KeyError(f"Could not find BINID extension in {bin_path.name}.")
+
+        raw_binid = np.asarray(hdu.data, dtype=np.float64)
+        header = hdu.header.copy()
+
+    finite_bin = np.isfinite(raw_binid) & (raw_binid >= 0)
+    if not np.any(finite_bin):
+        raise ValueError(f"BINID map in {bin_path.name} has no finite non-negative bins.")
+
+    rounded_binid = np.rint(raw_binid[finite_bin])
+    if not np.allclose(raw_binid[finite_bin], rounded_binid, rtol=0.0, atol=1.0e-6):
+        raise ValueError(f"BINID map in {bin_path.name} contains non-integer bin values.")
+
+    binid = np.full(raw_binid.shape, -1, dtype=np.int32)
+    binid[finite_bin] = rounded_binid.astype(np.int32)
+    return binid, header
+
+
+def collapse_map_to_bins(data: np.ndarray, binid_map: np.ndarray, label: str) -> np.ndarray:
+    if data.shape != binid_map.shape:
+        raise ValueError(
+            f"{label} shape mismatch: data shape {data.shape} vs BINID shape {binid_map.shape}."
+        )
+
+    bin_pixels = binid_map >= 0
+    if not np.any(bin_pixels):
+        raise ValueError(f"Cannot collapse {label}: BINID map has no valid pixels.")
+
+    max_binid = int(np.max(binid_map[bin_pixels]))
+    valid = bin_pixels & np.isfinite(data)
+    sums = np.bincount(
+        binid_map[valid].ravel(),
+        weights=np.asarray(data[valid], dtype=np.float64).ravel(),
+        minlength=max_binid + 1,
+    )
+    counts = np.bincount(binid_map[valid].ravel(), minlength=max_binid + 1)
+    means = np.divide(
+        sums,
+        counts,
+        out=np.full(max_binid + 1, np.nan, dtype=np.float64),
+        where=counts > 0,
+    )
+
+    binned = np.full(data.shape, np.nan, dtype=np.float64)
+    binned[bin_pixels] = means[binid_map[bin_pixels]]
+    return binned
+
+
 def read_redshift_table(redshift_path: Path) -> dict[str, float]:
     with redshift_path.open("r", encoding="utf-8") as handle:
         first_line = handle.readline()
@@ -479,18 +541,20 @@ def velocity_to_redshift(velocity_kms: np.ndarray | float) -> np.ndarray:
     return np.sqrt((1.0 + beta) / (1.0 - beta)) - 1.0
 
 
-def build_spaxel_redshift_map(galaxy_z: float, ha_vel_kms: np.ndarray) -> np.ndarray:
-    spaxel_z = np.full(ha_vel_kms.shape, galaxy_z, dtype=np.float64)
+def build_bin_redshift_map(galaxy_z: float, ha_vel_kms: np.ndarray) -> np.ndarray:
+    bin_z = np.full(ha_vel_kms.shape, galaxy_z, dtype=np.float64)
     valid_vel = np.isfinite(ha_vel_kms)
     if not np.any(valid_vel):
-        return spaxel_z
+        return bin_z
 
     galaxy_vel_kms = redshift_to_velocity_kms(galaxy_z)
-    # Follow the requested practical recipe: add the per-spaxel Halpha velocity
+    # The velocity map has already been collapsed by BINID, so this produces one
+    # local redshift per Voronoi bin and expands it back to all member pixels.
+    # Follow the requested practical recipe: add the local Halpha velocity
     # to the systemic galaxy velocity in km/s, then convert back to redshift.
     total_vel_kms = galaxy_vel_kms + ha_vel_kms[valid_vel]
-    spaxel_z[valid_vel] = velocity_to_redshift(total_vel_kms)
-    return spaxel_z
+    bin_z[valid_vel] = velocity_to_redshift(total_vel_kms)
+    return bin_z
 
 
 def find_continuum_hdu(hdul: fits.HDUList) -> tuple[np.ndarray, fits.Header, str, str]:
@@ -567,14 +631,25 @@ def spectral_axis_uses_air_wavelength(header: fits.Header, spectral_fits_axis: i
 
 def compute_mean_restframe_continuum(
     cont_path: Path,
-    spaxel_z: np.ndarray,
+    bin_z: np.ndarray,
     expected_spatial_shape: tuple[int, ...],
+    binid_map: np.ndarray,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
-    if spaxel_z.shape != expected_spatial_shape:
+    if bin_z.shape != expected_spatial_shape:
         raise ValueError(
             "Redshift-map shape mismatch: "
-            f"expected {expected_spatial_shape} but got {spaxel_z.shape}."
+            f"expected {expected_spatial_shape} but got {bin_z.shape}."
         )
+    if binid_map.shape != expected_spatial_shape:
+        raise ValueError(
+            "BINID-map shape mismatch: "
+            f"expected {expected_spatial_shape} but got {binid_map.shape}."
+        )
+
+    bin_pixels = binid_map >= 0
+    if not np.any(bin_pixels):
+        raise ValueError("BINID map has no valid bins for continuum measurement.")
+    max_binid = int(np.max(binid_map[bin_pixels]))
 
     with fits.open(cont_path, memmap=True) as hdul:
         cube, cont_header, cont_source, cont_bunit = find_continuum_hdu(hdul)
@@ -605,13 +680,13 @@ def compute_mean_restframe_continuum(
 
         low = min(rest_low_a, rest_high_a)
         high = max(rest_low_a, rest_high_a)
-        valid_z = np.isfinite(spaxel_z) & ((1.0 + spaxel_z) > 0.0)
+        valid_z = bin_pixels & np.isfinite(bin_z) & ((1.0 + bin_z) > 0.0)
         if not np.any(valid_z):
             raise ValueError(
-                "Spaxel redshift map has no finite values with 1+z > 0."
+                "Bin redshift map has no finite values with 1+z > 0."
             )
 
-        one_plus_z = 1.0 + spaxel_z
+        one_plus_z = 1.0 + bin_z
         observed_low_a = low * one_plus_z
         observed_high_a = high * one_plus_z
         observed_ref_a = rest_ref_a * one_plus_z
@@ -622,12 +697,12 @@ def compute_mean_restframe_continuum(
         nwave_window = int(np.count_nonzero(global_wave_mask))
         if nwave_window == 0:
             raise ValueError(
-                "No continuum planes intersect the spaxel-dependent Halpha EW "
+                "No continuum planes intersect the bin-dependent Halpha EW "
                 f"window for {cont_path.name}."
             )
 
-        valid_counts = np.zeros(expected_spatial_shape, dtype=np.int32)
-        cont_sum = np.zeros(expected_spatial_shape, dtype=np.float64)
+        valid_counts_by_bin = np.zeros(max_binid + 1, dtype=np.int64)
+        cont_sum_by_bin = np.zeros(max_binid + 1, dtype=np.float64)
 
         for wave_idx in np.flatnonzero(global_wave_mask):
             plane_mask = (
@@ -643,12 +718,28 @@ def compute_mean_restframe_continuum(
             if not np.any(finite):
                 continue
 
-            valid_counts[finite] += 1
-            cont_sum[finite] += plane_rest[finite]
+            finite_binids = binid_map[finite]
+            valid_counts_by_bin += np.bincount(
+                finite_binids.ravel(),
+                minlength=max_binid + 1,
+            )
+            cont_sum_by_bin += np.bincount(
+                finite_binids.ravel(),
+                weights=np.asarray(plane_rest[finite], dtype=np.float64).ravel(),
+                minlength=max_binid + 1,
+            )
+
+        cont_mean_by_bin = np.divide(
+            cont_sum_by_bin,
+            valid_counts_by_bin,
+            out=np.full(max_binid + 1, np.nan, dtype=np.float64),
+            where=valid_counts_by_bin > 0,
+        )
 
         cont_mean = np.full(expected_spatial_shape, np.nan, dtype=np.float64)
-        valid = valid_counts > 0
-        cont_mean[valid] = cont_sum[valid] / valid_counts[valid]
+        cont_counts = np.zeros(expected_spatial_shape, dtype=np.int64)
+        cont_mean[bin_pixels] = cont_mean_by_bin[binid_map[bin_pixels]]
+        cont_counts[bin_pixels] = valid_counts_by_bin[binid_map[bin_pixels]]
 
         meta: dict[str, Any] = {
             "source": cont_source,
@@ -666,13 +757,14 @@ def compute_mean_restframe_continuum(
             "observed_high_max_a": float(np.nanmax(observed_high_a[valid_z])),
             "observed_ref_min_a": float(np.nanmin(observed_ref_a[valid_z])),
             "observed_ref_max_a": float(np.nanmax(observed_ref_a[valid_z])),
-            "z_min": float(np.nanmin(spaxel_z[valid_z])),
-            "z_max": float(np.nanmax(spaxel_z[valid_z])),
-            "nspaxel_z": int(np.count_nonzero(valid_z)),
+            "z_min": float(np.nanmin(bin_z[valid_z])),
+            "z_max": float(np.nanmax(bin_z[valid_z])),
+            "npixel_z": int(np.count_nonzero(valid_z)),
+            "nbin_z": int(np.unique(binid_map[valid_z]).size),
             "nwave_total": int(cube_view.shape[0]),
             "nwave_window": nwave_window,
         }
-        return cont_mean, valid_counts.astype(np.int16), meta
+        return cont_mean, cont_counts.astype(np.int32), meta
 
 
 def compute_legacy_pseudo_ew(
@@ -830,6 +922,7 @@ def main() -> None:
     obs_ha, ha_header, ha_extname, ha_bunit = read_observed_halpha(gas_path)
     ha_vel, _vel_header, vel_extname, vel_bunit = read_observed_halpha_velocity(gas_path)
     obs_r_nmgy, r_header, r_source, r_bunit = read_observed_r_flux(bin_path)
+    binid_map, _binid_header = read_binid_map(bin_path)
 
     if obs_ha.shape != obs_r_nmgy.shape:
         raise ValueError(
@@ -841,11 +934,22 @@ def main() -> None:
             "Map shape mismatch: "
             f"Halpha flux shape {obs_ha.shape} vs Halpha velocity shape {ha_vel.shape}."
         )
+    if obs_ha.shape != binid_map.shape:
+        raise ValueError(
+            "Map shape mismatch: "
+            f"Halpha shape {obs_ha.shape} vs BINID shape {binid_map.shape}."
+        )
 
-    ha_vel_kms = velocity_to_kms(ha_vel, vel_bunit)
-    spaxel_z = build_spaxel_redshift_map(z, ha_vel_kms)
+    obs_ha = collapse_map_to_bins(obs_ha, binid_map, ha_extname)
+    obs_r_nmgy = collapse_map_to_bins(obs_r_nmgy, binid_map, r_source)
+    ha_vel_kms = collapse_map_to_bins(
+        velocity_to_kms(ha_vel, vel_bunit),
+        binid_map,
+        vel_extname,
+    )
+    bin_z = build_bin_redshift_map(z, ha_vel_kms)
     cont_mean, cont_counts, cont_meta = compute_mean_restframe_continuum(
-        cont_path, spaxel_z, obs_ha.shape
+        cont_path, bin_z, obs_ha.shape, binid_map
     )
 
     obs_ha_cgs = halpha_flux_to_cgs(obs_ha, ha_bunit)
@@ -873,6 +977,7 @@ def main() -> None:
     primary.header["VELSRC"] = vel_extname
     primary.header["RSRC"] = r_source
     primary.header["CNTSRC"] = str(cont_meta["source"])
+    primary.header["BINMODE"] = (True, "Collapsed by BINID before EW")
     primary.header["EWVAC"] = (HALPHA_RITZ_VAC_A, "MaNGA DAP Halpha Ritz wavelength [A]")
     primary.header["EWAIR"] = (
         HALPHA_RITZ_AIR_A,
@@ -910,7 +1015,7 @@ def main() -> None:
     hdu_cont.header["WCUNIT"] = str(cont_meta["spectral_cunit"])
     hdu_cont.header["WINAIR"] = (
         bool(cont_meta["window_is_air"]),
-        "True if the selected EW window is in air wavelengths",
+        "EW window uses air wavelengths",
     )
     hdu_cont.header["EWLOWRF"] = (
         float(cont_meta["rest_low_a"]),
@@ -930,39 +1035,39 @@ def main() -> None:
     )
     hdu_cont.header["EWLOMIN"] = (
         float(cont_meta["observed_low_min_a"]),
-        "Min spaxel observed-frame EW low [A]",
+        "Min bin observed-frame EW low [A]",
     )
     hdu_cont.header["EWLOMAX"] = (
         float(cont_meta["observed_low_max_a"]),
-        "Max spaxel observed-frame EW low [A]",
+        "Max bin observed-frame EW low [A]",
     )
     hdu_cont.header["EWHIMIN"] = (
         float(cont_meta["observed_high_min_a"]),
-        "Min spaxel observed-frame EW high [A]",
+        "Min bin observed-frame EW high [A]",
     )
     hdu_cont.header["EWHIMAX"] = (
         float(cont_meta["observed_high_max_a"]),
-        "Max spaxel observed-frame EW high [A]",
+        "Max bin observed-frame EW high [A]",
     )
-    hdu_cont.header["ZSPXMIN"] = (
+    hdu_cont.header["ZBINMIN"] = (
         float(cont_meta["z_min"]),
-        "Minimum spaxel redshift used for EW",
+        "Minimum bin redshift used for EW",
     )
-    hdu_cont.header["ZSPXMAX"] = (
+    hdu_cont.header["ZBINMAX"] = (
         float(cont_meta["z_max"]),
-        "Maximum spaxel redshift used for EW",
+        "Maximum bin redshift used for EW",
     )
     hdu_cont.header["NWAVE"] = (int(cont_meta["nwave_total"]), "Total continuum planes")
     hdu_cont.header["NWIN"] = (int(cont_meta["nwave_window"]), "Planes in EW window")
     hdu_cont.header["RESTFSCL"] = (
         True,
-        "Continuum density scaled by (1+z_spaxel) to rest-frame f_lambda",
+        "Scaled by (1+z_bin)",
     )
     hdu_cont.header.add_comment(
-        "Mean continuum flux density measured from the continuum-only cube over the Halpha EW passband."
+        "Mean bin continuum over the Halpha EW passband."
     )
     hdu_cont.header.add_comment(
-        "The observed-frame EW window is re-centered per spaxel using the galaxy redshift plus HA6562_VEL."
+        "EW window is centered per BINID bin using galaxy z plus HA6562_VEL."
     )
 
     hdu_cont_npix = fits.ImageHDU(
@@ -970,7 +1075,7 @@ def main() -> None:
     )
     hdu_cont_npix.header["BUNIT"] = "count"
     hdu_cont_npix.header.add_comment(
-        "Number of finite continuum planes contributing to CONT_HA_MEAN per spaxel"
+        "Finite continuum cube samples per BINID bin."
     )
 
     hdu_obs_r = fits.ImageHDU(
@@ -978,7 +1083,7 @@ def main() -> None:
     )
     hdu_obs_r.header["BUNIT"] = r_bunit
     hdu_obs_r.header.add_comment(
-        "Observed broad-band R flux map from MAGNITUDE_R_UNCORRECTED converted to nanomaggies"
+        "R-band map converted from MAGNITUDE_R_UNCORRECTED to nanomaggies."
     )
 
     hdu_legacy_cont = fits.ImageHDU(
@@ -989,10 +1094,10 @@ def main() -> None:
     hdu_legacy_cont.header["RUNIT"] = "nanomaggies"
     hdu_legacy_cont.header["LREF"] = (
         LEGACY_HALPHA_REF_A,
-        "Legacy single-wavelength continuum reference [A]",
+        "Legacy continuum ref [A]",
     )
     hdu_legacy_cont.header.add_comment(
-        "Legacy broad-band continuum approximation from the R map: f_lambda = f_nu * c / lambda^2."
+        "Legacy R-band continuum: f_lambda = f_nu * c / lambda^2."
     )
 
     hdu_proxy_ew = fits.ImageHDU(
@@ -1010,13 +1115,13 @@ def main() -> None:
     hdu_proxy_ew.header["CNTUNIT"] = CONT_CGS_UNIT
     hdu_proxy_ew.header["CONTHDU"] = "CONT_HA_MEAN"
     hdu_proxy_ew.header.add_comment(
-        "EW_proxy[A] = F_Ha / <f_lambda,cont> using the continuum cube over the Halpha EW passband."
+        "EW_proxy[A] = F_Ha / bin continuum."
     )
     hdu_proxy_ew.header.add_comment(
-        "MaNGA DAP Halpha vacuum passband 6557.6-6571.6 A converted to air with Peck & Reeder (1972)."
+        "Halpha passband uses MaNGA DAP vacuum window converted to air."
     )
     hdu_proxy_ew.header.add_comment(
-        "Continuum is shifted to the rest frame using the per-spaxel redshift from galaxy z plus HA6562_VEL and scaled as f_lambda,rest=(1+z_spaxel)*f_lambda,obs."
+        "Continuum uses bin redshift from galaxy z plus HA6562_VEL."
     )
 
     hdu_pseudo_ew = fits.ImageHDU(
@@ -1029,13 +1134,13 @@ def main() -> None:
     hdu_pseudo_ew.header["CONTHDU"] = "CONT_HA_RBAND"
     hdu_pseudo_ew.header["LREF"] = (
         LEGACY_HALPHA_REF_A,
-        "Legacy single-wavelength continuum reference [A]",
+        "Legacy continuum ref [A]",
     )
     hdu_pseudo_ew.header.add_comment(
-        "Legacy pseudo EW retained for comparison only: EW_pseudo[A] = F_Ha / f_lambda,legacy."
+        "Legacy pseudo EW for comparison: EW_pseudo[A] = F_Ha / f_lambda."
     )
     hdu_pseudo_ew.header.add_comment(
-        "f_lambda,legacy is derived from the broad-band R map after converting nanomaggies to f_nu and then to f_lambda at 6562.8 A."
+        "Legacy continuum converts R nanomaggies to f_lambda at 6562.8 A."
     )
 
     hdul_out = fits.HDUList(
@@ -1059,9 +1164,10 @@ def main() -> None:
     print("Continuum cube source HDU     :", cont_meta["source"])
     print("Continuum spectral axis       :", cont_meta["spectral_ctype"])
     print("Galaxy systemic velocity      :", f"{galaxy_vel_kms:.3f} km/s")
-    print("Finite Halpha velocity spaxels:", int(np.sum(np.isfinite(ha_vel_kms))))
+    print("Finite Halpha velocity pixels :", int(np.sum(np.isfinite(ha_vel_kms))))
+    print("Finite Halpha velocity bins   :", int(cont_meta["nbin_z"]))
     print(
-        "Spaxel redshift range         : "
+        "Bin redshift range            : "
         f"{cont_meta['z_min']:.6f} - {cont_meta['z_max']:.6f}"
     )
     print(
