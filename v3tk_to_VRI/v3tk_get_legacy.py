@@ -57,7 +57,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 	p = argparse.ArgumentParser(
 		prog="v3tk_get_legacy.py",
 		description=(
-			"For each '*_v3tk_VRI.fits' file, compute the MUSE WCS footprint, download a Legacy Survey cutout "
+			"For each '*_DATACUBE*_VRI.fits' file, compute the MUSE WCS footprint, download a Legacy Survey cutout "
 			"at native pixel scale (pixscale=0.262 arcsec/pix), reproject it to the MUSE grid using "
 			"reproject.reproject_adaptive(conserve_flux=True), and save 'XXX_legacy_reprojected.jpg'."
 		),
@@ -66,11 +66,11 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 		"--input-dir",
 		type=pathlib.Path,
 		default=pathlib.Path("."),
-		help="Directory containing *_v3tk_VRI.fits files (default: current directory)",
+		help="Directory containing *_DATACUBE*_VRI.fits files (default: current directory)",
 	)
 	p.add_argument(
 		"--pattern",
-		default="*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+		default="*_DATACUBE*_VRI.fits",
 		help="Glob pattern to match input FITS files",
 	)
 	p.add_argument(

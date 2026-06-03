@@ -58,7 +58,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 	p = argparse.ArgumentParser(
 		prog="v3tk_observed_VRI_image.py",
 		description=(
-			"Extract observed V/R/I-band flux images (nanomaggy) from each '*_v3tk_VRI.fits' file "
+			"Extract observed V/R/I-band flux images (nanomaggy) from each '*_DATACUBE*_VRI.fits' file "
 			"and render an RGB composite to 'XXX_observed_VRI.png' and 'XXX_observed_VRI.pdf'. Runs in parallel for efficiency. "
 			"Rendering uses a Lupton RGB (asinh) stretch with percentile-based scaling per galaxy. "
 			"Channel mapping: I→R, R→G, V→B."
@@ -68,11 +68,11 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 		"--input-dir",
 		type=pathlib.Path,
 		default=pathlib.Path("."),
-		help="Directory containing *_v3tk_VRI.fits files (default: current directory)",
+		help="Directory containing *_DATACUBE*_VRI.fits files (default: current directory)",
 	)
 	p.add_argument(
 		"--pattern",
-		default="*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+		default="*_DATACUBE*_VRI.fits",
 		help="Glob pattern to match VRI FITS files",
 	)
 	p.add_argument(

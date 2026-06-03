@@ -10,7 +10,10 @@ GALIDS=("${SELECTED_GALIDS[@]}")
 SLURM_TEMPLATE="v3tk_v7.6.8_setonix.slurm"
 HIGHMEM_GALIDS=(
   NGC4192
+  NGC4254
+  NGC4321
   NGC4501
+  NGC4535
   NGC4569
 )
 
@@ -76,7 +79,7 @@ for galid in "${GALIDS[@]}"; do
     tmp_slurm="${slurm_out}.tmp"
     sed \
       -e 's/^#SBATCH --partition=work$/#SBATCH --partition=highmem/' \
-      -e 's/^#SBATCH --mem=220G$/#SBATCH --mem=980G/' \
+      -e 's/^#SBATCH --mem=230G$/#SBATCH --mem=980G/' \
       -e 's/^#SBATCH --time=24:00:00$/#SBATCH --time=96:00:00/' \
       "$slurm_out" > "$tmp_slurm"
     mv "$tmp_slurm" "$slurm_out"

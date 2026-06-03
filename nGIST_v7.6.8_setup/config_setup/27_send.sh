@@ -3,7 +3,9 @@ set -euo pipefail
 
 usage() {
   echo "Usage: $0 USERNAME [HOST] [GALID ...]" >&2
+  echo "       $0 GALID [GALID ...]" >&2
   echo "Example: $0 rhuang" >&2
+  echo "Example with default user for selected galaxies: $0 NGC4569" >&2
   echo "Example with explicit host: $0 rhuang setonix.pawsey.org.au" >&2
   echo "Example for selected galaxies: $0 rhuang NGC4383 NGC4419" >&2
   echo "Example for selected galaxies and explicit host: $0 rhuang setonix.pawsey.org.au NGC4383 NGC4419" >&2
@@ -18,16 +20,22 @@ cd "$(dirname "$0")"
 
 . ./27_galaxies.sh
 
-REMOTE_USER="$1"
-shift
+DEFAULT_REMOTE_USER="rhuang"
 REMOTE_HOST="setonix.pawsey.org.au"
 
-if [[ $# -gt 0 ]]; then
-  if is_known_galid "$1" || looks_like_galid "$1"; then
-    :
-  else
-    REMOTE_HOST="$1"
-    shift
+if is_known_galid "$1" || looks_like_galid "$1"; then
+  REMOTE_USER="$DEFAULT_REMOTE_USER"
+else
+  REMOTE_USER="$1"
+  shift
+
+  if [[ $# -gt 0 ]]; then
+    if is_known_galid "$1" || looks_like_galid "$1"; then
+      :
+    else
+      REMOTE_HOST="$1"
+      shift
+    fi
   fi
 fi
 

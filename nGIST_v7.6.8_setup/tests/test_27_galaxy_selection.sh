@@ -114,6 +114,25 @@ test_creation_uses_requested_galaxies_only() {
   assert_contains "${workdir}/creation.out" "Created 2 YAML files and 2 slurm scripts."
 }
 
+test_creation_applies_new_highmem_and_work_memory() {
+  local workdir
+  local galid
+  workdir="$(new_workdir)"
+  install_make_gist_stub "$workdir"
+
+  (cd "$workdir" && ./27_creation.sh IC3392 NGC4254 NGC4321 NGC4535 NGC4569 > creation.out)
+
+  assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=work"
+  assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=230G"
+  assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=24:00:00"
+
+  for galid in NGC4254 NGC4321 NGC4535 NGC4569; do
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=highmem"
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=980G"
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=96:00:00"
+  done
+}
+
 test_setonix_submits_requested_galaxies_only() {
   local workdir
   workdir="$(new_workdir)"
@@ -168,6 +187,33 @@ test_send_copies_requested_galaxies_only() {
   assert_contains "${workdir}/control_payload.txt" "27_galaxies.sh"
 }
 
+test_send_accepts_galaxy_only_short_form() {
+  local workdir
+  workdir="$(new_workdir)"
+  install_ssh_stub "$workdir"
+  touch "${workdir}/NGC4569_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+  touch "${workdir}/NGC4569_v3tk_v7.6.8_setonix.slurm"
+  mkdir -p "${workdir}/ssh_payloads"
+
+  (
+    export SSH_LOG="${workdir}/ssh.log"
+    export SSH_TAR_DIR="${workdir}/ssh_payloads"
+    export PATH="${workdir}/bin:${PATH}"
+    cd "$workdir"
+    ./27_send.sh NGC4569 > send.out
+  )
+
+  assert_contains "${workdir}/send.out" "Sending 1 YAML files"
+  assert_contains "${workdir}/send.out" "Sending 1 slurm scripts plus control scripts"
+  assert_contains "${workdir}/send.out" "Remote login: rhuang@setonix.pawsey.org.au"
+  tar -tf "${workdir}/ssh_payloads/payload_0.tar" > "${workdir}/yaml_payload.txt"
+  assert_contains "${workdir}/yaml_payload.txt" "NGC4569_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+  assert_not_contains "${workdir}/yaml_payload.txt" "IC3392_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+  tar -tf "${workdir}/ssh_payloads/payload_1.tar" > "${workdir}/slurm_payload.txt"
+  assert_contains "${workdir}/slurm_payload.txt" "NGC4569_v3tk_v7.6.8_setonix.slurm"
+  assert_not_contains "${workdir}/slurm_payload.txt" "IC3392_v3tk_v7.6.8_setonix.slurm"
+}
+
 test_unknown_galaxy_is_rejected() {
   local workdir
   workdir="$(new_workdir)"
@@ -180,9 +226,11 @@ test_unknown_galaxy_is_rejected() {
 }
 
 test_creation_uses_requested_galaxies_only
+test_creation_applies_new_highmem_and_work_memory
 test_setonix_submits_requested_galaxies_only
 test_status_reports_requested_galaxies_only
 test_send_copies_requested_galaxies_only
+test_send_accepts_galaxy_only_short_form
 test_unknown_galaxy_is_rejected
 
 echo "All 27-galaxy selection tests passed."

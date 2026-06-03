@@ -24,6 +24,7 @@ config_setup/
   27_send.sh                                   # send all/selected generated files to Setonix
   27_setonix.sh                                # submit all/selected slurm scripts on Setonix
   27_status.sh                                 # check all/selected completion/running/timeout status
+  vcp_from_v3tk_to_scratch.sh                  # stage local v3tk and PHANGS native public cubes to Setonix scratch
   QC_ngist_v3tk_v768.py                        # post-run QC PDF generator
   GIST_setupinput_v1.fits                      # pointer to setup FITS table
   cube_centers_v3tk.csv                        # cube centers for v3tk cubes
@@ -53,6 +54,8 @@ Important current settings include:
 - Gas fitting level: `BOTH`
 - Setonix cube path: `/scratch/pawsey1308/mauve/cubes/v3tk/`
 - Setonix product path: `/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/`
+- PHANGS-native public cube source:
+  `vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/`
 
 ## Creating a galaxy YAML file
 
@@ -88,10 +91,40 @@ Manual center override:
 python make_gist_config_try.py IC3392 -cpu 128 -center 219,219
 ```
 
-## Creating the 27-galaxy Setonix batch
+For local validation only, the generator also accepts `MAUVE_CUBE_DIR` and
+`MAUVE_PRODUCTS_DIR` environment overrides. Production Setonix configs should
+use the default scratch/product paths unless there is a deliberate run-location
+change.
 
-The 27-galaxy MAUVE batch uses 26 cube IDs because `NGC4567` and `NGC4568`
-are in the combined cube `NGC4567_8`.
+## Staging input cubes to Setonix scratch
+
+The generated YAML files expect input cubes under:
+
+```text
+/scratch/pawsey1308/mauve/cubes/v3tk/
+```
+
+Use `config_setup/vcp_from_v3tk_to_scratch.sh` on Setonix/CADC-capable
+environments to stage the current cube inputs. It builds a manifest from the
+existing MAUVE v3tk cube release and appends these public PHANGS-MUSE native
+cubes:
+
+```text
+vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4254_PHANGS_DATACUBE_native.fits
+vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.fits
+vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4535_PHANGS_DATACUBE_native.fits
+```
+
+These are full 18-42 GB cubes, so production nGIST should use the staged local
+scratch files. VOSspace is still useful for lightweight checks such as `vls`,
+`vcat --head`, or small `vcp` cutouts, but the full nGIST workflow should not
+treat `vos:` paths as normal local FITS inputs.
+
+## Creating the Setonix batch
+
+The `27_*.sh` script family keeps its historical name, but the current selectable
+MAUVE batch uses 30 cube IDs because `NGC4567` and `NGC4568` are in the combined
+cube `NGC4567_8` and the three PHANGS-native galaxies are included.
 
 From inside `config_setup`, run:
 
@@ -99,7 +132,7 @@ From inside `config_setup`, run:
 ./27_creation.sh
 ```
 
-With no galaxy arguments, this processes all 26 cube IDs. To regenerate only
+With no galaxy arguments, this processes all 30 cube IDs. To regenerate only
 selected cube IDs, pass them as positional arguments:
 
 ```bash
@@ -124,14 +157,34 @@ For each cube ID, it creates:
 The slurm scripts are copied from `v3tk_v7.6.8_setonix.slurm` by replacing the
 literal `GALID` placeholder with the current cube ID.
 
-`NGC4192` and `NGC4501` are large, multi-pointing galaxies. Their generated
-slurm scripts are special-cased for Setonix `highmem` instead of `work`:
+The default `work` script requests:
+
+```text
+#SBATCH --partition=work
+#SBATCH --cpus-per-task=128
+#SBATCH --mem=230G
+#SBATCH --time=24:00:00
+```
+
+Large, multi-pointing galaxies are special-cased for Setonix `highmem` instead
+of `work`:
 
 ```text
 #SBATCH --partition=highmem
 #SBATCH --cpus-per-task=128
 #SBATCH --mem=980G
 #SBATCH --time=96:00:00
+```
+
+The current `highmem` queue list is:
+
+```text
+NGC4192
+NGC4254
+NGC4321
+NGC4501
+NGC4535
+NGC4569
 ```
 
 Several galaxies reached the gas module more than once without completing it
@@ -141,7 +194,7 @@ special-cased for Setonix `long`:
 ```text
 #SBATCH --partition=long
 #SBATCH --cpus-per-task=128
-#SBATCH --mem=220G
+#SBATCH --mem=230G
 #SBATCH --time=96:00:00
 ```
 
@@ -163,17 +216,19 @@ NGC4698
 `NGC4580` is intentionally not in this list: its second run completed the gas
 module and advanced to the SFH module, so the next restart should skip gas.
 
-The 26 cube IDs are:
+The 30 cube IDs are:
 
 ```text
 IC3392
 NGC4064
 NGC4189
 NGC4192
+NGC4254
 NGC4293
 NGC4294
 NGC4298
 NGC4302
+NGC4321
 NGC4330
 NGC4351
 NGC4383
@@ -186,13 +241,21 @@ NGC4419
 NGC4457
 NGC4501
 NGC4522
+NGC4535
 NGC4567_8
+NGC4569
 NGC4580
 NGC4606
 NGC4607
 NGC4694
 NGC4698
 ```
+
+`make_gist_config_try.py` still needs a pixel origin for each generated YAML.
+The origin normally comes from `cube_centers_v3tk.csv`. If the selected galaxy
+has no center row and its cube already exists under the configured cube path,
+the script falls back to the cube midpoint; otherwise pass `-center x,y` or add
+a verified center row before generating its YAML.
 
 To send the generated files to Setonix from your local machine, run:
 
@@ -214,6 +277,13 @@ second argument is a known galaxy ID, the script keeps the default Setonix host:
 ./27_send.sh rhuang NGC4383 NGC4419
 ```
 
+For the default `rhuang@setonix.pawsey.org.au` login, you can also pass galaxy
+IDs directly:
+
+```bash
+./27_send.sh NGC4569
+```
+
 With an explicit host, put the host before the galaxy IDs:
 
 ```bash
@@ -222,9 +292,9 @@ With an explicit host, put the host before the galaxy IDs:
 
 The send script copies:
 
-- The selected generated YAML files, all 26 by default, to
+- The selected generated YAML files, all 30 by default, to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/`
-- The selected generated slurm scripts, all 26 by default, plus
+- The selected generated slurm scripts, all 30 by default, plus
   `27_galaxies.sh`, `27_setonix.sh`, and `27_status.sh` to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/`
 
@@ -251,7 +321,7 @@ That script sequentially runs:
 sbatch {GALID}_v3tk_v7.6.8_setonix.slurm
 ```
 
-for the selected cube IDs, or all 26 cube IDs by default. The `sbatch` commands
+for the selected cube IDs, or all 30 cube IDs by default. The `sbatch` commands
 are issued one by one, but the jobs can then run together according to the
 Setonix scheduler.
 
@@ -482,10 +552,14 @@ important conveniences compared with the older `make_gist_config.py`:
 - It can resolve `GIST_setupinput_v1.fits` when that file is a text pointer to a
   FITS file under `input_tables/`.
 - If `-center` is not supplied, it reads the cube center from
-  `cube_centers_v3tk.csv`.
+  `cube_centers_v3tk.csv`, then falls back to a local staged cube midpoint when
+  the CSV has no row for the selected galaxy.
 - It handles the combined `NGC4567_8` cube, whose cube-center row is combined
   but whose setup-table rows are still listed separately as `NGC4567` and
   `NGC4568`.
+- It uses the PHANGS-native public cube filenames for `NGC4254`, `NGC4321`, and
+  `NGC4535`, for example
+  `/scratch/pawsey1308/mauve/cubes/v3tk/NGC4254_PHANGS_DATACUBE_native.fits`.
 
 The original `make_gist_config.py` remains in the repository as a reference to
 the older workflow.
@@ -533,7 +607,9 @@ Before launching a production run, check:
 
 - The generated galaxy YAML has the intended `REDSHIFT`, `EBmV`, `SIGMA`, and
   `ORIGIN`.
-- The input cube exists under `/scratch/pawsey1308/mauve/cubes/v3tk/`.
+- The input cube exists under `/scratch/pawsey1308/mauve/cubes/v3tk/`; for
+  `NGC4254`, `NGC4321`, and `NGC4535`, this should be the staged
+  `*_PHANGS_DATACUBE_native.fits` file.
 - The galaxy mask file, for example `IC3392_mask.fits`, is available where
   nGIST/GIST expects it.
 - The nGIST `configFiles` directory contains the referenced masks, LSF files,

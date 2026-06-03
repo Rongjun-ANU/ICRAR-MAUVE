@@ -1,5 +1,6 @@
 import ast
 import glob
+import os
 import tempfile
 from pathlib import Path
 
@@ -15,7 +16,7 @@ def load_helpers(required_names):
         for node in tree.body
         if isinstance(node, ast.FunctionDef) and node.name in set(required_names)
     ]
-    namespace = {"glob": glob}
+    namespace = {"glob": glob, "os": os}
     exec(compile(ast.Module(body=nodes, type_ignores=[]), str(SCRIPT), "exec"), namespace)
     missing = [name for name in required_names if name not in namespace]
     if missing:
@@ -35,6 +36,16 @@ def test_fits_pattern_also_matches_gzip_counterpart():
         )
 
         assert matches == [str(compressed)]
+
+
+def test_safe_base_id_strips_phangs_native_suffix():
+    helpers = load_helpers(["safe_base_id"])
+
+    assert helpers["safe_base_id"]("NGC4254_PHANGS_DATACUBE_native_VRI.fits") == "NGC4254"
+    assert (
+        helpers["safe_base_id"]("NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits")
+        == "NGC4064"
+    )
 
 
 if __name__ == "__main__":

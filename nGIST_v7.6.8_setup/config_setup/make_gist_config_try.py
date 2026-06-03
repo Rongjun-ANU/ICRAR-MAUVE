@@ -37,11 +37,19 @@ combined_setup_ids = {
     "NGC4567_8": ("NGC4567", "NGC4568"),
 }
 ##
-# MUSE cube subscript
+# MUSE cube subscripts
 cube_sub = "_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"
-# path
-pathcube = '/scratch/pawsey1308/mauve/cubes/v3tk/'
-pathproducts = '/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/'
+phangs_native_cube_sub = "_PHANGS_DATACUBE_native.fits"
+phangs_native_galids = {
+    "NGC4254",
+    "NGC4321",
+    "NGC4535",
+}
+# paths
+pathcube = os.environ.get("MAUVE_CUBE_DIR", "/scratch/pawsey1308/mauve/cubes/v3tk/")
+pathproducts = os.environ.get(
+    "MAUVE_PRODUCTS_DIR", "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/"
+)
 
 ##
 ########################################################
@@ -95,6 +103,24 @@ def resolve_cube_centers_file(path):
     return resolved
 
 
+def normalize_dir(path):
+    return path if path.endswith(os.sep) else path + os.sep
+
+
+pathcube = normalize_dir(pathcube)
+pathproducts = normalize_dir(pathproducts)
+
+
+def cube_filename_for_galid(galaxy_id):
+    if galaxy_id in phangs_native_galids:
+        return galaxy_id + phangs_native_cube_sub
+    return galaxy_id + cube_sub
+
+
+def cube_path_for_galid(galaxy_id):
+    return os.path.join(pathcube, cube_filename_for_galid(galaxy_id))
+
+
 def get_center_from_csv(galaxy_id, csv_path):
     with open(csv_path, "r", newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -109,6 +135,25 @@ def get_center_from_csv(galaxy_id, csv_path):
                 return f"{int(center_x)},{int(center_y)}"
 
     raise ValueError(f"Galaxy ID {galaxy_id} not found in cube centers CSV: {csv_path}")
+
+
+def get_center_from_cube(galaxy_id, cube_path):
+    if not os.path.exists(cube_path):
+        raise FileNotFoundError(
+            f"No center row for {galaxy_id}, and cube does not exist for midpoint fallback: {cube_path}"
+        )
+
+    with fits.open(cube_path, memmap=True) as hdul:
+        for hdu in hdul:
+            data = hdu.data
+            if data is None or getattr(data, "ndim", 0) < 2:
+                continue
+            ny, nx = data.shape[-2:]
+            center_x = (int(nx) + 1) // 2
+            center_y = (int(ny) + 1) // 2
+            return f"{center_x},{center_y}"
+
+    raise ValueError(f"No 2D or 3D image data found in cube for center fallback: {cube_path}")
 
 
 def get_setup_mask(sample_data, galaxy_id):
@@ -142,6 +187,7 @@ def get_setup_mask(sample_data, galaxy_id):
 ###
 ### gets galaxy name when lanching
 galid = setup["galid"]
+cube_input_path = cube_path_for_galid(galid)
 
 ###################################
 ### read MasterConfig YAML file
@@ -158,9 +204,14 @@ print(f"Using MAUVE setup file: {mauve_info_resolved}")
 mauve_sample = fits.open(mauve_info_resolved)
 
 if setup["center"] is None:
-    centers_csv_resolved = resolve_cube_centers_file(cube_centers_file)
-    setup["center"] = get_center_from_csv(galid, centers_csv_resolved)
-    print(f"Using center from CSV: {setup['center']} ({centers_csv_resolved})")
+    try:
+        centers_csv_resolved = resolve_cube_centers_file(cube_centers_file)
+        setup["center"] = get_center_from_csv(galid, centers_csv_resolved)
+        print(f"Using center from CSV: {setup['center']} ({centers_csv_resolved})")
+    except (FileNotFoundError, ValueError) as exc:
+        setup["center"] = get_center_from_cube(galid, cube_input_path)
+        print(f"Using center from cube midpoint: {setup['center']} ({cube_input_path})")
+        print(f"Center CSV fallback reason: {exc}")
 else:
     print(f"Using manually provided center: {setup['center']}")
 
@@ -198,7 +249,7 @@ print(f"  z={z_value:.6f}, EBV={ebv_value:.6f}, sigma={sigma_value:.1f}")
 ######################################
 
 configfile["GENERAL"]["RUN_ID"] = galid
-configfile["GENERAL"]["INPUT"] = pathcube + galid + cube_sub
+configfile["GENERAL"]["INPUT"] = cube_input_path
 configfile["GENERAL"]["OUTPUT"] = pathproducts
 configfile["GENERAL"]["REDSHIFT"] = round(z_value, 6)
 configfile["GENERAL"]["NCPU"] = int(setup["cpu"])

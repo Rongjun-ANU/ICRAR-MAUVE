@@ -568,7 +568,10 @@ class Config:
 def safe_base_id(rfits_path: str) -> str:
     # From XXX_DATACUBE..._VRI.fits => XXX
     bn = os.path.basename(rfits_path)
-    return bn.split("_DATACUBE")[0]
+    base = bn.split("_DATACUBE")[0]
+    if base.endswith("_PHANGS"):
+        base = base[: -len("_PHANGS")]
+    return base
 
 
 def fits_path_patterns(pattern: str) -> list[str]:

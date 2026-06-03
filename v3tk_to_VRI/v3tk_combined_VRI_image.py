@@ -47,7 +47,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 	p = argparse.ArgumentParser(
 		prog="v3tk_combined_VRI_image.py",
 		description=(
-			"Combine MUSE observed R-band rendering with Legacy Survey background. "
+			"Combine MUSE observed VRI rendering with Legacy Survey background. "
 			"Uses the FITS flux map to build a valid-pixel mask (finite & >0). "
 			"Where pixels are invalid (NaN or <=0), it uses the Legacy reprojected image as background; "
 			"otherwise it uses the colored observed_VRI.png."
@@ -57,11 +57,11 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 		"--input-dir",
 		type=pathlib.Path,
 		default=pathlib.Path("."),
-		help="Directory containing *_v3tk_VRI.fits files (default: current directory)",
+		help="Directory containing *_DATACUBE*_VRI.fits files (default: current directory)",
 	)
 	p.add_argument(
 		"--pattern",
-		default="*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+		default="*_DATACUBE*_VRI.fits",
 		help="Glob pattern to match input FITS files",
 	)
 	p.add_argument(

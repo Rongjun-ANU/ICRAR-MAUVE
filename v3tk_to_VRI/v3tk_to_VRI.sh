@@ -19,12 +19,13 @@ df -h . || true
 command -v quota >/dev/null 2>&1 && quota -s || true
 echo ""
 
-target_dir="/arc/projects/mauve/cubes/v3tk"
-
-if [[ ! -d "$target_dir" ]]; then
-	echo "ERROR: target directory does not exist: $target_dir" >&2
-	exit 1
-fi
+target_dir="${TARGET_DIR:-/arc/projects/mauve/cubes/v3tk}"
+phangs_native_vos_dir="vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES"
+phangs_native_files=(
+	NGC4254_PHANGS_DATACUBE_native.fits
+	NGC4321_PHANGS_DATACUBE_native.fits
+	NGC4535_PHANGS_DATACUBE_native.fits
+)
 
 if ! command -v conda >/dev/null 2>&1; then
 	echo "ERROR: 'conda' not found in PATH. Load conda first, then re-run." >&2
@@ -40,13 +41,38 @@ fi
 # Needed for 'conda activate' in non-interactive shells
 source "$conda_base/etc/profile.d/conda.sh"
 
-shopt -s nullglob
-raw_files=("$target_dir"/*_v3tk.fits "$target_dir"/*_v3tk.fits.gz)
+is_phangs_native_galid() {
+	local candidate="$1"
+	local phangs_file phangs_galid
+	for phangs_file in "${phangs_native_files[@]}"; do
+		phangs_galid="${phangs_file%%_PHANGS_DATACUBE_native.fits}"
+		if [[ "$candidate" == "$phangs_galid" ]]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+galid_from_cube_name() {
+	local name="$1"
+	name="${name%.gz}"
+	if [[ "$name" == *_PHANGS_DATACUBE_native.fits ]]; then
+		printf '%s\n' "${name%%_PHANGS_DATACUBE_native.fits}"
+	elif [[ "$name" == *_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits ]]; then
+		printf '%s\n' "${name%%_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits}"
+	else
+		printf '%s\n' "${name%%_*}"
+	fi
+}
+
 seen_input_stems=()
 files=()
-for candidate in "${raw_files[@]}"; do
-	base_candidate="$(basename "$candidate")"
-	stem_key="${base_candidate%.gz}"
+
+append_source_once() {
+	local source_path="$1"
+	local source_name="$2"
+	local stem_key already_seen seen_stem
+	stem_key="${source_name%.gz}"
 	already_seen=0
 	for seen_stem in "${seen_input_stems[@]}"; do
 		if [[ "$seen_stem" == "$stem_key" ]]; then
@@ -55,10 +81,35 @@ for candidate in "${raw_files[@]}"; do
 		fi
 	done
 	if [[ "$already_seen" -eq 1 ]]; then
-		continue
+		return
 	fi
 	seen_input_stems+=("$stem_key")
-	files+=("$candidate")
+	files+=("$source_path")
+}
+
+shopt -s nullglob
+if [[ -d "$target_dir" ]]; then
+	raw_files=("$target_dir"/*_v3tk.fits "$target_dir"/*_v3tk.fits.gz)
+else
+	echo "WARNING: target directory does not exist, skipping local v3tk discovery: $target_dir" >&2
+	raw_files=()
+fi
+
+for candidate in "${raw_files[@]}"; do
+	base_candidate="$(basename "$candidate")"
+	if is_phangs_native_galid "$(galid_from_cube_name "$base_candidate")"; then
+		continue
+	fi
+	append_source_once "$candidate" "$base_candidate"
+done
+
+for phangs_file in "${phangs_native_files[@]}"; do
+	local_phangs="$target_dir/$phangs_file"
+	if [[ -f "$local_phangs" ]]; then
+		append_source_once "$local_phangs" "$phangs_file"
+	else
+		append_source_once "$phangs_native_vos_dir/$phangs_file" "$phangs_file"
+	fi
 done
 
 time_cmd=""
@@ -74,7 +125,7 @@ echo "Target directory: $target_dir"
 echo "Working directory: $(pwd)"
 
 if (( ${#files[@]} == 0 )); then
-	echo "No matches found for: $target_dir/*_v3tk.fits or $target_dir/*_v3tk.fits.gz"
+	echo "No input cubes found from local v3tk patterns or PHANGS native public sources"
 	exit 0
 fi
 
@@ -98,7 +149,13 @@ for src_input in "${files[@]}"; do
 
 	# 1) copy to pwd (prefer rsync when available)
 	rm -f "$dest_input"
-	if command -v rsync >/dev/null 2>&1; then
+	if [[ "$src_input" == vos:* ]]; then
+		if ! command -v vcp >/dev/null 2>&1; then
+			echo "ERROR: vcp is required to stage public VOSpace input: $src_input" >&2
+			exit 1
+		fi
+		vcp "$src_input" "$dest_input"
+	elif command -v rsync >/dev/null 2>&1; then
 		rsync -a "$src_input" "$dest_input"
 	else
 		cp -f "$src_input" "$dest_input"
