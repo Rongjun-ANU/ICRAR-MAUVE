@@ -37,7 +37,7 @@ NGC4419,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad
 NGC4457,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 725, 725)",17791908480,16.570,525625,341460,ok
 NGC4457,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 725, 725)",8987338581,8.370,525625,341460,ok
 NGC4501,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1236, 1205)",50414051520,46.952,1489380,669298,ok
-NGC4501,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,,17670869577,16.457,,,error: Error -3 while decompressing data: invalid stored block lengths
+NGC4501,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1236, 1205)",17670869577,16.457,1489380,669298,ok
 NGC4522,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 659, 590)",13160859840,12.257,388810,180578,ok
 NGC4522,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 659, 590)",4835422014,4.503,388810,180578,ok
 NGC4535,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4535_PHANGS_DATACUBE_native.fits,"(3761, 898, 610)",18541837440,17.268,547780,532557,ok
