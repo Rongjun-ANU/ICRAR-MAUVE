@@ -179,6 +179,21 @@ Use this only on a system where the upstream cube directory exists:
 ./v3tk_to_VRI.sh
 ```
 
+To restrict conversion to selected galaxies, pass the GALIDs explicitly. This
+is the recommended check before processing the three PHANGS-native MAUVE
+galaxies:
+
+```bash
+./v3tk_to_VRI.sh --dry-run NGC4254 NGC4321 NGC4535
+./v3tk_to_VRI.sh NGC4254 NGC4321 NGC4535
+```
+
+With positional GALID arguments, the wrapper selects only those galaxies. For
+`NGC4254`, `NGC4321`, and `NGC4535`, it selects
+`*_PHANGS_DATACUBE_native.fits` from the local target directory when present, or
+from public PHANGS VOSspace via `vcp` when not present. It does not fall through
+to the all-galaxy local discovery list.
+
 The wrapper expects:
 
 ```text

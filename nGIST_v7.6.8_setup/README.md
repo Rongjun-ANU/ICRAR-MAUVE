@@ -105,9 +105,9 @@ The generated YAML files expect input cubes under:
 ```
 
 Use `config_setup/vcp_from_v3tk_to_scratch.sh` on Setonix/CADC-capable
-environments to stage the current cube inputs. It builds a manifest from the
-existing MAUVE v3tk cube release and appends these public PHANGS-MUSE native
-cubes:
+environments to stage the current cube inputs. With no galaxy arguments, it
+builds a manifest from the existing MAUVE v3tk cube release and appends these
+public PHANGS-MUSE native cubes:
 
 ```text
 vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4254_PHANGS_DATACUBE_native.fits
@@ -119,6 +119,25 @@ These are full 18-42 GB cubes, so production nGIST should use the staged local
 scratch files. VOSspace is still useful for lightweight checks such as `vls`,
 `vcat --head`, or small `vcp` cutouts, but the full nGIST workflow should not
 treat `vos:` paths as normal local FITS inputs.
+
+To transfer only selected galaxies, pass the GALID list. For example, this
+stages only the public PHANGS-native `NGC4254` cube:
+
+```bash
+./vcp_from_v3tk_to_scratch.sh NGC4254
+```
+
+Preview the selected sources and worker count without contacting CADC or
+copying files:
+
+```bash
+./vcp_from_v3tk_to_scratch.sh --dry-run NGC4254
+```
+
+The transfer script defaults to `JOBS=5` and caps any larger exported `JOBS`
+value back to 5 for Setonix overlay-quota safety. It also shrinks the effective
+worker count to the number of selected sources, so a one-galaxy transfer creates
+one worker overlay, not five.
 
 ## Creating the Setonix batch
 
@@ -256,6 +275,24 @@ The origin normally comes from `cube_centers_v3tk.csv`. If the selected galaxy
 has no center row and its cube already exists under the configured cube path,
 the script falls back to the cube midpoint; otherwise pass `-center x,y` or add
 a verified center row before generating its YAML.
+
+On Setonix, regenerate the cube-center and cube-size CSV snapshots from the
+staged scratch cube directory with:
+
+```bash
+./check_v3tk_cube_centers.sh
+./check_v3tk_cube_sizes.sh
+```
+
+Both helpers default to `/scratch/pawsey1308/mauve/cubes/v3tk` and now scan
+`*_DATACUBE*.fits,*_DATACUBE*.fits.gz`. This covers ordinary MAUVE v3tk cubes
+and staged PHANGS-native cubes such as
+`NGC4254_PHANGS_DATACUBE_native.fits`. PHANGS-native rows are written with the
+MAUVE galaxy IDs (`NGC4254`, `NGC4321`, `NGC4535`), not `NGC4254_PHANGS`.
+Each helper creates a temporary per-run copy of the nGIST container overlay
+before calling `${HOME}/bin/conda`, then removes it on exit. This avoids the
+shared `ngist_overlay.img` write lock collision when another nGIST container
+process is already using the base overlay.
 
 To send the generated files to Setonix from your local machine, run:
 

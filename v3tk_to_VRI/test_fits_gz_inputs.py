@@ -1,3 +1,5 @@
+import os
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -87,6 +89,53 @@ def test_batch_wrapper_stages_public_phangs_native_inputs():
         assert f"{galid}_PHANGS_DATACUBE_native.fits" in script
     assert "vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES" in script
     assert "copt" not in script.lower()
+
+
+def test_batch_wrapper_honors_selected_galaxy_args():
+    script = (ROOT / "v3tk_to_VRI.sh").read_text()
+
+    assert "--dry-run" in script
+    assert "requested_galids" in script
+    assert "source_for_galid" in script
+    assert 'requested_galids=("$@")' in script
+
+
+def test_batch_wrapper_dry_run_limits_to_selected_phangs_galaxies():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        target = tmp / "empty_target"
+        run_dir = tmp / "run"
+        run_dir.mkdir()
+        env = os.environ.copy()
+        env["TARGET_DIR"] = str(target)
+
+        result = subprocess.run(
+            [
+                "bash",
+                str(ROOT / "v3tk_to_VRI.sh"),
+                "--dry-run",
+                "NGC4254",
+                "NGC4321",
+                "NGC4535",
+            ],
+            cwd=run_dir,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+
+    selected_sources = [
+        line[2:] for line in result.stdout.splitlines() if line.startswith("- ")
+    ]
+
+    assert selected_sources == [
+        "vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4254_PHANGS_DATACUBE_native.fits",
+        "vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.fits",
+        "vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4535_PHANGS_DATACUBE_native.fits",
+    ]
+    assert "Dry run complete." in result.stdout
+    assert "_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk" not in result.stdout
 
 
 if __name__ == "__main__":

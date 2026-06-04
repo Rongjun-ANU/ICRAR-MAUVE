@@ -10,7 +10,8 @@ identifier (e.g. IC3392) as a command‑line argument:
 The MAUVE directory tree is assumed to look like::
 
     /arc/projects/mauve/cubes/v3tk/
-      └─ {galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+      ├─ {galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+      └─ {galaxy}_PHANGS_DATACUBE_native.fits  # NGC4254/NGC4321/NGC4535
 
     <working directory>/v3tk_v7.6.8/{galaxy}/
       ├─ {galaxy}_spatial_binning_maps.fits
@@ -150,6 +151,13 @@ Changes (2026-05-28)
   a `.fits` path or glob is requested, so v3tk cubes do not need to be unzipped
   in the shared CANFAR cube directory.
 
+Changes (2026-06-04)
+-----------------------
+* NGC4254, NGC4321, and NGC4535 now resolve their science datacubes from the
+  PHANGS-MUSE native public filenames, e.g.
+  `{galaxy}_PHANGS_DATACUBE_native.fits`, instead of the MAUVE v3tk filename
+  pattern.
+
 """
 
 # ------------------------------------------------------------------
@@ -283,6 +291,17 @@ def build_named_input_candidates(
     for name in names:
         candidates.extend(build_input_candidates(root, relative_dir / name, name))
     return candidates
+
+
+def datacube_filenames_for_galaxy(galaxy_name: str) -> list[str]:
+    galaxy_norm = galaxy_name.upper()
+    if galaxy_norm in ("NGC4254", "NGC4321", "NGC4535"):
+        return [f"{galaxy_norm}_PHANGS_DATACUBE_native.fits"]
+
+    return [
+        f"{galaxy_norm}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits",
+        f"{galaxy_norm}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits",
+    ]
 
 
 def _input_search_dirs(root: Path | None, relative_dir: Path) -> list[Path]:
@@ -494,10 +513,7 @@ if ncpus > 0:
 # ------------------------------------------------------------------
 # 1.  File paths derived from CLI args
 # ------------------------------------------------------------------
-cube_names = [
-    f"{galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits",
-    f"{galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits",
-]
+cube_names = datacube_filenames_for_galaxy(galaxy)
 bin_suffixes = [
     "SPATIAL_BINNING_maps.fits",
     "spatial_binning_maps.fits",

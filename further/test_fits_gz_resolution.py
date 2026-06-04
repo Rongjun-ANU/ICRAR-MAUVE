@@ -136,6 +136,33 @@ def test_proxy_resolver_finds_compressed_counterpart():
         assert resolved == compressed.resolve()
 
 
+def test_mass_uses_phangs_native_cube_names_for_phangs_galaxies():
+    helpers = load_helpers("Mass.py", ["datacube_filenames_for_galaxy"])
+
+    for galid in ("NGC4254", "NGC4321", "NGC4535"):
+        names = helpers["datacube_filenames_for_galaxy"](galid)
+
+        assert names == [f"{galid}_PHANGS_DATACUBE_native.fits"]
+
+
+def test_proxy_uses_phangs_native_cube_names_for_phangs_galaxies():
+    helpers = load_helpers("proxy_EWHa.py", ["datacube_filenames_for_galaxy"])
+
+    for galid in ("NGC4254", "NGC4321", "NGC4535"):
+        names = helpers["datacube_filenames_for_galaxy"](galid)
+
+        assert names == [f"{galid}_PHANGS_DATACUBE_native.fits"]
+
+
+def test_mass_proxy_shell_defaults_include_phangs_and_keep_cli_override():
+    for shell_name in ("Mass.sh", "proxy_EWHa.sh"):
+        shell_source = (ROOT / shell_name).read_text()
+
+        for galid in ("NGC4254", "NGC4321", "NGC4535"):
+            assert f'"{galid}"' in shell_source
+        assert '[[ $# -gt 0 ]] && GALAXIES=("$@")' in shell_source
+
+
 def test_proxy_combined_ngc4567_8_redshift_uses_member_mean():
     proxy_ewha = load_script_module("proxy_EWHa.py")
     with tempfile.TemporaryDirectory() as tmpdir:

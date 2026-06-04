@@ -2,11 +2,19 @@
 set -euo pipefail
 
 log_file="$(pwd)/v3tk_to_VRI.log"
-: > "$log_file"
-exec > >(tee -a "$log_file") 2>&1
+if [[ "${V3TK_TO_VRI_LOG_CAPTURED:-0}" != "1" ]]; then
+	: > "$log_file"
+	export V3TK_TO_VRI_LOG_CAPTURED=1
+	"${BASH:-bash}" "$0" "$@" 2>&1 | tee -a "$log_file"
+	exit "${PIPESTATUS[0]}"
+fi
 echo "Logging to: $log_file"
 
-echo "Start time: $(date -Is)"
+timestamp_now() {
+	date -u +"%Y-%m-%dT%H:%M:%SZ"
+}
+
+echo "Start time: $(timestamp_now)"
 echo "Host: $(hostname)"
 echo "User: $(whoami)"
 echo "CWD: $(pwd)"
@@ -16,7 +24,7 @@ echo "Resource snapshot (best effort):"
 ulimit -a || true
 command -v free >/dev/null 2>&1 && free -h || true
 df -h . || true
-command -v quota >/dev/null 2>&1 && quota -s || true
+command -v quota >/dev/null 2>&1 && quota -s 2>/dev/null || true
 echo ""
 
 target_dir="${TARGET_DIR:-/arc/projects/mauve/cubes/v3tk}"
@@ -27,19 +35,90 @@ phangs_native_files=(
 	NGC4535_PHANGS_DATACUBE_native.fits
 )
 
-if ! command -v conda >/dev/null 2>&1; then
-	echo "ERROR: 'conda' not found in PATH. Load conda first, then re-run." >&2
-	exit 1
+usage() {
+	cat <<'USAGE'
+Usage:
+  ./v3tk_to_VRI.sh [--dry-run] [GALID ...]
+
+Examples:
+  ./v3tk_to_VRI.sh
+  ./v3tk_to_VRI.sh NGC4254 NGC4321 NGC4535
+  ./v3tk_to_VRI.sh --dry-run NGC4254
+
+Without GALID arguments, all local v3tk cubes plus the supported PHANGS-native
+public cubes are selected. With GALID arguments, only those galaxies are staged
+and converted.
+USAGE
+}
+
+dry_run=0
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--dry-run|-n)
+			dry_run=1
+			shift
+			;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		--)
+			shift
+			break
+			;;
+		-*)
+			echo "ERROR: unknown option: $1" >&2
+			usage >&2
+			exit 2
+			;;
+		*)
+			break
+			;;
+	esac
+done
+requested_galids=("$@")
+
+normalize_galid() {
+	printf '%s' "$1" | tr '[:lower:]' '[:upper:]' | tr -d ' '
+}
+
+normalized_requested_galids=()
+for requested_galid in "${requested_galids[@]}"; do
+	normalized_requested_galids+=("$(normalize_galid "$requested_galid")")
+done
+
+if [[ "$dry_run" -eq 1 ]]; then
+	echo "Dry run: no files will be copied, converted, or removed."
 fi
 
-conda_base="$(conda info --base)"
-if [[ ! -f "$conda_base/etc/profile.d/conda.sh" ]]; then
-	echo "ERROR: conda init script not found: $conda_base/etc/profile.d/conda.sh" >&2
-	exit 1
-fi
+# Needed for 'conda activate' in non-interactive shells during real runs.
+activate_conda() {
+	if ! command -v conda >/dev/null 2>&1; then
+		echo "ERROR: 'conda' not found in PATH. Load conda first, then re-run." >&2
+		exit 1
+	fi
 
-# Needed for 'conda activate' in non-interactive shells
-source "$conda_base/etc/profile.d/conda.sh"
+	conda_base="$(conda info --base)"
+	if [[ ! -f "$conda_base/etc/profile.d/conda.sh" ]]; then
+		echo "ERROR: conda init script not found: $conda_base/etc/profile.d/conda.sh" >&2
+		exit 1
+	fi
+
+	source "$conda_base/etc/profile.d/conda.sh"
+}
+
+phangs_native_file_for_galid() {
+	local candidate="$1"
+	local phangs_file phangs_galid
+	for phangs_file in "${phangs_native_files[@]}"; do
+		phangs_galid="${phangs_file%%_PHANGS_DATACUBE_native.fits}"
+		if [[ "$candidate" == "$phangs_galid" ]]; then
+			printf '%s\n' "$phangs_file"
+			return 0
+		fi
+	done
+	return 1
+}
 
 is_phangs_native_galid() {
 	local candidate="$1"
@@ -65,6 +144,60 @@ galid_from_cube_name() {
 	fi
 }
 
+local_v3tk_source_for_galid() {
+	local galid="$1"
+	local candidate
+	local matches=()
+
+	for candidate in \
+		"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits" \
+		"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz"
+	do
+		if [[ -f "$candidate" ]]; then
+			printf '%s\n' "$candidate"
+			return 0
+		fi
+	done
+
+	if [[ -d "$target_dir" ]]; then
+		matches=(
+			"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk"*.fits
+			"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk"*.fits.gz
+		)
+		for candidate in "${matches[@]}"; do
+			if [[ -f "$candidate" ]]; then
+				printf '%s\n' "$candidate"
+				return 0
+			fi
+		done
+	fi
+
+	return 1
+}
+
+source_for_galid() {
+	local galid="$1"
+	local phangs_file local_phangs local_source
+
+	if phangs_file="$(phangs_native_file_for_galid "$galid")"; then
+		local_phangs="$target_dir/$phangs_file"
+		if [[ -f "$local_phangs" ]]; then
+			printf '%s\n' "$local_phangs"
+		else
+			printf '%s\n' "$phangs_native_vos_dir/$phangs_file"
+		fi
+		return 0
+	fi
+
+	if local_source="$(local_v3tk_source_for_galid "$galid")"; then
+		printf '%s\n' "$local_source"
+		return 0
+	fi
+
+	echo "ERROR: no local v3tk cube found for selected GALID $galid under $target_dir" >&2
+	return 1
+}
+
 seen_input_stems=()
 files=()
 
@@ -74,12 +207,14 @@ append_source_once() {
 	local stem_key already_seen seen_stem
 	stem_key="${source_name%.gz}"
 	already_seen=0
-	for seen_stem in "${seen_input_stems[@]}"; do
-		if [[ "$seen_stem" == "$stem_key" ]]; then
-			already_seen=1
-			break
-		fi
-	done
+	if (( ${#seen_input_stems[@]} > 0 )); then
+		for seen_stem in "${seen_input_stems[@]}"; do
+			if [[ "$seen_stem" == "$stem_key" ]]; then
+				already_seen=1
+				break
+			fi
+		done
+	fi
 	if [[ "$already_seen" -eq 1 ]]; then
 		return
 	fi
@@ -88,29 +223,36 @@ append_source_once() {
 }
 
 shopt -s nullglob
-if [[ -d "$target_dir" ]]; then
-	raw_files=("$target_dir"/*_v3tk.fits "$target_dir"/*_v3tk.fits.gz)
+if (( ${#normalized_requested_galids[@]} > 0 )); then
+	for requested_galid in "${normalized_requested_galids[@]}"; do
+		source_path="$(source_for_galid "$requested_galid")"
+		append_source_once "$source_path" "$(basename "$source_path")"
+	done
 else
-	echo "WARNING: target directory does not exist, skipping local v3tk discovery: $target_dir" >&2
-	raw_files=()
-fi
-
-for candidate in "${raw_files[@]}"; do
-	base_candidate="$(basename "$candidate")"
-	if is_phangs_native_galid "$(galid_from_cube_name "$base_candidate")"; then
-		continue
-	fi
-	append_source_once "$candidate" "$base_candidate"
-done
-
-for phangs_file in "${phangs_native_files[@]}"; do
-	local_phangs="$target_dir/$phangs_file"
-	if [[ -f "$local_phangs" ]]; then
-		append_source_once "$local_phangs" "$phangs_file"
+	if [[ -d "$target_dir" ]]; then
+		raw_files=("$target_dir"/*_v3tk.fits "$target_dir"/*_v3tk.fits.gz)
 	else
-		append_source_once "$phangs_native_vos_dir/$phangs_file" "$phangs_file"
+		echo "WARNING: target directory does not exist, skipping local v3tk discovery: $target_dir" >&2
+		raw_files=()
 	fi
-done
+
+	for candidate in "${raw_files[@]}"; do
+		base_candidate="$(basename "$candidate")"
+		if is_phangs_native_galid "$(galid_from_cube_name "$base_candidate")"; then
+			continue
+		fi
+		append_source_once "$candidate" "$base_candidate"
+	done
+
+	for phangs_file in "${phangs_native_files[@]}"; do
+		local_phangs="$target_dir/$phangs_file"
+		if [[ -f "$local_phangs" ]]; then
+			append_source_once "$local_phangs" "$phangs_file"
+		else
+			append_source_once "$phangs_native_vos_dir/$phangs_file" "$phangs_file"
+		fi
+	done
+fi
 
 time_cmd=""
 time_supports_verbose=0
@@ -133,6 +275,13 @@ echo "Found ${#files[@]} file(s):"
 for f in "${files[@]}"; do
 	echo "- $f"
 done
+
+if [[ "$dry_run" -eq 1 ]]; then
+	echo "Dry run complete."
+	exit 0
+fi
+
+activate_conda
 
 total_start_epoch="$(date +%s)"
 
@@ -186,7 +335,7 @@ for src_input in "${files[@]}"; do
 		echo "Resource snapshot after failure (best effort):" >&2
 		command -v free >/dev/null 2>&1 && free -h || true
 		df -h . || true
-		command -v quota >/dev/null 2>&1 && quota -s || true
+		command -v quota >/dev/null 2>&1 && quota -s 2>/dev/null || true
 		exit $py_status
 	fi
 
@@ -203,4 +352,4 @@ total_end_epoch="$(date +%s)"
 total_runtime="$((total_end_epoch - total_start_epoch))"
 echo ""
 echo "All done. Total runtime: ${total_runtime}s"
-echo "End time: $(date -Is)"
+echo "End time: $(timestamp_now)"

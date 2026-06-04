@@ -95,12 +95,20 @@ With no command-line arguments, it processes all files matching:
 To process only selected galaxies, pass one or more shell patterns:
 
 ```bash
+python make_ngist_masks_from_catalogs_VRI.py NGC4254 NGC4321 NGC4535
 python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits'
 python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits.gz'
 python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits' 'NGC4419*_DATACUBE*_VRI.fits'
 ```
 
-When a command-line pattern ends in `.fits`, the script also checks the corresponding `.fits.gz` pattern. This means the common `.fits` commands above work when only compressed inputs are present.
+Bare galaxy IDs are expanded to `GALID*_DATACUBE*_VRI.fits`, so the selected
+PHANGS-native command above discovers
+`NGC4254_PHANGS_DATACUBE_native_VRI.fits`,
+`NGC4321_PHANGS_DATACUBE_native_VRI.fits`, and
+`NGC4535_PHANGS_DATACUBE_native_VRI.fits` automatically. When a command-line
+pattern ends in `.fits`, the script also checks the corresponding `.fits.gz`
+pattern. This means the common `.fits` commands above work when only compressed
+inputs are present.
 
 For each input `XXX_DATACUBE*_VRI.fits` or `.fits.gz`, the script writes:
 

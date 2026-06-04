@@ -134,6 +134,57 @@ def test_vcp_transfer_script_lists_public_native_phangs_cubes_only():
     assert "copt" not in script.lower()
 
 
+def test_vcp_transfer_script_accepts_selected_galaxies():
+    script = (CONFIG_DIR / "vcp_from_v3tk_to_scratch.sh").read_text(encoding="utf-8")
+
+    assert "source_for_galid()" in script
+    assert "REQUESTED_GALIDS" in script
+    assert "V3TK_CUBE_SUFFIX='_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz'" in script
+    assert 'printf \'%s%s%s\\n\' "$SRC_PREFIX" "$galid" "$V3TK_CUBE_SUFFIX"' in script
+    assert "--dry-run" in script
+
+
+def test_vcp_transfer_script_caps_workers_at_five():
+    script = (CONFIG_DIR / "vcp_from_v3tk_to_scratch.sh").read_text(encoding="utf-8")
+
+    assert "MAX_JOBS=5" in script
+    assert "JOBS=${JOBS:-5}" in script
+    assert "Capping JOBS" in script
+    assert "EFFECTIVE_JOBS" in script
+
+
+def test_cube_check_scripts_default_to_v3tk_and_phangs_patterns():
+    for script_name in ("check_v3tk_cube_centers.sh", "check_v3tk_cube_sizes.sh"):
+        script = (CONFIG_DIR / script_name).read_text(encoding="utf-8")
+
+        assert "DEFAULT_GLOB_PATTERNS=\"*_DATACUBE*.fits,*_DATACUBE*.fits.gz\"" in script
+        assert "GLOB_PATTERNS=\"${2:-$DEFAULT_GLOB_PATTERNS}\"" in script
+        assert "for part in pattern_arg.split(',')" in script
+
+
+def test_cube_check_scripts_strip_phangs_from_cube_id():
+    for script_name in ("check_v3tk_cube_centers.sh", "check_v3tk_cube_sizes.sh"):
+        script = (CONFIG_DIR / script_name).read_text(encoding="utf-8")
+
+        assert "def cube_id_from_filename(file_name: str) -> str:" in script
+        assert 'cube_id = file_name.split("_DATACUBE", 1)[0]' in script
+        assert 'if cube_id.endswith("_PHANGS"):' in script
+        assert 'cube_id = cube_id[: -len("_PHANGS")]' in script
+
+
+def test_cube_check_scripts_use_run_local_ngist_overlays():
+    for script_name in ("check_v3tk_cube_centers.sh", "check_v3tk_cube_sizes.sh"):
+        script = (CONFIG_DIR / script_name).read_text(encoding="utf-8")
+
+        assert "BASE_OVERLAY=" in script
+        assert "RUN_OVERLAY=" in script
+        assert 'cp --reflink=auto "$BASE_OVERLAY" "$RUN_OVERLAY"' in script
+        assert 'wait_for_overlay "$BASE_OVERLAY" || exit 1' in script
+        assert 'wait_for_overlay "$RUN_OVERLAY" || exit 1' in script
+        assert 'NGIST_OVERLAY="$RUN_OVERLAY"' in script
+        assert 'rm -f "$RUN_OVERLAY"' in script
+
+
 if __name__ == "__main__":
     for name, func in sorted(globals().items()):
         if name.startswith("test_") and callable(func):

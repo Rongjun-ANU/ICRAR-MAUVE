@@ -38,6 +38,13 @@ Changes (2026-03-31)
 * pixels, Halpha flux, Halpha velocity, and the legacy R-band proxy are grouped
 * with `BINID`, measured once per bin, and expanded back to all member pixels.
 *
+* Changes (2026-06-04)
+* --------------------
+* NGC4254, NGC4321, and NGC4535 now read their continuum/datacube input from
+* PHANGS-MUSE native public cube filenames, e.g.
+* `{gal}_PHANGS_DATACUBE_native.fits`, instead of the MAUVE v3tk filename
+* pattern.
+*
 * Inputs:
   - Observed Halpha map from:
       {gal}_gas_bin_maps_further.fits
@@ -46,6 +53,8 @@ Changes (2026-03-31)
       `HA6562_VEL`
   - Continuum/datacube from:
       /arc/projects/mauve/cubes/v3tk/{gal}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+    or, for NGC4254/NGC4321/NGC4535:
+      /arc/projects/mauve/cubes/v3tk/{gal}_PHANGS_DATACUBE_native.fits
   - Legacy broad-band R proxy input from:
       {gal}_spatial_binning_maps_further.fits
     using extension `MAGNITUDE_R_UNCORRECTED`
@@ -253,6 +262,29 @@ def resolve_existing_path(label: str, *paths: Path | None) -> Path:
 
 def normalize_galaxy_id(galaxy: str) -> str:
     return galaxy.upper().replace(" ", "")
+
+
+def datacube_filenames_for_galaxy(galaxy_name: str) -> list[str]:
+    galaxy_norm = galaxy_name.upper().replace(" ", "")
+    if galaxy_norm in ("NGC4254", "NGC4321", "NGC4535"):
+        return [f"{galaxy_norm}_PHANGS_DATACUBE_native.fits"]
+
+    return [f"{galaxy_norm}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"]
+
+
+def datacube_input_candidates(
+    cube_root: Path,
+    root: Path,
+    fallback_root: Path | None,
+    galaxy_name: str,
+) -> list[Path]:
+    candidates: list[Path] = []
+    for cube_name in datacube_filenames_for_galaxy(galaxy_name):
+        candidates.append(cube_root / cube_name)
+        candidates.append(root / "cubes/v3tk" / cube_name)
+        if fallback_root is not None:
+            candidates.append(fallback_root / "cubes/v3tk" / cube_name)
+    return candidates
 
 
 def vacuum_to_air_wavelength_angstrom(lam_vac_a: float) -> float:
@@ -862,11 +894,7 @@ def main() -> None:
         if args.cont_file
         else resolve_existing_path(
             "continuum cube FITS",
-            cube_root / f"{gal}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits",
-            root / "cubes/v3tk" / f"{gal}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits",
-            fallback_root / "cubes/v3tk" / f"{gal}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"
-            if fallback_root is not None
-            else None,
+            *datacube_input_candidates(cube_root, root, fallback_root, gal),
             root / f"{gal}_CONTcube.fits",
             fallback_root / f"{gal}_CONTcube.fits" if fallback_root is not None else None,
         )

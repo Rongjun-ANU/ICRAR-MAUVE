@@ -4,6 +4,7 @@
 # Usage examples:
 #   ./Mass.sh                 # default galaxy list below
 #   ./Mass.sh NGC4064 NGC4192 # custom list
+#   ./Mass.sh NGC4254         # one PHANGS-native MAUVE galaxy
 # --------------------------------------------------------------
 
 set -euo pipefail
@@ -64,10 +65,12 @@ GALAXIES=(
   "NGC4064"
   "NGC4189"
   "NGC4192"
+  "NGC4254"
   "NGC4293"
   "NGC4294"
   "NGC4298"
   "NGC4302"
+  "NGC4321"
   "NGC4330"
   "NGC4351"
   "NGC4383"
@@ -80,6 +83,7 @@ GALAXIES=(
   "NGC4457"
   "NGC4501"
   "NGC4522"
+  "NGC4535"
   "NGC4567_8"
   "NGC4580"
   "NGC4606"

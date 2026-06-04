@@ -13,6 +13,9 @@ Usage:
     If one or more [pattern] arguments are provided (e.g., "NGC*.fits"), it processes
     all matching files (deduplicated, order-preserving). A pattern ending in `.fits`
     also checks the matching `.fits.gz` files, which Astropy can read directly.
+    Bare galaxy IDs such as `NGC4254` are expanded to
+    `NGC4254*_DATACUBE*_VRI.fits`, so PHANGS-native products such as
+    `NGC4254_PHANGS_DATACUBE_native_VRI.fits` are discovered automatically.
     Otherwise, it defaults to processing all "*_DATACUBE*_VRI.fits" and
     "*_DATACUBE*_VRI.fits.gz" files in the current directory.
 
@@ -583,10 +586,45 @@ def fits_path_patterns(pattern: str) -> list[str]:
     return [pattern]
 
 
+def is_bare_galaxy_id(pattern: str) -> bool:
+    if any(char in pattern for char in "*?["):
+        return False
+
+    name = os.path.basename(pattern.rstrip(os.sep))
+    if not name:
+        return False
+
+    lower_name = name.lower()
+    if lower_name.endswith(".fits") or lower_name.endswith(".fits.gz"):
+        return False
+
+    upper_name = name.upper().replace(" ", "")
+    if upper_name.startswith("NGC"):
+        suffix = upper_name[len("NGC"):]
+    elif upper_name.startswith("IC"):
+        suffix = upper_name[len("IC"):]
+    else:
+        return False
+
+    return bool(suffix) and all(part.isdigit() for part in suffix.split("_"))
+
+
+def input_patterns_for_argument(pattern: str) -> list[str]:
+    if not is_bare_galaxy_id(pattern):
+        return fits_path_patterns(pattern)
+
+    directory = os.path.dirname(pattern)
+    galaxy_id = os.path.basename(pattern.rstrip(os.sep)).upper().replace(" ", "")
+    expanded_pattern = f"{galaxy_id}*_DATACUBE*_VRI.fits"
+    if directory:
+        expanded_pattern = os.path.join(directory, expanded_pattern)
+    return fits_path_patterns(expanded_pattern)
+
+
 def expand_fits_input_patterns(patterns: list[str]) -> list[str]:
     matches: list[str] = []
     for pattern in patterns:
-        for expanded_pattern in fits_path_patterns(pattern):
+        for expanded_pattern in input_patterns_for_argument(pattern):
             matches.extend(sorted(glob.glob(expanded_pattern)))
 
     seen = set()
