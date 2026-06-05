@@ -50,6 +50,9 @@ Important current settings include:
 - Velocity scale: `41 km/s`
 - Stellar/SFH mask: `specMask_KIN_narrow10`
 - Gas mask: `specMask_GAS_narrow10`
+- PHANGS-native AO masks: `specMask_KIN_narrow10_AO` and
+  `specMask_GAS_narrow10_AO` for `NGC4254`, `NGC4321`, and `NGC4535`
+- PHANGS-native AO read-data method: `MUSE_WFMAON`
 - Gas emission-line config: `emissionLines_ppxf_8900.config`
 - Gas fitting level: `BOTH`
 - Setonix cube path: `/scratch/pawsey1308/mauve/cubes/v3tk/`
@@ -597,6 +600,12 @@ important conveniences compared with the older `make_gist_config.py`:
 - It uses the PHANGS-native public cube filenames for `NGC4254`, `NGC4321`, and
   `NGC4535`, for example
   `/scratch/pawsey1308/mauve/cubes/v3tk/NGC4254_PHANGS_DATACUBE_native.fits`.
+- It switches those three PHANGS-native AO-enabled galaxies to the
+  `MUSE_WFMAON` read-data method, `specMask_KIN_narrow10_AO` for KIN/CONT/SFH,
+  and `specMask_GAS_narrow10_AO` for GAS. The AO read-data method is needed
+  before spatial masking/binning, while these AO masks copy the narrow10 masks
+  and add the observed-frame global-NaN range `5806.25-5963.75 Angstrom` as a
+  `sky` mask entry.
 
 The original `make_gist_config.py` remains in the repository as a reference to
 the older workflow.
@@ -647,6 +656,9 @@ Before launching a production run, check:
 - The input cube exists under `/scratch/pawsey1308/mauve/cubes/v3tk/`; for
   `NGC4254`, `NGC4321`, and `NGC4535`, this should be the staged
   `*_PHANGS_DATACUBE_native.fits` file.
+- PHANGS-native AO-enabled configs use `READ_DATA: METHOD: MUSE_WFMAON` and
+  reference the `_AO` spectral masks, which include the observed-frame
+  `5806.25-5963.75 Angstrom` global-NaN mask.
 - The galaxy mask file, for example `IC3392_mask.fits`, is available where
   nGIST/GIST expects it.
 - The nGIST `configFiles` directory contains the referenced masks, LSF files,

@@ -34,9 +34,15 @@ def write_minimal_master_config(path: Path):
                 "SPATIAL_MASKING:",
                 "  MASK: ''",
                 "KIN:",
+                "  SPEC_MASK: specMask_KIN_narrow10",
                 "  SIGMA: 0",
                 "CONT:",
+                "  SPEC_MASK: specMask_KIN_narrow10",
                 "  SIGMA: 0",
+                "GAS:",
+                "  SPEC_MASK: specMask_GAS_narrow10",
+                "SFH:",
+                "  SPEC_MASK: specMask_KIN_narrow10",
                 "",
             ]
         ),
@@ -100,6 +106,46 @@ def test_phangs_native_galaxies_use_native_cube_paths():
 
         assert config["GENERAL"]["INPUT"] == str(cube_dir / "NGC4254_PHANGS_DATACUBE_native.fits")
         assert config["READ_DATA"]["ORIGIN"] == "20,10"
+
+
+def test_phangs_native_galaxies_use_ao_spectral_masks():
+    with make_workdir() as workdir:
+        (workdir / "cube_centers_v3tk.csv").write_text(
+            "ID,file,shape,nz,ny,nx,center_y,center_x,status\n"
+            "NGC4254,/scratch/cube.fits,\"(1, 20, 40)\",1,20,40,10,20,ok\n",
+            encoding="utf-8",
+        )
+        cube_dir = workdir / "cubes"
+        cube_dir.mkdir()
+
+        config = run_make_config(workdir, cube_dir, "NGC4254")
+
+        assert config["KIN"]["SPEC_MASK"] == "specMask_KIN_narrow10_AO"
+        assert config["CONT"]["SPEC_MASK"] == "specMask_KIN_narrow10_AO"
+        assert config["GAS"]["SPEC_MASK"] == "specMask_GAS_narrow10_AO"
+        assert config["SFH"]["SPEC_MASK"] == "specMask_KIN_narrow10_AO"
+
+
+def test_phangs_native_galaxies_use_ao_read_data_method():
+    with make_workdir() as workdir:
+        (workdir / "cube_centers_v3tk.csv").write_text(
+            "ID,file,shape,nz,ny,nx,center_y,center_x,status\n"
+            "NGC4254,/scratch/cube.fits,\"(1, 20, 40)\",1,20,40,10,20,ok\n",
+            encoding="utf-8",
+        )
+        cube_dir = workdir / "cubes"
+        cube_dir.mkdir()
+
+        config = run_make_config(workdir, cube_dir, "NGC4254")
+
+        assert config["READ_DATA"]["METHOD"] == "MUSE_WFMAON"
+
+
+def test_ao_spectral_masks_include_global_nan_wavelength_group():
+    expected = "5885.00              157.50             sky AO_global_NaN_5806.25_5963.75"
+
+    assert expected in (CONFIG_DIR / "specMask_KIN_narrow10_AO").read_text(encoding="utf-8")
+    assert expected in (CONFIG_DIR / "specMask_GAS_narrow10_AO").read_text(encoding="utf-8")
 
 
 def test_missing_center_csv_row_falls_back_to_cube_midpoint():

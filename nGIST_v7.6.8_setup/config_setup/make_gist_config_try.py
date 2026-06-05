@@ -45,6 +45,9 @@ phangs_native_galids = {
     "NGC4321",
     "NGC4535",
 }
+phangs_ao_kin_mask = "specMask_KIN_narrow10_AO"
+phangs_ao_gas_mask = "specMask_GAS_narrow10_AO"
+phangs_ao_read_data_method = "MUSE_WFMAON"
 # paths
 pathcube = os.environ.get("MAUVE_CUBE_DIR", "/scratch/pawsey1308/mauve/cubes/v3tk/")
 pathproducts = os.environ.get(
@@ -119,6 +122,21 @@ def cube_filename_for_galid(galaxy_id):
 
 def cube_path_for_galid(galaxy_id):
     return os.path.join(pathcube, cube_filename_for_galid(galaxy_id))
+
+
+def use_phangs_ao_masks(config, galaxy_id):
+    if galaxy_id not in phangs_native_galids:
+        return
+
+    if "READ_DATA" in config:
+        config["READ_DATA"]["METHOD"] = phangs_ao_read_data_method
+
+    for section in ("KIN", "CONT", "SFH"):
+        if section in config:
+            config[section]["SPEC_MASK"] = phangs_ao_kin_mask
+
+    if "GAS" in config:
+        config["GAS"]["SPEC_MASK"] = phangs_ao_gas_mask
 
 
 def get_center_from_csv(galaxy_id, csv_path):
@@ -258,6 +276,8 @@ configfile["READ_DATA"]["ORIGIN"] = setup["center"]
 configfile["READ_DATA"]["EBmV"] = round(ebv_value, 6)
 
 configfile["SPATIAL_MASKING"]["MASK"] = galid + "_mask.fits"
+
+use_phangs_ao_masks(configfile, galid)
 
 configfile["KIN"]["SIGMA"] = int(round(sigma_value))
 

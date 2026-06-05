@@ -10,7 +10,7 @@ GENERAL:
   OW_OUTPUT: false
   CREATE_HTML: false
 READ_DATA:
-  METHOD: MUSE_WFM
+  METHOD: MUSE_WFMAON
   DEBUG: false
   ORIGIN: 506,595
   LMIN_TOT: 4800
@@ -32,7 +32,7 @@ PREPARE_SPECTRA:
   VELSCALE: 41
 KIN:
   METHOD: ppxf
-  SPEC_MASK: specMask_KIN_narrow10
+  SPEC_MASK: specMask_KIN_narrow10_AO
   LMIN: 4800
   LMAX: 8900
   SIGMA: 128
@@ -53,7 +53,7 @@ KIN:
   DEBUG_BIN: false
 CONT:
   METHOD: ppxf
-  SPEC_MASK: specMask_KIN_narrow10
+  SPEC_MASK: specMask_KIN_narrow10_AO
   LMIN: 4800
   LMAX: 8900
   SIGMA: 128
@@ -74,7 +74,7 @@ CONT:
   SAVE_HDF5: false
 GAS:
   METHOD: ppxf
-  SPEC_MASK: specMask_GAS_narrow10
+  SPEC_MASK: specMask_GAS_narrow10_AO
   LEVEL: BOTH
   LMIN: 4800
   LMAX: 8900
@@ -93,7 +93,7 @@ SFH:
   METHOD: ppxf
   LMIN: 4800
   LMAX: 8900
-  SPEC_MASK: specMask_KIN_narrow10
+  SPEC_MASK: specMask_KIN_narrow10_AO
   SPEC_EMICLEAN: false
   MOM: 4
   MDEG: 23
