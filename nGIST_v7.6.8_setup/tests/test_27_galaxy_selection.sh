@@ -225,6 +225,90 @@ test_unknown_galaxy_is_rejected() {
   assert_contains "${workdir}/unknown.out" "unknown galaxy ID: NGC0000"
 }
 
+test_known_mauve_40_galaxies_are_accepted() {
+  local workdir
+  workdir="$(new_workdir)"
+  install_make_gist_stub "$workdir"
+
+  (
+    cd "$workdir"
+    . ./27_galaxies.sh
+    printf "%s\n" "${ALL_GALIDS[@]}" > known_galaxies.txt
+    diff -u - known_galaxies.txt <<'EXPECTED'
+NGC4064
+NGC4189
+NGC4192
+NGC4216
+NGC4222
+NGC4254
+NGC4293
+NGC4294
+NGC4298
+NGC4302
+NGC4321
+NGC4330
+NGC4351
+NGC4380
+NGC4383
+NGC4388
+NGC4394
+NGC4396
+NGC4405
+NGC4402
+NGC4419
+NGC4424
+NGC4450
+IC3392
+NGC4457
+NGC4501
+NGC4522
+NGC4535
+NGC4548
+NGC4567
+NGC4568
+NGC4569
+NGC4579
+NGC4580
+NGC4606
+NGC4607
+NGC4654
+NGC4689
+NGC4694
+NGC4698
+EXPECTED
+    ./27_creation.sh NGC4450 > creation.out
+  )
+
+  diff -u <(printf "NGC4450\n") "${workdir}/created_galaxies.txt"
+  assert_file "${workdir}/NGC4450_v3tk_v7.6.8_setonix.slurm"
+  assert_contains "${workdir}/creation.out" "Created 1 YAML files and 1 slurm scripts."
+}
+
+test_queue_override_galaxies_are_known() {
+  local workdir
+  local galid
+  workdir="$(new_workdir)"
+  install_make_gist_stub "$workdir"
+
+  (
+    cd "$workdir"
+    . ./27_galaxies.sh
+
+    while IFS= read -r galid; do
+      is_known_galid "$galid" || fail "queue override references unknown galaxy ID: $galid"
+    done < <(
+      awk '
+        /^(HIGHMEM_GALIDS|LONG_GALIDS)=\(/ {emit = 1; next}
+        emit && /^\)/ {emit = 0; next}
+        emit {
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "")
+          print
+        }
+      ' ./27_creation.sh
+    )
+  )
+}
+
 test_creation_uses_requested_galaxies_only
 test_creation_applies_new_highmem_and_work_memory
 test_setonix_submits_requested_galaxies_only
@@ -232,5 +316,7 @@ test_status_reports_requested_galaxies_only
 test_send_copies_requested_galaxies_only
 test_send_accepts_galaxy_only_short_form
 test_unknown_galaxy_is_rejected
+test_known_mauve_40_galaxies_are_accepted
+test_queue_override_galaxies_are_known
 
-echo "All 27-galaxy selection tests passed."
+echo "All 40-galaxy selection tests passed."

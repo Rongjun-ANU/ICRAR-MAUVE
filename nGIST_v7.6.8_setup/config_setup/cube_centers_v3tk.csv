@@ -8,6 +8,7 @@ NGC4293,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad
 NGC4294,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 663, 567)",3761,663,567,332,284,ok
 NGC4298,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 995, 1042)",3761,995,1042,498,521,ok
 NGC4302,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1420, 322)",3761,1420,322,710,161,ok
+NGC4321,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4321_PHANGS_DATACUBE_native.fits,"(3761, 999, 1231)",3761,999,1231,500,616,ok
 NGC4330,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 760, 881)",3761,760,881,380,441,ok
 NGC4351,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 323, 591)",3761,323,591,162,296,ok
 NGC4383,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 705, 633)",3761,705,633,353,317,ok
@@ -17,6 +18,7 @@ NGC4396,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad
 NGC4402,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 318, 1152)",3761,318,1152,159,576,ok
 NGC4405,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 663, 522)",3761,663,522,332,261,ok
 NGC4419,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 643, 629)",3761,643,629,322,315,ok
+NGC4450,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 867, 602)",3761,867,602,434,301,ok
 NGC4457,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 725, 725)",3761,725,725,363,363,ok
 NGC4501,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1236, 1205)",3761,1236,1205,618,603,ok
 NGC4522,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 659, 590)",3761,659,590,330,295,ok

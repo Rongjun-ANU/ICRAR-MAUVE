@@ -16,6 +16,7 @@ NGC4298,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad
 NGC4298,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 995, 1042)",13440371290,12.517,1036790,504658,ok
 NGC4302,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1420, 322)",15477140160,14.414,457240,435030,ok
 NGC4302,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1420, 322)",11454626043,10.668,457240,435030,ok
+NGC4321,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4321_PHANGS_DATACUBE_native.fits,"(3761, 999, 1231)",41626488960,38.768,1229769,977270,ok
 NGC4330,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 760, 881)",22663967040,21.107,669560,265482,ok
 NGC4330,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 760, 881)",7148746951,6.658,669560,265482,ok
 NGC4351,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 323, 591)",6461562240,6.018,190893,182908,ok
@@ -34,6 +35,8 @@ NGC4405,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad
 NGC4405,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 663, 522)",4828574472,4.497,346086,181175,ok
 NGC4419,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 643, 629)",13690152000,12.750,404447,183132,ok
 NGC4419,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 643, 629)",4910301058,4.573,404447,183132,ok
+NGC4450,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 867, 602)",17666974080,16.454,521934,505915,ok
+NGC4450,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 867, 602)",13174070956,12.269,521934,505915,ok
 NGC4457,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 725, 725)",17791908480,16.570,525625,341460,ok
 NGC4457,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 725, 725)",8987338581,8.370,525625,341460,ok
 NGC4501,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1236, 1205)",50414051520,46.952,1489380,669298,ok

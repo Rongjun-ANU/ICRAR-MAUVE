@@ -145,8 +145,8 @@ one worker overlay, not five.
 ## Creating the Setonix batch
 
 The `27_*.sh` script family keeps its historical name, but the current selectable
-MAUVE batch uses 30 cube IDs because `NGC4567` and `NGC4568` are in the combined
-cube `NGC4567_8` and the three PHANGS-native galaxies are included.
+MAUVE batch uses the 40 target galaxy IDs listed in `config_setup/27_galaxies.sh`.
+`NGC4567` and `NGC4568` are now selectable separately in the batch allowlist.
 
 From inside `config_setup`, run:
 
@@ -154,8 +154,8 @@ From inside `config_setup`, run:
 ./27_creation.sh
 ```
 
-With no galaxy arguments, this processes all 30 cube IDs. To regenerate only
-selected cube IDs, pass them as positional arguments:
+With no galaxy arguments, this processes all 40 target galaxy IDs. To regenerate
+only selected galaxy IDs, pass them as positional arguments:
 
 ```bash
 ./27_creation.sh NGC4383 NGC4419
@@ -163,13 +163,13 @@ selected cube IDs, pass them as positional arguments:
 
 The script rejects unknown galaxy IDs before generating files.
 
-This runs the active generator once per cube ID, for example:
+This runs the active generator once per galaxy ID, for example:
 
 ```bash
-./make_gist_config_try.py NGC4567_8
+./make_gist_config_try.py NGC4450
 ```
 
-For each cube ID, it creates:
+For each galaxy ID, it creates:
 
 ```text
 {GALID}_MAUVE_MasterConfig_v7.6.8_setonix.yaml
@@ -177,7 +177,7 @@ For each cube ID, it creates:
 ```
 
 The slurm scripts are copied from `v3tk_v7.6.8_setonix.slurm` by replacing the
-literal `GALID` placeholder with the current cube ID.
+literal `GALID` placeholder with the current galaxy ID.
 
 The default `work` script requests:
 
@@ -231,20 +231,20 @@ NGC4383
 NGC4396
 NGC4419
 NGC4457
-NGC4567_8
 NGC4698
 ```
 
 `NGC4580` is intentionally not in this list: its second run completed the gas
 module and advanced to the SFH module, so the next restart should skip gas.
 
-The 30 cube IDs are:
+The 40 target galaxy IDs are:
 
 ```text
-IC3392
 NGC4064
 NGC4189
 NGC4192
+NGC4216
+NGC4222
 NGC4254
 NGC4293
 NGC4294
@@ -253,22 +253,31 @@ NGC4302
 NGC4321
 NGC4330
 NGC4351
+NGC4380
 NGC4383
 NGC4388
 NGC4394
 NGC4396
-NGC4402
 NGC4405
+NGC4402
 NGC4419
+NGC4424
+NGC4450
+IC3392
 NGC4457
 NGC4501
 NGC4522
 NGC4535
-NGC4567_8
+NGC4548
+NGC4567
+NGC4568
 NGC4569
+NGC4579
 NGC4580
 NGC4606
 NGC4607
+NGC4654
+NGC4689
 NGC4694
 NGC4698
 ```
@@ -277,7 +286,8 @@ NGC4698
 The origin normally comes from `cube_centers_v3tk.csv`. If the selected galaxy
 has no center row and its cube already exists under the configured cube path,
 the script falls back to the cube midpoint; otherwise pass `-center x,y` or add
-a verified center row before generating its YAML.
+a verified center row before generating its YAML. The current center/size CSVs
+may lag the 40-ID allowlist because they are snapshots of staged cubes.
 
 On Setonix, regenerate the cube-center and cube-size CSV snapshots from the
 staged scratch cube directory with:
@@ -332,9 +342,9 @@ With an explicit host, put the host before the galaxy IDs:
 
 The send script copies:
 
-- The selected generated YAML files, all 30 by default, to
+- The selected generated YAML files, all 40 by default, to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/`
-- The selected generated slurm scripts, all 30 by default, plus
+- The selected generated slurm scripts, all 40 by default, plus
   `27_galaxies.sh`, `27_setonix.sh`, and `27_status.sh` to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/`
 
@@ -349,7 +359,7 @@ On Setonix, submit all jobs from the tutorial directory with:
 ./27_setonix.sh
 ```
 
-To submit only selected cube IDs:
+To submit only selected galaxy IDs:
 
 ```bash
 ./27_setonix.sh NGC4383 NGC4419
@@ -361,9 +371,9 @@ That script sequentially runs:
 sbatch {GALID}_v3tk_v7.6.8_setonix.slurm
 ```
 
-for the selected cube IDs, or all 30 cube IDs by default. The `sbatch` commands
-are issued one by one, but the jobs can then run together according to the
-Setonix scheduler.
+for the selected galaxy IDs, or all 40 target galaxy IDs by default. The
+`sbatch` commands are issued one by one, but the jobs can then run together
+according to the Setonix scheduler.
 
 To check job completion and timeout status on Setonix, run from the same
 tutorial directory:
@@ -594,9 +604,10 @@ important conveniences compared with the older `make_gist_config.py`:
 - If `-center` is not supplied, it reads the cube center from
   `cube_centers_v3tk.csv`, then falls back to a local staged cube midpoint when
   the CSV has no row for the selected galaxy.
-- It handles the combined `NGC4567_8` cube, whose cube-center row is combined
-  but whose setup-table rows are still listed separately as `NGC4567` and
-  `NGC4568`.
+- It still handles the historical combined `NGC4567_8` cube if that ID is run
+  manually, whose cube-center row is combined but whose setup-table rows are
+  still listed separately as `NGC4567` and `NGC4568`. The default 40-ID batch
+  allowlist now selects `NGC4567` and `NGC4568` separately.
 - It uses the PHANGS-native public cube filenames for `NGC4254`, `NGC4321`, and
   `NGC4535`, for example
   `/scratch/pawsey1308/mauve/cubes/v3tk/NGC4254_PHANGS_DATACUBE_native.fits`.
@@ -610,9 +621,9 @@ important conveniences compared with the older `make_gist_config.py`:
 The original `make_gist_config.py` remains in the repository as a reference to
 the older workflow.
 
-For `NGC4567_8`, the generated config keeps `NGC4567_8` as the `RUN_ID`,
-input cube name, and mask name. The script uses the mean `z`, `EBmV`, and
-initial `SIGMA` from the separate `NGC4567` and `NGC4568` setup-table rows.
+For manual `NGC4567_8` runs, the generated config keeps `NGC4567_8` as the
+`RUN_ID`, input cube name, and mask name. The script uses the mean `z`, `EBmV`,
+and initial `SIGMA` from the separate `NGC4567` and `NGC4568` setup-table rows.
 
 ## Current generated configs
 
@@ -622,6 +633,7 @@ The repository currently includes generated v7.6.8 Setonix configs for:
 - `NGC4383`
 - `NGC4396`
 - `NGC4419`
+- `NGC4450`
 - `NGC4501`
 - `NGC4567_8`
 - `NGC4698`
