@@ -1,0 +1,61 @@
+Table 1 
+The VERTICO Target Sample
+
+
+Galaxy	R.A. (J2000)	Decl. (J2000)	v _opt	i	P.A.	
+			(km s^-1)	(deg)	(deg)	
+IC 3392 ^a	12^h28^m43.s27	14deg59'57."48	1678	68	219	
+IC 3418 ^a	12^h29^m43.s50	11deg24'08."00	38	62	233	
+NGC 4064	12^h04^m11.s26	18deg26'39."12	1000	70	150	
+NGC 4189 ^a	12^h13^m47.s47	13deg25'34."68	1995	42	70	
+NGC 4192 ^a	12^h13^m48.s58	14deg53'57."12	-118	83	333	
+NGC 4216 ^a	12^h15^m54.s19	13deg08'54."96	30	90	20	
+NGC 4222	12^h16^m22.s56	13deg18'25."20	225	90	238	
+NGC 4254 ^a ^, ^b	12^h18^m49.s68	14deg25'05."52	2453	39	243	
+NGC 4293 ^a ^, ^b	12^h21^m13.s47	18deg23'03."12	717	67	239	
+NGC 4294	12^h21^m17.s81	11deg30'39."24	421	74	151	
+NGC 4298 ^a ^, ^b	12^h21^m33.s12	14deg36'19."80	1122	52	132	
+NGC 4299 ^a	12^h21^m40.s71	11deg30'06."12	209	14	128	
+NGC 4302 ^a	12^h21^m42.s24	14deg35'57."12	1111	90	356	
+NGC 4321 ^a ^, ^b	12^h22^m54.s77	15deg49'33."24	1579	32	280	
+NGC 4330	12^h23^m16.s95	11deg22'04."08	1567	90	238	
+NGC 4351 ^a	12^h24^m01.s30	12deg12'15."12	2388	48	251	
+NGC 4380 ^a	12^h25^m22.s16	10deg01'00."12	935	61	158	
+NGC 4383 ^a	12^h25^m25.s47	16deg28'11."64	1663	56	17	
+NGC 4388	12^h25^m46.s61	12deg39'46."44	2538	83	271	
+NGC 4394	12^h25^m55.s66	18deg12'52."20	772	32	312	
+NGC 4396 ^a	12^h25^m59.s66	15deg40'10."20	-115	83	304	
+NGC 4402 ^b	12^h26^m07.s34	13deg06'45."00	190	80	270	
+NGC 4405	12^h26^m07.s11	16deg10'51."60	1751	46	18	
+NGC 4419	12^h26^m56.s35	15deg02'51."36	-228	74	131	
+NGC 4424 ^a ^, ^b	12^h27^m11.s69	09deg25'14."16	447	61	274	
+NGC 4450 ^a	12^h28^m29.s23	17deg05'04."56	2048	51	170	
+NGC 4457 ^a ^, ^b	12^h28^m59.s02	03deg34'14."16	738	37	256	
+NGC 4501 ^a	12^h31^m59.s33	14deg25'10."92	2120	65	320	
+NGC 4522	12^h33^m39.s72	09deg10'26."76	2332	82	35	
+NGC 4532 ^a	12^h34^m19.s35	06deg28'05."52	2154	64	159	
+NGC 4533	12^h34^m22.s03	02deg19'33."24	1753	80	342	
+NGC 4535 ^a ^, ^b	12^h34^m20.s26	08deg11'53."52	1973	48	12	
+NGC 4536 ^a ^, ^b	12^h34^m27.s12	02deg11'16."08	1894	74	118	
+NGC 4548 ^a ^, ^b	12^h35^m26.s64	14deg29'43."80	498	37	318	
+NGC 4561 ^a	12^h36^m08.s14	19deg19'21."72	1441	28	60	
+NGC 4567	12^h36^m33.s07	11deg15'29."16	2213	49	251	
+NGC 4568 ^a	12^h36^m34.s34	11deg14'21."84	2260	70	211	
+NGC 4569 ^a ^, ^b	12^h36^m50.s12	13deg09'55."08	-220	69	203	
+NGC 4579 ^a ^, ^b	12^h37^m43.s44	11deg49'05."52	1627	40	273	
+NGC 4580 ^a	12^h37^m48.s38	05deg22'06."24	1227	46	337	
+NGC 4606	12^h40^m57.s62	11deg54'43."56	1653	69	38	
+NGC 4607	12^h41^m12.s39	11deg53'09."60	2284	90	2	
+NGC 4651 ^a	12^h43^m42.s72	16deg23'37."68	788	53	75	
+NGC 4654 ^a ^, ^b	12^h43^m56.s76	13deg07'32."52	1035	61	300	
+NGC 4689 ^a ^, ^b	12^h47^m45.s68	13deg45'42."12	1522	38	341	
+NGC 4694 ^a ^, ^b	12^h48^m15.s08	10deg59'00."60	1211	62	323	
+NGC 4698 ^a	12^h48^m22.s99	08deg29'15."00	1032	66	347	
+NGC 4713 ^a	12^h49^m57.s65	05deg18'39."60	631	45	89	
+NGC 4772	12^h53^m29.s12	02deg10'06."24	1042	60	325	
+NGC 4808 ^a	12^h55^m48.s94	04deg18'15."12	738	72	127	
+VCC 1581	12^h34^m45.s05	06deg18'03."24	2141	43	329	
+Notes. Columns are (1) galaxy name and unique identifier in this paper; (2) R.A. (J2000) of the galaxy optical center; (3) decl. (J2000) of the galaxy optical center; (4) optical heliocentric recession velocity; (5) optical r-band inclination; (6) optical r-band position angle of the kinematically redshifted half of the galaxy, calculated east of north. Columns (2)-(4) are drawn from the NASA/IPAC Extragalactic Database (https://ned.ipac.caltech.edu/). Columns (5) and (6) are calculated using fits to SDSS photometry described in Section 4.2. This table is published in its entirety in machine-readable format.
+^a Data are from 7 m and Total Power arrays. Other observations are 7 m array only.
+^b Data are archival ALMA ACA (7 m + total power) ^12CO (2-1) observations at comparable sensitivity to our Cycle 7 observations. The sources of these data are the PHANGS-ALMA program (Leroy et al. 2021b; 14 galaxies) and one regular PI program (Cramer et al. 2019; NGC 4402). See Section 3 and the Acknowledgments section for further details.
+(This table is available in its entirety in FITS format.)
