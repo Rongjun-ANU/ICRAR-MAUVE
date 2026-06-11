@@ -32,6 +32,11 @@ config_setup/
   input_tables/                                # MAUVE input tables and redshifts
   old/                                         # older config/script versions
 
+fix_phangs/
+  check_phangs_variance.py                     # scan PHANGS STAT HDUs for bounded bad gaps
+  fix_phangs_variance.py                       # write *_native_fixed.fits with fillable gaps patched
+  phangs_variance.slurm                        # Setonix work-queue wrapper for the PHANGS checks/fixes
+
 config_setup.zip                               # archived copy of setup folder
 ```
 
@@ -122,6 +127,71 @@ These are full 18-42 GB cubes, so production nGIST should use the staged local
 scratch files. VOSspace is still useful for lightweight checks such as `vls`,
 `vcat --head`, or small `vcp` cutouts, but the full nGIST workflow should not
 treat `vos:` paths as normal local FITS inputs.
+
+## PHANGS STAT variance gap checks
+
+The `fix_phangs/` folder contains Setonix-side helpers for checking the
+`STAT` HDU of the three PHANGS-native cubes:
+
+```text
+NGC4254
+NGC4321
+NGC4535
+```
+
+With no arguments, both Python scripts process those three galaxies in sequence.
+To process one galaxy, pass the galaxy ID:
+
+```bash
+cd fix_phangs
+./check_phangs_variance.py NGC4254
+./fix_phangs_variance.py NGC4254
+```
+
+The default cube path is:
+
+```text
+/scratch/pawsey1308/mauve/cubes/v3tk/{GALID}_PHANGS_DATACUBE_native.fits
+```
+
+`check_phangs_variance.py` scans the `STAT` HDU for non-positive or non-finite
+runs along the wavelength axis and writes the screen report to
+`check_phangs_variance.log`. The scan is limited to the `4750-9100 A` wavelength
+range and excludes the AO/LGS gap region (`5800-5970 A`). It also skips spatial
+pixels masked by:
+
+```text
+/scratch/pawsey1308/mauve/cubes/v3tk/{GALID}_mask.fits
+```
+
+and skips any spaxel whose `DATA` HDU has non-finite values inside the checked
+non-AO wavelength range. This avoids reporting variance gaps from unobserved
+pointing regions or already-masked spatial pixels.
+
+A gap is marked fillable only when the bad `STAT` run is between finite positive
+neighboring `STAT` values inside the checked wavelength mask. The log only lists
+fillable target gaps. Each reported row includes the `(x,y)` position, `z` index
+range, wavelength range, gap length, and reason.
+
+`fix_phangs_variance.py` writes:
+
+```text
+/scratch/pawsey1308/mauve/cubes/v3tk/{GALID}_PHANGS_DATACUBE_native_fixed.fits
+```
+
+For each fillable gap, it fills the bad `STAT` samples with the `nanmean` of the
+immediate bracketing `STAT` values. The original input cube is not modified. If
+a galaxy has no fillable gaps, the fixed cube is not written.
+
+Submit the Setonix wrapper from the `fix_phangs/` directory:
+
+```bash
+sbatch phangs_variance.slurm
+```
+
+The Slurm job uses the `work` partition with `128` CPUs and `230G` memory,
+passes the full CPU count to the Python scanners, and runs the scripts through
+`ngistenv1308` so the nGIST Python environment provides `astropy` and `numpy`.
 
 To transfer only selected galaxies, pass the GALID list. For example, this
 stages only the public PHANGS-native `NGC4254` cube:
@@ -608,9 +678,9 @@ important conveniences compared with the older `make_gist_config.py`:
   manually, whose cube-center row is combined but whose setup-table rows are
   still listed separately as `NGC4567` and `NGC4568`. The default 40-ID batch
   allowlist now selects `NGC4567` and `NGC4568` separately.
-- It uses the PHANGS-native public cube filenames for `NGC4254`, `NGC4321`, and
-  `NGC4535`, for example
-  `/scratch/pawsey1308/mauve/cubes/v3tk/NGC4254_PHANGS_DATACUBE_native.fits`.
+- It uses the fixed PHANGS-native local scratch cube filenames for `NGC4254`,
+  `NGC4321`, and `NGC4535`, for example
+  `/scratch/pawsey1308/mauve/cubes/v3tk/NGC4254_PHANGS_DATACUBE_native_fixed.fits`.
 - It switches those three PHANGS-native AO-enabled galaxies to the
   `MUSE_WFMAON` read-data method, `specMask_KIN_narrow10_AO` for KIN/CONT/SFH,
   and `specMask_GAS_narrow10_AO` for GAS. The AO read-data method is needed
@@ -666,8 +736,8 @@ Before launching a production run, check:
 - The generated galaxy YAML has the intended `REDSHIFT`, `EBmV`, `SIGMA`, and
   `ORIGIN`.
 - The input cube exists under `/scratch/pawsey1308/mauve/cubes/v3tk/`; for
-  `NGC4254`, `NGC4321`, and `NGC4535`, this should be the staged
-  `*_PHANGS_DATACUBE_native.fits` file.
+  `NGC4254`, `NGC4321`, and `NGC4535`, this should be the fixed staged
+  `*_PHANGS_DATACUBE_native_fixed.fits` file.
 - PHANGS-native AO-enabled configs use `READ_DATA: METHOD: MUSE_WFMAON` and
   reference the `_AO` spectral masks, which include the observed-frame
   `5806.25-5963.75 Angstrom` global-NaN mask.

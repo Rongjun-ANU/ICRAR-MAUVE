@@ -39,7 +39,7 @@ combined_setup_ids = {
 ##
 # MUSE cube subscripts
 cube_sub = "_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"
-phangs_native_cube_sub = "_PHANGS_DATACUBE_native.fits"
+phangs_native_cube_sub = "_PHANGS_DATACUBE_native_fixed.fits"
 phangs_native_galids = {
     "NGC4254",
     "NGC4321",

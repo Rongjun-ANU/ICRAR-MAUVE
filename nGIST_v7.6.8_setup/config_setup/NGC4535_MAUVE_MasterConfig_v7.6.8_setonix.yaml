@@ -1,6 +1,6 @@
 GENERAL:
   RUN_ID: NGC4535
-  INPUT: /scratch/pawsey1308/mauve/cubes/v3tk/NGC4535_PHANGS_DATACUBE_native.fits
+  INPUT: /scratch/pawsey1308/mauve/cubes/v3tk/NGC4535_PHANGS_DATACUBE_native_fixed.fits
   OUTPUT: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8/
   REDSHIFT: 0.006551
   PARALLEL: true
