@@ -6,6 +6,12 @@
 #   ./Mass.sh NGC4064 NGC4192 # custom list
 #   ./Mass.sh NGC4254         # one PHANGS-native MAUVE galaxy
 # --------------------------------------------------------------
+# Changes (2026-06-13):
+#   - PHANGS_CUBE_ROOT can point NGC4254/NGC4321/NGC4535 at a separate
+#     PHANGS-native datacube storage directory.
+#   - PHANGS-native VOS cubes are staged temporarily with vcp when no local
+#     copy exists, then removed after the Mass.py run. The default staging
+#     root is /scratch.
 
 set -euo pipefail
 
@@ -15,6 +21,9 @@ set -euo pipefail
 ROOT_PRODUCT_BASE="$PWD"                 # Root containing v3tk_v7.6.8/{GAL} products
 ROOT_LOCAL="$PWD"                        # Local fallback root
 CUBE_ROOT="/arc/projects/mauve/cubes/v3tk"
+PHANGS_CUBE_ROOT="${PHANGS_CUBE_ROOT:-}"
+PHANGS_NATIVE_VOS_DIR="vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES"
+PHANGS_STAGING_ROOT="${PHANGS_STAGING_ROOT:-/scratch}"
 SCRIPT="Mass.py"                # Python script to call
 LOGDIR="mass_logs"              # Per-galaxy logs live here
 mkdir -p "$LOGDIR"
@@ -95,6 +104,17 @@ GALAXIES=(
 
 [[ $# -gt 0 ]] && GALAXIES=("$@")   # override list from CLI
 
+is_phangs_native_galid() {
+  case "$1" in
+    NGC4254|NGC4321|NGC4535) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+phangs_native_filename() {
+  printf '%s_PHANGS_DATACUBE_native.fits\n' "$1"
+}
+
 # ──────────────────────────────────────────────────────────────
 # 2.  Main loop
 # ──────────────────────────────────────────────────────────────
@@ -104,6 +124,9 @@ run_status=0
 for GAL in "${GALAXIES[@]}"; do
   printf "\n====================  %s  ====================\n" "$GAL"
   LOGFILE="$LOGDIR/${GAL}.log"
+  PHANGS_ARGS=()
+  STAGED_PHANGS_CUBE=""
+  status=0
 
   start=$(date +%s)
   set +e
@@ -113,20 +136,57 @@ for GAL in "${GALAXIES[@]}"; do
     echo "PYTHONUNBUFFERED: 1"
     echo "Product root     : $ROOT_PRODUCT_BASE"
     echo "Cube root        : $CUBE_ROOT"
+    echo "PHANGS cube root : ${PHANGS_CUBE_ROOT:-<none>}"
+    echo "PHANGS VOS dir   : $PHANGS_NATIVE_VOS_DIR"
+    echo "PHANGS stage root: $PHANGS_STAGING_ROOT"
     echo "Local fallback   : $ROOT_LOCAL"
     echo "MASS_DISABLE_STAT: ${MASS_DISABLE_STAT:-0}"
     echo "MASS_NCPUS       : ${MASS_NCPUS}"
     echo "MASS_ROW_BLOCK_SIZE: ${MASS_ROW_BLOCK_SIZE:-default}"
     echo
   } >"$LOGFILE" 2>&1
-  PYTHONUNBUFFERED=1 "$PYTHON_BIN" -u "$SCRIPT" \
-    -g "$GAL" \
-    --root "$ROOT_PRODUCT_BASE" \
-    --fallback-root "$ROOT_LOCAL" \
-    --cube-root "$CUBE_ROOT" \
-    "${EXTRA_ARGS[@]}" \
-    2>&1 | tee -a "$LOGFILE"
-  status=${PIPESTATUS[0]}               # exit code of python, not tee
+
+  if is_phangs_native_galid "$GAL"; then
+    PHANGS_FILE="$(phangs_native_filename "$GAL")"
+    if [[ -n "$PHANGS_CUBE_ROOT" && -f "$PHANGS_CUBE_ROOT/$PHANGS_FILE" ]]; then
+      PHANGS_ARGS+=(--phangs-cube-root "$PHANGS_CUBE_ROOT")
+    elif [[ -f "$CUBE_ROOT/$PHANGS_FILE" ]]; then
+      PHANGS_ARGS+=(--phangs-cube-root "$CUBE_ROOT")
+    else
+      if ! command -v vcp >/dev/null 2>&1; then
+        echo "ERROR: no local PHANGS cube found for $GAL and vcp is not available." | tee -a "$LOGFILE" >&2
+        status=1
+      else
+        STAGE_DIR="${PHANGS_STAGING_ROOT%/}"
+        STAGED_PHANGS_CUBE="$STAGE_DIR/$PHANGS_FILE"
+        mkdir -p "$STAGE_DIR"
+        echo "Staging PHANGS cube: $PHANGS_NATIVE_VOS_DIR/$PHANGS_FILE -> $STAGED_PHANGS_CUBE" | tee -a "$LOGFILE"
+        vcp "$PHANGS_NATIVE_VOS_DIR/$PHANGS_FILE" "$STAGED_PHANGS_CUBE" 2>&1 | tee -a "$LOGFILE"
+        stage_status=${PIPESTATUS[0]}
+        if [[ $stage_status -eq 0 ]]; then
+          PHANGS_ARGS+=(--phangs-cube-root "$STAGE_DIR")
+        else
+          status=$stage_status
+        fi
+      fi
+    fi
+  fi
+
+  if [[ $status -eq 0 ]]; then
+    PYTHONUNBUFFERED=1 "$PYTHON_BIN" -u "$SCRIPT" \
+      -g "$GAL" \
+      --root "$ROOT_PRODUCT_BASE" \
+      --fallback-root "$ROOT_LOCAL" \
+      --cube-root "$CUBE_ROOT" \
+      "${PHANGS_ARGS[@]}" \
+      "${EXTRA_ARGS[@]}" \
+      2>&1 | tee -a "$LOGFILE"
+    status=${PIPESTATUS[0]}               # exit code of python, not tee
+  fi
+
+  if [[ -n "$STAGED_PHANGS_CUBE" ]]; then
+    rm -f "$STAGED_PHANGS_CUBE"
+  fi
   set -e
   end=$(date +%s)
   dur=$((end - start))

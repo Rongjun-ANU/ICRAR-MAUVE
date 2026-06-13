@@ -45,6 +45,18 @@ Changes (2026-03-31)
 * `{gal}_PHANGS_DATACUBE_native.fits`, instead of the MAUVE v3tk filename
 * pattern.
 *
+* Changes (2026-06-13)
+* --------------------
+* Added `--phangs-cube-root` so the three PHANGS-native galaxies can read
+* continuum/datacube inputs from a storage location separate from the normal
+* v3tk cube root.
+*
+* Changes (2026-06-13, PHANGS units)
+* ----------------------------------
+* Recognize PHANGS cube `BUNIT` strings such as
+* `10**(-20)angstrom**(-1).cm**(-2).erg.s**(-1)` as 1e-20-scaled flux
+* densities before computing proxy EW(Halpha).
+*
 * Inputs:
   - Observed Halpha map from:
       {gal}_gas_bin_maps_further.fits
@@ -153,6 +165,7 @@ DEFAULT_REDSHIFT_FILE = "new_redshifts"
 COMBINED_REDSHIFT_IDS = {
     "NGC4567_8": ("NGC4567", "NGC4568"),
 }
+PHANGS_NATIVE_GALAXIES = {"NGC4254", "NGC4321", "NGC4535"}
 CONT_CGS_UNIT = "erg s-1 cm-2 Angstrom-1"
 NMAGGY_TO_FNU = 3.631e-29
 C_AA_PER_S = 2.99792458e18
@@ -188,6 +201,14 @@ def parse_args() -> argparse.Namespace:
         "--cube-root",
         default="/arc/projects/mauve/cubes/v3tk",
         help="Directory containing v3tk datacubes (default: /arc/projects/mauve/cubes/v3tk)",
+    )
+    parser.add_argument(
+        "--phangs-cube-root",
+        default=None,
+        help=(
+            "Optional directory containing PHANGS-native datacubes for "
+            "NGC4254/NGC4321/NGC4535. Checked before --cube-root for those galaxies."
+        ),
     )
     parser.add_argument(
         "--bin-file",
@@ -266,7 +287,7 @@ def normalize_galaxy_id(galaxy: str) -> str:
 
 def datacube_filenames_for_galaxy(galaxy_name: str) -> list[str]:
     galaxy_norm = galaxy_name.upper().replace(" ", "")
-    if galaxy_norm in ("NGC4254", "NGC4321", "NGC4535"):
+    if galaxy_norm in PHANGS_NATIVE_GALAXIES:
         return [f"{galaxy_norm}_PHANGS_DATACUBE_native.fits"]
 
     return [f"{galaxy_norm}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"]
@@ -277,10 +298,17 @@ def datacube_input_candidates(
     root: Path,
     fallback_root: Path | None,
     galaxy_name: str,
+    phangs_cube_root: Path | None = None,
 ) -> list[Path]:
     candidates: list[Path] = []
+    cube_roots = (
+        _unique_paths(phangs_cube_root, cube_root)
+        if normalize_galaxy_id(galaxy_name) in PHANGS_NATIVE_GALAXIES
+        else [cube_root]
+    )
     for cube_name in datacube_filenames_for_galaxy(galaxy_name):
-        candidates.append(cube_root / cube_name)
+        for active_cube_root in cube_roots:
+            candidates.append(active_cube_root / cube_name)
         candidates.append(root / "cubes/v3tk" / cube_name)
         if fallback_root is not None:
             candidates.append(fallback_root / "cubes/v3tk" / cube_name)
@@ -314,7 +342,12 @@ def halpha_flux_to_cgs(line_flux: np.ndarray, bunit: str) -> np.ndarray:
     """Convert Halpha map to erg s^-1 cm^-2 when BUNIT encodes a 1e-20 scale."""
     unit_norm = str(bunit).replace(" ", "").lower()
     scale = 1.0
-    if ("1e-20" in unit_norm) or ("10^-20" in unit_norm) or ("10**-20" in unit_norm):
+    if (
+        ("1e-20" in unit_norm)
+        or ("10^-20" in unit_norm)
+        or ("10**-20" in unit_norm)
+        or ("10**(-20)" in unit_norm)
+    ):
         scale = 1e-20
     return np.asarray(line_flux, dtype=np.float64) * scale
 
@@ -329,7 +362,12 @@ def flux_density_to_cgs(flux_density: np.ndarray, bunit: str) -> np.ndarray:
     """
     unit_norm = str(bunit).replace(" ", "").lower()
     scale = 1.0
-    if ("1e-20" in unit_norm) or ("10^-20" in unit_norm) or ("10**-20" in unit_norm):
+    if (
+        ("1e-20" in unit_norm)
+        or ("10^-20" in unit_norm)
+        or ("10**-20" in unit_norm)
+        or ("10**(-20)" in unit_norm)
+    ):
         scale = 1e-20
     return np.asarray(flux_density, dtype=np.float64) * scale
 
@@ -836,6 +874,11 @@ def main() -> None:
     gal = normalize_galaxy_id(args.galaxy)
     root = Path(args.root).expanduser().resolve()
     cube_root = Path(args.cube_root).expanduser().resolve()
+    phangs_cube_root = (
+        Path(args.phangs_cube_root).expanduser().resolve()
+        if args.phangs_cube_root is not None
+        else None
+    )
     fallback_root = (
         Path(args.fallback_root).expanduser().resolve()
         if args.fallback_root is not None
@@ -894,7 +937,7 @@ def main() -> None:
         if args.cont_file
         else resolve_existing_path(
             "continuum cube FITS",
-            *datacube_input_candidates(cube_root, root, fallback_root, gal),
+            *datacube_input_candidates(cube_root, root, fallback_root, gal, phangs_cube_root),
             root / f"{gal}_CONTcube.fits",
             fallback_root / f"{gal}_CONTcube.fits" if fallback_root is not None else None,
         )
@@ -923,6 +966,8 @@ def main() -> None:
     print("Primary root    :", root)
     if fallback_root is not None:
         print("Fallback root   :", fallback_root)
+    print("Cube root       :", cube_root)
+    print("PHANGS cube root:", phangs_cube_root if phangs_cube_root is not None else "<none>")
     print("Binning FITS    :", bin_path)
     print("Gas FITS        :", gas_path)
     print("Continuum FITS  :", cont_path)

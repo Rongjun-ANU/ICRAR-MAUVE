@@ -15,18 +15,26 @@ OPTIONAL_HELPERS = {
     "_glob_candidate_patterns",
     "_glob_matches_with_fits_gz",
 }
+OPTIONAL_CONSTANTS = {
+    "PHANGS_NATIVE_GALAXIES",
+}
 
 
 def load_helpers(script_name, required_names):
     source_path = ROOT / script_name
     tree = ast.parse(source_path.read_text(), filename=str(source_path))
     wanted = set(required_names) | OPTIONAL_HELPERS
-    nodes = [
-        node
-        for node in tree.body
-        if isinstance(node, ast.FunctionDef) and node.name in wanted
-    ]
-    namespace = {"Path": Path}
+    nodes = []
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name in wanted:
+            nodes.append(node)
+        elif isinstance(node, ast.Assign):
+            target_names = {
+                target.id for target in node.targets if isinstance(target, ast.Name)
+            }
+            if target_names & OPTIONAL_CONSTANTS:
+                nodes.append(node)
+    namespace = {"Path": Path, "np": np}
     exec(compile(ast.Module(body=nodes, type_ignores=[]), str(source_path), "exec"), namespace)
     return namespace
 
@@ -136,6 +144,15 @@ def test_proxy_resolver_finds_compressed_counterpart():
         assert resolved == compressed.resolve()
 
 
+def test_proxy_flux_density_to_cgs_handles_phangs_bunit_with_parenthesized_exponents():
+    helpers = load_helpers("proxy_EWHa.py", ["flux_density_to_cgs"])
+    bunit = "10**(-20)angstrom**(-1).cm**(-2).erg.s**(-1)"
+
+    converted = helpers["flux_density_to_cgs"](np.array([2.5]), bunit)
+
+    assert np.allclose(converted, np.array([2.5e-20]))
+
+
 def test_mass_uses_phangs_native_cube_names_for_phangs_galaxies():
     helpers = load_helpers("Mass.py", ["datacube_filenames_for_galaxy"])
 
@@ -154,13 +171,44 @@ def test_proxy_uses_phangs_native_cube_names_for_phangs_galaxies():
         assert names == [f"{galid}_PHANGS_DATACUBE_native.fits"]
 
 
-def test_mass_proxy_shell_defaults_include_phangs_and_keep_cli_override():
-    for shell_name in ("Mass.sh", "proxy_EWHa.sh"):
+def test_shell_defaults_include_phangs_and_keep_cli_override():
+    for shell_name in ("Mass.sh", "SFR.sh", "proxy_EWHa.sh"):
         shell_source = (ROOT / shell_name).read_text()
 
         for galid in ("NGC4254", "NGC4321", "NGC4535"):
             assert f'"{galid}"' in shell_source
         assert '[[ $# -gt 0 ]] && GALAXIES=("$@")' in shell_source
+
+
+def test_cube_consuming_scripts_accept_phangs_cube_root_override():
+    for script_name in ("Mass.py", "proxy_EWHa.py"):
+        script_source = (ROOT / script_name).read_text()
+        assert "--phangs-cube-root" in script_source
+
+    for shell_name in ("Mass.sh", "proxy_EWHa.sh"):
+        shell_source = (ROOT / shell_name).read_text()
+        assert "PHANGS_CUBE_ROOT" in shell_source
+        assert "--phangs-cube-root" in shell_source
+
+
+def test_mass_filter_support_threshold_accepts_phangs_ao_gap():
+    source_path = ROOT / "Mass.py"
+    tree = ast.parse(source_path.read_text(), filename=str(source_path))
+
+    threshold = None
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == "min_filter_support_fraction"
+            for target in node.targets
+        ):
+            continue
+        threshold = ast.literal_eval(node.value)
+        break
+
+    assert threshold is not None
+    assert threshold <= 0.91
 
 
 def test_proxy_combined_ngc4567_8_redshift_uses_member_mean():

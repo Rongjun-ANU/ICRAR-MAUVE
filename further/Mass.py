@@ -158,6 +158,14 @@ Changes (2026-06-04)
   `{galaxy}_PHANGS_DATACUBE_native.fits`, instead of the MAUVE v3tk filename
   pattern.
 
+Changes (2026-06-13)
+-----------------------
+* Added `--phangs-cube-root` so the three PHANGS-native galaxies can read
+  datacubes from a storage location separate from the normal v3tk cube root.
+* Relaxed the R-band finite-support threshold from 0.99 to 0.90 so
+  PHANGS-native AO spectral gaps are skipped and the remaining Bessell-R
+  support is renormalized instead of rejecting every spaxel.
+
 """
 
 # ------------------------------------------------------------------
@@ -185,7 +193,10 @@ sfh_weight_interpretation_fallback = "light_v_to_r"
 
 # Minimum retained fraction of the R-band filter support required to accept
 # a spaxel photometry measurement when some wavelength bins are masked/NaN.
-min_filter_support_fraction = 0.99
+# PHANGS-native AO cubes have a known spectral gap inside Bessell-R; the
+# vectorized photometry pass skips non-finite samples and renormalizes the
+# remaining weighted support, so the threshold must allow that gap.
+min_filter_support_fraction = 0.90
 
 # ------------------------------------------------------------------
 # 0.  Command‑line interface
@@ -195,6 +206,8 @@ import os
 import re
 import sys
 from pathlib import Path
+
+PHANGS_NATIVE_GALAXIES = {"NGC4254", "NGC4321", "NGC4535"}
 
 def _unique_paths(*paths: Path | None) -> list[Path]:
     unique: list[Path] = []
@@ -295,7 +308,7 @@ def build_named_input_candidates(
 
 def datacube_filenames_for_galaxy(galaxy_name: str) -> list[str]:
     galaxy_norm = galaxy_name.upper()
-    if galaxy_norm in ("NGC4254", "NGC4321", "NGC4535"):
+    if galaxy_norm in PHANGS_NATIVE_GALAXIES:
         return [f"{galaxy_norm}_PHANGS_DATACUBE_native.fits"]
 
     return [
@@ -443,6 +456,14 @@ def parse_args() -> argparse.Namespace:
         help="Directory containing v3tk datacubes (default: /arc/projects/mauve/cubes/v3tk)"
     )
     p.add_argument(
+        "--phangs-cube-root",
+        default=None,
+        help=(
+            "Optional directory containing PHANGS-native datacubes for "
+            "NGC4254/NGC4321/NGC4535. Checked before --cube-root for those galaxies."
+        ),
+    )
+    p.add_argument(
         "--fallback-root",
         default=".",
         help="Fallback directory searched when a required input is not found under --root",
@@ -478,6 +499,11 @@ args          = parse_args()
 galaxy        = args.galaxy.upper()   # ensure consistent capitalisation
 rootdir       = Path(args.root).expanduser().resolve()
 cube_rootdir  = Path(args.cube_root).expanduser().resolve()
+phangs_cube_rootdir = (
+    Path(args.phangs_cube_root).expanduser().resolve()
+    if args.phangs_cube_root is not None
+    else None
+)
 fallback_root = (
     Path(args.fallback_root).expanduser().resolve()
     if args.fallback_root is not None
@@ -514,6 +540,11 @@ if ncpus > 0:
 # 1.  File paths derived from CLI args
 # ------------------------------------------------------------------
 cube_names = datacube_filenames_for_galaxy(galaxy)
+cube_roots = (
+    _unique_paths(phangs_cube_rootdir, cube_rootdir)
+    if galaxy in PHANGS_NATIVE_GALAXIES
+    else [cube_rootdir]
+)
 bin_suffixes = [
     "SPATIAL_BINNING_maps.fits",
     "spatial_binning_maps.fits",
@@ -529,7 +560,11 @@ weight_suffixes = [
 
 cube_path = resolve_existing_path(
     "datacube FITS",
-    *build_named_input_candidates(cube_rootdir, Path("."), cube_names),
+    *[
+        candidate
+        for cube_root in cube_roots
+        for candidate in build_named_input_candidates(cube_root, Path("."), cube_names)
+    ],
     *build_named_input_candidates(rootdir, Path("cubes/v3tk"), cube_names),
     *build_named_input_candidates(fallback_root, Path("cubes/v3tk"), cube_names),
 )
@@ -570,6 +605,8 @@ binning_path = bin_path
 print("\n=== Using the following files ===")
 print("Product root :", rootdir)
 print("Cube root    :", cube_rootdir)
+if phangs_cube_rootdir is not None:
+    print("PHANGS cube root:", phangs_cube_rootdir)
 if fallback_root is not None:
     print("Fallback root:", fallback_root)
 print("Input keyword:", _format_keyword(input_keyword))
