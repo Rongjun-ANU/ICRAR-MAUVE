@@ -5,7 +5,9 @@ nGIST-Compatible Spatial Masking Tool (v3tk)
 This script generates binary spatial masks (FITS) and diagnostic overlays (PNG) for
 MUSE galaxy data cubes. It is designed as a pre-processing step for nGIST (or other
 pipelines), automatically masking foreground stars and (conservatively) background
-galaxies while preserving the target galaxy emission.
+galaxies while preserving the target galaxy emission. Fallback paths are disabled
+unless explicitly enabled in Config, and any background-galaxy candidate that overlaps
+the foreground-star mask is rejected as a likely false detection.
 
 Usage:
     python create_masks.py [pattern ...]
@@ -54,7 +56,9 @@ Logging:
 --------------------------------------------------------------------------------
 II. MASKING ALGORITHM
 --------------------------------------------------------------------------------
-The masking is hierarchical and conservative by default:
+The masking is hierarchical and conservative by default. It does not use fallback
+catalog or photometric no-redshift methods unless the corresponding Config flag is
+explicitly enabled.
 
 0) Load data + WCS
    - Reads the first HDU with >=2D data; collapses 3D to 2D (nan-median along axis=0).
@@ -124,8 +128,8 @@ The masking is hierarchical and conservative by default:
           common PA/parity mistakes on rotated/flipped WCS grids.
         * If you prefer maximum robustness, force circles for all Legacy objects with
           legacy_force_circles=True.
-      - If Legacy masking succeeds (i.e., at least one object is masked), the script
-        skips all lower-fidelity fallback catalogs (PS1/SkyMapper/SDSS/NED).
+      - Lower-fidelity fallback catalogs (PS1/SkyMapper/SDSS/NED) are skipped unless
+        allow_fallback_catalogs=True.
 
    B) Evidence-based confirmation (SDSS spec-z / NED spec-z; used when Legacy did NOT succeed)
       - If require_nonvirgo_confirmation_for_galaxy_mask=True (default), PS1/SkyMapper/SDSS
@@ -135,7 +139,7 @@ The masking is hierarchical and conservative by default:
           * cz >= background_mask_cz_min_kms  -> treated as background (masked)
         SDSS spectroscopy is preferred; NED “SPEC” redshifts are used as fallback.
 
-      - Optional “no-spec” fallback (still conservative; OFF/ON via flags):
+      - Optional “no-spec” fallback (still conservative; OFF/ON via explicit flags):
         * If distance is unknown, the script may still mask only objects that are VERY
           extended and bright (ps1_allow_photometric_fallback, ps1_fallback_ext_min,
           ps1_fallback_rmag_max). SDSS has a parallel (off-by-default) fallback.
@@ -165,9 +169,14 @@ The masking is hierarchical and conservative by default:
         radius (highz_psf_k_fwhm × FWHM), capped by highz_psf_rmax_arcsec if enabled.
       - Optional SDSS photometric fallback exists but is OFF by default.
 
-4) STAR FALLBACK (SDSS; only if Gaia yields zero stars)
+4) STAR FALLBACK (SDSS; disabled unless explicit)
    - If Gaia is unavailable/empty and sdss_star_fallback=True, SDSS “STAR” detections are
      masked using the same star-radius model (using an r-band magnitude proxy).
+
+5) STAR/GALAXY OVERLAP RULE
+   - Background-galaxy candidates are first rasterized into a temporary candidate mask.
+   - If that candidate overlaps the foreground-star mask even partially, the background
+     candidate is rejected and only the foreground-star mask is kept.
 
 --------------------------------------------------------------------------------
 III. KEY CONFIGURATION PARAMETERS (Config dataclass)
@@ -436,7 +445,7 @@ class Config:
     gal_r_max_arcsec: float = 30.0
 
     # Photometric fallback when no cz/z evidence exists (PS1/SkyMapper)
-    ps1_allow_photometric_fallback: bool = True
+    ps1_allow_photometric_fallback: bool = False
     ps1_fallback_ext_min: float = 0.6
     ps1_fallback_rmag_max: float = 21.0
 
@@ -502,10 +511,11 @@ class Config:
     # Reject SDSS "galaxies" near good Gaia sources to avoid stellar contamination
     sdss_reject_if_near_gaia_arcsec: float = 0.8
     # Only use SDSS stars if Gaia returns no stars (fallback classifier)
-    sdss_star_fallback: bool = True
+    sdss_star_fallback: bool = False
 
     # === Legacy Surveys DR9 background-galaxy masking (default first-pass) ===
     enable_legacy: bool = True
+    allow_fallback_catalogs: bool = False
 
     # Photo-z gating: require lower 95% bound above this redshift
     legacy_z_l95_min: float = 0.01
@@ -1612,6 +1622,22 @@ def rasterize_polygon(mask: np.ndarray, xverts: np.ndarray, yverts: np.ndarray, 
     mask[y0 : y1 + 1, x0 : x1 + 1][inside] = 1
 
 
+def candidate_mask_without_star_overlap(
+    shape: tuple[int, int],
+    star_mask: np.ndarray,
+    rasterizer,
+) -> np.ndarray | None:
+    candidate = np.zeros(shape, dtype=np.uint8)
+    rasterizer(candidate)
+    if np.any((candidate > 0) & (star_mask > 0)):
+        return None
+    return candidate
+
+
+def add_candidate_mask(mask: np.ndarray, candidate: np.ndarray) -> None:
+    mask[candidate > 0] = 1
+
+
 def circle_overlaps_mask(fov_mask: np.ndarray | None, xi: float, yi: float, r_pix: float) -> bool:
     if fov_mask is None:
         return True
@@ -1861,6 +1887,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
         pass
 
     mask = np.zeros((ny, nx), dtype=np.uint8)
+    foreground_star_mask = np.zeros((ny, nx), dtype=np.uint8)
     exclude_center = cfg.exclude_center_arcsec * u.arcsec
 
     fov_mask = None
@@ -1976,6 +2003,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 
             # rasterize into mask
             rasterize_circle(mask, xi, yi, r_mask_pix, fov_mask=fov_mask)
+            rasterize_circle(foreground_star_mask, xi, yi, r_mask_pix, fov_mask=fov_mask)
 
             # Rasterize an expanded star-exclusion mask for footprint estimation
             r_arcsec_fp = float(r_arcsec) + (2.0 * float(cfg.fwhm_arcsec))
@@ -2180,7 +2208,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         continue
                     if fov_mask is not None and not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
                         continue
-                    rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
+                    candidate = candidate_mask_without_star_overlap(
+                        mask.shape,
+                        foreground_star_mask,
+                        lambda m: rasterize_circle(m, xi, yi, r_pix, fov_mask=fov_mask),
+                    )
+                    if candidate is None:
+                        continue
+                    add_candidate_mask(mask, candidate)
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
                     gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
                 else:
@@ -2207,19 +2242,40 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                                 )
                                 if fov_mask is not None and not polygon_overlaps_mask(fov_mask, xv, yv):
                                     continue
-                                rasterize_polygon(mask, xv, yv, fov_mask=fov_mask)
+                                candidate = candidate_mask_without_star_overlap(
+                                    mask.shape,
+                                    foreground_star_mask,
+                                    lambda m: rasterize_polygon(m, xv, yv, fov_mask=fov_mask),
+                                )
+                                if candidate is None:
+                                    continue
+                                add_candidate_mask(mask, candidate)
                                 if use_png_bg:
                                     yv_plot = (ny - 1) - yv
                                 else:
                                     yv_plot = yv
                                 gal_patches.append(Polygon(np.column_stack([xv, yv_plot]), closed=True, fill=False))
                             except Exception:
-                                rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg, fov_mask=fov_mask)
+                                candidate = candidate_mask_without_star_overlap(
+                                    mask.shape,
+                                    foreground_star_mask,
+                                    lambda m: rasterize_ellipse(m, xi, yi, a_pix, b_pix, angle_deg, fov_mask=fov_mask),
+                                )
+                                if candidate is None:
+                                    continue
+                                add_candidate_mask(mask, candidate)
                                 y_plot = (ny - 1 - yi) if use_png_bg else yi
                                 angle_plot = (-angle_deg) if use_png_bg else angle_deg
                                 gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
                         else:
-                            rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle_deg, fov_mask=fov_mask)
+                            candidate = candidate_mask_without_star_overlap(
+                                mask.shape,
+                                foreground_star_mask,
+                                lambda m: rasterize_ellipse(m, xi, yi, a_pix, b_pix, angle_deg, fov_mask=fov_mask),
+                            )
+                            if candidate is None:
+                                continue
+                            add_candidate_mask(mask, candidate)
                             y_plot = (ny - 1 - yi) if use_png_bg else yi
                             angle_plot = (-angle_deg) if use_png_bg else angle_deg
                             gal_patches.append(Ellipse((xi, y_plot), 2 * a_pix, 2 * b_pix, angle=angle_plot, fill=False))
@@ -2229,7 +2285,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                             continue
                         if fov_mask is not None and not circle_overlaps_mask(fov_mask, float(xi), float(yi), float(r_pix)):
                             continue
-                        rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
+                        candidate = candidate_mask_without_star_overlap(
+                            mask.shape,
+                            foreground_star_mask,
+                            lambda m: rasterize_circle(m, xi, yi, r_pix, fov_mask=fov_mask),
+                        )
+                        if candidate is None:
+                            continue
+                        add_candidate_mask(mask, candidate)
                         y_plot = (ny - 1 - yi) if use_png_bg else yi
                         gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
                 n_gal_masked += 1
@@ -2272,7 +2335,9 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     # Optional: NED crossmatch for redshift-based background determination
     ned_tab = None
     ned_sky = None
-    if (not legacy_attempted) and (
+    fallback_catalogs_enabled = bool(getattr(cfg, "allow_fallback_catalogs", False))
+
+    if fallback_catalogs_enabled and (not legacy_attempted) and (
         bool(getattr(cfg, "enable_virgo_distance_veto", False))
         or bool(getattr(cfg, "require_nonvirgo_confirmation_for_galaxy_mask", False))
     ):
@@ -2290,7 +2355,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
         pass
 
     # SDSS spectroscopy table (has redshifts; preferred for evidence-based masking)
-    sdss_spec_tab = query_sdss_spectro(center, rad, cfg) if ((not legacy_attempted) and bool(getattr(cfg, "enable_sdss", True))) else None
+    sdss_spec_tab = query_sdss_spectro(center, rad, cfg) if (fallback_catalogs_enabled and (not legacy_attempted) and bool(getattr(cfg, "enable_sdss", True))) else None
     sdss_spec_sky = None
     if sdss_spec_tab is not None and len(sdss_spec_tab) > 0:
         ra_c = pick_first_existing_col(sdss_spec_tab, ["ra", "RA"])
@@ -2310,13 +2375,13 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     except Exception:
         pass
 
-    if (not legacy_attempted) and center.dec.deg >= -30:
+    if fallback_catalogs_enabled and (not legacy_attempted) and center.dec.deg >= -30:
         gal_tab = query_ps1_galaxy_like(center, rad, cfg)
         if gal_tab is not None and len(gal_tab) > 0:
             gal_catalog = "PS1"
 
     # If PS1 failed/empty and SkyMapper is available, try SkyMapper (useful mainly in the south)
-    if (not legacy_attempted) and (gal_tab is None or len(gal_tab) == 0) and center.dec.deg <= +28:
+    if fallback_catalogs_enabled and (not legacy_attempted) and (gal_tab is None or len(gal_tab) == 0) and center.dec.deg <= +28:
         gal_tab = query_skymapper(center, rad)
         if gal_tab is not None and len(gal_tab) > 0:
             gal_catalog = "SkyMapper"
@@ -2641,7 +2706,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     angle_plot = (-angle) if use_png_bg else angle
 
                     # rasterize ellipse (local cutout)
-                    rasterize_ellipse(mask, xi, yi, a_pix, b_pix, angle, fov_mask=fov_mask)
+                    candidate = candidate_mask_without_star_overlap(
+                        mask.shape,
+                        foreground_star_mask,
+                        lambda m: rasterize_ellipse(m, xi, yi, a_pix, b_pix, angle, fov_mask=fov_mask),
+                    )
+                    if candidate is None:
+                        continue
+                    add_candidate_mask(mask, candidate)
 
                     # Get cz info for logging
                     cz, zval, zsrc, zsep = get_best_cz_info(sc, cfg, sdss_spec_sky, sdss_spec_tab, ned_sky, ned_tab)
@@ -2694,7 +2766,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         continue
 
                     # rasterize circle
-                    rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
+                    candidate = candidate_mask_without_star_overlap(
+                        mask.shape,
+                        foreground_star_mask,
+                        lambda m: rasterize_circle(m, xi, yi, r_pix, fov_mask=fov_mask),
+                    )
+                    if candidate is None:
+                        continue
+                    add_candidate_mask(mask, candidate)
 
                     # Get cz info for logging
                     cz, zval, zsrc, zsep = get_best_cz_info(sc, cfg, sdss_spec_sky, sdss_spec_tab, ned_sky, ned_tab)
@@ -2748,7 +2827,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 print(f"[GAL] ... suppressed {n_gal_masked - gal_logged} more galaxy logs")
 
     # ---------- Supplemental galaxies from SDSS (if available) ----------
-    if (not legacy_attempted) and bool(getattr(cfg, "enable_sdss", True)):
+    if fallback_catalogs_enabled and (not legacy_attempted) and bool(getattr(cfg, "enable_sdss", True)):
         sdss_tab = query_sdss_photoobj(center, rad, cfg)
         if sdss_tab is not None and len(sdss_tab) > 0:
             if bool(getattr(cfg, "log_sdss_colnames", False)):
@@ -2910,7 +2989,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                             pass
 
                     # Rasterize circle
-                    rasterize_circle(mask, xi, yi, r_pix, fov_mask=fov_mask)
+                    candidate = candidate_mask_without_star_overlap(
+                        mask.shape,
+                        foreground_star_mask,
+                        lambda m: rasterize_circle(m, xi, yi, r_pix, fov_mask=fov_mask),
+                    )
+                    if candidate is None:
+                        continue
+                    add_candidate_mask(mask, candidate)
 
                     objid = "?"
                     if objid_col:
@@ -3004,6 +3090,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         r_mask_pix = float(r_pix)
 
                     rasterize_circle(mask, xi, yi, r_mask_pix, fov_mask=fov_mask)
+                    rasterize_circle(foreground_star_mask, xi, yi, r_mask_pix, fov_mask=fov_mask)
                     if cfg.log_each_star:
                         ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
                         print(

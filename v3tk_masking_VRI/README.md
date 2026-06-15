@@ -135,7 +135,7 @@ tool for nGIST. In broad terms it does the following:
 4. Builds an optional target-galaxy footprint from `R_MAG` to avoid masking target-galaxy structure as background.
 5. Queries Legacy Surveys DR9 through NOIRLab Data Lab TAP when available.
 6. Uses spectroscopic or catalog evidence from SDSS and NED for background-object checks when needed.
-7. Uses PS1, VizieR, SkyMapper, or SDSS fallbacks when the higher-quality catalog path is unavailable.
+7. Uses PS1, VizieR, SkyMapper, or SDSS fallback catalogs only when explicitly enabled in the script configuration.
 8. Rasterizes the selected foreground/background objects into a binary FITS mask.
 9. Writes a diagnostic PNG overlay with outlines on the galaxy image or FITS-derived background.
 
@@ -144,8 +144,10 @@ Important implementation details:
 - The script prefers pixel-locked overlays so the mask can be visually checked against the FITS grid.
 - Gaia masking defaults to a foreground-selection mode based on parallax and proper motion evidence.
 - Legacy DR9 background-galaxy masking uses morphology and photo-z information where available.
+- If a foreground-star mask and background-galaxy candidate overlap even partially, the script rejects the background-galaxy candidate and keeps only the foreground-star mask.
+- Catalog and photometric fallback methods are disabled by default unless the corresponding configuration flag is explicitly enabled.
 - The target-footprint veto is intended to reduce accidental masking of target-galaxy HII regions or internal structure.
-- The script continues with warnings if optional catalog services are unavailable, but mask completeness may change.
+- The script continues with warnings if optional catalog services are unavailable, but it does not silently switch to lower-fidelity fallback masking unless fallback use is explicitly configured.
 
 ## Mosaic Workflow
 
