@@ -84,11 +84,13 @@ explicitly enabled.
         quality (RUWE/IPD/excess-noise thresholds).
      c) "loose": mask any Gaia detection in the FoV (most complete; highest risk of
         masking extragalactic compact sources).
-   - Size model: power-law radius vs Gaia G magnitude, with a seeing floor (>= 1×FWHM),
-     plus a bright-star boost for very bright stars, then padded by gaia_margin_arcsec:
-        r = max(r_min, r_ref * 10^(-0.2*(G - G_ref))) capped at r_max
-   - Implementation note: circles are rasterized directly into the output mask; objects
-     fully outside the FITS footprint are skipped robustly; FoV gating is applied if enabled.
+   - Size model: hybrid seeing/magnitude radius vs Gaia G magnitude. Ordinary stars
+     use a seeing-based 1.2" floor plus a small star-specific margin. Stars with G < 16
+     get magnitude-grown circular masks. Stars with G < 14 are not masked differently,
+     but are logged with a diffraction/saturation warning for later inspection.
+   - Implementation note: circular masks are rasterized directly into the output mask;
+     objects fully outside the FITS footprint are skipped robustly; FoV gating is
+     applied if enabled.
 
 2) TARGET-GALAXY FOOTPRINT (optional but enabled by default as a veto)
      - Goal: avoid masking “background candidates” that fall inside a pragmatic target
@@ -183,7 +185,7 @@ III. KEY CONFIGURATION PARAMETERS (Config dataclass)
 --------------------------------------------------------------------------------
 [Global]
   fwhm_arcsec ............................: seeing FWHM used for floors/overrides
-  gaia_margin_arcsec .....................: padding added to star/galaxy radii
+  gaia_margin_arcsec .....................: padding added to non-star catalog radii
   exclude_center_arcsec ..................: inner radius to force UNMASKED (default 0)
 
 [FoV gating (R_FLUX footprint)]
@@ -204,7 +206,10 @@ III. KEY CONFIGURATION PARAMETERS (Config dataclass)
   (Strict-mode quality thresholds)
     gaia_ruwe_max, gaia_ipd_frac_multi_peak_max, gaia_astrometric_excess_noise_sig_max
   (Star radius model)
-    star_r_min_arcsec, star_r_ref_arcsec, star_g_ref, star_r_max_arcsec
+    star_floor_fwhm_factor, star_r_min_arcsec, star_margin_arcsec
+    star_growth_gmag_threshold, star_r_ref_arcsec, star_g_ref, star_r_max_arcsec
+    star_diffraction_gmag_threshold, star_diffraction_boost
+    star_diffraction_warning_gmag_threshold
 
 [Target Footprint Veto / Contour]
   reject_bg_inside_target_footprint ......: veto masking inside target footprint
@@ -357,18 +362,18 @@ except Exception:
 class Config:
     fwhm_arcsec: float = 1.0                # typical MUSE seeing FWHM, tune if needed
     gaia_gmag_max: float = 21.0             # ignore very faint Gaia sources
-    gaia_margin_arcsec: float = 1.0         # extra padding on radii (registration / wings)
+    gaia_margin_arcsec: float = 0.2         # extra padding on radii (registration / wings)
 
     # MUSE FoV detection from R_FLUX (non-NaN region)
     fov_use_mask: bool = True
     fov_extname: str = "R_FLUX"
     fov_close_size_pix: int = 5
     fov_min_abs: float = 0.0
-    fov_edge_star_buffer_arcsec: float = 5.0
+    fov_edge_star_buffer_arcsec: float = 10.0
     fov_draw_contour: bool = True
     fov_contour_color: str = "yellow"
     fov_contour_linestyle: str = ":"
-    fov_contour_linewidth: float = 1.0
+    fov_contour_linewidth: float = 0.6
     fov_flip_y: bool = True
 
     # Foreground-star selection in Gaia:
@@ -425,14 +430,19 @@ class Config:
     # VizieR PS1 table (II/349/ps1) does not provide robust size/shape columns.
     # When an object passes the *extendedness* test (PSF - Kron), we apply this
     # small fallback radius.
-    gal_fallback_arcsec: float = 3.0
+    gal_fallback_arcsec: float = 1.2
 
-    # star mask radius model (in arcsec) as function of Gaia G magnitude:
-    # r = max(r_min, r_ref * 10^(-0.2*(G-G_ref))) capped at r_max
-    star_r_min_arcsec: float = 1.5
-    star_r_ref_arcsec: float = 5.0
-    star_g_ref: float = 15.0
-    star_r_max_arcsec: float = 25.0
+    # Foreground-star mask sizing
+    star_floor_fwhm_factor: float = 1.0
+    star_r_min_arcsec: float = 1.0
+    star_margin_arcsec: float = 0.2
+    star_growth_gmag_threshold: float = 16.0
+    star_r_ref_arcsec: float = 1.4
+    star_g_ref: float = 16.0
+    star_r_max_arcsec: float = 18.0
+    star_diffraction_gmag_threshold: float = 14.0
+    star_diffraction_boost: float = 1.0
+    star_diffraction_warning_gmag_threshold: float = 14.0
 
     # galaxy-like selection (Pan-STARRS): extended if (PSF - Kron) > threshold
     ps1_ext_thresh: float = 0.25
@@ -441,7 +451,7 @@ class Config:
     ps1_ext_max: float = 1.5
     ps1_rmag_max: float = 22.0              # ignore very faint objects (optional)
     ps1_require_ri_extended: bool = False    # if i-band mags exist, require extendedness in both r and i
-    gal_r_min_arcsec: float = 2.0
+    gal_r_min_arcsec: float = 1.2
     gal_r_max_arcsec: float = 30.0
 
     # Photometric fallback when no cz/z evidence exists (PS1/SkyMapper)
@@ -778,28 +788,38 @@ def fov_center_and_radius(w: WCS, nx: int, ny: int):
 
 
 def star_radius_arcsec_from_g(cfg: Config, gmag: float) -> float:
-    # sanitize
     try:
         g = float(gmag)
     except Exception:
         g = float("nan")
+
     if (not np.isfinite(g)) or (g < -5.0) or (g > 40.0):
-        g = 18.0  # safe fallback
+        g = 18.0
 
+    # Baseline seeing-based floor.
+    r_floor = max(
+        float(cfg.star_r_min_arcsec),
+        float(cfg.star_floor_fwhm_factor) * float(cfg.fwhm_arcsec),
+    )
+    r_floor += float(cfg.star_margin_arcsec)
+
+    # Ordinary/faint stars: just use the floor.
+    if g >= float(cfg.star_growth_gmag_threshold):
+        return float(r_floor)
+
+    # Brighter stars: magnitude-based growth.
     exp = -0.2 * (g - float(cfg.star_g_ref))
-    exp = float(np.clip(exp, -10.0, 10.0))  # hard overflow guard
+    exp = float(np.clip(exp, -10.0, 10.0))
 
-    r = float(cfg.star_r_ref_arcsec) * (10.0 ** exp)
-    r = max(float(cfg.star_r_min_arcsec), min(float(cfg.star_r_max_arcsec), float(r)))
-    r = max(float(r), 1.0 * float(cfg.fwhm_arcsec))
+    r_mag = float(cfg.star_r_ref_arcsec) * (10.0 ** exp)
 
-    # --- NEW: bright-star boost ---
-    if g < 10.0:
-        r *= 1.5
-    elif g < 14.0:
-        r *= 1.25
+    # Extra boost for very bright / diffraction-prone stars.
+    if g < float(cfg.star_diffraction_gmag_threshold):
+        r_mag *= float(cfg.star_diffraction_boost)
 
-    r += float(cfg.gaia_margin_arcsec)
+    r = max(r_floor, r_mag + float(cfg.star_margin_arcsec))
+    r = min(r, float(cfg.star_r_max_arcsec))
+
     return float(r)
 
 
@@ -2023,10 +2043,16 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         reason = " | " + gaia_foreground_reason(row, cfg)
                     except Exception:
                         reason = ""
+                diffraction_warning = ""
+                if float(gi) < float(getattr(cfg, "star_diffraction_warning_gmag_threshold", 14.0)):
+                    diffraction_warning = (
+                        " | WARNING: bright Gaia star (G<14); possible diffraction/saturation "
+                        "pattern may affect continuum fitting; inspect residuals"
+                    )
                 print(
                     f"[STAR] {gaia_name} ({gaia_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
                     f"RA={ra_hms} DEC={dec_dms} "
-                    f"GaiaG={float(gi):.2f} r_arcsec={r_arcsec:.2f}{reason}"
+                    f"GaiaG={float(gi):.2f} r_arcsec={r_arcsec:.2f}{diffraction_warning}{reason}"
                 )
             n_star_masked += 1
 
@@ -3176,20 +3202,20 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             levels=[0.5],
             colors=["blue"],
             linestyles=["--"],
-            linewidths=[1.2],
+            linewidths=[0.6],
             origin="upper",
         )
 
     # Draw outlines (clip to axes so nothing expands the saved canvas)
     for p in star_patches:
         p.set_edgecolor("green")
-        p.set_linewidth(1.2)
+        p.set_linewidth(0.6)
         p.set_clip_on(True)
         ax.add_patch(p)
 
     for p in gal_patches:
         p.set_edgecolor("brown")
-        p.set_linewidth(1.2)
+        p.set_linewidth(0.6)
         p.set_clip_on(True)
         ax.add_patch(p)
 

@@ -6,7 +6,7 @@ status: FEASIBLE
 input_count: 31
 ratio: 16:9
 lower_bound_k: 358
-heuristic_upper_k: 369
+heuristic_upper_k: 368
 heuristic_method: existing:All_combined_VRI_16_9.proof.txt
 final_k: 368
 final_canvas: 5888x3312
@@ -16,7 +16,7 @@ density: 0.944683
 time_limit_seconds: 300
 solver_objective_bound: 358.0
 solver_best_objective: 368.0
-solver_wall_time_seconds: 299.043104
+solver_wall_time_seconds: 300.117475
 note: synchronized_layout_from: All_combined_VRI_mask_16_9.png
 
 Lower-bound formula
