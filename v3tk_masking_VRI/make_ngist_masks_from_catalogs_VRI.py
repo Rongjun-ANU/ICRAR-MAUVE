@@ -87,7 +87,8 @@ explicitly enabled.
    - Size model: hybrid seeing/magnitude radius vs Gaia G magnitude. Ordinary stars
      use a seeing-based 1.2" floor plus a small star-specific margin. Stars with G < 16
      get magnitude-grown circular masks. Stars with G < 14 are not masked differently,
-     but are logged with a diffraction/saturation warning for later inspection.
+     but are logged with a diffraction/saturation warning for later inspection. Star
+     radii are capped at 5.0".
    - Implementation note: circular masks are rasterized directly into the output mask;
      objects fully outside the FITS footprint are skipped robustly; FoV gating is
      applied if enabled.
@@ -439,7 +440,7 @@ class Config:
     star_growth_gmag_threshold: float = 16.0
     star_r_ref_arcsec: float = 1.4
     star_g_ref: float = 16.0
-    star_r_max_arcsec: float = 18.0
+    star_r_max_arcsec: float = 5.0
     star_diffraction_gmag_threshold: float = 14.0
     star_diffraction_boost: float = 1.0
     star_diffraction_warning_gmag_threshold: float = 14.0
@@ -452,7 +453,7 @@ class Config:
     ps1_rmag_max: float = 22.0              # ignore very faint objects (optional)
     ps1_require_ri_extended: bool = False    # if i-band mags exist, require extendedness in both r and i
     gal_r_min_arcsec: float = 1.2
-    gal_r_max_arcsec: float = 30.0
+    gal_r_max_arcsec: float = 5.0
 
     # Photometric fallback when no cz/z evidence exists (PS1/SkyMapper)
     ps1_allow_photometric_fallback: bool = False
@@ -567,7 +568,7 @@ class Config:
     legacy_shape_r_scale: float = 1.0       # "just use it" by default (shape_r is already angular)
     legacy_reject_if_near_gaia_arcsec: float = 0.8
     # Optional separate Legacy cap (independent from global gal_r_max_arcsec)
-    legacy_r_max_arcsec: float = 15.0
+    legacy_r_max_arcsec: float = 5.0
     # Only used when shape_r is missing/invalid
     legacy_seeing_scale: float = 1.0        # multiply fwhm_arcsec by this
 
@@ -2189,6 +2190,11 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 # --- Add padding margin ---
                 a_arcsec += float(cfg.gaia_margin_arcsec)
                 b_arcsec += float(cfg.gaia_margin_arcsec)
+
+                # --- Final cap after padding ---
+                # This makes the logged/masked Legacy semi-axes obey legacy_r_max_arcsec exactly.
+                a_arcsec = min(float(a_arcsec), rmax)
+                b_arcsec = min(float(b_arcsec), rmax)
 
                 # --- DS9 region export (FK5; for PA convention validation) ---
                 # Tractor phi is commonly interpreted as angle CCW from +east toward +north.

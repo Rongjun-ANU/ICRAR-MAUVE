@@ -143,8 +143,8 @@ Important implementation details:
 
 - The script prefers pixel-locked overlays so the mask can be visually checked against the FITS grid.
 - Gaia masking defaults to a foreground-selection mode based on parallax and proper motion evidence.
-- Gaia foreground-star masks use a hybrid rule: ordinary G >= 16 stars get a 1.2 arcsec seeing-based floor, G < 16 stars get magnitude-grown circular masks, and G < 14 stars are logged with a diffraction/saturation warning instead of receiving any special cross mask.
-- Background-galaxy masks use 1.2 arcsec minimum fallback/floor values, and diagnostic overlay contours are drawn with thinner 0.6 line widths.
+- Gaia foreground-star masks use a hybrid rule: ordinary G >= 16 stars get a 1.2 arcsec seeing-based floor, G < 16 stars get magnitude-grown circular masks capped at 5.0 arcsec, and G < 14 stars are logged with a diffraction/saturation warning instead of receiving any special cross mask.
+- Background-galaxy masks use 1.2 arcsec minimum fallback/floor values, 5.0 arcsec maximum fallback/Legacy semi-axis caps, and diagnostic overlay contours are drawn with thinner 0.6 line widths.
 - Legacy DR9 background-galaxy masking uses morphology and photo-z information where available.
 - If a foreground-star mask and background-galaxy candidate overlap even partially, the script rejects the background-galaxy candidate and keeps only the foreground-star mask.
 - Catalog and photometric fallback methods are disabled by default unless the corresponding configuration flag is explicitly enabled.

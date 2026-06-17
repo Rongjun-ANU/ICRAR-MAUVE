@@ -16,7 +16,7 @@ density: 0.944683
 time_limit_seconds: 300
 solver_objective_bound: 358.0
 solver_best_objective: 368.0
-solver_wall_time_seconds: 300.117475
+solver_wall_time_seconds: 300.070315
 note: warm_start_source: existing:All_combined_VRI_16_9.proof.txt
 note: solver_search_mode=fixed-k
 
