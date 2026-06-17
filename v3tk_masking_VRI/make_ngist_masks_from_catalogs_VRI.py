@@ -88,7 +88,11 @@ explicitly enabled.
      use a seeing-based 1.2" floor plus a small star-specific margin. Stars with G < 16
      get magnitude-grown circular masks. Stars with G < 14 are not masked differently,
      but are logged with a diffraction/saturation warning for later inspection. Star
-     radii are capped at 5.0".
+     radii are capped at 5.0". The magnitude-grown branch uses
+        r_mag = star_r_ref_arcsec * 10^(-0.2 * (G - star_g_ref))
+        r = min(star_r_max_arcsec, max(r_floor, r_mag + star_margin_arcsec))
+     with the current defaults star_r_ref_arcsec=1.4, star_g_ref=16.0,
+     star_margin_arcsec=0.2, and star_r_max_arcsec=5.0.
    - Implementation note: circular masks are rasterized directly into the output mask;
      objects fully outside the FITS footprint are skipped robustly; FoV gating is
      applied if enabled.
@@ -808,7 +812,8 @@ def star_radius_arcsec_from_g(cfg: Config, gmag: float) -> float:
     if g >= float(cfg.star_growth_gmag_threshold):
         return float(r_floor)
 
-    # Brighter stars: magnitude-based growth.
+    # Brighter stars: magnitude-based growth:
+    # r_mag = star_r_ref_arcsec * 10^(-0.2 * (G - star_g_ref)).
     exp = -0.2 * (g - float(cfg.star_g_ref))
     exp = float(np.clip(exp, -10.0, 10.0))
 
@@ -818,6 +823,7 @@ def star_radius_arcsec_from_g(cfg: Config, gmag: float) -> float:
     if g < float(cfg.star_diffraction_gmag_threshold):
         r_mag *= float(cfg.star_diffraction_boost)
 
+    # Final circular radius: min(star_r_max_arcsec, max(r_floor, r_mag + star_margin_arcsec)).
     r = max(r_floor, r_mag + float(cfg.star_margin_arcsec))
     r = min(r, float(cfg.star_r_max_arcsec))
 
