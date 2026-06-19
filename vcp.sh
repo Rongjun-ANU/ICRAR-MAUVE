@@ -91,3 +91,5 @@ done
 wait
 
 vcp -v arc:/projects/mauve/products/v0.6/IC3392/IC3392_CONTcube.fits /Users/Igniz/Desktop/ICRAR/extended/IC3392_CONTcube.fits
+
+vcp -v arc:/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/

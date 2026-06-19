@@ -67,6 +67,19 @@ def test_bare_phangs_galid_matches_native_vri_fits_gz():
         assert matches == [str(product)]
 
 
+def test_bare_local_galid_matches_v3tk_vri_fits_gz_in_place():
+    helpers = load_helpers(["fits_path_patterns", "expand_fits_input_patterns"])
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir)
+        product = root / "NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits.gz"
+        product.touch()
+
+        matches = helpers["expand_fits_input_patterns"]([str(root / "NGC4380")])
+
+        assert matches == [str(product)]
+        assert product.exists()
+
+
 def test_bare_multiple_phangs_galids_preserve_input_order():
     helpers = load_helpers(["fits_path_patterns", "expand_fits_input_patterns"])
     with tempfile.TemporaryDirectory() as tmpdir:

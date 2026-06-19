@@ -28,6 +28,7 @@ command -v quota >/dev/null 2>&1 && quota -s 2>/dev/null || true
 echo ""
 
 target_dir="${TARGET_DIR:-/arc/projects/mauve/cubes/v3tk}"
+pwd_dir="$(pwd)"
 phangs_native_vos_dir="vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES"
 phangs_native_files=(
 	NGC4254_PHANGS_DATACUBE_native.fits
@@ -144,14 +145,15 @@ galid_from_cube_name() {
 	fi
 }
 
-local_v3tk_source_for_galid() {
+local_v3tk_source_for_galid_in_dir() {
 	local galid="$1"
+	local search_dir="$2"
 	local candidate
 	local matches=()
 
 	for candidate in \
-		"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits" \
-		"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz"
+		"$search_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits" \
+		"$search_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz"
 	do
 		if [[ -f "$candidate" ]]; then
 			printf '%s\n' "$candidate"
@@ -159,10 +161,10 @@ local_v3tk_source_for_galid() {
 		fi
 	done
 
-	if [[ -d "$target_dir" ]]; then
+	if [[ -d "$search_dir" ]]; then
 		matches=(
-			"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk"*.fits
-			"$target_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk"*.fits.gz
+			"$search_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk"*.fits
+			"$search_dir/${galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk"*.fits.gz
 		)
 		for candidate in "${matches[@]}"; do
 			if [[ -f "$candidate" ]]; then
@@ -170,6 +172,23 @@ local_v3tk_source_for_galid() {
 				return 0
 			fi
 		done
+	fi
+
+	return 1
+}
+
+local_v3tk_source_for_galid() {
+	local galid="$1"
+	local local_source
+
+	if local_source="$(local_v3tk_source_for_galid_in_dir "$galid" "$pwd_dir")"; then
+		printf '%s\n' "$local_source"
+		return 0
+	fi
+
+	if local_source="$(local_v3tk_source_for_galid_in_dir "$galid" "$target_dir")"; then
+		printf '%s\n' "$local_source"
+		return 0
 	fi
 
 	return 1
@@ -194,7 +213,7 @@ source_for_galid() {
 		return 0
 	fi
 
-	echo "ERROR: no local v3tk cube found for selected GALID $galid under $target_dir" >&2
+	echo "ERROR: no local v3tk cube found for selected GALID $galid under $pwd_dir or $target_dir" >&2
 	return 1
 }
 
@@ -229,6 +248,16 @@ if (( ${#normalized_requested_galids[@]} > 0 )); then
 		append_source_once "$source_path" "$(basename "$source_path")"
 	done
 else
+	raw_files=("$pwd_dir"/*_v3tk.fits "$pwd_dir"/*_v3tk.fits.gz)
+
+	for candidate in "${raw_files[@]}"; do
+		base_candidate="$(basename "$candidate")"
+		if is_phangs_native_galid "$(galid_from_cube_name "$base_candidate")"; then
+			continue
+		fi
+		append_source_once "$candidate" "$base_candidate"
+	done
+
 	if [[ -d "$target_dir" ]]; then
 		raw_files=("$target_dir"/*_v3tk.fits "$target_dir"/*_v3tk.fits.gz)
 	else
@@ -288,7 +317,9 @@ total_start_epoch="$(date +%s)"
 for src_input in "${files[@]}"; do
 	per_start_epoch="$(date +%s)"
 	base_input="$(basename "$src_input")"
-	dest_input="$(pwd)/$base_input"
+	output_base="${base_input%.gz}"
+	output_path="$(pwd)/${output_base%.fits}_VRI.fits"
+	run_input="$src_input"
 
 	echo ""
 	echo "=== Processing: $src_input ==="
@@ -296,37 +327,33 @@ for src_input in "${files[@]}"; do
 	# 0) conda activate ICRAR (called per-file; no-op if already active)
 	conda activate ICRAR
 
-	# 1) copy to pwd (prefer rsync when available)
-	rm -f "$dest_input"
+	# 1) use local filesystem inputs in place; Astropy reads both .fits and .fits.gz directly.
 	if [[ "$src_input" == vos:* ]]; then
+		run_input="$(pwd)/$base_input"
 		if ! command -v vcp >/dev/null 2>&1; then
 			echo "ERROR: vcp is required to stage public VOSpace input: $src_input" >&2
 			exit 1
 		fi
-		vcp "$src_input" "$dest_input"
-	elif command -v rsync >/dev/null 2>&1; then
-		rsync -a "$src_input" "$dest_input"
-	else
-		cp -f "$src_input" "$dest_input"
+		vcp "$src_input" "$run_input"
 	fi
 
-	echo "Local input: $dest_input"
-	ls -lh "$dest_input" || true
+	echo "Input: $run_input"
+	ls -lh "$run_input" || true
 
 	# 2) run conversion; Astropy reads both .fits and .fits.gz directly.
-	echo "Running: python v3tk_to_VRI.py $dest_input"
+	echo "Running: python v3tk_to_VRI.py $run_input --output $output_path"
 	set +e
 	if [[ -n "$time_cmd" && "$time_supports_verbose" -eq 1 ]]; then
-		"$time_cmd" -v python v3tk_to_VRI.py "$dest_input"
+		"$time_cmd" -v python v3tk_to_VRI.py "$run_input" --output "$output_path"
 	elif [[ -n "$time_cmd" ]]; then
-		"$time_cmd" -p python v3tk_to_VRI.py "$dest_input"
+		"$time_cmd" -p python v3tk_to_VRI.py "$run_input" --output "$output_path"
 	else
-		python v3tk_to_VRI.py "$dest_input"
+		python v3tk_to_VRI.py "$run_input" --output "$output_path"
 	fi
 	py_status=$?
 	set -e
 	if [[ $py_status -ne 0 ]]; then
-		echo "ERROR: python failed for $dest_input (exit status: $py_status)" >&2
+		echo "ERROR: python failed for $run_input (exit status: $py_status)" >&2
 		if [[ $py_status -eq 137 || $py_status -eq 9 ]]; then
 			echo "HINT: Exit status $py_status usually means the process was SIGKILL'ed." >&2
 			echo "      Most common cause is out-of-memory (OOM) or a memory/cgroup limit from the system/scheduler." >&2
@@ -338,9 +365,6 @@ for src_input in "${files[@]}"; do
 		command -v quota >/dev/null 2>&1 && quota -s 2>/dev/null || true
 		exit $py_status
 	fi
-
-	# 3) cleanup copied input before moving on
-	rm -f "$dest_input"
 
 	per_end_epoch="$(date +%s)"
 	per_runtime="$((per_end_epoch - per_start_epoch))"

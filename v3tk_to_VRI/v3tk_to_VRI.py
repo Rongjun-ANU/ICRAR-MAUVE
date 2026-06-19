@@ -46,7 +46,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 			"and AB magnitude maps, then write them to XXX_VRI.fits preserving spatial WCS."
 		),
 	)
-	p.add_argument("fits_path", type=pathlib.Path, help="Input cube FITS path (e.g., XXX.fits or XXX.fits.gz)")
+	p.add_argument("fits_path", type=pathlib.Path, help="Input cube FITS path or GALID for a cube in the current directory")
 	p.add_argument(
 		"--data-hdu",
 		default="DATA",
@@ -134,6 +134,29 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 
 def default_output_path(fits_path: pathlib.Path) -> pathlib.Path:
 	return fits_path.with_name(f"{fits_stem(fits_path)}_VRI.fits")
+
+
+def resolve_input_path(fits_path: pathlib.Path) -> pathlib.Path:
+	if fits_path.exists():
+		return fits_path
+
+	name = str(fits_path)
+	if fits_path.parent != pathlib.Path(".") or any(sep in name for sep in ("/", os.sep)):
+		raise FileNotFoundError(f"Input FITS not found: {fits_path}")
+
+	galid = name.upper().replace(" ", "")
+	candidates = [
+		pathlib.Path(f"{galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"),
+		pathlib.Path(f"{galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz"),
+	]
+	candidates.extend(sorted(pathlib.Path(".").glob(f"{galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits")))
+	candidates.extend(sorted(pathlib.Path(".").glob(f"{galid}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits.gz")))
+
+	for candidate in candidates:
+		if candidate.exists():
+			return candidate
+
+	raise FileNotFoundError(f"Input FITS not found: {fits_path}")
 
 
 def _spectral_wavelength_grid_aa(hdr, nz: int):
@@ -501,9 +524,7 @@ def main(argv: list[str]) -> int:
 			row_chunk = max(1, int(row_chunk))
 		print(f"row_chunk: {row_chunk}")
 
-		fits_path = args.fits_path
-		if not fits_path.exists():
-			raise FileNotFoundError(f"Input FITS not found: {fits_path}")
+		fits_path = resolve_input_path(args.fits_path)
 
 		out = args.output
 		if out is None:

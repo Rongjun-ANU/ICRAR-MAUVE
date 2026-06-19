@@ -18,8 +18,8 @@ At the time this README was written, the folder contains 26 VRI FITS products an
 
 | File pattern | Purpose |
 | --- | --- |
-| `v3tk_to_VRI.py` | Converts one 3D MUSE cube into V, R, and I flux/magnitude maps. It accepts both `.fits` and `.fits.gz` inputs directly. |
-| `v3tk_to_VRI.sh` | Batch wrapper that copies upstream `*_v3tk.fits` or `*_v3tk.fits.gz` cubes from `/arc/projects/mauve/cubes/v3tk`, stages supported PHANGS native public cubes from VOSspace with `vcp` when needed, runs `v3tk_to_VRI.py` on the copied input without unzipping, and removes the temporary copied input cube. |
+| `v3tk_to_VRI.py` | Converts one 3D MUSE cube into V, R, and I flux/magnitude maps. It accepts both `.fits` and `.fits.gz` inputs directly, or a GALID when the matching v3tk cube is in the current directory. |
+| `v3tk_to_VRI.sh` | Batch wrapper that first checks the current directory for selected local `*_v3tk.fits` or `*_v3tk.fits.gz` cubes, then falls back to `/arc/projects/mauve/cubes/v3tk`, runs `v3tk_to_VRI.py` directly on local filesystem inputs without copying, unzipping, or deleting them, and stages only supported PHANGS native public `vos:` inputs with `vcp` when needed. |
 | `v3tk_observed_VRI_image.py` | Renders the VRI FITS products into native-size PNG and PDF images. It discovers both `.fits` and `.fits.gz` products when the pattern ends in `.fits`. |
 | `v3tk_get_legacy.py` | Downloads Legacy Survey cutouts, obtains matching WCS information, and reprojects the RGB image to the MUSE grid. It uses the same `.fits`/`.fits.gz` adaptive product discovery. |
 | `v3tk_combined_VRI_image.py` | Combines the observed VRI rendering with the reprojected Legacy image, using valid MUSE pixels where available and Legacy pixels outside the MUSE footprint. It also accepts compressed VRI FITS products. |
@@ -117,7 +117,7 @@ vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.f
 vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4535_PHANGS_DATACUBE_native.fits
 ```
 
-Use the `native` PHANGS products for consistency with the MAUVE native-grid workflow. Full VRI conversion reads the whole cube, so the wrapper stages VOSspace inputs into the working directory and deletes each staged cube after conversion. Header-only checks or small cutouts can use CANFAR VOSspace helpers such as `vcat --head` or `vcp` cutout syntax, but the full-cube workflow should not treat a `vos:` URI as a normal local FITS path.
+Use the `native` PHANGS products for consistency with the MAUVE native-grid workflow. Full VRI conversion reads the whole cube. Local filesystem cubes, including `.fits.gz`, are passed directly to Astropy and are not copied, unzipped, or deleted by the wrapper. Only public `vos:` inputs are staged into the working directory with `vcp`. Header-only checks or small cutouts can use CANFAR VOSspace helpers such as `vcat --head` or `vcp` cutout syntax, but the full-cube workflow should not treat a `vos:` URI as a normal local FITS path.
 
 The converter writes these FITS HDUs:
 
@@ -188,7 +188,10 @@ galaxies:
 ./v3tk_to_VRI.sh NGC4254 NGC4321 NGC4535
 ```
 
-With positional GALID arguments, the wrapper selects only those galaxies. For
+With positional GALID arguments, the wrapper selects only those galaxies. It
+first checks the current working directory for matching local v3tk cube names
+and uses those inputs in place without deleting them, then falls back to
+`/arc/projects/mauve/cubes/v3tk`. For
 `NGC4254`, `NGC4321`, and `NGC4535`, it selects
 `*_PHANGS_DATACUBE_native.fits` from the local target directory when present, or
 from public PHANGS VOSspace via `vcp` when not present. It does not fall through
@@ -201,14 +204,18 @@ The wrapper expects:
 /arc/projects/mauve/cubes/v3tk/*_v3tk.fits.gz
 ```
 
-It also stages the three supported PHANGS-native public cubes listed above with `vcp` if they are not already present in the local target directory. If both compressed and uncompressed copies exist for the same local v3tk cube, the wrapper processes the first matching stem once. For `NGC4254`, `NGC4321`, and `NGC4535`, the PHANGS-native source is preferred over an old local v3tk-style source. It writes `v3tk_to_VRI.log`; during each per-cube run it copies or stages the input into the working directory, runs `v3tk_to_VRI.py` directly on `.fits` or `.fits.gz`, then removes the temporary copied input. It no longer creates a temporary uncompressed duplicate when the upstream cube is already `.fits.gz`.
+It also stages the three supported PHANGS-native public cubes listed above with `vcp` if they are not already present in the local target directory. If both compressed and uncompressed copies exist for the same local v3tk cube, the wrapper processes the first matching stem once. For `NGC4254`, `NGC4321`, and `NGC4535`, the PHANGS-native source is preferred over an old local v3tk-style source. It writes `v3tk_to_VRI.log`; during each per-cube run it passes local `.fits` or `.fits.gz` inputs directly to `v3tk_to_VRI.py` and writes the `_VRI.fits` output in the working directory. It does not unzip, copy, or delete local filesystem input cubes.
 
 To convert a single local cube directly:
 
 ```bash
 python v3tk_to_VRI.py path/to/cube.fits
 python v3tk_to_VRI.py path/to/cube.fits.gz
+python v3tk_to_VRI.py NGC4380
 ```
+
+The GALID form expects the matching `NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits`
+or `.fits.gz` cube to be in the current directory.
 
 Useful converter options:
 

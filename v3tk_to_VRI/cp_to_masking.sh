@@ -20,28 +20,62 @@ copy_galid() {
   local galid=$1
   local png="${galid}_combined_VRI.png"
   local -a fits_matches
-
-  if [[ ! -f "$png" ]]; then
-    printf 'Missing required file: %s\n' "$png" >&2
-    return 1
-  fi
+  local copied=0
 
   shopt -s nullglob
   fits_matches=("${galid}"*_VRI.fits)
   shopt -u nullglob
 
-  if (( ${#fits_matches[@]} == 0 )); then
-    printf 'Missing required file matching: %s*_VRI.fits\n' "$galid" >&2
-    return 1
-  fi
   if (( ${#fits_matches[@]} > 1 )); then
     printf 'Multiple FITS matches for %s:\n' "$galid" >&2
     printf '  %s\n' "${fits_matches[@]}" >&2
     return 1
   fi
 
-  copy_file "${fits_matches[0]}"
-  copy_file "$png"
+  if (( ${#fits_matches[@]} == 1 )); then
+    copy_file "${fits_matches[0]}"
+    copied=1
+  else
+    printf 'Warning: missing file matching: %s*_VRI.fits\n' "$galid" >&2
+  fi
+
+  if [[ -f "$png" ]]; then
+    copy_file "$png"
+    copied=1
+  else
+    printf 'Warning: missing file: %s\n' "$png" >&2
+  fi
+
+  if (( copied == 0 )); then
+    return 1
+  fi
+}
+
+list_galids() {
+  local item galid
+
+  shopt -s nullglob
+  for item in *_combined_VRI.png; do
+    galid=${item%_combined_VRI.png}
+    [[ "$galid" == "ALL" || "$galid" == "All" ]] && continue
+    printf '%s\n' "$galid"
+  done
+
+  for item in *_VRI.fits; do
+    case "$item" in
+      *_PHANGS_DATACUBE*_VRI.fits)
+        galid=${item%%_PHANGS_DATACUBE*}
+        ;;
+      *_DATACUBE*_VRI.fits)
+        galid=${item%%_DATACUBE*}
+        ;;
+      *)
+        continue
+        ;;
+    esac
+    printf '%s\n' "$galid"
+  done
+  shopt -u nullglob
 }
 
 if (( $# > 1 )); then
@@ -59,17 +93,16 @@ if (( $# == 1 )); then
   exit
 fi
 
-shopt -s nullglob
-combined_pngs=(*_combined_VRI.png)
-shopt -u nullglob
+galids=()
+while IFS= read -r galid; do
+  galids+=("$galid")
+done < <(list_galids | sort -u)
 
-if (( ${#combined_pngs[@]} == 0 )); then
-  printf 'No *_combined_VRI.png files found.\n' >&2
+if (( ${#galids[@]} == 0 )); then
+  printf 'No *_combined_VRI.png or *_VRI.fits files found.\n' >&2
   exit 1
 fi
 
-for png in "${combined_pngs[@]}"; do
-  galid=${png%_combined_VRI.png}
-  [[ "$galid" == "ALL" || "$galid" == "All" ]] && continue
+for galid in "${galids[@]}"; do
   copy_galid "$galid"
 done

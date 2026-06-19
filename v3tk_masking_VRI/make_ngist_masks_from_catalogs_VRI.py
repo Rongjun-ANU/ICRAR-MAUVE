@@ -13,8 +13,10 @@ Usage:
     python create_masks.py [pattern ...]
 
     If one or more [pattern] arguments are provided (e.g., "NGC*.fits"), it processes
-    all matching files (deduplicated, order-preserving). A pattern ending in `.fits`
-    also checks the matching `.fits.gz` files, which Astropy can read directly.
+    all matching files (deduplicated, order-preserving). FITS inputs from any
+    filesystem path are read in place; they are not copied, unzipped, staged, or
+    deleted by this script. A pattern ending in `.fits` also checks the matching
+    `.fits.gz` files, which Astropy can read directly.
     Bare galaxy IDs such as `NGC4254` are expanded to
     `NGC4254*_DATACUBE*_VRI.fits`, so PHANGS-native products such as
     `NGC4254_PHANGS_DATACUBE_native_VRI.fits` are discovered automatically.
@@ -635,6 +637,7 @@ def is_bare_galaxy_id(pattern: str) -> bool:
 
 
 def input_patterns_for_argument(pattern: str) -> list[str]:
+    """Expand user input without staging: matched FITS paths are read in place."""
     if not is_bare_galaxy_id(pattern):
         return fits_path_patterns(pattern)
 

@@ -18,7 +18,7 @@ The current snapshot is intended to be a self-contained record of the masking ru
 
 | Path or pattern | Count | Description |
 | --- | ---: | --- |
-| `make_ngist_masks_from_catalogs_VRI.py` | 1 | Main masking script. Generates binary spatial masks and diagnostic overlays from VRI FITS datacubes. |
+| `make_ngist_masks_from_catalogs_VRI.py` | 1 | Main masking script. Generates binary spatial masks and diagnostic overlays from local VRI FITS datacubes, reading `.fits` and `.fits.gz` inputs in place without copying, unzipping, or deleting them. |
 | `auto_arrange_and_combine.py` | 1 | Mosaic arranger. Packs per-galaxy PNGs into dense fixed-ratio overview images, with optional OR-Tools proof reports. |
 | `*_DATACUBE*_VRI.fits` or `.fits.gz` | 26 | Input VRI FITS datacubes used for WCS, pixel geometry, and science-data footprint. Compressed inputs are read directly with Astropy and do not need to be unzipped first. |
 | `*_mask.fits` | 26 | Binary nGIST-compatible spatial masks. `0` means unmasked; `1` means masked. |
@@ -100,6 +100,9 @@ python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits'
 python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits.gz'
 python make_ngist_masks_from_catalogs_VRI.py 'NGC4383*_DATACUBE*_VRI.fits' 'NGC4419*_DATACUBE*_VRI.fits'
 ```
+
+All inputs are local filesystem FITS products and are read in place. The masking
+script does not copy, unzip, stage, or delete `.fits` or `.fits.gz` inputs.
 
 Bare galaxy IDs are expanded to `GALID*_DATACUBE*_VRI.fits`, so the selected
 PHANGS-native command above discovers
