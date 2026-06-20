@@ -95,6 +95,9 @@ explicitly enabled.
         r = min(star_r_max_arcsec, max(r_floor, r_mag + star_margin_arcsec))
      with the current defaults star_r_ref_arcsec=1.4, star_g_ref=16.0,
      star_margin_arcsec=0.2, and star_r_max_arcsec=5.0.
+   - Gaia DR3 catalogue positions are propagated from each source `ref_epoch`
+     to the FITS observation epoch using `pmra` and `pmdec` before rasterizing
+     the foreground-star mask. This is required for high-proper-motion stars.
    - Implementation note: circular masks are rasterized directly into the output mask;
      objects fully outside the FITS footprint are skipped robustly; FoV gating is
      applied if enabled.
@@ -210,6 +213,9 @@ III. KEY CONFIGURATION PARAMETERS (Config dataclass)
   (Foreground-by-kinematics thresholds)
     gaia_parallax_snr_min, gaia_parallax_min_mas
     gaia_pm_snr_min, gaia_pm_min_masyr
+  (Gaia epoch propagation)
+    gaia_apply_epoch_propagation, gaia_epoch_query_padding_arcsec
+    gaia_default_ref_epoch, gaia_log_epoch_shift_arcsec_min
   (Strict-mode quality thresholds)
     gaia_ruwe_max, gaia_ipd_frac_multi_peak_max, gaia_astrometric_excess_noise_sig_max
   (Star radius model)
@@ -318,6 +324,7 @@ from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.coordinates import SkyCoord
 import astropy.units as u
+from astropy.time import Time
 from astropy.wcs.utils import proj_plane_pixel_scales
 
 import matplotlib.pyplot as plt
@@ -402,6 +409,12 @@ class Config:
     gaia_parallax_min_mas: float = 0.002
     gaia_pm_snr_min: float = 5.0
     gaia_pm_min_masyr: float = 0.02
+
+    # Gaia epoch propagation
+    gaia_apply_epoch_propagation: bool = True
+    gaia_epoch_query_padding_arcsec: float = 20.0
+    gaia_default_ref_epoch: float = 2016.0
+    gaia_log_epoch_shift_arcsec_min: float = 0.05
 
     # NOTE: We intentionally do NOT exclude the inner galaxy by default, because
     # you may still want to mask true foreground stars/background galaxies there.
@@ -721,6 +734,50 @@ def load_r_image_and_wcs(rfits_path: str):
     return data2d, w, hdr_for_wcs, nx, ny
 
 
+def observation_time_from_fits(rfits_path: str) -> Time | None:
+    """
+    Return the best available observation epoch for Gaia proper-motion propagation.
+
+    Priority:
+      1. MJD-OBS
+      2. DATE-OBS
+      3. HIERARCH ESO OBS START / ESO OBS START
+
+    Do NOT use the generic DATE keyword unless absolutely necessary, because in
+    MPDAF-combined products DATE can be the cube creation date, not the observation date.
+    """
+    try:
+        with fits.open(rfits_path) as hdul:
+            headers = [hdu.header for hdu in hdul if hdu.header is not None]
+
+            for hdr in headers:
+                if "MJD-OBS" in hdr:
+                    try:
+                        return Time(float(hdr["MJD-OBS"]), format="mjd", scale="utc")
+                    except Exception:
+                        pass
+
+            for hdr in headers:
+                if "DATE-OBS" in hdr:
+                    try:
+                        return Time(str(hdr["DATE-OBS"]), scale="utc")
+                    except Exception:
+                        pass
+
+            eso_keys = ["HIERARCH ESO OBS START", "ESO OBS START"]
+            for hdr in headers:
+                for key in eso_keys:
+                    if key in hdr:
+                        try:
+                            return Time(str(hdr[key]), scale="utc")
+                        except Exception:
+                            pass
+    except Exception as e:
+        print(f"WARNING: failed to read observation time from {rfits_path}: {e}")
+
+    return None
+
+
 def build_muse_fov_mask(
     rfits_path: str,
     fov_extname: str,
@@ -854,7 +911,7 @@ def query_gaia_sources(center: SkyCoord, radius: u.Quantity, cfg: Config):
 
         query = f"""
             SELECT
-              source_id, ra, dec,
+              source_id, ref_epoch, ra, dec,
               phot_g_mean_mag,
               ruwe,
               ipd_frac_multi_peak,
@@ -888,6 +945,103 @@ def query_gaia_sources(center: SkyCoord, radius: u.Quantity, cfg: Config):
                         continue
                 print(f"WARNING: Gaia query failed: {e}")
                 return None
+
+
+def table_float_array(tab, name: str, default: float = np.nan) -> np.ndarray:
+    """Return an Astropy table column as a float ndarray, with masked/bad values replaced."""
+    if tab is None or name not in tab.colnames:
+        return np.full(len(tab), default, dtype=float)
+    col = tab[name]
+    try:
+        if hasattr(col, "filled"):
+            return np.asarray(col.filled(default), dtype=float)
+        return np.asarray(col, dtype=float)
+    except Exception:
+        out = np.full(len(tab), default, dtype=float)
+        for i in range(len(tab)):
+            try:
+                v = col[i]
+                if v is None or getattr(v, "mask", False):
+                    continue
+                out[i] = float(v)
+            except Exception:
+                pass
+        return out
+
+
+def propagate_gaia_to_obstime(gaia, obs_time: Time | None, cfg: Config):
+    """
+    Return:
+      gaia_sky_catalog: SkyCoord at Gaia catalogue epoch
+      gaia_sky_obs:     SkyCoord propagated to observation epoch
+      shift_arcsec:     angular separation between catalogue and propagated positions
+      dt_year:          obs_epoch - ref_epoch per source
+
+    If propagation is disabled or impossible, gaia_sky_obs == gaia_sky_catalog.
+    """
+    ra = table_float_array(gaia, "ra")
+    dec = table_float_array(gaia, "dec")
+
+    gaia_sky_catalog = SkyCoord(ra=ra * u.deg, dec=dec * u.deg, frame="icrs")
+
+    n = len(gaia)
+    shift_arcsec = np.zeros(n, dtype=float)
+    dt_year = np.zeros(n, dtype=float)
+
+    if (
+        not bool(getattr(cfg, "gaia_apply_epoch_propagation", True))
+        or obs_time is None
+        or n == 0
+    ):
+        return gaia_sky_catalog, gaia_sky_catalog, shift_arcsec, dt_year
+
+    ref_epoch = table_float_array(
+        gaia,
+        "ref_epoch",
+        default=float(getattr(cfg, "gaia_default_ref_epoch", 2016.0)),
+    )
+    pmra = table_float_array(gaia, "pmra")
+    pmdec = table_float_array(gaia, "pmdec")
+
+    try:
+        obs_jyear = float(obs_time.jyear)
+    except Exception:
+        print("WARNING: observation time has no valid Julian year; Gaia epoch propagation disabled.")
+        return gaia_sky_catalog, gaia_sky_catalog, shift_arcsec, dt_year
+
+    dt_year = obs_jyear - ref_epoch
+
+    ra_obs = np.array(ra, dtype=float)
+    dec_obs = np.array(dec, dtype=float)
+
+    cosdec = np.cos(np.deg2rad(dec))
+    valid = (
+        np.isfinite(ra)
+        & np.isfinite(dec)
+        & np.isfinite(ref_epoch)
+        & np.isfinite(pmra)
+        & np.isfinite(pmdec)
+        & np.isfinite(dt_year)
+        & (np.abs(cosdec) > 1e-8)
+    )
+
+    dra_deg = np.zeros(n, dtype=float)
+    ddec_deg = np.zeros(n, dtype=float)
+
+    dra_deg[valid] = (pmra[valid] * dt_year[valid] / 3.6e6) / cosdec[valid]
+    ddec_deg[valid] = pmdec[valid] * dt_year[valid] / 3.6e6
+
+    ra_obs[valid] = np.mod(ra[valid] + dra_deg[valid], 360.0)
+    dec_obs[valid] = np.clip(dec[valid] + ddec_deg[valid], -90.0, 90.0)
+
+    gaia_sky_obs = SkyCoord(ra=ra_obs * u.deg, dec=dec_obs * u.deg, frame="icrs")
+
+    try:
+        shift_arcsec = gaia_sky_catalog.separation(gaia_sky_obs).to_value(u.arcsec)
+    except Exception:
+        shift_arcsec = np.hypot(dra_deg * 3600.0 * cosdec, ddec_deg * 3600.0)
+
+    return gaia_sky_catalog, gaia_sky_obs, shift_arcsec, dt_year
 
 
 def _gaia_row_is_foreground_by_kinematics(row, cfg: Config) -> bool:
@@ -1910,11 +2064,16 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     center, rad = fov_center_and_radius(w, nx, ny)
     # small padding so we don't miss edge objects
     rad = rad + (10.0 * u.arcsec)
+    obs_time = observation_time_from_fits(rfits_path)
 
     try:
         print(f"[FOV] {base}: nx={nx} ny={ny} pixscale={pixscale:.4f}\"/pix rad={rad.to(u.arcmin).value:.3f} arcmin")
     except Exception:
         pass
+    if obs_time is not None:
+        print(f"[GaiaEpoch] observation epoch: {obs_time.isot} jyear={obs_time.jyear:.6f}")
+    else:
+        print("[GaiaEpoch] WARNING: no observation epoch found; Gaia positions will not be propagated.")
 
     mask = np.zeros((ny, nx), dtype=np.uint8)
     foreground_star_mask = np.zeros((ny, nx), dtype=np.uint8)
@@ -1955,25 +2114,30 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
         star_edge_buffer_pix = float(getattr(cfg, "fov_edge_star_buffer_arcsec", 5.0)) / float(pixscale)
 
     # ---------- Gaia stars ----------
-    gaia = query_gaia_sources(center, rad, cfg)
+    gaia_rad = rad
+    if bool(getattr(cfg, "gaia_apply_epoch_propagation", True)):
+        gaia_rad = gaia_rad + (float(getattr(cfg, "gaia_epoch_query_padding_arcsec", 20.0)) * u.arcsec)
+    gaia = query_gaia_sources(center, gaia_rad, cfg)
     star_patches = []
     n_star_masked = 0
     star_exclude = np.zeros((ny, nx), dtype=np.uint8)
     gaia_sky = None
     gaia_sky_for_ps1_reject = None
     if gaia is not None and len(gaia) > 0:
-        ra = np.array(gaia["ra"])
-        dec = np.array(gaia["dec"])
-        gmag = np.array(gaia["phot_g_mean_mag"])
-        gaia_sky = SkyCoord(ra=ra * u.deg, dec=dec * u.deg, frame="icrs")
+        gmag = table_float_array(gaia, "phot_g_mean_mag")
+        gaia_sky_catalog, gaia_sky, gaia_epoch_shift_arcsec, gaia_dt_year = propagate_gaia_to_obstime(
+            gaia,
+            obs_time,
+            cfg,
+        )
 
         # For PS1 galaxy rejection we only want high-quality Gaia point sources.
         # In loose mode, Gaia contains more dubious detections (and even some
         # galaxy cores), which would otherwise suppress real background galaxies.
         try:
-            ruwe = np.array(gaia["ruwe"], dtype=float)
-            ipd = np.array(gaia["ipd_frac_multi_peak"], dtype=float)
-            exsig = np.array(gaia["astrometric_excess_noise_sig"], dtype=float)
+            ruwe = table_float_array(gaia, "ruwe")
+            ipd = table_float_array(gaia, "ipd_frac_multi_peak")
+            exsig = table_float_array(gaia, "astrometric_excess_noise_sig")
 
             ok_ruwe = np.isnan(ruwe) | (ruwe < float(cfg.gaia_ruwe_max))
             ok_ipd = np.isnan(ipd) | (ipd <= float(cfg.gaia_ipd_frac_multi_peak_max))
@@ -1994,7 +2158,16 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                 f"OR pm≥{cfg.gaia_pm_min_masyr} mas/yr & SNR≥{cfg.gaia_pm_snr_min})"
             )
 
-        for row, xi, yi, gi, sc in zip(gaia, x, y, gmag, gaia_sky):
+        for row, xi, yi, gi, sc_cat, sc_obs, shift_as, dt_yr in zip(
+            gaia,
+            x,
+            y,
+            gmag,
+            gaia_sky_catalog,
+            gaia_sky,
+            gaia_epoch_shift_arcsec,
+            gaia_dt_year,
+        ):
             if not np.isfinite(xi) or not np.isfinite(yi):
                 continue
 
@@ -2008,7 +2181,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     # If kinematics are unavailable/unparsable, don't mask it in foreground mode.
                     continue
 
-            if sc.separation(center) < exclude_center:
+            if sc_obs.separation(center) < exclude_center:
                 continue
             r_arcsec = star_radius_arcsec_from_g(cfg, float(gi))
             r_pix = r_arcsec / pixscale
@@ -2044,9 +2217,9 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 
             sid = row["source_id"] if "source_id" in row.colnames else "?"
             if cfg.log_each_star:
-                ra_hms, dec_dms = format_radec_hmsdms(sc, precision=2)
+                ra_hms, dec_dms = format_radec_hmsdms(sc_obs, precision=2)
                 gaia_name = f"Gaia DR3 {sid}"
-                gaia_iau = iau_coord_name("GAIA", sc, ra_precision=2, dec_precision=1)
+                gaia_iau = iau_coord_name("GAIA", sc_cat, ra_precision=2, dec_precision=1)
                 reason = ""
                 if mode == "foreground":
                     try:
@@ -2059,10 +2232,18 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         " | WARNING: bright Gaia star (G<14); possible diffraction/saturation "
                         "pattern may affect continuum fitting; inspect residuals"
                     )
+                epoch_note = ""
+                if np.isfinite(shift_as) and shift_as >= float(cfg.gaia_log_epoch_shift_arcsec_min):
+                    epoch_note = (
+                        f" | epoch_dt={dt_yr:.3f} yr"
+                        f" | epoch_shift={shift_as:.3f}\""
+                        f" | cat_ra={sc_cat.ra.deg:.6f} cat_dec={sc_cat.dec.deg:.6f}"
+                        f" | obs_ra={sc_obs.ra.deg:.6f} obs_dec={sc_obs.dec.deg:.6f}"
+                    )
                 print(
-                    f"[STAR] {gaia_name} ({gaia_iau}) ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                    f"[STAR] {gaia_name} ({gaia_iau}) ra={sc_obs.ra.deg:.6f} dec={sc_obs.dec.deg:.6f} "
                     f"RA={ra_hms} DEC={dec_dms} "
-                    f"GaiaG={float(gi):.2f} r_arcsec={r_arcsec:.2f}{diffraction_warning}{reason}"
+                    f"GaiaG={float(gi):.2f} r_arcsec={r_arcsec:.2f}{epoch_note}{diffraction_warning}{reason}"
                 )
             n_star_masked += 1
 

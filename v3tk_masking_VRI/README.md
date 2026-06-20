@@ -146,6 +146,7 @@ Important implementation details:
 
 - The script prefers pixel-locked overlays so the mask can be visually checked against the FITS grid.
 - Gaia masking defaults to a foreground-selection mode based on parallax and proper motion evidence.
+- Gaia DR3 source positions are propagated from each source `ref_epoch` to the FITS observation epoch using `pmra` and `pmdec` before foreground-star mask placement, diagnostic star overlays, and Gaia-near background-candidate rejection.
 - Gaia foreground-star masks use a hybrid rule: ordinary G >= 16 stars get a 1.2 arcsec seeing-based floor, G < 16 stars get magnitude-grown circular masks capped at 5.0 arcsec, and G < 14 stars are logged with a diffraction/saturation warning instead of receiving any special cross mask. The magnitude-grown branch uses `r_mag = star_r_ref_arcsec * 10^(-0.2 * (G - star_g_ref))`, then `r = min(star_r_max_arcsec, max(r_floor, r_mag + star_margin_arcsec))`; current defaults are `star_r_ref_arcsec=1.4`, `star_g_ref=16.0`, `star_margin_arcsec=0.2`, and `star_r_max_arcsec=5.0`.
 - Background-galaxy masks use 1.2 arcsec minimum fallback/floor values, 5.0 arcsec maximum fallback/Legacy semi-axis caps, and diagnostic overlay contours are drawn with thinner 0.6 line widths.
 - Legacy DR9 background-galaxy masking uses morphology and photo-z information where available.
