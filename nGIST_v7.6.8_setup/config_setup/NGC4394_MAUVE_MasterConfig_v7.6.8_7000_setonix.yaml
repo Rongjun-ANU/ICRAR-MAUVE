@@ -1,0 +1,127 @@
+GENERAL:
+  RUN_ID: NGC4394
+  INPUT: /scratch/pawsey1308/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+  OUTPUT: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/
+  REDSHIFT: 0.003075
+  PARALLEL: true
+  NCPU: 128
+  LSF_DATA: lsf_MUSE-WFM-MILES
+  OW_CONFIG: true
+  OW_OUTPUT: false
+  CREATE_HTML: false
+READ_DATA:
+  METHOD: MUSE_WFM
+  DEBUG: false
+  ORIGIN: 312,324
+  LMIN_TOT: 4800
+  LMAX_TOT: 7000
+  LMIN_SNR: 4800
+  LMAX_SNR: 7000
+  EBmV: 0.0257
+SPATIAL_MASKING:
+  METHOD: default
+  MIN_SNR: -10
+  MASK: NGC4394_mask.fits
+  THRESHOLD_METHOD: actual
+SPATIAL_BINNING:
+  METHOD: voronoi
+  TARGET_SNR: 40.0
+  COVARIANCE: 0.0
+PREPARE_SPECTRA:
+  METHOD: default
+  VELSCALE: 53
+KIN:
+  METHOD: ppxf
+  SPEC_MASK: specMask_KIN_narrow10
+  LMIN: 4800
+  LMAX: 7000
+  SIGMA: 114
+  BIAS: muse_snr_prefit
+  MOM: 4
+  ADEG: 12
+  MDEG: 0
+  MC_PPXF: 0
+  LSF_TEMP: lsf_MILES
+  TEMPLATE_SET: miles
+  LIBRARY: EMILES_baseFe_EMLINES/
+  NORM_TEMP: LIGHT
+  DOCLEAN: true
+  OPT_TEMP: default
+  DUST_CORR: true
+  NOISE: variance
+  PLOT: false
+  DEBUG_BIN: false
+CONT:
+  METHOD: ppxf
+  SPEC_MASK: specMask_KIN_narrow10
+  LMIN: 4800
+  LMAX: 7000
+  SIGMA: 114
+  MOM: 4
+  ADEG: 0
+  MDEG: 12
+  MC_PPXF: 0
+  LSF_TEMP: lsf_MILES
+  TEMPLATE_SET: miles
+  LIBRARY: EMILES_baseFe_EMLINES/
+  NORM_TEMP: LIGHT
+  DOCLEAN: true
+  OPT_TEMP: default
+  DUST_CORR: true
+  NOISE: variance
+  PLOT: false
+  DEBUG_BIN: false
+  SAVE_HDF5: false
+GAS:
+  METHOD: ppxf
+  SPEC_MASK: specMask_GAS_narrow10
+  LEVEL: BOTH
+  LMIN: 4800
+  LMAX: 7000
+  ERRORS: 0
+  DUST_CORR: false
+  MDEG: 12
+  FIXED: true
+  MOM: 2
+  EBmV: null
+  EMI_FILE: emissionLines_ppxf_7000.config
+  LSF_TEMP: lsf_MILES
+  TEMPLATE_SET: miles
+  LIBRARY: EMILES_baseFe_EMLINES/
+  NORM_TEMP: LIGHT
+SFH:
+  METHOD: ppxf
+  LMIN: 4800
+  LMAX: 7000
+  SPEC_MASK: specMask_KIN_narrow10
+  SPEC_EMICLEAN: false
+  MOM: 4
+  MDEG: 12
+  REGUL: 1.0e-05
+  FIXED: true
+  MC_PPXF: 0
+  LSF_TEMP: lsf_MILES
+  TEMPLATE_SET: miles
+  LIBRARY: EMILES_baseFe_safe/
+  NORM_TEMP: LIGHT
+  DOCLEAN: true
+  OPT_TEMP: default
+  DUST_CORR: true
+  NOISE: variance
+  PLOT: false
+  DEBUG_BIN: false
+LS:
+  METHOD: false
+  TYPE: SPP
+  LS_FILE: lsBands.config
+  CONV_COR: 8.4
+  SPP_FILE: MILES_KB_LIS8.4.fits
+  MC_LS: 30
+  NWALKER: 200
+  NCHAIN: 200
+  LSF_TEMP: lsf_MILES
+  TEMPLATE_SET: miles
+  LIBRARY: EMILES_baseFe_safe/
+  NORM_TEMP: LIGHT
+UMOD:
+  METHOD: false

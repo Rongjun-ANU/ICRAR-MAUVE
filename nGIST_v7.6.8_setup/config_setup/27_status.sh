@@ -4,10 +4,15 @@ set -uo pipefail
 cd "$(dirname "$0")"
 
 RUN_DIR="$(pwd)"
-PRODUCT_BASE="/scratch/pawsey1308/mauve/products/v3tk_v7.6.8"
+PRODUCT_BASE_REGULAR="/scratch/pawsey1308/mauve/products/v3tk_v7.6.8"
+PRODUCT_BASE_7000="/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000"
 COMPLETION_STRING="MainPipeline: nGIST completed successfully."
 STATUS_LOG="27_status_log_$(date +%Y%m%d_%H%M%S).txt"
 LONG_QUEUE_ESTIMATE_WARNING_SECONDS=$((22 * 3600))
+RUN_VARIANTS=(
+  "regular||${PRODUCT_BASE_REGULAR}"
+  "7000|_7000|${PRODUCT_BASE_7000}"
+)
 
 . ./27_galaxies.sh
 select_galids "$@"
@@ -140,7 +145,7 @@ last_info_line() {
 
 job_state() {
   local galid="$1"
-  local job_name="${galid}_v3tk_v7.6.8"
+  local job_name="${galid}_v3tk_v7.6.8${RUN_SUFFIX}"
   local queue_user="${USER:-${LOGNAME:-}}"
 
   if ! command -v squeue >/dev/null 2>&1; then
@@ -161,14 +166,14 @@ job_state() {
 
 slurm_partition() {
   local galid="$1"
-  local slurm_file="${RUN_DIR}/${galid}_v3tk_v7.6.8_setonix.slurm"
+  local slurm_file="${RUN_DIR}/${galid}_v3tk_v7.6.8${RUN_SUFFIX}_setonix.slurm"
 
   awk -F= '/^#SBATCH --partition=/ {print $2; exit}' "$slurm_file" 2>/dev/null
 }
 
 slurm_walltime() {
   local galid="$1"
-  local slurm_file="${RUN_DIR}/${galid}_v3tk_v7.6.8_setonix.slurm"
+  local slurm_file="${RUN_DIR}/${galid}_v3tk_v7.6.8${RUN_SUFFIX}_setonix.slurm"
 
   awk -F= '/^#SBATCH --time=/ {print $2; exit}' "$slurm_file" 2>/dev/null
 }
@@ -204,7 +209,7 @@ append_warning_text() {
 classify_status() {
   local galid="$1"
   local product_log="${PRODUCT_BASE}/${galid}/LOGFILE"
-  local run_log="${RUN_DIR}/${galid}_v3tk_v7.6.8.log"
+  local run_log="${RUN_DIR}/${galid}_v3tk_v7.6.8${RUN_SUFFIX}.log"
   local state
 
   if contains_completion "$product_log"; then
@@ -509,11 +514,14 @@ remaining_module_estimates() {
 
 {
 FINISHED_LOGS=()
-for galid in "${GALIDS[@]}"; do
-  product_log="${PRODUCT_BASE}/${galid}/LOGFILE"
-  if contains_completion "$product_log"; then
-    FINISHED_LOGS+=("$product_log")
-  fi
+for run_variant in "${RUN_VARIANTS[@]}"; do
+  IFS='|' read -r RUN_LABEL RUN_SUFFIX PRODUCT_BASE <<< "$run_variant"
+  for galid in "${GALIDS[@]}"; do
+    product_log="${PRODUCT_BASE}/${galid}/LOGFILE"
+    if contains_completion "$product_log"; then
+      FINISHED_LOGS+=("$product_log")
+    fi
+  done
 done
 
 finished_count=0
@@ -527,99 +535,104 @@ long_queue_warning_list=()
 echo "nGIST v7.6.8 batch status"
 echo "Generated: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 echo "Run directory: ${RUN_DIR}"
-echo "Product directory: ${PRODUCT_BASE}"
+echo "Product directories:"
+echo "  regular: ${PRODUCT_BASE_REGULAR}"
+echo "  7000: ${PRODUCT_BASE_7000}"
 echo "Status log: ${RUN_DIR}/${STATUS_LOG}"
 echo
 
-printf "%-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
-  "GALID" "STATUS" "SQUEUE" "LAST_TIME" "SPECTRA" "BINS" "GAS_WORK" "EST_REMAIN" "STAGE_OR_ACTION"
-printf "%-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
-  "------------" "-----------------" "----------------------------------" "-----------------" "---------" "--------" "----------" "--------------" "----------------"
+printf "%-8s %-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
+  "RUN" "GALID" "STATUS" "SQUEUE" "LAST_TIME" "SPECTRA" "BINS" "GAS_WORK" "EST_REMAIN" "STAGE_OR_ACTION"
+printf "%-8s %-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
+  "--------" "------------" "-----------------" "----------------------------------" "-----------------" "---------" "--------" "----------" "--------------" "----------------"
 
-for galid in "${GALIDS[@]}"; do
-  product_log="${PRODUCT_BASE}/${galid}/LOGFILE"
-  config_file="${PRODUCT_BASE}/${galid}/CONFIG"
-  run_log="${RUN_DIR}/${galid}_v3tk_v7.6.8.log"
-  status="$(classify_status "$galid")"
-  state="$(job_state "$galid")"
-  stage="$(stage_label "$product_log")"
-  spectra="$(extract_spectra_count "$product_log")"
-  bins="$(extract_bin_count "$product_log")"
-  gas_work="$(extract_gas_work_units "$product_log")"
-  last_ts="$(last_timestamp_for_pattern "$product_log" ".*")"
-  estimate="NA"
-  estimate_seconds=""
-  action="$stage"
-  warning_text=""
-  repeated_module="$(repeated_unfinished_module_label "$product_log")"
-  remaining_info="$(remaining_module_estimates "$galid" "$product_log" "$config_file")"
-  remaining_total_seconds=""
-  remaining_breakdown=""
-  remaining_over_limit=0
+for run_variant in "${RUN_VARIANTS[@]}"; do
+  IFS='|' read -r RUN_LABEL RUN_SUFFIX PRODUCT_BASE <<< "$run_variant"
+  for galid in "${GALIDS[@]}"; do
+    product_log="${PRODUCT_BASE}/${galid}/LOGFILE"
+    config_file="${PRODUCT_BASE}/${galid}/CONFIG"
+    run_log="${RUN_DIR}/${galid}_v3tk_v7.6.8${RUN_SUFFIX}.log"
+    status="$(classify_status "$galid")"
+    state="$(job_state "$galid")"
+    stage="$(stage_label "$product_log")"
+    spectra="$(extract_spectra_count "$product_log")"
+    bins="$(extract_bin_count "$product_log")"
+    gas_work="$(extract_gas_work_units "$product_log")"
+    last_ts="$(last_timestamp_for_pattern "$product_log" ".*")"
+    estimate="NA"
+    estimate_seconds=""
+    action="$stage"
+    warning_text=""
+    repeated_module="$(repeated_unfinished_module_label "$product_log")"
+    remaining_info="$(remaining_module_estimates "$galid" "$product_log" "$config_file")"
+    remaining_total_seconds=""
+    remaining_breakdown=""
+    remaining_over_limit=0
 
-  if [[ -n "$remaining_info" ]]; then
-    IFS='|' read -r remaining_total_seconds remaining_breakdown remaining_over_limit <<< "$remaining_info"
-    if [[ "$remaining_total_seconds" =~ ^[0-9]+$ ]]; then
-      estimate_seconds="$remaining_total_seconds"
-      estimate="$(format_seconds "$estimate_seconds")"
-    fi
-  fi
-
-  [[ -z "$state" ]] && state="-"
-  [[ -z "$spectra" ]] && spectra="-"
-  [[ -z "$bins" ]] && bins="-"
-  [[ -z "$gas_work" ]] && gas_work="-"
-  [[ -z "$last_ts" ]] && last_ts="-"
-
-  case "$status" in
-    FINISHED)
-      finished_count=$((finished_count + 1))
-      action="done"
-      ;;
-    RUNNING|RUNNING_EMPTY_LOG)
-      running_count=$((running_count + 1))
-      if [[ "$status" == "RUNNING_EMPTY_LOG" ]]; then
-        action="not complete; run log is empty, likely still running or just started"
-      else
-        action="not complete; still in scheduler"
+    if [[ -n "$remaining_info" ]]; then
+      IFS='|' read -r remaining_total_seconds remaining_breakdown remaining_over_limit <<< "$remaining_info"
+      if [[ "$remaining_total_seconds" =~ ^[0-9]+$ ]]; then
+        estimate_seconds="$remaining_total_seconds"
+        estimate="$(format_seconds "$estimate_seconds")"
       fi
-      ;;
-    TIMEOUT_RESBATCH)
-      timeout_count=$((timeout_count + 1))
-      resbatch_list+=("$galid")
-      action="timeout; resubmit with sbatch ${galid}_v3tk_v7.6.8_setonix.slurm; latest stage: ${stage}"
-      ;;
-    MISSING_LOGS)
-      missing_count=$((missing_count + 1))
-      action="missing product LOGFILE and run log context"
-      ;;
-    *)
-      unknown_count=$((unknown_count + 1))
-      action="not complete; inspect product LOGFILE and ${run_log}"
-      ;;
-  esac
+    fi
 
-  if [[ -n "$remaining_breakdown" && "$status" != "FINISHED" ]]; then
-    action="${action}; remaining active modules: ${remaining_breakdown}"
-  fi
+    [[ -z "$state" ]] && state="-"
+    [[ -z "$spectra" ]] && spectra="-"
+    [[ -z "$bins" ]] && bins="-"
+    [[ -z "$gas_work" ]] && gas_work="-"
+    [[ -z "$last_ts" ]] && last_ts="-"
 
-  if [[ -n "$repeated_module" ]]; then
-    warning_text="$(queue_warning_message "$galid" "repeated unfinished ${repeated_module} module")"
-  fi
+    case "$status" in
+      FINISHED)
+        finished_count=$((finished_count + 1))
+        action="done"
+        ;;
+      RUNNING|RUNNING_EMPTY_LOG)
+        running_count=$((running_count + 1))
+        if [[ "$status" == "RUNNING_EMPTY_LOG" ]]; then
+          action="not complete; run log is empty, likely still running or just started"
+        else
+          action="not complete; still in scheduler"
+        fi
+        ;;
+      TIMEOUT_RESBATCH)
+        timeout_count=$((timeout_count + 1))
+        resbatch_list+=("${galid}|${RUN_SUFFIX}")
+        action="timeout; resubmit with sbatch ${galid}_v3tk_v7.6.8${RUN_SUFFIX}_setonix.slurm; latest stage: ${stage}"
+        ;;
+      MISSING_LOGS)
+        missing_count=$((missing_count + 1))
+        action="missing product LOGFILE and run log context"
+        ;;
+      *)
+        unknown_count=$((unknown_count + 1))
+        action="not complete; inspect product LOGFILE and ${run_log}"
+        ;;
+    esac
 
-  if [[ "$remaining_over_limit" == "1" ]]; then
-    warning_text="$(append_warning_text "$warning_text" "$(queue_warning_message "$galid" "at least one remaining module estimate > 22h")")"
-  elif [[ "$estimate_seconds" =~ ^[0-9]+$ ]] && (( estimate_seconds > LONG_QUEUE_ESTIMATE_WARNING_SECONDS )); then
-    warning_text="$(append_warning_text "$warning_text" "$(queue_warning_message "$galid" "EST_REMAIN > 22h")")"
-  fi
+    if [[ -n "$remaining_breakdown" && "$status" != "FINISHED" ]]; then
+      action="${action}; remaining active modules: ${remaining_breakdown}"
+    fi
 
-  if [[ -n "$warning_text" ]]; then
-    action="${action}; ${warning_text}"
-    long_queue_warning_list+=("${galid}: ${warning_text}")
-  fi
+    if [[ -n "$repeated_module" ]]; then
+      warning_text="$(queue_warning_message "$galid" "repeated unfinished ${repeated_module} module")"
+    fi
 
-  printf "%-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
-    "$galid" "$status" "$state" "$last_ts" "$spectra" "$bins" "$gas_work" "$estimate" "$action"
+    if [[ "$remaining_over_limit" == "1" ]]; then
+      warning_text="$(append_warning_text "$warning_text" "$(queue_warning_message "$galid" "at least one remaining module estimate > 22h")")"
+    elif [[ "$estimate_seconds" =~ ^[0-9]+$ ]] && (( estimate_seconds > LONG_QUEUE_ESTIMATE_WARNING_SECONDS )); then
+      warning_text="$(append_warning_text "$warning_text" "$(queue_warning_message "$galid" "EST_REMAIN > 22h")")"
+    fi
+
+    if [[ -n "$warning_text" ]]; then
+      action="${action}; ${warning_text}"
+      long_queue_warning_list+=("${RUN_LABEL} ${galid}: ${warning_text}")
+    fi
+
+    printf "%-8s %-12s %-17s %-34s %-17s %-9s %-8s %-10s %-14s %s\n" \
+      "$RUN_LABEL" "$galid" "$status" "$state" "$last_ts" "$spectra" "$bins" "$gas_work" "$estimate" "$action"
+  done
 done
 
 echo
@@ -633,8 +646,9 @@ echo "  Missing logs: ${missing_count}"
 if (( timeout_count > 0 )); then
   echo
   echo "Resubmit commands for timeout jobs"
-  for galid in "${resbatch_list[@]}"; do
-    echo "  sbatch ${galid}_v3tk_v7.6.8_setonix.slurm"
+  for resbatch_item in "${resbatch_list[@]}"; do
+    IFS='|' read -r galid run_suffix <<< "$resbatch_item"
+    echo "  sbatch ${galid}_v3tk_v7.6.8${run_suffix}_setonix.slurm"
   done
 fi
 

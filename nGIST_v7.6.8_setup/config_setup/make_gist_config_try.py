@@ -22,6 +22,7 @@ import yaml
 ### This is the only file where modifications of set-up should be made.
 ### If you change the file, please make sure you change its name to reflect any changes you made
 master_config = "MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+master_config_7000 = "MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml"
 ##
 ### MAUVE sample info file containing values of redshift, ebv and sigma to use
 ### Supports either a real FITS file or a text pointer to a FITS file path.
@@ -36,6 +37,11 @@ cube_centers_file = "cube_centers_v3tk.csv"
 combined_setup_ids = {
     "NGC4567_8": ("NGC4567", "NGC4568"),
 }
+split_combined_ids = {
+    "NGC4567": "NGC4567_8",
+    "NGC4568": "NGC4567_8",
+}
+galaxy_cube_ids = {}
 ##
 # MUSE cube subscripts
 cube_sub = "_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits"
@@ -52,6 +58,9 @@ phangs_ao_read_data_method = "MUSE_WFMAON"
 pathcube = os.environ.get("MAUVE_CUBE_DIR", "/scratch/pawsey1308/mauve/cubes/v3tk/")
 pathproducts = os.environ.get(
     "MAUVE_PRODUCTS_DIR", "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/"
+)
+pathproducts_7000 = os.environ.get(
+    "MAUVE_PRODUCTS_7000_DIR", "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/"
 )
 
 ##
@@ -112,12 +121,30 @@ def normalize_dir(path):
 
 pathcube = normalize_dir(pathcube)
 pathproducts = normalize_dir(pathproducts)
+pathproducts_7000 = normalize_dir(pathproducts_7000)
+
+config_variants = (
+    {
+        "master_config": master_config,
+        "output_dir": pathproducts,
+        "run_suffix": "",
+    },
+    {
+        "master_config": master_config_7000,
+        "output_dir": pathproducts_7000,
+        "run_suffix": "_7000",
+    },
+)
 
 
 def cube_filename_for_galid(galaxy_id):
     if galaxy_id in phangs_native_galids:
         return galaxy_id + phangs_native_cube_sub
     return galaxy_id + cube_sub
+
+
+def cube_galid_for(galaxy_id):
+    return galaxy_cube_ids.get(galaxy_id, galaxy_id)
 
 
 def cube_path_for_galid(galaxy_id):
@@ -205,14 +232,22 @@ def get_setup_mask(sample_data, galaxy_id):
 ###
 ### gets galaxy name when lanching
 galid = setup["galid"]
-cube_input_path = cube_path_for_galid(galid)
+if galid in split_combined_ids:
+    print("--ERROR--")
+    print(
+        galid,
+        "is part of the combined cube/run",
+        split_combined_ids[galid],
+        ". Please generate",
+        split_combined_ids[galid],
+        "instead.",
+    )
+    sys.exit(1)
 
-###################################
-### read MasterConfig YAML file
-###################################
-with open(master_config, "r") as f:
-    configfile = yaml.safe_load(f)
-
+cube_galid = cube_galid_for(galid)
+cube_input_path = cube_path_for_galid(cube_galid)
+if cube_galid != galid:
+    print(f"Using cube ID {cube_galid} for galaxy {galid}")
 
 ######################################
 ### read MAUVE GIST set-up input file
@@ -224,10 +259,10 @@ mauve_sample = fits.open(mauve_info_resolved)
 if setup["center"] is None:
     try:
         centers_csv_resolved = resolve_cube_centers_file(cube_centers_file)
-        setup["center"] = get_center_from_csv(galid, centers_csv_resolved)
+        setup["center"] = get_center_from_csv(cube_galid, centers_csv_resolved)
         print(f"Using center from CSV: {setup['center']} ({centers_csv_resolved})")
     except (FileNotFoundError, ValueError) as exc:
-        setup["center"] = get_center_from_cube(galid, cube_input_path)
+        setup["center"] = get_center_from_cube(cube_galid, cube_input_path)
         print(f"Using center from cube midpoint: {setup['center']} ({cube_input_path})")
         print(f"Center CSV fallback reason: {exc}")
 else:
@@ -244,7 +279,7 @@ if not np.any(setup_mask):
         galid,
         ". Please check that you have entered the correct galaxy id",
     )
-    sys.exit()
+    sys.exit(1)
 
 z = mauve_sample[1].data["z"][setup_mask]
 ebv = mauve_sample[1].data["EBV"][setup_mask]
@@ -266,25 +301,33 @@ print(f"  z={z_value:.6f}, EBV={ebv_value:.6f}, sigma={sigma_value:.1f}")
 ### Modify the YAML config file
 ######################################
 
-configfile["GENERAL"]["RUN_ID"] = galid
-configfile["GENERAL"]["INPUT"] = cube_input_path
-configfile["GENERAL"]["OUTPUT"] = pathproducts
-configfile["GENERAL"]["REDSHIFT"] = round(z_value, 6)
-configfile["GENERAL"]["NCPU"] = int(setup["cpu"])
+for config_variant in config_variants:
+    variant_master_config = config_variant["master_config"]
 
-configfile["READ_DATA"]["ORIGIN"] = setup["center"]
-configfile["READ_DATA"]["EBmV"] = round(ebv_value, 6)
+    ###################################
+    ### read MasterConfig YAML file
+    ###################################
+    with open(variant_master_config, "r") as f:
+        configfile = yaml.safe_load(f)
 
-configfile["SPATIAL_MASKING"]["MASK"] = galid + "_mask.fits"
+    configfile["GENERAL"]["RUN_ID"] = galid
+    configfile["GENERAL"]["INPUT"] = cube_input_path
+    configfile["GENERAL"]["OUTPUT"] = config_variant["output_dir"]
+    configfile["GENERAL"]["REDSHIFT"] = round(z_value, 6)
+    configfile["GENERAL"]["NCPU"] = int(setup["cpu"])
 
-use_phangs_ao_masks(configfile, galid)
+    configfile["READ_DATA"]["ORIGIN"] = setup["center"]
+    configfile["READ_DATA"]["EBmV"] = round(ebv_value, 6)
 
-configfile["KIN"]["SIGMA"] = int(round(sigma_value))
+    configfile["SPATIAL_MASKING"]["MASK"] = cube_galid + "_mask.fits"
 
-configfile["CONT"]["SIGMA"] = int(round(sigma_value))
+    use_phangs_ao_masks(configfile, cube_galid)
 
+    configfile["KIN"]["SIGMA"] = int(round(sigma_value))
 
-### write output
-outname = galid + "_" + master_config
-with open(outname, "w") as outfile:
-    yaml.dump(configfile, outfile, default_flow_style=False, sort_keys=False)
+    configfile["CONT"]["SIGMA"] = int(round(sigma_value))
+
+    ### write output
+    outname = galid + "_" + variant_master_config
+    with open(outname, "w") as outfile:
+        yaml.dump(configfile, outfile, default_flow_style=False, sort_keys=False)

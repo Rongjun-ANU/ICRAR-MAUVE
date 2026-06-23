@@ -16,9 +16,12 @@ version-controlled place.
 ```text
 config_setup/
   MAUVE_MasterConfig_v7.6.8_setonix.yaml       # master nGIST/GIST config
+  MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml  # 4800-7000 A master nGIST/GIST config
+  emissionLines_ppxf_7000.config               # emission-line setup for 7000 A runs
   make_gist_config_try.py                      # actual generator to run
   make_gist_config.py                          # older/reference generator
   v3tk_v7.6.8_setonix.slurm                    # slurm template with GALID placeholder
+  v3tk_v7.6.8_7000_setonix.slurm               # slurm template for 7000 A runs
   27_galaxies.sh                               # shared cube-ID list and argument filtering
   27_creation.sh                               # create all/selected YAMLs and slurm scripts
   27_send.sh                                   # send all/selected generated files to Setonix
@@ -29,6 +32,7 @@ config_setup/
   GIST_setupinput_v1.fits                      # pointer to setup FITS table
   cube_centers_v3tk.csv                        # cube centers for v3tk cubes
   *_MAUVE_MasterConfig_v7.6.8_setonix.yaml     # generated galaxy configs
+  *_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml # generated 7000 A galaxy configs
   input_tables/                                # MAUVE input tables and redshifts
   old/                                         # older config/script versions
 
@@ -48,6 +52,12 @@ The active master config is:
 config_setup/MAUVE_MasterConfig_v7.6.8_setonix.yaml
 ```
 
+The paired 4800-7000 A master config is:
+
+```text
+config_setup/MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml
+```
+
 Important current settings include:
 
 - Wavelength range: `4800-8900 Angstrom`
@@ -62,8 +72,14 @@ Important current settings include:
 - Gas fitting level: `BOTH`
 - Setonix cube path: `/scratch/pawsey1308/mauve/cubes/v3tk/`
 - Setonix product path: `/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/`
+- Setonix 7000 A product path:
+  `/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/`
 - PHANGS-native public cube source:
   `vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/`
+
+The 7000 A master config uses `LMAX_TOT`, `LMAX_SNR`, `KIN.LMAX`,
+`CONT.LMAX`, `GAS.LMAX`, and `SFH.LMAX` of `7000`, and its gas module points
+to `emissionLines_ppxf_7000.config`.
 
 ## Creating a galaxy YAML file
 
@@ -78,6 +94,7 @@ This creates:
 
 ```text
 IC3392_MAUVE_MasterConfig_v7.6.8_setonix.yaml
+IC3392_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml
 ```
 
 The script fills galaxy-specific values from the setup input table:
@@ -99,10 +116,10 @@ Manual center override:
 python make_gist_config_try.py IC3392 -cpu 128 -center 219,219
 ```
 
-For local validation only, the generator also accepts `MAUVE_CUBE_DIR` and
-`MAUVE_PRODUCTS_DIR` environment overrides. Production Setonix configs should
-use the default scratch/product paths unless there is a deliberate run-location
-change.
+For local validation only, the generator also accepts `MAUVE_CUBE_DIR`,
+`MAUVE_PRODUCTS_DIR`, and `MAUVE_PRODUCTS_7000_DIR` environment overrides.
+Production Setonix configs should use the default scratch/product paths unless
+there is a deliberate run-location change.
 
 ## Staging input cubes to Setonix scratch
 
@@ -215,8 +232,8 @@ one worker overlay, not five.
 ## Creating the Setonix batch
 
 The `27_*.sh` script family keeps its historical name, but the current selectable
-MAUVE batch uses the 40 target galaxy IDs listed in `config_setup/27_galaxies.sh`.
-`NGC4567` and `NGC4568` are now selectable separately in the batch allowlist.
+MAUVE batch uses the target galaxy IDs listed in `config_setup/27_galaxies.sh`.
+`NGC4567` and `NGC4568` are generated as one combined run ID, `NGC4567_8`.
 
 From inside `config_setup`, run:
 
@@ -224,8 +241,12 @@ From inside `config_setup`, run:
 ./27_creation.sh
 ```
 
-With no galaxy arguments, this processes all 40 target galaxy IDs. To regenerate
-only selected galaxy IDs, pass them as positional arguments:
+With no galaxy arguments, `27_creation.sh` starts from the target galaxy IDs in
+`27_galaxies.sh`, then processes only those whose cube ID is present in both
+`cube_centers_v3tk.csv` and `cube_sizes_v3tk.csv`. Any selected or default
+galaxy ID whose cube row is missing from either CSV is skipped with a screen
+warning. To regenerate only selected galaxy IDs, pass them as positional
+arguments:
 
 ```bash
 ./27_creation.sh NGC4383 NGC4419
@@ -239,17 +260,30 @@ This runs the active generator once per galaxy ID, for example:
 ./make_gist_config_try.py NGC4450
 ```
 
+`27_creation.sh` calls the generator through `PYTHON` if that environment
+variable is set, otherwise it uses `/opt/miniconda3/envs/ICRAR/bin/python` when
+available. This avoids depending on a bare `python` executable in the shell
+`PATH`.
+
 For each galaxy ID, it creates:
 
 ```text
 {GALID}_MAUVE_MasterConfig_v7.6.8_setonix.yaml
+{GALID}_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml
 {GALID}_v3tk_v7.6.8_setonix.slurm
+{GALID}_v3tk_v7.6.8_7000_setonix.slurm
 ```
 
-The slurm scripts are copied from `v3tk_v7.6.8_setonix.slurm` by replacing the
-literal `GALID` placeholder with the current galaxy ID.
+The slurm scripts are copied from `v3tk_v7.6.8_setonix.slurm` and
+`v3tk_v7.6.8_7000_setonix.slurm` by replacing the literal `GALID` placeholder
+with the current galaxy ID.
 
-The default `work` script requests:
+The generated slurm scripts keep the scheduler settings from those templates.
+To change partition, memory, walltime, mail settings, output logs, or the run
+command for newly generated scripts, edit the template first and rerun
+`27_creation.sh`.
+
+The current templates request:
 
 ```text
 #SBATCH --partition=work
@@ -258,56 +292,7 @@ The default `work` script requests:
 #SBATCH --time=24:00:00
 ```
 
-Large, multi-pointing galaxies are special-cased for Setonix `highmem` instead
-of `work`:
-
-```text
-#SBATCH --partition=highmem
-#SBATCH --cpus-per-task=128
-#SBATCH --mem=980G
-#SBATCH --time=96:00:00
-```
-
-The current `highmem` queue list is:
-
-```text
-NGC4192
-NGC4254
-NGC4321
-NGC4501
-NGC4535
-NGC4569
-```
-
-Several galaxies reached the gas module more than once without completing it
-within the normal 24-hour `work` walltime. Their generated slurm scripts are
-special-cased for Setonix `long`:
-
-```text
-#SBATCH --partition=long
-#SBATCH --cpus-per-task=128
-#SBATCH --mem=230G
-#SBATCH --time=96:00:00
-```
-
-The current `long` queue list is:
-
-```text
-NGC4293
-NGC4298
-NGC4302
-NGC4330
-NGC4383
-NGC4396
-NGC4419
-NGC4457
-NGC4698
-```
-
-`NGC4580` is intentionally not in this list: its second run completed the gas
-module and advanced to the SFH module, so the next restart should skip gas.
-
-The 40 target galaxy IDs are:
+The 39 generated run IDs are:
 
 ```text
 NGC4064
@@ -339,8 +324,7 @@ NGC4501
 NGC4522
 NGC4535
 NGC4548
-NGC4567
-NGC4568
+NGC4567_8
 NGC4569
 NGC4579
 NGC4580
@@ -357,7 +341,7 @@ The origin normally comes from `cube_centers_v3tk.csv`. If the selected galaxy
 has no center row and its cube already exists under the configured cube path,
 the script falls back to the cube midpoint; otherwise pass `-center x,y` or add
 a verified center row before generating its YAML. The current center/size CSVs
-may lag the 40-ID allowlist because they are snapshots of staged cubes.
+may lag the 39-ID allowlist because they are snapshots of staged cubes.
 
 On Setonix, regenerate the cube-center and cube-size CSV snapshots from the
 staged scratch cube directory with:
@@ -412,11 +396,18 @@ With an explicit host, put the host before the galaxy IDs:
 
 The send script copies:
 
-- The selected generated YAML files, all 40 by default, to
+- The selected generated YAML files for both regular and 7000 A runs, all 39
+  run IDs by default, to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/`
-- The selected generated slurm scripts, all 40 by default, plus
+- The selected generated slurm scripts for both regular and 7000 A runs, all 39
+  run IDs by default, plus
   `27_galaxies.sh`, `27_setonix.sh`, and `27_status.sh` to
   `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/`
+
+If a selected/default run ID is missing any required generated YAML or slurm
+file, `27_send.sh` prints a warning and skips that run ID instead of stopping
+the whole transfer. If none of the selected run IDs have complete generated file
+pairs, it exits without contacting Setonix.
 
 It uses `tar` streamed through `ssh`, not `scp`, because Setonix prints a login
 notice that can break the `scp`/SFTP protocol in non-interactive sessions. The
@@ -439,11 +430,16 @@ That script sequentially runs:
 
 ```bash
 sbatch {GALID}_v3tk_v7.6.8_setonix.slurm
+sbatch {GALID}_v3tk_v7.6.8_7000_setonix.slurm
 ```
 
-for the selected galaxy IDs, or all 40 target galaxy IDs by default. The
+for the selected run IDs, or all 39 run IDs by default. The
 `sbatch` commands are issued one by one, but the jobs can then run together
 according to the Setonix scheduler.
+
+If a selected/default run ID is missing either generated slurm file,
+`27_setonix.sh` prints a warning and skips that run ID. If none of the selected
+run IDs have complete generated slurm pairs, it exits without submitting jobs.
 
 To check job completion and timeout status on Setonix, run from the same
 tutorial directory:
@@ -458,10 +454,12 @@ To check only selected cube IDs:
 ./27_status.sh NGC4383 NGC4419
 ```
 
-The status script reads each product `LOGFILE` under:
+The status script reports one row per galaxy per run variant. It reads product
+`LOGFILE`s under:
 
 ```text
 /scratch/pawsey1308/mauve/products/v3tk_v7.6.8/{GALID}/LOGFILE
+/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/{GALID}/LOGFILE
 ```
 
 Finished jobs are identified by:
@@ -475,6 +473,7 @@ example:
 
 ```text
 NGC4383_v3tk_v7.6.8.log
+NGC4383_v3tk_v7.6.8_7000.log
 ```
 
 If the run log contains `DUE TO TIME LIMIT`, the status is reported as
@@ -519,9 +518,10 @@ The status script also prints `long` queue warnings when either:
 - the summed `EST_REMAIN` is longer than 22 hours, leaving too little margin for
   the 24-hour `work` walltime.
 
-The warning text reads the local `{GALID}_v3tk_v7.6.8_setonix.slurm` file. If
-the job is still on `work`, it recommends switching to `long`; if it is already
-on `long` or `highmem`, it warns not to resubmit that galaxy on `work`.
+The warning text reads the local `{GALID}_v3tk_v7.6.8*_setonix.slurm` file for
+the matching run variant. If the job is still on `work`, it recommends switching
+to `long`; if it is already on `long` or `highmem`, it warns not to resubmit
+that galaxy on `work`.
 
 ## QC PDF script
 
@@ -674,10 +674,9 @@ important conveniences compared with the older `make_gist_config.py`:
 - If `-center` is not supplied, it reads the cube center from
   `cube_centers_v3tk.csv`, then falls back to a local staged cube midpoint when
   the CSV has no row for the selected galaxy.
-- It still handles the historical combined `NGC4567_8` cube if that ID is run
-  manually, whose cube-center row is combined but whose setup-table rows are
-  still listed separately as `NGC4567` and `NGC4568`. The default 40-ID batch
-  allowlist now selects `NGC4567` and `NGC4568` separately.
+- For `NGC4567_8`, it generates one combined run using the shared cube row for
+  the input cube, cube center, and spatial mask, while averaging the setup-table
+  `NGC4567` and `NGC4568` redshift, EBV, and sigma values.
 - It uses the fixed PHANGS-native local scratch cube filenames for `NGC4254`,
   `NGC4321`, and `NGC4535`, for example
   `/scratch/pawsey1308/mauve/cubes/v3tk/NGC4254_PHANGS_DATACUBE_native_fixed.fits`.
@@ -691,10 +690,6 @@ important conveniences compared with the older `make_gist_config.py`:
 The original `make_gist_config.py` remains in the repository as a reference to
 the older workflow.
 
-For manual `NGC4567_8` runs, the generated config keeps `NGC4567_8` as the
-`RUN_ID`, input cube name, and mask name. The script uses the mean `z`, `EBmV`,
-and initial `SIGMA` from the separate `NGC4567` and `NGC4568` setup-table rows.
-
 ## Current generated configs
 
 The repository currently includes generated v7.6.8 Setonix configs for:
@@ -705,7 +700,6 @@ The repository currently includes generated v7.6.8 Setonix configs for:
 - `NGC4419`
 - `NGC4450`
 - `NGC4501`
-- `NGC4567_8`
 - `NGC4698`
 
 ## Required Python packages
