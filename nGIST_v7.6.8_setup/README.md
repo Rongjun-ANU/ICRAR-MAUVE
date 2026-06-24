@@ -426,20 +426,26 @@ To submit only selected galaxy IDs:
 ./27_setonix.sh NGC4383 NGC4419
 ```
 
-That script sequentially runs:
+With no run mode, the script submits both the normal and 7000 A jobs. To submit
+only one run type, add `normal` or `7000` as the final argument:
 
 ```bash
-sbatch {GALID}_v3tk_v7.6.8_setonix.slurm
-sbatch {GALID}_v3tk_v7.6.8_7000_setonix.slurm
+./27_setonix.sh NGC4064 normal
+./27_setonix.sh NGC4064 7000
+./27_setonix.sh NGC4383 NGC4419 normal
 ```
 
-for the selected run IDs, or all 39 run IDs by default. The
-`sbatch` commands are issued one by one, but the jobs can then run together
-according to the Setonix scheduler.
+The first command submits only
+`NGC4064_v3tk_v7.6.8_setonix.slurm`; the second submits only
+`NGC4064_v3tk_v7.6.8_7000_setonix.slurm`; and the third submits only the normal
+runs for both selected galaxies. With no galaxy arguments, all 39 run IDs are
+selected. The `sbatch` commands are issued one by one, but the jobs can then run
+together according to the Setonix scheduler.
 
-If a selected/default run ID is missing either generated slurm file,
-`27_setonix.sh` prints a warning and skips that run ID. If none of the selected
-run IDs have complete generated slurm pairs, it exits without submitting jobs.
+If a selected/default run ID is missing a slurm file required by the chosen
+mode, `27_setonix.sh` prints a warning and skips that run ID. If none of the
+selected run IDs have the required generated slurm files, it exits without
+submitting jobs. An unknown run mode exits with a usage message.
 
 To check job completion and timeout status on Setonix, run from the same
 tutorial directory:

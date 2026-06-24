@@ -11,6 +11,27 @@ SLURM_TEMPLATES=(
   "v3tk_v7.6.8_setonix.slurm"
   "v3tk_v7.6.8_7000_setonix.slurm"
 )
+LONG_GALIDS=(
+  NGC4293
+  NGC4298
+  NGC4302
+  NGC4383
+  NGC4419
+  NGC4457
+)
+HIGHMEM_GALIDS=(
+  NGC4192
+  NGC4254
+  NGC4321
+  NGC4330
+  NGC4380
+  NGC4396
+  NGC4501
+  NGC4535
+  NGC4567_8
+  NGC4569
+  NGC4698
+)
 CUBE_CENTERS_CSV="cube_centers_v3tk.csv"
 CUBE_SIZES_CSV="cube_sizes_v3tk.csv"
 DEFAULT_ICRAR_PYTHON="/opt/miniconda3/envs/ICRAR/bin/python"
@@ -31,6 +52,20 @@ fi
 cube_galid_for() {
   local galid="$1"
   echo "$galid"
+}
+
+galid_is_in_list() {
+  local candidate="$1"
+  shift
+  local galid
+
+  for galid in "$@"; do
+    if [[ "$candidate" == "$galid" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
 }
 
 galid_has_csv_row() {
@@ -109,6 +144,26 @@ for galid in "${GALIDS[@]}"; do
     slurm_out="${galid}_${slurm_template}"
     echo "Creating slurm script ${slurm_out}"
     sed "s/GALID/${galid}/g" "$slurm_template" > "$slurm_out"
+
+    if galid_is_in_list "$galid" "${HIGHMEM_GALIDS[@]}"; then
+      echo "Updating ${slurm_out} for Setonix highmem queue"
+      tmp_slurm="${slurm_out}.tmp"
+      sed \
+        -e 's/^#SBATCH --partition=work$/#SBATCH --partition=highmem/' \
+        -e 's/^#SBATCH --mem=230G$/#SBATCH --mem=980G/' \
+        -e 's/^#SBATCH --time=24:00:00$/#SBATCH --time=96:00:00/' \
+        "$slurm_out" > "$tmp_slurm"
+      mv "$tmp_slurm" "$slurm_out"
+    elif galid_is_in_list "$galid" "${LONG_GALIDS[@]}"; then
+      echo "Updating ${slurm_out} for Setonix long queue"
+      tmp_slurm="${slurm_out}.tmp"
+      sed \
+        -e 's/^#SBATCH --partition=work$/#SBATCH --partition=long/' \
+        -e 's/^#SBATCH --time=24:00:00$/#SBATCH --time=96:00:00/' \
+        "$slurm_out" > "$tmp_slurm"
+      mv "$tmp_slurm" "$slurm_out"
+    fi
+
     chmod +x "$slurm_out"
   done
 done
