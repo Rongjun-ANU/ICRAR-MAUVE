@@ -3,13 +3,16 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 qc_py="${script_dir}/QC_ngist_v3tk_v768.py"
-product_root="${1:-$PWD}"
+version="v3tk_v7.6.8"
+priority_root="/arc/projects/mauve/products/${version}"
+fallback_root="${PWD}/${version}"
+product_root="${1:-$priority_root}"
 
-if ! find "$product_root" -mindepth 2 -maxdepth 2 -name '*_sfh_maps.fits' -print -quit | grep -q .; then
-    if [ -d "${product_root}/v3tk_v7.6.8" ]; then
-        product_root="${product_root}/v3tk_v7.6.8"
-    fi
+if [ ! -d "$product_root" ] && [ -d "$fallback_root" ]; then
+    product_root="$fallback_root"
 fi
+
+mkdir -p "${PWD}/QC"
 
 jobs="${JOBS:-${QC_JOBS:-}}"
 if [ -z "$jobs" ]; then

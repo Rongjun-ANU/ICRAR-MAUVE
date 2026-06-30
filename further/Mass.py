@@ -166,6 +166,12 @@ Changes (2026-06-13)
   PHANGS-native AO spectral gaps are skipped and the remaining Bessell-R
   support is renormalized instead of rejecting every spaxel.
 
+Changes (2026-06-29)
+-----------------------
+* Added `--product-subdir` so wrappers can run either `v3tk_v7.6.8` or
+  `v3tk_v7.6.8_7000` under the selected products root and write outputs back to
+  the matching run folder.
+
 """
 
 # ------------------------------------------------------------------
@@ -452,6 +458,11 @@ def parse_args() -> argparse.Namespace:
         help="Root directory containing v3tk_v7.6.8/{galaxy} products (default: current directory)"
     )
     p.add_argument(
+        "--product-subdir",
+        default="v3tk_v7.6.8",
+        help="Product subdirectory under --root, e.g. v3tk_v7.6.8 or v3tk_v7.6.8_7000",
+    )
+    p.add_argument(
         "--cube-root", default="/arc/projects/mauve/cubes/v3tk",
         help="Directory containing v3tk datacubes (default: /arc/projects/mauve/cubes/v3tk)"
     )
@@ -498,6 +509,7 @@ def parse_args() -> argparse.Namespace:
 args          = parse_args()
 galaxy        = args.galaxy.upper()   # ensure consistent capitalisation
 rootdir       = Path(args.root).expanduser().resolve()
+product_subdir = Path(args.product_subdir)
 cube_rootdir  = Path(args.cube_root).expanduser().resolve()
 phangs_cube_rootdir = (
     Path(args.phangs_cube_root).expanduser().resolve()
@@ -573,7 +585,7 @@ input_keyword, product_paths = resolve_keyworded_input_group(
     "stellar-population product FITS inputs",
     rootdir,
     fallback_root,
-    Path("v3tk_v7.6.8") / galaxy,
+    product_subdir / galaxy,
     galaxy,
     {
         "spatial binning FITS": bin_suffixes,
@@ -591,7 +603,7 @@ phot_path = resolve_existing_path(
     script_dir / "BaSTI+Chabrier.dat",
     script_dir.parent / "data" / "IC3392" / "BaSTI+Chabrier.dat",
 )
-out_path = build_further_output_path(bin_path)   # output in the galaxy product folder
+out_path = rootdir / product_subdir / galaxy / build_further_output_path(bin_path).name
 inclination_path = resolve_existing_path(
     "inclination table",
     Path("MAUVE_Inclination.dat"),
@@ -604,6 +616,7 @@ binning_path = bin_path
 
 print("\n=== Using the following files ===")
 print("Product root :", rootdir)
+print("Product subdir:", product_subdir)
 print("Cube root    :", cube_rootdir)
 if phangs_cube_rootdir is not None:
     print("PHANGS cube root:", phangs_cube_rootdir)

@@ -2,13 +2,21 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-qc_py="${script_dir}/QC_ngist_v3tk_v768.py"
-product_root="${1:-$PWD}"
+qc_py="${script_dir}/QC_ngist_v3tk_v768_7000.py"
+version="v3tk_v7.6.8_7000"
+priority_root="/arc/projects/mauve/products/${version}"
+fallback_root="${PWD}/${version}"
+product_root="${1:-$priority_root}"
 
-if ! find "$product_root" -mindepth 2 -maxdepth 2 -name '*_sfh_maps.fits' -print -quit | grep -q .; then
-    if [ -d "${product_root}/v3tk_v7.6.8_7000" ]; then
-        product_root="${product_root}/v3tk_v7.6.8_7000"
-    fi
+if [ ! -d "$product_root" ] && [ -d "$fallback_root" ]; then
+    product_root="$fallback_root"
+fi
+
+mkdir -p "${PWD}/QC"
+
+python_bin="/opt/miniconda3/envs/ICRAR/bin/python"
+if [ ! -x "$python_bin" ]; then
+    python_bin="/arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python"
 fi
 
 jobs="${JOBS:-${QC_JOBS:-}}"
@@ -19,4 +27,4 @@ fi
 find "$product_root" -mindepth 2 -maxdepth 2 -name '*_sfh_maps.fits' -print |
     sed -E 's#.*/([^/]+)/[^/]+_sfh_maps\.fits#\1#' |
     sort -u |
-    xargs -P "$jobs" -I {} /opt/miniconda3/envs/ICRAR/bin/python "$qc_py" {}
+    xargs -P "$jobs" -I {} "$python_bin" "$qc_py" {}

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 from matplotlib import pyplot as plt
 import numpy as np
@@ -49,9 +50,10 @@ def open_mass_product(data_folder, galaxyid):
 
 
 ##################################################
-data_folder='/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8_7000'
-# On Pawsey these products are stored in:
-# /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000
+version ='v3tk_v7.6.8_7000'
+priority_data_folder=f'/arc/projects/mauve/products/{version}'
+fallback_data_folder=os.path.join(os.getcwd(), version)
+data_folder=priority_data_folder if os.path.isdir(priority_data_folder) else fallback_data_folder
 galaxyid = 'IC3392'
 if len(sys.argv) > 1:
     galaxyid = sys.argv[1]
@@ -59,7 +61,6 @@ gas_bin_sub = '_gas_bin_maps'
 gas_spaxel_sub = '_gas_spaxel_maps'
 stars_sub ='_kin_maps'
 sfh_sub ='_sfh_maps'
-version ='v3tk_v7.6.8_7000'
 #################################################
 
 if __name__ == "__main__":
@@ -69,7 +70,9 @@ if __name__ == "__main__":
     sfh_bin_image = pyfits.open(data_folder+'/'+galaxyid+'/'+galaxyid+sfh_sub+'.fits')
     mass_bin_image = open_mass_product(data_folder, galaxyid)
 
-    out=galaxyid+'_'+version+'_QC.pdf'
+    output_folder=os.path.join(os.getcwd(), 'QC')
+    os.makedirs(output_folder, exist_ok=True)
+    out=os.path.join(output_folder, galaxyid+'_'+version+'_QC.pdf')
 
     id= ['HB4861_FLUX',
          'HB4861_FLUX_ERR',

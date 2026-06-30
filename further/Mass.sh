@@ -12,21 +12,27 @@
 #   - PHANGS-native VOS cubes are staged temporarily with vcp when no local
 #     copy exists, then removed after the Mass.py run. The default staging
 #     root is /scratch.
+#
+# Changes (2026-06-29):
+#   - Product runs are resolved from /arc/projects/mauve/products first, then
+#     ./projects/mauve/products, then the current working directory.
+#   - Supports normal/7000 run selectors and writes logs under the selected
+#     v3tk_v7.6.8 or v3tk_v7.6.8_7000 product folder.
+#   - Auto-discovery only queues IC/NGC galaxy folders that contain stellar
+#     population inputs for the selected run.
 
 set -euo pipefail
 
 # ──────────────────────────────────────────────────────────────
 # 1.  User-configurable variables
 # ──────────────────────────────────────────────────────────────
-ROOT_PRODUCT_BASE="$PWD"                 # Root containing v3tk_v7.6.8/{GAL} products
 ROOT_LOCAL="$PWD"                        # Local fallback root
 CUBE_ROOT="/arc/projects/mauve/cubes/v3tk"
 PHANGS_CUBE_ROOT="${PHANGS_CUBE_ROOT:-}"
 PHANGS_NATIVE_VOS_DIR="vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES"
 PHANGS_STAGING_ROOT="${PHANGS_STAGING_ROOT:-/scratch}"
 SCRIPT="Mass.py"                # Python script to call
-LOGDIR="mass_logs"              # Per-galaxy logs live here
-mkdir -p "$LOGDIR"
+LOG_PREFIX="mass"               # Per-run logs live under ${PRODUCT_SUBDIR}/${LOG_PREFIX}_logs
 
 EXTRA_ARGS=()
 if [[ "${MASS_DISABLE_STAT:-0}" == "1" ]]; then
@@ -69,40 +75,108 @@ if ! "$PYTHON_BIN" -c 'import numpy, astropy, scipy, matplotlib, speclite, ppxf'
   exit 1
 fi
 
-GALAXIES=(
-  "IC3392"
-  "NGC4064"
-  "NGC4189"
-  "NGC4192"
-  "NGC4254"
-  "NGC4293"
-  "NGC4294"
-  "NGC4298"
-  "NGC4302"
-  "NGC4321"
-  "NGC4330"
-  "NGC4351"
-  "NGC4383"
-  "NGC4388"
-  "NGC4394"
-  "NGC4396"
-  "NGC4402"
-  "NGC4405"
-  "NGC4419"
-  "NGC4450"
-  "NGC4457"
-  "NGC4501"
-  "NGC4522"
-  "NGC4535"
-  "NGC4567_8"
-  "NGC4580"
-  "NGC4606"
-  "NGC4607"
-  "NGC4694"
-  "NGC4698"
-)
+discover_product_parent() {
+  local candidates=(
+    "${PRODUCT_PARENT:-}"
+    "/arc/projects/mauve/products"
+    "$PWD/projects/mauve/products"
+    "$PWD"
+  )
+  local candidate
+  for candidate in "${candidates[@]}"; do
+    [[ -n "$candidate" && -d "$candidate" ]] && { printf '%s\n' "$candidate"; return; }
+  done
+  printf '%s\n' "$PWD"
+}
 
-[[ $# -gt 0 ]] && GALAXIES=("$@")   # override list from CLI
+run_subdir() {
+  case "$1" in
+    normal) printf '%s\n' "v3tk_v7.6.8" ;;
+    7000) printf '%s\n' "v3tk_v7.6.8_7000" ;;
+  esac
+}
+
+is_run_selector() {
+  case "$1" in
+    normal|7000) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_galaxy_dir_name() {
+  case "$1" in
+    IC[0-9]*|NGC[0-9]*) ;;
+    *) return 1 ;;
+  esac
+  case "$1" in
+    *[!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_]*|*_logs|*_log) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+has_mass_inputs() {
+  local gal_dir="$1"
+  local gal="$2"
+  local bin_ok=1 sfh_ok=1 weights_ok=1
+  [[ -f "$gal_dir/${gal}_SPATIAL_BINNING_maps.fits" || -f "$gal_dir/${gal}_SPATIAL_BINNING_maps.fits.gz" || \
+     -f "$gal_dir/${gal}_spatial_binning_maps.fits" || -f "$gal_dir/${gal}_spatial_binning_maps.fits.gz" ]] && bin_ok=0
+  [[ -f "$gal_dir/${gal}_SFH_maps.fits" || -f "$gal_dir/${gal}_SFH_maps.fits.gz" || \
+     -f "$gal_dir/${gal}_sfh_maps.fits" || -f "$gal_dir/${gal}_sfh_maps.fits.gz" ]] && sfh_ok=0
+  [[ -f "$gal_dir/${gal}_sfh-weights.fits" || -f "$gal_dir/${gal}_sfh-weights.fits.gz" || \
+     -f "$gal_dir/${gal}_sfh_weights.fits" || -f "$gal_dir/${gal}_sfh_weights.fits.gz" ]] && weights_ok=0
+  (( bin_ok == 0 && sfh_ok == 0 && weights_ok == 0 ))
+}
+
+run_root_for_subdir() {
+  local subdir="$1"
+  if [[ -d "$PRODUCT_PARENT/$subdir" ]]; then
+    printf '%s\n' "$PRODUCT_PARENT"
+  elif [[ -d "$PWD/$subdir" ]]; then
+    printf '%s\n' "$PWD"
+  else
+    printf '%s\n' "$PRODUCT_PARENT"
+  fi
+}
+
+discover_galaxies_for_run() {
+  local run_root="$1"
+  local subdir="$2"
+  local run_dir="$run_root/$subdir"
+  local dir gal
+  [[ -d "$run_dir" ]] || return 0
+  for dir in "$run_dir"/*; do
+    [[ -d "$dir" ]] || continue
+    gal="$(basename "$dir")"
+    is_galaxy_dir_name "$gal" && has_mass_inputs "$dir" "$gal" && printf '%s\n' "$gal"
+  done | sort
+}
+
+PRODUCT_PARENT="$(discover_product_parent)"
+RUN_LABELS=(normal 7000)
+GALAXY_ARGS=()
+if [[ $# -gt 0 ]]; then
+  if is_run_selector "$1"; then
+    RUN_LABELS=("$1")
+    shift
+    GALAXY_ARGS=("$@")
+  else
+    GALAXY_ARGS=("$@")
+  fi
+fi
+
+TASKS=()
+for RUN_LABEL in "${RUN_LABELS[@]}"; do
+  PRODUCT_SUBDIR="$(run_subdir "$RUN_LABEL")"
+  RUN_ROOT="$(run_root_for_subdir "$PRODUCT_SUBDIR")"
+  if [[ ${#GALAXY_ARGS[@]} -gt 0 ]]; then
+    GALAXIES=("${GALAXY_ARGS[@]}")
+  else
+    mapfile -t GALAXIES < <(discover_galaxies_for_run "$RUN_ROOT" "$PRODUCT_SUBDIR")
+  fi
+  for GAL in "${GALAXIES[@]}"; do
+    TASKS+=("${RUN_LABEL}|${RUN_ROOT}|${PRODUCT_SUBDIR}|${GAL}")
+  done
+done
 
 is_phangs_native_galid() {
   case "$1" in
@@ -121,8 +195,11 @@ phangs_native_filename() {
 all_start=$(date +%s)
 run_status=0
 
-for GAL in "${GALAXIES[@]}"; do
-  printf "\n====================  %s  ====================\n" "$GAL"
+for TASK in "${TASKS[@]}"; do
+  IFS='|' read -r RUN_LABEL RUN_ROOT PRODUCT_SUBDIR GAL <<<"$TASK"
+  LOGDIR="$RUN_ROOT/$PRODUCT_SUBDIR/${LOG_PREFIX}_logs"
+  mkdir -p "$LOGDIR"
+  printf "\n====================  %s / %s  ====================\n" "$RUN_LABEL" "$GAL"
   LOGFILE="$LOGDIR/${GAL}.log"
   PHANGS_ARGS=()
   STAGED_PHANGS_CUBE=""
@@ -134,7 +211,8 @@ for GAL in "${GALAXIES[@]}"; do
     echo "Python executable: $PYTHON_BIN"
     "$PYTHON_BIN" --version
     echo "PYTHONUNBUFFERED: 1"
-    echo "Product root     : $ROOT_PRODUCT_BASE"
+    echo "Product root     : $RUN_ROOT"
+    echo "Product subdir   : $PRODUCT_SUBDIR"
     echo "Cube root        : $CUBE_ROOT"
     echo "PHANGS cube root : ${PHANGS_CUBE_ROOT:-<none>}"
     echo "PHANGS VOS dir   : $PHANGS_NATIVE_VOS_DIR"
@@ -175,7 +253,8 @@ for GAL in "${GALAXIES[@]}"; do
   if [[ $status -eq 0 ]]; then
     PYTHONUNBUFFERED=1 "$PYTHON_BIN" -u "$SCRIPT" \
       -g "$GAL" \
-      --root "$ROOT_PRODUCT_BASE" \
+      --root "$RUN_ROOT" \
+      --product-subdir "$PRODUCT_SUBDIR" \
       --fallback-root "$ROOT_LOCAL" \
       --cube-root "$CUBE_ROOT" \
       "${PHANGS_ARGS[@]}" \

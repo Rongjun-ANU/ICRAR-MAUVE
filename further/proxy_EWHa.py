@@ -57,16 +57,27 @@ Changes (2026-03-31)
 * `10**(-20)angstrom**(-1).cm**(-2).erg.s**(-1)` as 1e-20-scaled flux
 * densities before computing proxy EW(Halpha).
 *
+* Changes (2026-06-29)
+* --------------------
+* Added `--product-subdir` so wrappers can run either `v3tk_v7.6.8` or
+* `v3tk_v7.6.8_7000` under the selected products root and write outputs back
+* to the matching run folder.
+* Default EW(Halpha) continuum lookup now requires the per-run continuum cube
+* `{gal}_cont_cube.fits` / `{gal}_CONTcube.fits` instead of falling back to the
+* original science datacube.
+* Gas-map lookup now accepts non-`_further` gas maps after `_further` products,
+* because EW(Halpha) only needs Halpha flux and velocity from the gas fit.
+*
 * Inputs:
   - Observed Halpha map from:
-      {gal}_gas_bin_maps_further.fits
+      {gal}_gas_bin_maps_further.fits or {gal}_gas_bin_maps.fits
     using extension `HA6562_FLUX` (or legacy fallbacks if needed).
   - Observed Halpha velocity map from the same gas FITS:
       `HA6562_VEL`
-  - Continuum/datacube from:
-      /arc/projects/mauve/cubes/v3tk/{gal}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
-    or, for NGC4254/NGC4321/NGC4535:
-      /arc/projects/mauve/cubes/v3tk/{gal}_PHANGS_DATACUBE_native.fits
+  - Continuum cube from:
+      {product_subdir}/{galaxy}/{gal}_cont_cube.fits
+    or uppercase alias:
+      {product_subdir}/{galaxy}/{gal}_CONTcube.fits
   - Legacy broad-band R proxy input from:
       {gal}_spatial_binning_maps_further.fits
     using extension `MAGNITUDE_R_UNCORRECTED`
@@ -193,6 +204,11 @@ def parse_args() -> argparse.Namespace:
         help="Root containing v3tk_v7.6.8/{galaxy} products and prior post-processing outputs",
     )
     parser.add_argument(
+        "--product-subdir",
+        default="v3tk_v7.6.8",
+        help="Product subdirectory under --root, e.g. v3tk_v7.6.8 or v3tk_v7.6.8_7000",
+    )
+    parser.add_argument(
         "--fallback-root",
         default=None,
         help="Fallback directory searched when an input file is not found under --root",
@@ -226,7 +242,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--cont-file",
         default=None,
-        help="Optional explicit path to the v3tk datacube/continuum cube FITS",
+        help="Optional explicit path to the continuum cube FITS",
     )
     parser.add_argument(
         "--redshift-file",
@@ -312,6 +328,26 @@ def datacube_input_candidates(
         candidates.append(root / "cubes/v3tk" / cube_name)
         if fallback_root is not None:
             candidates.append(fallback_root / "cubes/v3tk" / cube_name)
+    return candidates
+
+
+def continuum_cube_input_candidates(
+    root: Path,
+    fallback_root: Path | None,
+    product_dir: Path,
+    galaxy_name: str,
+) -> list[Path]:
+    cube_names = [
+        f"{galaxy_name}_cont_cube.fits",
+        f"{galaxy_name}_CONTcube.fits",
+    ]
+    candidates: list[Path] = []
+    for cube_name in cube_names:
+        candidates.append(root / product_dir / cube_name)
+        candidates.append(root / cube_name)
+        if fallback_root is not None:
+            candidates.append(fallback_root / product_dir / cube_name)
+            candidates.append(fallback_root / cube_name)
     return candidates
 
 
@@ -873,6 +909,7 @@ def main() -> None:
     args = parse_args()
     gal = normalize_galaxy_id(args.galaxy)
     root = Path(args.root).expanduser().resolve()
+    product_subdir = Path(args.product_subdir)
     cube_root = Path(args.cube_root).expanduser().resolve()
     phangs_cube_root = (
         Path(args.phangs_cube_root).expanduser().resolve()
@@ -884,7 +921,7 @@ def main() -> None:
         if args.fallback_root is not None
         else None
     )
-    product_dir = Path("v3tk_v7.6.8") / gal
+    product_dir = product_subdir / gal
 
     bin_path = (
         Path(args.bin_file).expanduser().resolve()
@@ -916,18 +953,50 @@ def main() -> None:
             "gas FITS",
             root / product_dir / f"{gal}_gas_bin_maps_further.fits",
             root / product_dir / f"{gal}_gas_BIN_maps_further.fits",
+            root / product_dir / f"{gal}_gas_bin_maps.fits",
+            root / product_dir / f"{gal}_gas_BIN_maps.fits",
+            root / product_dir / f"{gal}_bin_maps.fits",
+            root / product_dir / f"{gal}_BIN_maps.fits",
             root / f"{gal}_gas_bin_maps_further.fits",
             root / f"{gal}_gas_BIN_maps_further.fits",
+            root / f"{gal}_gas_bin_maps.fits",
+            root / f"{gal}_gas_BIN_maps.fits",
+            root / f"{gal}_bin_maps.fits",
+            root / f"{gal}_BIN_maps.fits",
             fallback_root / product_dir / f"{gal}_gas_bin_maps_further.fits"
             if fallback_root is not None
             else None,
             fallback_root / product_dir / f"{gal}_gas_BIN_maps_further.fits"
             if fallback_root is not None
             else None,
+            fallback_root / product_dir / f"{gal}_gas_bin_maps.fits"
+            if fallback_root is not None
+            else None,
+            fallback_root / product_dir / f"{gal}_gas_BIN_maps.fits"
+            if fallback_root is not None
+            else None,
+            fallback_root / product_dir / f"{gal}_bin_maps.fits"
+            if fallback_root is not None
+            else None,
+            fallback_root / product_dir / f"{gal}_BIN_maps.fits"
+            if fallback_root is not None
+            else None,
             fallback_root / f"{gal}_gas_bin_maps_further.fits"
             if fallback_root is not None
             else None,
             fallback_root / f"{gal}_gas_BIN_maps_further.fits"
+            if fallback_root is not None
+            else None,
+            fallback_root / f"{gal}_gas_bin_maps.fits"
+            if fallback_root is not None
+            else None,
+            fallback_root / f"{gal}_gas_BIN_maps.fits"
+            if fallback_root is not None
+            else None,
+            fallback_root / f"{gal}_bin_maps.fits"
+            if fallback_root is not None
+            else None,
+            fallback_root / f"{gal}_BIN_maps.fits"
             if fallback_root is not None
             else None,
         )
@@ -937,9 +1006,7 @@ def main() -> None:
         if args.cont_file
         else resolve_existing_path(
             "continuum cube FITS",
-            *datacube_input_candidates(cube_root, root, fallback_root, gal, phangs_cube_root),
-            root / f"{gal}_CONTcube.fits",
-            fallback_root / f"{gal}_CONTcube.fits" if fallback_root is not None else None,
+            *continuum_cube_input_candidates(root, fallback_root, product_dir, gal),
         )
     )
 
@@ -964,6 +1031,7 @@ def main() -> None:
     print("Galaxy          :", gal)
     print("Redshift (z)    :", z)
     print("Primary root    :", root)
+    print("Product subdir  :", product_subdir)
     if fallback_root is not None:
         print("Fallback root   :", fallback_root)
     print("Cube root       :", cube_root)

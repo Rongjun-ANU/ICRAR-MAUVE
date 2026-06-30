@@ -280,6 +280,12 @@ Changes (2026-05-28)
 * FITS input lookup now accepts gzip-compressed `.fits.gz` counterparts wherever
   a `.fits` path or glob is requested, while keeping new `_further` outputs as
   normal `.fits` files.
+
+Changes (2026-06-29)
+-----------------------
+* Added `--product-subdir` so wrappers can run either `v3tk_v7.6.8` or
+  `v3tk_v7.6.8_7000` under the selected products root and write outputs back to
+  the matching run folder.
 """
 
 # ------------------------------------------------------------------
@@ -822,6 +828,11 @@ p.add_argument(
     help="Root directory containing v3tk_v7.6.8/{galaxy} products and prior post-processing outputs",
 )
 p.add_argument(
+    "--product-subdir",
+    default="v3tk_v7.6.8",
+    help="Product subdirectory under --root, e.g. v3tk_v7.6.8 or v3tk_v7.6.8_7000",
+)
+p.add_argument(
     "--fallback-root",
     default=".",
     help="Fallback directory searched when an input file is not found under --root",
@@ -835,6 +846,7 @@ logging.basicConfig(level=loglvl, format="%(levelname)s %(message)s", stream=sys
 t0   = time.perf_counter()
 gal  = args.galaxy.upper()
 root = Path(args.root).expanduser().resolve()
+product_subdir = Path(args.product_subdir)
 fallback_root = (
     Path(args.fallback_root).expanduser().resolve()
     if args.fallback_root is not None
@@ -856,7 +868,7 @@ mask_suffixes = [
     "MASK.fits",
 ]
 
-product_dir = Path("v3tk_v7.6.8") / gal
+product_dir = product_subdir / gal
 input_keyword, gas_paths = resolve_keyworded_input_group(
     "SFR gas FITS input",
     root,
@@ -868,7 +880,7 @@ input_keyword, gas_paths = resolve_keyworded_input_group(
     },
 )
 src = gas_paths["gas-line FITS"]
-out_path = build_further_output_path(src)
+out_path = root / product_dir / build_further_output_path(src).name
 bin_further_path = (
     find_keyworded_input_path(
         root, fallback_root, product_dir, gal, bin_further_suffixes, input_keyword

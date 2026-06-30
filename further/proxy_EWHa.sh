@@ -13,6 +13,14 @@
 #     copy exists, then removed after the proxy_EWHa.py run. The default
 #     staging root is /scratch.
 #
+# Changes (2026-06-29):
+#   - Product runs are resolved from /arc/projects/mauve/products first, then
+#     ./projects/mauve/products, then the current working directory.
+#   - Supports normal/7000 run selectors and writes logs under the selected
+#     v3tk_v7.6.8 or v3tk_v7.6.8_7000 product folder.
+#   - Auto-discovery only queues IC/NGC galaxy folders that contain a continuum
+#     cube and gas-map input for the selected run.
+#
 # The script checks per-galaxy v3tk products under:
 #   ${ROOT_PRODUCT_BASE}/v3tk_v7.6.8/${GAL}
 # and v3tk datacubes under:
@@ -27,15 +35,13 @@ export LANG=C
 # ──────────────────────────────────────────────────────────────
 # 1.  Configurable variables
 # ──────────────────────────────────────────────────────────────
-ROOT_PRODUCT_BASE="$PWD"
 ROOT_LOCAL="$PWD"
 CUBE_ROOT="/arc/projects/mauve/cubes/v3tk"
 PHANGS_CUBE_ROOT="${PHANGS_CUBE_ROOT:-}"
 PHANGS_NATIVE_VOS_DIR="vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES"
 PHANGS_STAGING_ROOT="${PHANGS_STAGING_ROOT:-/scratch}"
 SCRIPT="proxy_EWHa.py"
-LOGDIR="proxy_ewha_logs"
-mkdir -p "$LOGDIR"
+LOG_PREFIX="proxy_ewha"
 
 if [[ -n "${PYTHON_BIN:-}" ]]; then
   PYTHON_BIN="$(command -v "$PYTHON_BIN" 2>/dev/null || printf '%s' "$PYTHON_BIN")"
@@ -58,40 +64,110 @@ else
   CORES=4
 fi
 
-GALAXIES=(
-  "IC3392"
-  "NGC4064"
-  "NGC4189"
-  "NGC4192"
-  "NGC4254"
-  "NGC4293"
-  "NGC4294"
-  "NGC4298"
-  "NGC4302"
-  "NGC4321"
-  "NGC4330"
-  "NGC4351"
-  "NGC4383"
-  "NGC4388"
-  "NGC4394"
-  "NGC4396"
-  "NGC4402"
-  "NGC4405"
-  "NGC4419"
-  "NGC4450"
-  "NGC4457"
-  "NGC4501"
-  "NGC4522"
-  "NGC4535"
-  "NGC4567_8"
-  "NGC4580"
-  "NGC4606"
-  "NGC4607"
-  "NGC4694"
-  "NGC4698"
-)
+discover_product_parent() {
+  local candidates=(
+    "${PRODUCT_PARENT:-}"
+    "/arc/projects/mauve/products"
+    "$PWD/projects/mauve/products"
+    "$PWD"
+  )
+  local candidate
+  for candidate in "${candidates[@]}"; do
+    [[ -n "$candidate" && -d "$candidate" ]] && { printf '%s\n' "$candidate"; return; }
+  done
+  printf '%s\n' "$PWD"
+}
 
-[[ $# -gt 0 ]] && GALAXIES=("$@")
+run_subdir() {
+  case "$1" in
+    normal) printf '%s\n' "v3tk_v7.6.8" ;;
+    7000) printf '%s\n' "v3tk_v7.6.8_7000" ;;
+  esac
+}
+
+is_run_selector() {
+  case "$1" in
+    normal|7000) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_galaxy_dir_name() {
+  case "$1" in
+    IC[0-9]*|NGC[0-9]*) ;;
+    *) return 1 ;;
+  esac
+  case "$1" in
+    *[!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_]*|*_logs|*_log) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+has_proxy_ewha_inputs() {
+  local gal_dir="$1"
+  local gal="$2"
+  local cont_ok=1 gas_ok=1
+  [[ -f "$gal_dir/${gal}_cont_cube.fits" || -f "$gal_dir/${gal}_cont_cube.fits.gz" || \
+     -f "$gal_dir/${gal}_CONTcube.fits" || -f "$gal_dir/${gal}_CONTcube.fits.gz" ]] && cont_ok=0
+  [[ -f "$gal_dir/${gal}_gas_bin_maps_further.fits" || -f "$gal_dir/${gal}_gas_bin_maps_further.fits.gz" || \
+     -f "$gal_dir/${gal}_gas_BIN_maps_further.fits" || -f "$gal_dir/${gal}_gas_BIN_maps_further.fits.gz" || \
+     -f "$gal_dir/${gal}_gas_bin_maps.fits" || -f "$gal_dir/${gal}_gas_bin_maps.fits.gz" || \
+     -f "$gal_dir/${gal}_gas_BIN_maps.fits" || -f "$gal_dir/${gal}_gas_BIN_maps.fits.gz" || \
+     -f "$gal_dir/${gal}_bin_maps.fits" || -f "$gal_dir/${gal}_bin_maps.fits.gz" || \
+     -f "$gal_dir/${gal}_BIN_maps.fits" || -f "$gal_dir/${gal}_BIN_maps.fits.gz" ]] && gas_ok=0
+  (( cont_ok == 0 && gas_ok == 0 ))
+}
+
+run_root_for_subdir() {
+  local subdir="$1"
+  if [[ -d "$PRODUCT_PARENT/$subdir" ]]; then
+    printf '%s\n' "$PRODUCT_PARENT"
+  elif [[ -d "$PWD/$subdir" ]]; then
+    printf '%s\n' "$PWD"
+  else
+    printf '%s\n' "$PRODUCT_PARENT"
+  fi
+}
+
+discover_galaxies_for_run() {
+  local run_root="$1"
+  local subdir="$2"
+  local run_dir="$run_root/$subdir"
+  local dir gal
+  [[ -d "$run_dir" ]] || return 0
+  for dir in "$run_dir"/*; do
+    [[ -d "$dir" ]] || continue
+    gal="$(basename "$dir")"
+    is_galaxy_dir_name "$gal" && has_proxy_ewha_inputs "$dir" "$gal" && printf '%s\n' "$gal"
+  done | sort
+}
+
+PRODUCT_PARENT="$(discover_product_parent)"
+RUN_LABELS=(normal 7000)
+GALAXY_ARGS=()
+if [[ $# -gt 0 ]]; then
+  if is_run_selector "$1"; then
+    RUN_LABELS=("$1")
+    shift
+    GALAXY_ARGS=("$@")
+  else
+    GALAXY_ARGS=("$@")
+  fi
+fi
+
+TASKS=()
+for RUN_LABEL in "${RUN_LABELS[@]}"; do
+  PRODUCT_SUBDIR="$(run_subdir "$RUN_LABEL")"
+  RUN_ROOT="$(run_root_for_subdir "$PRODUCT_SUBDIR")"
+  if [[ ${#GALAXY_ARGS[@]} -gt 0 ]]; then
+    GALAXIES=("${GALAXY_ARGS[@]}")
+  else
+    mapfile -t GALAXIES < <(discover_galaxies_for_run "$RUN_ROOT" "$PRODUCT_SUBDIR")
+  fi
+  for GAL in "${GALAXIES[@]}"; do
+    TASKS+=("${RUN_LABEL}|${RUN_ROOT}|${PRODUCT_SUBDIR}|${GAL}")
+  done
+done
 
 is_phangs_native_galid() {
   case "$1" in
@@ -107,8 +183,12 @@ phangs_native_filename() {
 # ──────────────────────────────────────────────────────────────
 # 2.  Process function for each galaxy
 # ──────────────────────────────────────────────────────────────
-process_galaxy() {
-  local GAL="$1"
+process_task() {
+  local TASK="$1"
+  local RUN_LABEL RUN_ROOT PRODUCT_SUBDIR GAL
+  IFS='|' read -r RUN_LABEL RUN_ROOT PRODUCT_SUBDIR GAL <<<"$TASK"
+  local LOGDIR="$RUN_ROOT/$PRODUCT_SUBDIR/${LOG_PREFIX}_logs"
+  mkdir -p "$LOGDIR"
   local LOGFILE="$LOGDIR/${GAL}.log"
   local PHANGS_ARGS=()
   local STAGED_PHANGS_CUBE=""
@@ -116,14 +196,15 @@ process_galaxy() {
 
   local REDSHIFT_FILE="${ROOT_LOCAL}/new_redshifts"
 
-  printf "\n====================  %s  ====================\n" "$GAL"
+  printf "\n====================  %s / %s  ====================\n" "$RUN_LABEL" "$GAL"
 
   start=$(date +%s)
   set +e
   {
     echo "Python executable: $PYTHON_BIN"
     "$PYTHON_BIN" --version
-    echo "Product root        : $ROOT_PRODUCT_BASE"
+    echo "Product root        : $RUN_ROOT"
+    echo "Product subdir      : $PRODUCT_SUBDIR"
     echo "Cube root           : $CUBE_ROOT"
     echo "PHANGS cube root    : ${PHANGS_CUBE_ROOT:-<none>}"
     echo "PHANGS VOS dir      : $PHANGS_NATIVE_VOS_DIR"
@@ -161,7 +242,8 @@ process_galaxy() {
   if [[ $status -eq 0 ]]; then
     "$PYTHON_BIN" "$SCRIPT" \
       -g "$GAL" \
-      --root "$ROOT_PRODUCT_BASE" \
+      --root "$RUN_ROOT" \
+      --product-subdir "$PRODUCT_SUBDIR" \
       --fallback-root "$ROOT_LOCAL" \
       --cube-root "$CUBE_ROOT" \
       "${PHANGS_ARGS[@]}" \
@@ -187,10 +269,10 @@ process_galaxy() {
   return "$status"
 }
 
-export -f process_galaxy
+export -f process_task
 export -f is_phangs_native_galid
 export -f phangs_native_filename
-export ROOT_PRODUCT_BASE ROOT_LOCAL CUBE_ROOT PHANGS_CUBE_ROOT PHANGS_NATIVE_VOS_DIR PHANGS_STAGING_ROOT PYTHON_BIN SCRIPT LOGDIR
+export ROOT_LOCAL CUBE_ROOT PHANGS_CUBE_ROOT PHANGS_NATIVE_VOS_DIR PHANGS_STAGING_ROOT PYTHON_BIN SCRIPT LOG_PREFIX
 
 # ──────────────────────────────────────────────────────────────
 # 3.  Parallel execution
@@ -198,15 +280,15 @@ export ROOT_PRODUCT_BASE ROOT_LOCAL CUBE_ROOT PHANGS_CUBE_ROOT PHANGS_NATIVE_VOS
 all_start=$(date +%s)
 run_status=0
 
-printf "Running %d galaxies in parallel using %d cores...\n" "${#GALAXIES[@]}" "$CORES"
+printf "Running %d run/galaxy tasks in parallel using %d cores...\n" "${#TASKS[@]}" "$CORES"
 printf "Using Python executable: %s\n" "$PYTHON_BIN"
 
 set +e
 if command -v parallel >/dev/null 2>&1; then
-  printf '%s\n' "${GALAXIES[@]}" | parallel -j "$CORES" process_galaxy
+  printf '%s\n' "${TASKS[@]}" | parallel -j "$CORES" process_task
   run_status=$?
 else
-  printf '%s\n' "${GALAXIES[@]}" | xargs -n 1 -P "$CORES" -I {} bash -c 'process_galaxy "$@"' _ {}
+  printf '%s\n' "${TASKS[@]}" | xargs -n 1 -P "$CORES" -I {} bash -c 'process_task "$@"' _ {}
   run_status=$?
 fi
 set -e
