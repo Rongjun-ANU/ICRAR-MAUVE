@@ -103,6 +103,9 @@ printf "%s\n" "${GALAXIES[@]}" | xargs -P "$BATCH_SIZE" -I {} bash -c '
 
     echo "Finished ${RUN}/${GALID}"
 ' _ {}
+
+vcp -v "${REMOTE_GAL_BASE}/"*_logs "${LOCAL_BASE}/${RUN}/" \
+    || echo "WARNING: failed to download ${RUN} *_logs folders"
 done
 
 echo "Download from CANFAR finished!"
