@@ -3,21 +3,21 @@ Best dense image arrangement report
 
 mode: OR-Tools CP-SAT fallback, not certified
 status: FEASIBLE
-input_count: 32
+input_count: 34
 ratio: 16:9
-lower_bound_k: 368
-heuristic_upper_k: 384
-heuristic_method: area_chunk_shuffle_3+contact
-final_k: 378
-final_canvas: 6048x3402
-total_image_area: 19431862
-canvas_area: 20575296
-density: 0.944427
+lower_bound_k: 376
+heuristic_upper_k: 392
+heuristic_method: area_chunk_shuffle_14+contact
+final_k: 386
+final_canvas: 6176x3474
+total_image_area: 20289202
+canvas_area: 21455424
+density: 0.945644
 time_limit_seconds: 300
-solver_objective_bound: 368.0
-solver_best_objective: 378.0
-solver_wall_time_seconds: 299.012071
-note: warm_start_source: area_chunk_shuffle_3+contact
+solver_objective_bound: 376.0
+solver_best_objective: 386.0
+solver_wall_time_seconds: 294.308517
+note: warm_start_source: area_chunk_shuffle_14+contact
 note: solver_search_mode=fixed-k
 
 Lower-bound formula
@@ -32,35 +32,37 @@ OR-Tools did not return OPTIMAL, so no mathematical optimality proof is claimed 
 Placements
 ----------
 index	file	w	h	x	y
-0	IC3392_combined_VRI.png	437	438	3592	2437
-1	NGC4064_combined_VRI.png	566	665	2807	1963
-2	NGC4189_combined_VRI.png	598	319	5142	2062
-3	NGC4192_combined_VRI.png	1092	1629	0	6
-4	NGC4254_combined_VRI.png	1012	1190	0	1635
-5	NGC4293_combined_VRI.png	923	532	0	2825
-6	NGC4294_combined_VRI.png	567	663	2217	1755
-7	NGC4298_combined_VRI.png	1042	995	1092	766
-8	NGC4302_combined_VRI.png	322	1420	4226	6
-9	NGC4321_combined_VRI.png	1231	999	4658	2381
-10	NGC4330_combined_VRI.png	881	760	1092	6
-11	NGC4351_combined_VRI.png	591	323	4551	2021
-12	NGC4380_combined_VRI.png	967	1044	2288	6
-13	NGC4383_combined_VRI.png	633	705	2134	1050
-14	NGC4388_combined_VRI.png	870	323	923	2997
-15	NGC4394_combined_VRI.png	624	647	3394	1790
-16	NGC4396_combined_VRI.png	883	755	4558	1266
-17	NGC4402_combined_VRI.png	1152	318	1793	3077
-18	NGC4405_combined_VRI.png	522	663	4029	1867
-19	NGC4419_combined_VRI.png	629	643	4029	2530
-20	NGC4450_combined_VRI.png	602	867	5446	1195
-21	NGC4457_combined_VRI.png	725	725	3394	1065
-22	NGC4501_combined_VRI.png	1205	1236	1012	1761
-23	NGC4522_combined_VRI.png	590	659	2217	2418
-24	NGC4535_combined_VRI.png	610	898	2784	1065
-25	NGC4567_8_combined_VRI.png	971	1059	3255	6
-26	NGC4569_combined_VRI.png	888	1260	4548	6
-27	NGC4580_combined_VRI.png	647	619	2945	2628
-28	NGC4606_combined_VRI.png	434	435	3592	2875
-29	NGC4607_combined_VRI.png	315	598	1973	6
-30	NGC4694_combined_VRI.png	439	441	4119	1426
-31	NGC4698_combined_VRI.png	608	1189	5436	6
+0	IC3392_combined_VRI.png	437	438	2578	1724
+1	NGC4064_combined_VRI.png	566	665	2578	1059
+2	NGC4189_combined_VRI.png	598	319	1935	3004
+3	NGC4192_combined_VRI.png	1092	1629	1	0
+4	NGC4222_combined_VRI.png	890	748	3711	1260
+5	NGC4254_combined_VRI.png	1012	1190	5123	1236
+6	NGC4293_combined_VRI.png	923	532	1012	2942
+7	NGC4294_combined_VRI.png	567	663	3144	1189
+8	NGC4298_combined_VRI.png	1042	995	1	1629
+9	NGC4302_combined_VRI.png	322	1420	4640	0
+10	NGC4321_combined_VRI.png	1231	999	4944	2426
+11	NGC4330_combined_VRI.png	881	760	4063	2702
+12	NGC4351_combined_VRI.png	591	323	2533	2867
+13	NGC4380_combined_VRI.png	967	1044	1093	0
+14	NGC4383_combined_VRI.png	633	705	2457	2162
+15	NGC4388_combined_VRI.png	870	323	1153	2569
+16	NGC4394_combined_VRI.png	624	647	3124	2750
+17	NGC4396_combined_VRI.png	883	755	1093	1044
+18	NGC4402_combined_VRI.png	1152	318	1	2624
+19	NGC4405_combined_VRI.png	522	663	4601	1420
+20	NGC4419_combined_VRI.png	629	643	1768	1926
+21	NGC4424_combined_VRI.png	572	335	1	2942
+22	NGC4450_combined_VRI.png	602	867	1976	1059
+23	NGC4457_combined_VRI.png	725	725	1043	1799
+24	NGC4501_combined_VRI.png	1205	1236	4962	0
+25	NGC4522_combined_VRI.png	590	659	3700	2008
+26	NGC4535_combined_VRI.png	610	898	3090	1852
+27	NGC4567_8_combined_VRI.png	971	1059	2060	0
+28	NGC4569_combined_VRI.png	888	1260	3752	0
+29	NGC4580_combined_VRI.png	647	619	4290	2083
+30	NGC4606_combined_VRI.png	434	435	2023	2569
+31	NGC4607_combined_VRI.png	315	598	3748	2667
+32	NGC4694_combined_VRI.png	439	441	573	2942
+33	NGC4698_combined_VRI.png	608	1189	3144	0
