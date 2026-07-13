@@ -16,8 +16,9 @@ density: 0.950563
 time_limit_seconds: 300
 solver_objective_bound: 376.0
 solver_best_objective: 385.0
-solver_wall_time_seconds: 300.060026
-note: synchronized_layout_from: All_combined_VRI_mask_label_16_9.png
+solver_wall_time_seconds: 300.087441
+note: warm_start_source: existing:All_combined_VRI_16_9.proof.txt
+note: solver_search_mode=fixed-k
 
 Lower-bound formula
 -------------------
