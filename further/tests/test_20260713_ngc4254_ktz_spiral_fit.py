@@ -65,6 +65,26 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("POSITIVITY_CHECK_PASS", joined)
         self.assertGreaterEqual(image_count, 6)
 
+    def test_fit_domain_uses_every_valid_hii_bin(self):
+        nb = load_notebook()
+        text = "\n".join("".join(cell["source"]) for cell in nb["cells"])
+        self.assertIn("USE_ALL_VALID_HII_BINS = True", text)
+        self.assertIn("FIT_DOMAIN_ALL_VALID_HII_PASS", text)
+        self.assertNotIn("OUTER_COVERAGE_QUANTILE", text)
+
+    def test_deprojection_is_explained_and_ridge_uses_harmonic_peak(self):
+        nb = load_notebook()
+        text = "\n".join("".join(cell["source"]) for cell in nb["cells"])
+        for required in [
+            "east = major*sin(PA) - projected_minor*cos(PA)",
+            "minor = projected_minor/cos(inclination)",
+            "theta_ridge",
+            "RIDGE_PHASE_CHECK_PASS",
+            "DEPROJECTION_ROUNDTRIP_PASS",
+            "Fitted KTZ-compatible SFR morphology model",
+        ]:
+            self.assertIn(required, text)
+
 
 if __name__ == "__main__":
     unittest.main()
