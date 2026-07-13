@@ -901,3 +901,14 @@ git commit -m "test: verify NGC4254 KTZ spiral notebook"
 ```
 
 Report the exact fit parameters, bootstrap stability, execution result, test result, and any visual/scientific limitation in the final handoff.
+
+## Execution Record (2026-07-13)
+
+Implemented inline in the current checkout after explicit user approval. The final artifact follows the scientific design, with these documented execution adjustments:
+
+- The ICRAR environment does not contain `pytest`, so the focused contract suite uses Python's built-in `unittest`. The red test was observed first with the notebook missing, and all three tests pass after execution.
+- Jupyter kernel startup was blocked inside the filesystem sandbox by local-port permissions. The same `nbclient` execution was rerun with minimal approval outside the sandbox and used only the local ICRAR kernel and local FITS product.
+- The final sector bootstrap uses 24 reproducible realizations and a coarser pitch grid. It is explicitly labelled a practical stability diagnostic, not a publication posterior.
+- Visual QA was performed on all six PNG outputs extracted from the executed notebook. It caught and corrected a compressed WCS quick-look and an extreme-bin-dominated phase-profile mean; the final profile uses robust phase-bin medians.
+- The observed-map diagnostic now includes the fitted skeleton projected back into image coordinates. The notebook explicitly reports the sector-sensitive result: the global fit selects `m=1`, but pitch and winding sign are multimodal under sector resampling.
+- Implementation commits were consolidated rather than creating a commit after every notebook cell group, keeping the new notebook, its focused test, and this execution record together while unrelated KTZ work remains untouched.
