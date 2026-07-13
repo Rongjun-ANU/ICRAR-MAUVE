@@ -64,6 +64,7 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("REAL_FIT_COMPLETE", joined)
         self.assertIn("POSITIVITY_CHECK_PASS", joined)
         self.assertGreaterEqual(image_count, 6)
+        self.assertNotIn("RuntimeWarning", joined)
 
     def test_fit_domain_uses_every_valid_hii_bin(self):
         nb = load_notebook()
