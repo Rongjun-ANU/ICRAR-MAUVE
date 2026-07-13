@@ -106,3 +106,15 @@ fi
 for galid in "${galids[@]}"; do
   copy_galid "$galid"
 done
+
+transfer_files=(
+  "auto_arrange_and_combine.py"
+  "All_combined_VRI_16_9.png"
+  "All_combined_VRI_16_9.proof.txt"
+  "All_combined_VRI_label_16_9.png"
+  "All_combined_VRI_label_16_9.proof.txt"
+)
+
+for file in "${transfer_files[@]}"; do
+  copy_file "$file"
+done

@@ -7,10 +7,10 @@ output, and combined overview mosaics.
 
 The current snapshot is intended to be a self-contained record of the masking run:
 
-- 26 input `*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits` files in the checked-in snapshot; gzip-compressed `.fits.gz` inputs are also accepted by the masking script.
-- 26 output `*_mask.fits` files.
-- 26 original `*_combined_VRI.png` reference images.
-- 26 diagnostic `*_combined_VRI_mask.png` overlays.
+- 34 input `*_DATACUBE*_VRI.fits` files in the checked-in snapshot; gzip-compressed `.fits.gz` inputs are also accepted by the masking script.
+- 34 output `*_mask.fits` files.
+- 34 original `*_combined_VRI.png` reference images.
+- 34 diagnostic `*_combined_VRI_mask.png` overlays.
 - Combined all-galaxy overview mosaics and proof reports.
 - Two Python scripts used for mask generation and image arrangement.
 
@@ -20,14 +20,15 @@ The current snapshot is intended to be a self-contained record of the masking ru
 | --- | ---: | --- |
 | `make_ngist_masks_from_catalogs_VRI.py` | 1 | Main masking script. Generates binary spatial masks and diagnostic overlays from local VRI FITS datacubes, reading `.fits` and `.fits.gz` inputs in place without copying, unzipping, or deleting them. |
 | `auto_arrange_and_combine.py` | 1 | Mosaic arranger. Packs per-galaxy PNGs into dense fixed-ratio overview images, with optional OR-Tools proof reports. |
-| `*_DATACUBE*_VRI.fits` or `.fits.gz` | 26 | Input VRI FITS datacubes used for WCS, pixel geometry, and science-data footprint. Compressed inputs are read directly with Astropy and do not need to be unzipped first. |
-| `*_mask.fits` | 26 | Binary nGIST-compatible spatial masks. `0` means unmasked; `1` means masked. |
-| `*_combined_VRI.png` | 26 | Per-galaxy VRI reference images. |
-| `*_combined_VRI_mask.png` | 26 | Per-galaxy diagnostic overlays showing masked foreground/background objects. |
+| `*_DATACUBE*_VRI.fits` or `.fits.gz` | 34 | Input VRI FITS datacubes used for WCS, pixel geometry, and science-data footprint. Compressed inputs are read directly with Astropy and do not need to be unzipped first. |
+| `*_mask.fits` | 34 | Binary nGIST-compatible spatial masks. `0` means unmasked; `1` means masked. |
+| `*_combined_VRI.png` | 34 | Per-galaxy VRI reference images. |
+| `*_combined_VRI_mask.png` | 34 | Per-galaxy diagnostic overlays showing masked foreground/background objects. |
 | `All_combined_VRI_16_9.png` | 1 | 16:9 combined mosaic of original VRI images. |
+| `All_combined_VRI_label_16_9.png` | 1 | 16:9 combined mosaic of original VRI images with red galaxy-ID labels. |
 | `All_combined_VRI_mask_16_9.png` | 1 | 16:9 combined mosaic of masked diagnostic overlays. |
 | `ALL_combined_VRI_mask.png` | 1 | Earlier combined masked mosaic. |
-| `*.proof.txt` | 3 | Layout proof or fallback reports from the arranger. |
+| `*.proof.txt` | 5 | Layout proof or fallback reports from the arranger, including the labeled mosaic report. |
 | `v3tk_masking.log` | 1 | Full log from the masking run. |
 
 The folder size is roughly 537 MB. At the time this README was written, no file was
@@ -161,12 +162,17 @@ The mosaic script is:
 
 ```bash
 python auto_arrange_and_combine.py '*_combined_VRI.png' 16 9
+python auto_arrange_and_combine.py '*_combined_VRI.png' 16 9 label
 python auto_arrange_and_combine.py '*_combined_VRI_mask.png' 16 9
 ```
 
 It loads the individual PNGs at native pixel size and packs them into a fixed-ratio
 canvas. By default it uses a deterministic heuristic warm start and OR-Tools CP-SAT
 optimization. It writes both an output PNG and a `.proof.txt` report.
+Adding the positional `label` argument annotates each galaxy in red at the top left
+and writes `All_combined_VRI_label_16_9.png` together with
+`All_combined_VRI_label_16_9.proof.txt`; the unlabeled command continues to write
+`All_combined_VRI_16_9.png` and its matching proof report.
 
 Useful options:
 
@@ -217,6 +223,7 @@ If the `*_combined_VRI.png` inputs are missing, first generate them using the co
 ```bash
 python make_ngist_masks_from_catalogs_VRI.py
 python auto_arrange_and_combine.py '*_combined_VRI.png' 16 9
+python auto_arrange_and_combine.py '*_combined_VRI.png' 16 9 label
 python auto_arrange_and_combine.py '*_combined_VRI_mask.png' 16 9
 ```
 

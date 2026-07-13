@@ -16,7 +16,7 @@ from typing import Callable, Iterable
 
 
 try:
-	from PIL import Image
+	from PIL import Image, ImageDraw, ImageFont
 except ModuleNotFoundError as e:  # pragma: no cover
 	raise SystemExit(
 		"Missing dependency: Pillow (PIL).\n"
@@ -319,6 +319,20 @@ def _common_suffix(strings: list[str]) -> str:
 	rev = [s[::-1] for s in strings]
 	prefix = os.path.commonprefix(rev)
 	return prefix[::-1]
+
+
+def _parse_label_mode(items: list[str]) -> tuple[list[str], bool]:
+	if items and items[-1] == "label":
+		return items[:-1], True
+	return items, False
+
+
+def _galaxy_id_from_path(path: Path) -> str:
+	stem = path.stem
+	suffix = "_combined_VRI"
+	if stem.endswith(suffix):
+		return stem[: -len(suffix)]
+	return stem
 
 
 def _expand_args_to_files(args: Iterable[str]) -> list[Path]:
@@ -1108,10 +1122,21 @@ def save_canvas(
 	width: int,
 	height: int,
 	placements: list[tuple[int, int]],
+	labels: list[str] | None = None,
 ) -> None:
+	if labels is not None and len(labels) != len(images):
+		raise ValueError(f"Expected {len(images)} labels, got {len(labels)}")
+
 	canvas = Image.new("RGBA", (width, height), (0, 0, 0, 255))
-	for img, (x, y) in zip(images, placements, strict=True):
+	draw = ImageDraw.Draw(canvas)
+	try:
+		font = ImageFont.load_default(size=20)
+	except TypeError:  # Pillow < 10.1
+		font = ImageFont.load_default()
+	for index, (img, (x, y)) in enumerate(zip(images, placements, strict=True)):
 		canvas.paste(img, (x, y), img)
+		if labels is not None:
+			draw.text((x + 6, y + 6), labels[index], fill=(255, 0, 0, 255), font=font)
 
 	ext = out_path.suffix.lower()
 	save_kwargs: dict[str, object] = {}
@@ -1212,11 +1237,11 @@ def _build_parser() -> argparse.ArgumentParser:
 	parser = argparse.ArgumentParser(
 		description="Arrange images into the densest fixed-ratio non-overlapping mosaic.",
 		epilog=(
-			"Ratio is still accepted as optional trailing integers X Y, e.g. "
-			"./auto_arrange_and_combine.py '*combined.png' 16 9"
+			"Ratio is accepted as optional trailing integers X Y, followed optionally by label, e.g. "
+			"./auto_arrange_and_combine.py '*_combined_VRI.png' 16 9 label"
 		),
 	)
-	parser.add_argument("items", nargs="*", help="Input images/globs, optionally followed by ratio X Y")
+	parser.add_argument("items", nargs="*", help="Input images/globs, optionally followed by ratio X Y [label]")
 	parser.add_argument("--time-limit", type=float, default=300.0, help="OR-Tools solve time limit in seconds")
 	parser.add_argument("--fast", action="store_true", help="Use heuristic packing only; no optimality proof")
 	parser.add_argument("--proof-file", type=Path, help="Path for the proof/report text file")
@@ -1259,7 +1284,8 @@ def main(argv: list[str]) -> int:
 	if not args.fast:
 		prepare_ortools_runtime(argv)
 
-	ratio_x, ratio_y, ratio_given, image_args = _parse_ratio(args.items)
+	items, add_labels = _parse_label_mode(args.items)
+	ratio_x, ratio_y, ratio_given, image_args = _parse_ratio(items)
 	log_progress(start_time, f"Expanding input files for ratio {ratio_x}:{ratio_y}")
 	paths = _expand_args_to_files(image_args)
 	paths = [p for p in paths if p.is_file() and not (p.name.startswith("ALL_") or p.name.startswith("All_"))]
@@ -1267,6 +1293,7 @@ def main(argv: list[str]) -> int:
 		print("No input files found (or all were skipped because they start with 'ALL_' or 'All_').", file=sys.stderr)
 		return 2
 	log_progress(start_time, f"Found {len(paths)} input image(s)")
+	labels = [_galaxy_id_from_path(path) for path in paths] if add_labels else None
 
 	basenames = [p.name for p in paths]
 	suffix = _common_suffix(basenames)
@@ -1279,6 +1306,8 @@ def main(argv: list[str]) -> int:
 		out_name = f"All_{suffix}"
 	
 	out_path = Path(out_name)
+	if add_labels:
+		out_path = out_path.with_name(f"{out_path.stem}_label{out_path.suffix}")
 	if ratio_given:
 		out_path = out_path.with_name(f"{out_path.stem}_{ratio_x}_{ratio_y}{out_path.suffix}")
 	proof_path = args.proof_file or _default_proof_path(out_path)
@@ -1328,7 +1357,7 @@ def main(argv: list[str]) -> int:
 	if args.fast:
 		log_progress(start_time, "Fast mode selected; saving best available heuristic/existing layout")
 		placements = center_placements(effective_upper.width, effective_upper.height, sizes, effective_upper.placements)
-		save_canvas(out_path, images, effective_upper.width, effective_upper.height, placements)
+		save_canvas(out_path, images, effective_upper.width, effective_upper.height, placements, labels=labels)
 		write_proof_report(
 			proof_path,
 			paths,
@@ -1380,7 +1409,7 @@ def main(argv: list[str]) -> int:
 			wall_time=0.0,
 			best_objective=float(effective_upper.k),
 		)
-		save_canvas(out_path, images, effective_upper.width, effective_upper.height, placements)
+		save_canvas(out_path, images, effective_upper.width, effective_upper.height, placements, labels=labels)
 		write_proof_report(
 			proof_path,
 			paths,
@@ -1472,7 +1501,7 @@ def main(argv: list[str]) -> int:
 		log_progress(start_time, "No optimality proof was returned; saving fallback feasible layout")
 		placements = center_placements(result.width, result.height, sizes, result.placements)
 		validate_placements(result.width, result.height, sizes, placements)
-		save_canvas(out_path, images, result.width, result.height, placements)
+		save_canvas(out_path, images, result.width, result.height, placements, labels=labels)
 		write_proof_report(
 			proof_path,
 			paths,
@@ -1514,7 +1543,7 @@ def main(argv: list[str]) -> int:
 	log_progress(start_time, "Optimality proved; saving certified layout")
 	placements = center_placements(result.width, result.height, sizes, result.placements)
 	validate_placements(result.width, result.height, sizes, placements)
-	save_canvas(out_path, images, result.width, result.height, placements)
+	save_canvas(out_path, images, result.width, result.height, placements, labels=labels)
 	write_proof_report(
 		proof_path,
 		paths,

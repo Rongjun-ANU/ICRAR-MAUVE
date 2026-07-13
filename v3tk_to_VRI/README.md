@@ -25,6 +25,7 @@ At the time this README was written, the folder contains 26 VRI FITS products an
 | `v3tk_combined_VRI_image.py` | Combines the observed VRI rendering with the reprojected Legacy image, using valid MUSE pixels where available and Legacy pixels outside the MUSE footprint. It also accepts compressed VRI FITS products. |
 | `v3tk_VRI_image.sh` | Top-level image pipeline wrapper for observed rendering, Legacy reprojection, and combined image generation. |
 | `auto_arrange_and_combine.py` | Packs many per-galaxy image panels into one fixed-ratio mosaic. Uses OR-Tools when available for proof-aware layouts and can fall back to fast heuristic layouts. |
+| `cp_to_masking.sh` | Copies the mosaic arranger, per-galaxy VRI FITS/combined PNG products, and the standard labeled and unlabeled 16:9 mosaics/reports into `../v3tk_masking_VRI`. |
 | `v3tk_observed_R_image.py`, `v3tk_combined_R_image.py`, `v3tk_R_image.sh` | Older or parallel R-band-only workflow files. |
 | `20260521_*_documentation.md` | Detailed notes for the VRI image pipeline and the mosaic arranger. |
 
@@ -268,6 +269,23 @@ Certified/default mode:
 python auto_arrange_and_combine.py *combined_VRI.png 16 9
 ```
 
+To annotate each panel with its galaxy ID in red at the top-left corner, add
+the optional trailing `label` argument:
+
+```bash
+./auto_arrange_and_combine.py *_combined_VRI.png 16 9 label
+```
+
+The label is derived from the input filename, so
+`NGC4380_combined_VRI.png` is annotated as `NGC4380`. Omitting `label`
+preserves the original unlabeled mosaic output. Label mode writes a separate
+mosaic and proof report so it does not overwrite the unlabeled products:
+
+```text
+All_combined_VRI_label_16_9.png
+All_combined_VRI_label_16_9.proof.txt
+```
+
 Quick heuristic mode without a mathematical proof:
 
 ```bash
@@ -314,6 +332,25 @@ Interpretation:
 - `HEURISTIC_ONLY` means `--fast` was used and no mathematical proof was attempted.
 
 The arranger can also reuse compatible existing proof reports as warm starts and synchronize compatible sibling mosaics so that related outputs share the same layout.
+
+## Transfer to the Masking Repository
+
+Run the bulk transfer helper from this repository:
+
+```bash
+./cp_to_masking.sh
+```
+
+In addition to the per-galaxy VRI FITS and combined PNG products, bulk mode
+copies the arranger and these mosaic products into `../v3tk_masking_VRI`:
+
+```text
+auto_arrange_and_combine.py
+All_combined_VRI_16_9.png
+All_combined_VRI_16_9.proof.txt
+All_combined_VRI_label_16_9.png
+All_combined_VRI_label_16_9.proof.txt
+```
 
 ## GitHub Notes
 
