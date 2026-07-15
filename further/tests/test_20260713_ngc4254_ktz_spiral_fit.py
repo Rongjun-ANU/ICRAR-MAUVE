@@ -112,6 +112,25 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("FIT_DOMAIN_ALL_VALID_HII_PASS", text)
         self.assertNotIn("OUTER_COVERAGE_QUANTILE", text)
 
+    def test_ridge_map_uses_all_valid_hii_pixels_and_mask_normalization(self):
+        text = notebook_source()
+        for required in [
+            "build_hii_pixel_geometry",
+            "build_log_polar_contrast",
+            "gaussian_filter(weighted_sum",
+            "gaussian_filter(coverage",
+            "mode=(\"nearest\", \"wrap\")",
+            "np.quantile(u",
+            "signed_residual",
+            "local_ridge",
+            "LOGPOLAR_AZIMUTH_BROAD_SIGMA_BINS",
+            "gradient_dex_per_kpc",
+            "RIDGE_PIXEL_DOMAIN_PASS",
+        ]:
+            self.assertIn(required, text)
+        self.assertNotIn("0.05 * np.nanmax(denominator)", text)
+        self.assertNotIn("np.maximum(observed_log - background_log, 0.0)", text)
+
     def test_deprojection_and_data_model_ridge_semantics(self):
         text = notebook_source()
         for required in [
