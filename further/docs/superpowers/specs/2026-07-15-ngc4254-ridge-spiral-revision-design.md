@@ -88,25 +88,38 @@ Sigma_background(R) = lambda0_0 * exp(-R / h_R).
 
 `h_R` is the e-folding length of the radial SFR source field, not an arm width, pitch, optical radius, or necessarily a stellar-disc scale length. The notebook will report both `h_R` and the equivalent logarithmic gradient `-1 / (ln(10) * h_R)` in dex per kpc.
 
-For ridge detection define a positive logarithmic contrast
+For ridge detection first define the signed logarithmic residual
 
 ```text
-C = max(log10(Sigma_SFR) - log10(Sigma_background), 0).
+Delta = log10(Sigma_SFR) - log10(Sigma_background).
 ```
 
-The unclipped measurements remain available for the later full source-profile fit.
+Do not clip negative residuals: the local flanks on either side of an arm are
+part of the ridge evidence.  Remove only broad azimuthal structure with a
+mask-normalized circular smoother, giving a local ridge field
+
+```text
+C_local = Delta - broad_azimuthal_smooth(Delta).
+```
+
+The unclipped measurements also remain available for the later full
+source-profile fit.
 
 ## 6. Ridge-based geometry detection
 
 ### 6.1 Log-polar representation
 
-Map the deprojected HII pixels to `(u, phi)`, where `u = ln(R / R_ref)`. A logarithmic spiral becomes a straight periodic track in this plane. Construct a regular log-polar contrast map using mask-normalized accumulation and smoothing:
+Map the deprojected HII pixels to `(u, phi)`, where `u = ln(R / R_ref)`. A logarithmic spiral becomes a straight periodic track in this plane. Use quantile edges in `u`, so every radial row contains approximately the same number of valid HII pixels and the very small central area is not discarded by a global-coverage threshold. Construct the log-polar residual map using mask-normalized accumulation and smoothing:
 
 ```text
-smoothed_contrast = smooth(weight * C) / smooth(weight).
+smoothed_residual = smooth(weight * Delta) / smooth(weight).
 ```
 
-The denominator prevents missing HII regions from being interpreted as zero SFR. Cells with insufficient effective coverage remain masked.
+The denominator prevents missing HII regions from being interpreted as zero
+SFR.  Cells with no local effective coverage remain masked, but coverage is
+tested against a small absolute floor rather than a fraction of the global
+maximum.  This keeps all positive-radius HII pixels represented, including the
+inner disc.
 
 ### 6.2 Candidate family
 
@@ -123,22 +136,56 @@ The candidate phase is
 Theta = (m / tan(pitch)) * ln(R / R_ref) - m * phi + Theta0.
 ```
 
-Use a narrow periodic ridge kernel around `Theta = 0` to measure the positive contrast within candidate arm corridors. The kernel width is a visible configuration expressed in kpc at `R_ref`, then converted consistently to phase width.
+Use a narrow periodic ridge kernel around `Theta = 0` and subtract a broader,
+unit-normalized kernel at the same location.  This difference-of-Gaussians
+matched filter measures a local centre-versus-flanks ridge contrast rather than
+brightness relative to a remote inter-arm track.  A configured physical width
+`w` in kpc is converted separately at every radius,
+
+```text
+sigma_Theta(R) = m * w / (R * abs(sin(pitch))).
+```
+
+This radius dependence is required: using one phase width defined at `R_ref`
+would make the physical corridor grow in proportion to radius and would score
+broad lopsided structure as an arm.
 
 ### 6.3 Fair candidate score
 
-The ridge score must compare mean arm-corridor contrast with an equal-area inter-arm control. It must be normalized by valid coverage and number of branches so that larger `m` cannot win merely by drawing more curves. Candidate tables will report at least:
+The ridge score must compare the unit-normalized narrow arm kernel with its
+broader local-flank control. It must be normalized by valid coverage, radial
+support, and number of branches so that larger `m` cannot win merely by drawing
+more curves. Candidate tables will report at least:
 
 - `m_arms`;
 - signed pitch;
 - `Theta0`;
-- arm-corridor mean contrast;
-- inter-arm mean contrast;
-- their normalized difference;
+- narrow-kernel mean residual;
+- broad local-flank mean residual;
+- their difference-of-Gaussians response;
 - valid coverage; and
 - held-out-sector score.
 
-Use spatial-sector holdouts to assess stability. Geometry is selected by the median held-out ridge score, not by the existing full-field intensity objective. Raw full-field SSE and robust source-model loss may still be reported as secondary diagnostics.
+Use spatial-sector holdouts to assess stability and require at least 10 of 12
+sectors to return a finite test response. Geometry is selected by the median
+held-out local-ridge response multiplied by phase stability and held-out
+coverage.  Correct the remaining look-elsewhere bias across `m` with at least
+eight row-wise azimuth-scrambled null maps: independently circular-shift each
+log-radius row while shifting its mask and coverage with it, record the best
+validated score for each `m`, and rank the real candidates by their
+`m`-specific null z-score.  This destroys coherent spiral slope while preserving
+the radial sampling, one-row residual distribution, and patchy mask.  Geometry
+is not selected by the existing full-field intensity objective. Raw full-field
+SSE and robust source-model loss may still be reported as secondary
+diagnostics.
+
+Adopt `w = 0.25 kpc` as the visible fiducial ridge scale and rerun the real-data
+ranking over `w = 0.18, 0.22, 0.25, 0.30, 0.35 kpc`, repeating the same
+per-`m` row-scrambled null calibration at every width.  Raw scores from
+different widths are not directly comparable.  The fiducial result is the
+reported geometry; the width scan is a sensitivity diagnostic, not an
+opportunity to choose a scale after seeing the preferred winding.  If `m`, sign,
+or pitch changes, report that multimodality explicitly.
 
 ### 6.4 Acceptance rule
 
@@ -216,6 +263,9 @@ Tests must fail before implementation and then verify:
 - both pitch signs are evaluated;
 - candidate score normalization includes branch count and valid coverage;
 - the selected geometry is based on held-out ridge score;
+- the comparison across `m` is calibrated against row-scrambled null maps;
+- the ridge phase width is converted from kpc separately at every radius;
+- no fraction-of-global-maximum coverage cut deletes the inner disc;
 - all harmonic local maxima are enumerated;
 - the approved 2-by-2 panel contract is present; and
 - the saved notebook has no execution errors, unexecuted code cells, or runtime warnings.
@@ -239,7 +289,8 @@ For NGC4254:
 - confirm that the selected skeleton follows the bright SFR arm tracks in both sky and face-on views;
 - confirm that the selected winding is not an artefact of axis reversal;
 - compare the selected and best alternative ridge scores without unequal branch display; and
-- retain a caution if sector holdouts show multimodal `m`, pitch, or phase.
+- retain a caution if sector holdouts or the declared ridge-width scan show
+  multimodal `m`, pitch, or phase.
 
 ## 11. Files and scope
 
@@ -255,5 +306,8 @@ The target FITS product, `KTZ_validation.ipynb`, `SFR+Z.py`, and unrelated local
 - NGC4254 is disturbed, lopsided, and may contain bifurcating arms that no single global pitch or exact `m` symmetry can describe.
 - Patchy HII coverage can make an arm disappear over some radii.
 - Ridge-score differences are descriptive stability measures, not formal posterior probabilities.
+- The row-scrambled null z-score is an empirical morphology-ranking statistic
+  from only eight scrambles, not a Gaussian detection significance or a
+  substitute for a posterior model comparison.
 - The SFR map is an adaptive-bin product and adjacent pixels are not independent measurements.
 - The KTZ-compatible source model is not yet an observed metallicity-fluctuation or diffusion fit.
