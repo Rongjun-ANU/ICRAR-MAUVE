@@ -131,6 +131,34 @@ class NotebookContractTests(unittest.TestCase):
         self.assertNotIn("0.05 * np.nanmax(denominator)", text)
         self.assertNotIn("np.maximum(observed_log - background_log, 0.0)", text)
 
+    def test_ridge_search_has_local_flank_control_and_sector_holdout(self):
+        text = notebook_source()
+        for required in [
+            "phase_sector_row_histograms",
+            "variable_width_ridge_response",
+            "aggregate_radial_response",
+            "held_out_ridge_search",
+            "sigma_phase = m_arms * core_width_kpc /",
+            "narrow_mean - broad_mean",
+            "held_out_score",
+            'table["valid_held_out"] >= RIDGE_MIN_HELD_OUT_SECTORS',
+            "phase_stability",
+            "positive_radial_fraction",
+            "scramble_logpolar_rows",
+            "build_m_null_calibration",
+            "null_z",
+            "ridge_width_null_draws",
+            "branch_normalization = \"mean_not_sum\"",
+        ]:
+            self.assertIn(required, text)
+        self.assertNotIn("RIDGE_N_PHASE // 2", text)
+
+    def test_null_calibration_reuses_one_deterministic_shift_stream(self):
+        text = notebook_source()
+        self.assertIn("null_rng = np.random.default_rng(RNG_SEED)", text)
+        self.assertIn("scramble_logpolar_rows(logpolar_map, null_rng)", text)
+        self.assertNotIn("RNG_SEED + 1000 + null_index", text)
+
     def test_deprojection_and_data_model_ridge_semantics(self):
         text = notebook_source()
         for required in [
