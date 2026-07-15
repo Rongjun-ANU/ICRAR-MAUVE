@@ -2,8 +2,10 @@ import ast
 import json
 from pathlib import Path
 import unittest
+import warnings
 
 import numpy as np
+import pandas as pd
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 
 
@@ -57,7 +59,7 @@ def function_source(function_name):
     return source
 
 
-def extracted_function_namespace(function_names):
+def extracted_function_namespace(function_names, extra_namespace=None):
     _, nodes = notebook_function_nodes()
     requested = set(function_names)
     definitions = [
@@ -72,9 +74,14 @@ def extracted_function_namespace(function_names):
         "gaussian_filter1d": gaussian_filter1d,
         "LOGPOLAR_SMOOTH_SIGMA": (0.8, 1.2),
         "LOGPOLAR_AZIMUTH_BROAD_SIGMA_BINS": 30.0,
+        "LOGPOLAR_N_U": 4,
+        "LOGPOLAR_N_PHI": 8,
         "RIDGE_GUARD_BINS": 4,
         "RIDGE_N_SECTORS": 12,
+        "R_REF_KPC": 1.0,
     }
+    if extra_namespace is not None:
+        namespace.update(extra_namespace)
     module = ast.Module(body=definitions, type_ignores=[])
     exec(compile(ast.fix_missing_locations(module), str(NOTEBOOK), "exec"), namespace)
     return namespace
@@ -175,23 +182,37 @@ class NotebookContractTests(unittest.TestCase):
         self.assertNotIn("OUTER_COVERAGE_QUANTILE", text)
 
     def test_ridge_map_uses_all_valid_hii_pixels_and_mask_normalization(self):
-        text = notebook_source()
-        for required in [
+        function_names = notebook_function_names()
+        for required_function in [
             "build_hii_pixel_geometry",
             "build_log_polar_contrast",
-            "gaussian_filter(weighted_sum",
-            "gaussian_filter(coverage",
-            "mode=(\"nearest\", \"wrap\")",
+            "preprocess_logpolar_raw",
+        ]:
+            self.assertIn(required_function, function_names)
+        build_source = function_source("build_log_polar_contrast")
+        for required in [
             "np.quantile(u",
             "signed_residual",
+            "raw_weighted_sum",
+            "raw_coverage",
+            "preprocess_logpolar_raw(raw_state, include_local=True)",
+        ]:
+            self.assertIn(required, build_source)
+        preprocess_source = function_source("preprocess_logpolar_raw")
+        for required in [
+            'mode=("nearest", "wrap")',
             "local_ridge",
             "LOGPOLAR_AZIMUTH_BROAD_SIGMA_BINS",
+        ]:
+            self.assertIn(required, preprocess_source)
+        code = notebook_code_source()
+        for required in [
             "gradient_dex_per_kpc",
             "RIDGE_PIXEL_DOMAIN_PASS",
         ]:
-            self.assertIn(required, text)
-        self.assertNotIn("0.05 * np.nanmax(denominator)", text)
-        self.assertNotIn("np.maximum(observed_log - background_log, 0.0)", text)
+            self.assertIn(required, code)
+        self.assertNotIn("0.05 * np.nanmax(denominator)", code)
+        self.assertNotIn("np.maximum(observed_log - background_log, 0.0)", code)
 
     def test_m234_negative_winding_configuration_contract(self):
         code = notebook_code_source()
@@ -217,28 +238,183 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("ridge_geometry_table", code)
         self.assertIn("RIDGE_M234_REAL_COMPLETE", code)
 
-    def test_leakage_controlled_fold_contract(self):
+    def test_raw_logpolar_sector_folds_are_declared(self):
         function_names = notebook_function_names()
         for required_function in [
             "preprocess_logpolar_raw",
             "build_sector_fold_maps",
             "circular_dilate",
             "circular_erode",
-            "conditional_ridge_search",
+            "sector_columns",
+            "logpolar_fold_masks",
+            "run_adversarial_leakage_check",
         ]:
             self.assertIn(required_function, function_names)
         preprocess_source = function_source("preprocess_logpolar_raw")
         for required in [
             "raw_weighted_sum",
             "raw_coverage",
+            "allowed_phi",
+            "include_local",
+            'mode=("nearest", "wrap")',
         ]:
             self.assertIn(required, preprocess_source)
+        fold_source = function_source("build_sector_fold_maps")
+        self.assertIn("preprocess_logpolar_raw", fold_source)
+        self.assertIn("include_local=False", fold_source)
+        masks_source = function_source("logpolar_fold_masks")
+        self.assertIn("circular_dilate", masks_source)
+        self.assertIn("circular_erode", masks_source)
+        code = notebook_code_source()
+        self.assertIn("RIDGE_LEAKAGE_GUARD_PASS", code)
+
+    def test_synthetic_logpolar_returns_only_the_processed_map(self):
+        sentinel_pixels = object()
+        sentinel_radial = object()
+        sentinel_processed = {"u": np.array([0.0]), "valid": np.ones((1, 1), bool)}
+
+        def fake_synthetic_sfr_pixels(*args, **kwargs):
+            return sentinel_pixels, sentinel_radial
+
+        def fake_build_log_polar_contrast(pixels, radial_parameters):
+            self.assertIs(pixels, sentinel_pixels)
+            self.assertIs(radial_parameters, sentinel_radial)
+            return {"raw": "state"}, sentinel_processed
+
+        namespace = extracted_function_namespace(
+            ["synthetic_logpolar"],
+            extra_namespace={
+                "synthetic_sfr_pixels": fake_synthetic_sfr_pixels,
+                "build_log_polar_contrast": fake_build_log_polar_contrast,
+            },
+        )
+        result = namespace["synthetic_logpolar"](
+            3, -30.0, 0.7, 4254, noise_sigma=0.0)
+        self.assertIs(result, sentinel_processed)
+
+    def test_repeated_radii_are_rejected_before_endpoint_expansion(self):
+        namespace = extracted_function_namespace([
+            "preprocess_logpolar_raw",
+            "build_log_polar_contrast",
+        ])
+        radius = np.array([1, 1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=float)
+        repeated = pd.DataFrame({
+            "radius_kpc": radius,
+            "azimuth_rad": np.linspace(-2.5, 2.5, radius.size),
+            "log_sfr": np.linspace(-2.0, -1.0, radius.size),
+        })
+        with self.assertRaisesRegex(ValueError, "strictly increasing"):
+            namespace["build_log_polar_contrast"](
+                repeated, {"lambda0_0": 0.1, "h_R": 2.0},
+                n_u=4, n_phi=8)
+
+    def test_preprocess_validates_raw_state_and_does_not_mutate_it(self):
+        preprocess = extracted_function_namespace([
+            "preprocess_logpolar_raw",
+        ])["preprocess_logpolar_raw"]
+
+        def valid_state():
+            return {
+                "raw_weighted_sum": np.arange(8, dtype=float).reshape(2, 4),
+                "raw_coverage": np.full((2, 4), 2.0),
+                "u": np.array([-0.5, 0.5]),
+                "phi": np.linspace(-2.0, 2.0, 4),
+                "u_edges": np.array([-1.0, 0.0, 1.0]),
+                "phi_edges": np.linspace(-np.pi, np.pi, 5),
+            }
+
+        invalid_states = []
+        state = valid_state()
+        state["raw_weighted_sum"] = state["raw_weighted_sum"].ravel()
+        state["raw_coverage"] = state["raw_coverage"].ravel()
+        invalid_states.append(("one-dimensional maps", state, None))
+        state = valid_state()
+        state["raw_coverage"][0, 0] = -1.0
+        invalid_states.append(("negative coverage", state, None))
+        state = valid_state()
+        state["raw_weighted_sum"][0, 0] = np.nan
+        invalid_states.append(("NaN numerator", state, None))
+        state = valid_state()
+        state["u"] = state["u"][:1]
+        invalid_states.append(("short u axis", state, None))
+        state = valid_state()
+        state["phi_edges"] = state["phi_edges"][:-1]
+        invalid_states.append(("short phi edges", state, None))
+        state = valid_state()
+        state["phi"][0] = np.nan
+        invalid_states.append(("NaN phi axis", state, None))
+        invalid_states.append((
+            "short allowed mask", valid_state(), np.array([True, False])))
+
+        for label, state, allowed in invalid_states:
+            with self.subTest(label=label):
+                try:
+                    preprocess(
+                        state, allowed_phi=allowed, include_local=False,
+                        smooth_sigma=1.0)
+                except ValueError:
+                    pass
+                except Exception as exc:
+                    self.fail(
+                        f"Expected ValueError, got {type(exc).__name__}: {exc}")
+                else:
+                    self.fail("ValueError not raised")
+
+        state = valid_state()
+        original = {key: value.copy() for key, value in state.items()}
+        preprocess(
+            state, allowed_phi=np.array([True, False, True, False]),
+            include_local=False)
+        for key in state:
+            np.testing.assert_array_equal(state[key], original[key])
+
+    def test_build_logpolar_rejects_invalid_inputs_without_runtime_warning(self):
+        namespace = extracted_function_namespace([
+            "preprocess_logpolar_raw",
+            "build_log_polar_contrast",
+        ])
+        build = namespace["build_log_polar_contrast"]
+
+        def valid_table():
+            return pd.DataFrame({
+                "radius_kpc": np.array([0.5, 1.0, 1.5, 2.0]),
+                "azimuth_rad": np.array([-2.0, -0.5, 0.5, 2.0]),
+                "log_sfr": np.array([-2.0, -1.8, -1.6, -1.4]),
+            })
+
+        cases = []
+        table = valid_table()
+        table.loc[0, "radius_kpc"] = 0.0
+        cases.append(("zero radius", table, {"lambda0_0": 0.1, "h_R": 2.0}))
+        table = valid_table()
+        table.loc[0, "azimuth_rad"] = np.nan
+        cases.append(("NaN azimuth", table, {"lambda0_0": 0.1, "h_R": 2.0}))
+        table = valid_table()
+        table.loc[0, "log_sfr"] = np.nan
+        cases.append(("NaN log SFR", table, {"lambda0_0": 0.1, "h_R": 2.0}))
+        cases.append(("zero lambda0", valid_table(), {"lambda0_0": 0.0, "h_R": 2.0}))
+        cases.append(("zero h_R", valid_table(), {"lambda0_0": 0.1, "h_R": 0.0}))
+        cases.append(("infinite h_R", valid_table(), {"lambda0_0": 0.1, "h_R": np.inf}))
+
+        for label, table, parameters in cases:
+            with self.subTest(label=label):
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always", RuntimeWarning)
+                    with self.assertRaises(ValueError):
+                        build(table, parameters, n_u=1, n_phi=4)
+                runtime_warnings = [
+                    item for item in caught
+                    if issubclass(item.category, RuntimeWarning)
+                ]
+                self.assertEqual(runtime_warnings, [])
+
+    def test_conditional_search_uses_raw_fold_field_without_cache(self):
+        self.assertIn("conditional_ridge_search", notebook_function_names())
         conditional_source = function_source("conditional_ridge_search")
         self.assertIn('field="radial_residual"', conditional_source)
         self.assertIn("histogram_cache_payload_bytes = 0", conditional_source)
         self.assertNotIn('field="local_ridge"', conditional_source)
         self.assertNotIn("histogram_cache = {}", conditional_source)
-        self.assertIn("RIDGE_LEAKAGE_GUARD_PASS", notebook_code_source())
 
     def test_blocked_nulls_are_descriptive_not_selective(self):
         self.assertIn("build_blocked_null_diagnostics", notebook_function_names())
@@ -325,6 +501,7 @@ class NotebookContractTests(unittest.TestCase):
             "circular_dilate",
             "circular_erode",
             "logpolar_fold_masks",
+            "build_sector_fold_maps",
             "run_adversarial_leakage_check",
         ])
         result = namespace["run_adversarial_leakage_check"](
@@ -336,6 +513,23 @@ class NotebookContractTests(unittest.TestCase):
         )
         self.assertEqual(result["raw_training_signal_l1"], 0.0)
         self.assertLessEqual(result["max_abs_training_residual"], 1.0e-14)
+        for required in [
+            "train_valid_count",
+            "max_abs_residual_difference",
+            "max_abs_coverage_difference",
+            "known_train_valid_count",
+            "expected_training_residual",
+            "mean_known_training_residual",
+            "max_abs_known_training_error",
+        ]:
+            self.assertIn(required, result)
+        self.assertGreater(result["train_valid_count"], 0)
+        self.assertLessEqual(result["max_abs_residual_difference"], 1.0e-14)
+        self.assertLessEqual(result["max_abs_coverage_difference"], 1.0e-14)
+        self.assertGreater(result["known_train_valid_count"], 0)
+        self.assertAlmostEqual(result["expected_training_residual"], 0.25)
+        self.assertAlmostEqual(result["mean_known_training_residual"], 0.25)
+        self.assertLessEqual(result["max_abs_known_training_error"], 1.0e-14)
 
     def test_legacy_global_selector_and_bootstrap_are_removed(self):
         text = notebook_source()
