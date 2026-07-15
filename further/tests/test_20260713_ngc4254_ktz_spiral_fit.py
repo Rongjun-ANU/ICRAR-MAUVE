@@ -1,6 +1,10 @@
+import ast
 import json
 from pathlib import Path
 import unittest
+
+import numpy as np
+from scipy.ndimage import gaussian_filter, gaussian_filter1d
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +19,65 @@ def load_notebook():
 def notebook_source():
     nb = load_notebook()
     return "\n".join("".join(cell["source"]) for cell in nb["cells"])
+
+
+def notebook_code_source():
+    nb = load_notebook()
+    return "\n".join(
+        "".join(cell["source"])
+        for cell in nb["cells"]
+        if cell["cell_type"] == "code"
+    )
+
+
+def notebook_function_nodes():
+    code = notebook_code_source()
+    tree = ast.parse(code)
+    nodes = [
+        node for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
+    return code, nodes
+
+
+def notebook_function_names():
+    _, nodes = notebook_function_nodes()
+    return {node.name for node in nodes}
+
+
+def function_source(function_name):
+    code, nodes = notebook_function_nodes()
+    matches = [node for node in nodes if node.name == function_name]
+    assert len(matches) == 1, (
+        f"Expected one notebook FunctionDef named {function_name!r}; "
+        f"found {len(matches)}"
+    )
+    source = ast.get_source_segment(code, matches[0])
+    assert source is not None, f"Could not recover source for {function_name!r}"
+    return source
+
+
+def extracted_function_namespace(function_names):
+    _, nodes = notebook_function_nodes()
+    requested = set(function_names)
+    definitions = [
+        node for node in nodes if node.name in requested
+    ]
+    found = {node.name for node in definitions}
+    missing = sorted(requested - found)
+    assert not missing, f"Notebook functions not found: {missing}"
+    namespace = {
+        "np": np,
+        "gaussian_filter": gaussian_filter,
+        "gaussian_filter1d": gaussian_filter1d,
+        "LOGPOLAR_SMOOTH_SIGMA": (0.8, 1.2),
+        "LOGPOLAR_AZIMUTH_BROAD_SIGMA_BINS": 30.0,
+        "RIDGE_GUARD_BINS": 4,
+        "RIDGE_N_SECTORS": 12,
+    }
+    module = ast.Module(body=definitions, type_ignores=[])
+    exec(compile(ast.fix_missing_locations(module), str(NOTEBOOK), "exec"), namespace)
+    return namespace
 
 
 def notebook_output_text():
@@ -84,25 +147,24 @@ class NotebookContractTests(unittest.TestCase):
             "WCS_REFERENCE_NOT_CENTER_PASS",
             "FIT_DOMAIN_ALL_VALID_HII_PASS",
             "RIDGE_PIXEL_DOMAIN_PASS",
-            "RIDGE_SYNTHETIC_SIGN_PASS",
-            "RIDGE_SYNTHETIC_M_PASS",
-            "RIDGE_SYNTHETIC_PHASE_PASS",
-            "RIDGE_M_NORMALIZATION_PASS",
+            "RIDGE_LEAKAGE_GUARD_PASS",
+            "RIDGE_M234_SYNTHETIC_PASS",
             "RIDGE_BRANCH_NORMALIZATION_PASS",
-            "RIDGE_NULL_NORMALIZATION_PASS",
-            "RIDGE_WIDTH_SENSITIVITY_COMPLETE",
-            "RIDGE_REAL_FIT_COMPLETE",
-            "RIDGE_SECTOR_STABILITY_COMPLETE",
-            "KTZ_PROFILE_FIT_COMPLETE",
-            "HARMONIC_MAXIMA_COMPLETE",
+            "RIDGE_M234_REAL_COMPLETE",
+            "RIDGE_NULL_BLOCKS_COMPLETE",
+            "RIDGE_WIDTH_M234_COMPLETE",
+            "RIDGE_SECTOR_M234_COMPLETE",
+            "KTZ_M234_PROFILE_FITS_COMPLETE",
+            "HARMONIC_M234_MAXIMA_COMPLETE",
             "DEPROJECTION_ROUNDTRIP_PASS",
             "SYNTHETIC_WINDING_SIGN_PASS",
-            "DEPROJECTED_SFR_SKELETON_PASS",
-            "FINAL_PARAMETER_TABLE_COMPLETE",
+            "M234_COMPARISON_LAYOUT_COMPLETE",
+            "M234_MODEL_RESIDUAL_LAYOUT_COMPLETE",
+            "FINAL_M234_PARAMETER_TABLE_COMPLETE",
             "POSITIVITY_CHECK_PASS",
         ]:
             self.assertIn(marker, joined)
-        self.assertGreaterEqual(image_count, 7)
+        self.assertGreaterEqual(image_count, 9)
         self.assertNotIn("RuntimeWarning", joined)
 
     def test_fit_domain_uses_every_valid_hii_bin(self):
@@ -131,33 +193,64 @@ class NotebookContractTests(unittest.TestCase):
         self.assertNotIn("0.05 * np.nanmax(denominator)", text)
         self.assertNotIn("np.maximum(observed_log - background_log, 0.0)", text)
 
-    def test_ridge_search_has_local_flank_control_and_sector_holdout(self):
-        text = notebook_source()
+    def test_m234_negative_winding_configuration_contract(self):
+        code = notebook_code_source()
         for required in [
-            "phase_sector_row_histograms",
-            "variable_width_ridge_response",
-            "aggregate_radial_response",
-            "held_out_ridge_search",
-            "sigma_phase = m_arms * core_width_kpc /",
-            "narrow_mean - broad_mean",
-            "held_out_score",
-            'table["valid_held_out"] >= RIDGE_MIN_HELD_OUT_SECTORS',
-            "phase_stability",
-            "positive_radial_fraction",
-            "scramble_logpolar_rows",
-            "build_m_null_calibration",
-            "null_z",
-            "ridge_width_null_draws",
-            "branch_normalization = \"mean_not_sum\"",
+            "M_COMPARE = np.array([2, 3, 4], dtype=int)",
+            "RIDGE_PITCH_GRID_DEG = np.arange(-45.0, -4.9, 1.0)",
+            "RIDGE_GUARD_BINS = 4",
+            "RIDGE_NULL_BLOCK_SEEDS = np.array([4254, 5254, 6254, 7254], dtype=int)",
+            "RIDGE_NULL_DRAWS_PER_BLOCK = 8",
+            "RIDGE_NULL_TOTAL_DRAWS = int(len(RIDGE_NULL_BLOCK_SEEDS) * RIDGE_NULL_DRAWS_PER_BLOCK)",
         ]:
-            self.assertIn(required, text)
-        self.assertNotIn("RIDGE_N_PHASE // 2", text)
+            self.assertIn(required, code)
+        self.assertNotIn("M_CANDIDATES =", code)
+        self.assertNotIn("np.arange(1, 7", code)
+        self.assertNotIn("np.arange(5.0, 45.1", code)
+        self.assertNotIn("RIDGE_N_NULL =", code)
 
-    def test_null_calibration_reuses_one_deterministic_shift_stream(self):
-        text = notebook_source()
-        self.assertIn("null_rng = np.random.default_rng(RNG_SEED)", text)
-        self.assertIn("scramble_logpolar_rows(logpolar_map, null_rng)", text)
-        self.assertNotIn("RNG_SEED + 1000 + null_index", text)
+    def test_conditional_m234_negative_winding_implementation_contract(self):
+        self.assertIn("conditional_ridge_search", notebook_function_names())
+        conditional_source = function_source("conditional_ridge_search")
+        self.assertIn("leakage_controlled_negative_winding_ridge", conditional_source)
+        code = notebook_code_source()
+        self.assertIn("ridge_geometry_table", code)
+        self.assertIn("RIDGE_M234_REAL_COMPLETE", code)
+
+    def test_leakage_controlled_fold_contract(self):
+        function_names = notebook_function_names()
+        for required_function in [
+            "preprocess_logpolar_raw",
+            "build_sector_fold_maps",
+            "circular_dilate",
+            "circular_erode",
+            "conditional_ridge_search",
+        ]:
+            self.assertIn(required_function, function_names)
+        preprocess_source = function_source("preprocess_logpolar_raw")
+        for required in [
+            "raw_weighted_sum",
+            "raw_coverage",
+        ]:
+            self.assertIn(required, preprocess_source)
+        conditional_source = function_source("conditional_ridge_search")
+        self.assertIn('field="radial_residual"', conditional_source)
+        self.assertIn("histogram_cache_payload_bytes = 0", conditional_source)
+        self.assertNotIn('field="local_ridge"', conditional_source)
+        self.assertNotIn("histogram_cache = {}", conditional_source)
+        self.assertIn("RIDGE_LEAKAGE_GUARD_PASS", notebook_code_source())
+
+    def test_blocked_nulls_are_descriptive_not_selective(self):
+        self.assertIn("build_blocked_null_diagnostics", notebook_function_names())
+        blocked_null_source = function_source("build_blocked_null_diagnostics")
+        for required in [
+            "null_block_summary",
+            "pooled_null_summary",
+            "descriptive_not_model_selection",
+        ]:
+            self.assertIn(required, blocked_null_source)
+        self.assertNotIn("accepted.iloc[0].to_dict()", blocked_null_source)
+        self.assertIn("RIDGE_NULL_BLOCKS_COMPLETE", notebook_code_source())
 
     def test_deprojection_and_data_model_ridge_semantics(self):
         text = notebook_source()
@@ -194,42 +287,55 @@ class NotebookContractTests(unittest.TestCase):
         self.assertNotIn("log_sfr_map + np.log10(B_OVER_A)", text)
         self.assertNotIn("log_sfr_map * B_OVER_A", text)
 
-    def test_ridge_geometry_precedes_ktz_profile(self):
-        text = notebook_source()
+    def test_three_fixed_geometry_ktz_fits_are_declared(self):
+        self.assertIn("fit_ktz_profile_fixed_geometry", notebook_function_names())
+        fit_source = function_source("fit_ktz_profile_fixed_geometry")
+        self.assertIn('"geometry_source": geometry["geometry_source"]', fit_source)
+        code = notebook_code_source()
         for required in [
-            "M_CANDIDATES = np.arange(1, 7",
-            "build_log_polar_contrast",
-            "held_out_ridge_search",
-            "RIDGE_SYNTHETIC_SIGN_PASS",
-            "RIDGE_SYNTHETIC_M_PASS",
-            "RIDGE_SYNTHETIC_PHASE_PASS",
-            "RIDGE_M_NORMALIZATION_PASS",
-            "RIDGE_BRANCH_NORMALIZATION_PASS",
-            "RIDGE_NULL_NORMALIZATION_PASS",
-            "RIDGE_WIDTH_SENSITIVITY_COMPLETE",
-            "RIDGE_REAL_FIT_COMPLETE",
-            "RIDGE_SECTOR_STABILITY_COMPLETE",
-            "KTZ_PROFILE_FIT_COMPLETE",
+            "conditional_fits",
+            "conditional_fit_tables",
+            "profile_maxima_by_m",
+            "KTZ_M234_PROFILE_FITS_COMPLETE",
+            "HARMONIC_M234_MAXIMA_COMPLETE",
         ]:
-            self.assertIn(required, text)
-        self.assertLess(text.index("RIDGE_REAL_FIT_COMPLETE"),
-                        text.index("KTZ_PROFILE_FIT_COMPLETE"))
+            self.assertIn(required, code)
 
-    def test_all_harmonic_maxima_and_approved_layout_are_declared(self):
-        text = notebook_source()
+    def test_m234_comparative_figures_and_table_are_declared(self):
+        code = notebook_code_source()
         for required in [
-            "enumerate_profile_maxima",
-            "HARMONIC_MAXIMA_COMPLETE",
             "plt.subplots(2, 2",
             "observed sky-plane",
             "observed deprojected",
-            "fitted KTZ-compatible source model",
+            "conditional KTZ harmonic profiles",
+            "ridge-width and descriptive-null comparison",
+            "plt.subplots(3, 2",
+            "conditional source model",
             "observed - model residual",
-            "SYNTHETIC_WINDING_SIGN_PASS",
-            "FINAL_PARAMETER_TABLE_COMPLETE",
-            "DEPROJECTED_SFR_SKELETON_PASS",
+            "M234_COMPARISON_LAYOUT_COMPLETE",
+            "M234_MODEL_RESIDUAL_LAYOUT_COMPLETE",
+            "FINAL_M234_PARAMETER_TABLE_COMPLETE",
         ]:
-            self.assertIn(required, text)
+            self.assertIn(required, code)
+
+    def test_adversarial_sector_signal_has_zero_training_field(self):
+        namespace = extracted_function_namespace([
+            "preprocess_logpolar_raw",
+            "sector_columns",
+            "circular_dilate",
+            "circular_erode",
+            "logpolar_fold_masks",
+            "run_adversarial_leakage_check",
+        ])
+        result = namespace["run_adversarial_leakage_check"](
+            n_u=12,
+            n_phi=48,
+            n_sectors=4,
+            held_sector=1,
+            guard_bins=2,
+        )
+        self.assertEqual(result["raw_training_signal_l1"], 0.0)
+        self.assertLessEqual(result["max_abs_training_residual"], 1.0e-14)
 
     def test_legacy_global_selector_and_bootstrap_are_removed(self):
         text = notebook_source()
