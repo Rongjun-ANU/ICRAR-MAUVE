@@ -174,7 +174,7 @@ class NotebookContractTests(unittest.TestCase):
         nb = load_notebook()
         text = "\n".join("".join(cell["source"]) for cell in nb["cells"])
         required = [
-            "LOGSFR_SURFACE_DENSITY_HII",
+            "LOGSFR_SURFACE_DENSITY_SF",
             "BIN_ID",
             "m_arms",
             "pitch_angle",
@@ -216,7 +216,8 @@ class NotebookContractTests(unittest.TestCase):
             "BA_FACTOR_PASS",
             "UPSTREAM_BA_PASS",
             "WCS_REFERENCE_NOT_CENTER_PASS",
-            "FIT_DOMAIN_ALL_VALID_HII_PASS",
+            "SFR_INPUT_SF_PASS",
+            "FIT_DOMAIN_ALL_VALID_SF_PASS",
             "RIDGE_PIXEL_DOMAIN_PASS",
             "RIDGE_LEAKAGE_GUARD_PASS",
             "RIDGE_M234_SYNTHETIC_PASS",
@@ -245,17 +246,19 @@ class NotebookContractTests(unittest.TestCase):
         self.assertEqual(
             source_hash_match.group(1), notebook_source_sha256(nb))
 
-    def test_fit_domain_uses_every_valid_hii_bin(self):
+    def test_fit_domain_uses_every_valid_sf_bin(self):
         nb = load_notebook()
         text = "\n".join("".join(cell["source"]) for cell in nb["cells"])
-        self.assertIn("USE_ALL_VALID_HII_BINS = True", text)
-        self.assertIn("FIT_DOMAIN_ALL_VALID_HII_PASS", text)
+        self.assertIn('SFR_HDU = "LOGSFR_SURFACE_DENSITY_SF"', text)
+        self.assertIn("USE_ALL_VALID_SF_BINS = True", text)
+        self.assertIn("FIT_DOMAIN_ALL_VALID_SF_PASS", text)
+        self.assertIn("SFR_INPUT_SF_PASS", text)
         self.assertNotIn("OUTER_COVERAGE_QUANTILE", text)
 
-    def test_ridge_map_uses_all_valid_hii_pixels_and_mask_normalization(self):
+    def test_ridge_map_uses_all_valid_sf_pixels_and_mask_normalization(self):
         function_names = notebook_function_names()
         for required_function in [
-            "build_hii_pixel_geometry",
+            "build_sf_pixel_geometry",
             "build_log_polar_contrast",
             "preprocess_logpolar_raw",
         ]:
@@ -284,6 +287,27 @@ class NotebookContractTests(unittest.TestCase):
             self.assertIn(required, code)
         self.assertNotIn("0.05 * np.nanmax(denominator)", code)
         self.assertNotIn("np.maximum(observed_log - background_log, 0.0)", code)
+
+    def test_sf_switch_removes_hii_identifiers_and_hardcoded_live_outcomes(self):
+        code = notebook_code_source()
+        for required in [
+            "valid_sf_pixels",
+            "sf_pixels",
+            "expected_width_status_counts_by_m",
+            "expected_ridge_acceptance",
+        ]:
+            self.assertIn(required, code)
+        for forbidden in [
+            "LOGSFR_SURFACE_DENSITY_HII",
+            "USE_ALL_VALID_HII_BINS",
+            "valid_hii_pixels",
+            "hii_pixels",
+            'assert width_status_counts_by_m[2] ==',
+            'assert parameter_table["ridge_accepted"].tolist() == [False, True, True]',
+            'assert comparison_mode_order == [3, 4, 2]',
+            'comparison_skeleton_metadata[2]["zorder"] >',
+        ]:
+            self.assertNotIn(forbidden, code)
 
     def test_m234_negative_winding_configuration_contract(self):
         code = notebook_code_source()
@@ -1808,9 +1832,9 @@ class NotebookContractTests(unittest.TestCase):
         final_markdown = notebook_cell_source("d876a478")
         for required in [
             "all three results are conditional",
+            "SF-selected",
             "negative winding",
-            "m=2",
-            "9/12",
+            "held-sector results",
             "descriptive",
             "ridge width",
             "held sectors",

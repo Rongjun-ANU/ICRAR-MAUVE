@@ -1,0 +1,72 @@
+<h2>How should the revised 2×2 spiral diagnostic compare the fits?</h2>
+<p class="subtitle">All options add the deprojected observed SFR map. Cyan denotes the selected model; dashed green denotes the best opposite winding. The proposed search is m=1…6.</p>
+
+<div class="section">
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>What the audit found</h4>
+      <ul>
+        <li>The current m=1 curve shows only the strongest harmonic-profile maximum.</li>
+        <li>The m=3 alternative displays three branches, so its visual coverage is not an equal comparison.</li>
+        <li>m=5 and m=6 were tested in scratch; neither beats m=1 globally.</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>Visual ranking caveat</h4>
+      <ul>
+        <li>The fit scores every HII bin, including faint and inter-arm bins.</li>
+        <li>Line overlap by eye emphasizes only bright narrow ridges.</li>
+        <li>The actual robust-loss difference between m=1 and m=3 is only 0.52%.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+        <div class="placeholder" style="height:112px;background:#26163e;color:#fff">Sky observed<br><span style="color:#5fe9f2">selected ridges</span> + <span style="color:#75d477">opposite</span></div>
+        <div class="placeholder" style="height:112px;background:#3a1746;color:#fff">Face-on observed<br><span style="color:#5fe9f2">same ridges</span> + <span style="color:#75d477">opposite</span></div>
+        <div class="placeholder" style="height:112px;background:#6b234f;color:#fff">Selected model<br>all enhanced maxima</div>
+        <div class="placeholder" style="height:112px;background:#d5d9e2;color:#272936">Observed − selected<br>residual + ridges</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Full science diagnostic (recommended)</h3>
+      <p>Preserves observed, model, and residual information while adding the requested deprojected observation. Draws every locally enhanced selected ridge, not only its global maximum.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+        <div class="placeholder" style="height:112px;background:#26163e;color:#fff">Sky observed<br><span style="color:#5fe9f2">selected only</span></div>
+        <div class="placeholder" style="height:112px;background:#26163e;color:#fff">Sky observed<br><span style="color:#75d477">alternative only</span></div>
+        <div class="placeholder" style="height:112px;background:#3a1746;color:#fff">Face-on observed<br><span style="color:#5fe9f2">selected only</span></div>
+        <div class="placeholder" style="height:112px;background:#3a1746;color:#fff">Face-on observed<br><span style="color:#75d477">alternative only</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Fair visual candidate comparison</h3>
+      <p>Best for deciding whether m=1 or opposite-winding m=3 follows bright arms by eye. It removes the fitted-model and residual panels, so it is less complete scientifically.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+        <div class="placeholder" style="height:112px;background:#26163e;color:#fff">Sky observed<br>both candidates</div>
+        <div class="placeholder" style="height:112px;background:#3a1746;color:#fff">Face-on observed<br>both candidates</div>
+        <div class="placeholder" style="height:112px;background:#6b234f;color:#fff">Selected model<br>selected ridges</div>
+        <div class="placeholder" style="height:112px;background:#39516e;color:#fff">Alternative model<br>alternative ridges</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Data plus both model reconstructions</h3>
+      <p>Shows how each candidate explains the full field, but drops the residual panel that exposes where either global model fails.</p>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:20px">Click one layout. You can also reply with changes such as “A, but put the two candidate models in the bottom row.”</p>
