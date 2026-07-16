@@ -4,12 +4,14 @@ import io
 import json
 from pathlib import Path
 from time import perf_counter
+from types import SimpleNamespace
 import unittest
 import warnings
 
 import numpy as np
 import pandas as pd
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
+from scipy.optimize import least_squares, minimize_scalar
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -102,8 +104,11 @@ def extracted_function_namespace(function_names, extra_namespace=None):
         "M_COMPARE": np.array([2, 3, 4], dtype=int),
         "RIDGE_PITCH_GRID_DEG": np.array([-30.0, -20.0]),
         "R_REF_KPC": 1.0,
+        "HARMONIC_N": np.array([1, 2, 3], dtype=int),
         "pd": pd,
         "perf_counter": perf_counter,
+        "least_squares": least_squares,
+        "minimize_scalar": minimize_scalar,
     }
     if extra_namespace is not None:
         namespace.update(extra_namespace)
@@ -963,21 +968,24 @@ class NotebookContractTests(unittest.TestCase):
             "Task 4 will construct the KTZ-compatible source profile",
             "After Task 4 fits only the source profile",
             "Task 4 will provide the source-profile parameters",
+            "FIXED_GEOMETRY_PROFILE_PENDING_TASK_5",
         ]:
             self.assertNotIn(stale, text)
         for current in [
-            "Task 5 will introduce a source-profile fit",
-            "FIXED_GEOMETRY_PROFILE_PENDING_TASK_5",
-            "Task 5 will construct the KTZ-compatible source profile",
-            "After Task 5 fits only the source profile",
-            "Task 5 will provide the source-profile parameters",
+            "Fit KTZ-compatible source profiles at frozen ridge geometries",
+            "axisymmetric exponential background multiplied by a periodic source-rate modulation",
+            "m=2 fit is retained as a rejected conditional sensitivity case",
+            "fit_ktz_profile_fixed_geometry",
+            "enumerate_profile_maxima",
+            "constraint-limited",
+            "harmonic_bound_limited",
+            "active_mask",
         ]:
             self.assertIn(current, text)
 
     def test_three_fixed_geometry_ktz_fits_are_declared(self):
         self.assertIn("fit_ktz_profile_fixed_geometry", notebook_function_names())
-        fit_source = function_source("fit_ktz_profile_fixed_geometry")
-        self.assertIn('"geometry_source": geometry["geometry_source"]', fit_source)
+        self.assertIn("enumerate_profile_maxima", notebook_function_names())
         code = notebook_code_source()
         for required in [
             "conditional_fits",
@@ -985,8 +993,304 @@ class NotebookContractTests(unittest.TestCase):
             "profile_maxima_by_m",
             "KTZ_M234_PROFILE_FITS_COMPLETE",
             "HARMONIC_M234_MAXIMA_COMPLETE",
+            "POSITIVITY_CHECK_PASS",
         ]:
             self.assertIn(required, code)
+
+    def test_fixed_profile_optimizer_state_excludes_geometry(self):
+        fit_source = function_source("fit_ktz_profile_fixed_geometry")
+        tree = ast.parse(fit_source)
+        state_names = {
+            "optimizer_initial", "lower_bounds", "upper_bounds",
+        }
+        state_nodes = {}
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+                continue
+            target = node.targets[0]
+            if isinstance(target, ast.Name) and target.id in state_names:
+                state_nodes[target.id] = node.value
+        self.assertEqual(set(state_nodes), state_names)
+        for name, node in state_nodes.items():
+            source = ast.unparse(node)
+            for forbidden in ["m_arms", "pitch_angle", "theta0", "Theta0"]:
+                self.assertNotIn(forbidden, source, (name, source))
+            self.assertIsInstance(node, ast.Call)
+            self.assertEqual(len(node.args[0].elts), 7)
+        invocation = notebook_cell_source("a55074f1")
+        self.assertIn(
+            "for _, geometry_row in ridge_geometry_table.iterrows()",
+            invocation,
+        )
+        for mapping_name in [
+                "conditional_fits", "conditional_fit_tables",
+                "profile_maxima_by_m"]:
+            self.assertIn(
+                f"list({mapping_name}) == M_COMPARE.tolist()",
+                invocation,
+            )
+
+    def test_fixed_profile_uses_natural_log_sqrt_area_weights_and_dense_penalty(self):
+        captured = {}
+        safe_parameters = np.array([
+            np.log(0.5), np.log(2.0), np.log(0.2),
+            0.0, 0.0, 0.0, 0.0,
+        ])
+
+        def fake_least_squares(residual, x0, bounds, **kwargs):
+            captured["residual"] = residual
+            captured["x0"] = np.asarray(x0, dtype=float).copy()
+            captured["bounds"] = tuple(
+                np.asarray(value, dtype=float).copy() for value in bounds)
+            captured["kwargs"] = kwargs.copy()
+            captured["safe_residual"] = residual(safe_parameters)
+            return SimpleNamespace(
+                success=True,
+                x=safe_parameters.copy(),
+                cost=1.25,
+                message="captured residual",
+                status=2,
+                active_mask=np.array([0, 0, 0, 1, -1, 0, 0]),
+                optimality=3.0e-7,
+                nfev=4,
+                njev=3,
+            )
+
+        namespace = extracted_function_namespace(
+            [
+                "spiral_phase", "arm_profile", "wrap_angle",
+                "fit_ktz_profile_fixed_geometry",
+            ],
+            extra_namespace={"least_squares": fake_least_squares},
+        )
+        geometry = {
+            "m_arms": 2,
+            "pitch_angle": -30.0,
+            "Theta0": 0.4,
+            "geometry_source": "captured_fixed_geometry",
+            "accepted": False,
+            "acceptance_reason": "below_threshold: captured case",
+        }
+        table = pd.DataFrame({
+            "radius_kpc": [1.0, 2.0, 3.0],
+            "azimuth_rad": [-0.6, 0.2, 1.1],
+            "sfr_linear": [0.42, 0.31, 0.18],
+            "area_pix": [1.0, 4.0, 16.0],
+        })
+        model = namespace["fit_ktz_profile_fixed_geometry"](
+            table, geometry, {"lambda0_0": 0.5, "h_R": 2.0})
+
+        radius = table["radius_kpc"].to_numpy(float)
+        theta = namespace["spiral_phase"](
+            radius,
+            table["azimuth_rad"].to_numpy(float),
+            geometry["m_arms"],
+            geometry["pitch_angle"],
+            geometry["Theta0"],
+        )
+        safe_factor = 1.0 + 0.2 * np.cos(theta)
+        expected_weights = np.sqrt(table["area_pix"].to_numpy(float))
+        expected_weights /= np.median(expected_weights)
+        expected_data_residual = expected_weights * (
+            np.log(table["sfr_linear"].to_numpy(float))
+            - (np.log(0.5) - radius / 2.0 + np.log(safe_factor))
+        )
+        safe_residual = captured["safe_residual"]
+        np.testing.assert_allclose(
+            safe_residual[:len(table)], expected_data_residual,
+            rtol=0.0, atol=1.0e-12,
+        )
+        self.assertEqual(safe_residual.size, len(table) + 8192)
+        np.testing.assert_array_equal(safe_residual[len(table):], 0.0)
+
+        unsafe_parameters = safe_parameters.copy()
+        unsafe_parameters[2] = np.log(2.0)
+        unsafe_parameters[3:5] = 1.5
+        unsafe_residual = captured["residual"](unsafe_parameters)
+        positivity_penalty = unsafe_residual[len(table):]
+        self.assertGreater(np.max(positivity_penalty), 1.0e3)
+        self.assertGreater(np.count_nonzero(positivity_penalty), 0)
+
+        np.testing.assert_allclose(captured["x0"], [
+            np.log(0.5), np.log(2.0), np.log(0.2),
+            0.3, 0.15, 0.0, 0.0,
+        ])
+        np.testing.assert_allclose(captured["bounds"][0], [
+            -50.0, np.log(0.2), np.log(1.0e-4),
+            0.0, 0.0, -np.pi, -np.pi,
+        ])
+        np.testing.assert_allclose(captured["bounds"][1], [
+            50.0, np.log(30.0), np.log(2.0),
+            1.5, 1.5, np.pi, np.pi,
+        ])
+        self.assertEqual(captured["kwargs"]["loss"], "soft_l1")
+        self.assertEqual(captured["kwargs"]["f_scale"], 0.25)
+        self.assertEqual(captured["kwargs"]["max_nfev"], 3000)
+
+        for key in [
+                "parameter_names", "active_mask",
+                "active_bound_parameters", "harmonic_bound_limited",
+                "optimizer_status", "optimizer_message", "optimality",
+                "nfev", "njev"]:
+            self.assertIn(key, model)
+        self.assertEqual(model["parameter_names"], [
+            "log_lambda0_0", "log_h_R", "log_eta",
+            "g2", "g3", "alpha2", "alpha3",
+        ])
+        self.assertEqual(model["active_mask"], [0, 0, 0, 1, -1, 0, 0])
+        self.assertTrue(all(type(value) is int for value in model["active_mask"]))
+        self.assertEqual(
+            model["active_bound_parameters"],
+            {"g2": "upper", "g3": "lower"},
+        )
+        self.assertTrue(model["harmonic_bound_limited"])
+        self.assertEqual(model["optimizer_status"], 2)
+        self.assertEqual(model["optimizer_message"], "captured residual")
+        self.assertEqual(model["optimality"], 3.0e-7)
+        self.assertEqual(model["nfev"], 4)
+        self.assertEqual(model["njev"], 3)
+        diagnostics = {
+            key: model[key]
+            for key in [
+                "parameter_names", "active_mask",
+                "active_bound_parameters", "harmonic_bound_limited",
+                "optimizer_status", "optimizer_message", "optimality",
+                "nfev", "njev",
+            ]
+        }
+        json.dumps(diagnostics)
+        pd.DataFrame([diagnostics]).to_csv(io.StringIO(), index=False)
+
+    def test_fixed_profile_fit_preserves_rejected_geometry_and_positive_maxima(self):
+        namespace = extracted_function_namespace([
+            "spiral_phase",
+            "arm_profile",
+            "wrap_angle",
+            "fit_ktz_profile_fixed_geometry",
+            "enumerate_profile_maxima",
+        ])
+        rng = np.random.default_rng(4254)
+        radius = rng.uniform(0.5, 8.0, 1200)
+        azimuth = rng.uniform(-np.pi, np.pi, radius.size)
+        geometry = {
+            "m_arms": 2,
+            "pitch_angle": -24.0,
+            "Theta0": 0.7,
+            "geometry_source": "leakage_controlled_negative_winding_ridge",
+            "accepted": False,
+            "acceptance_reason": "below_threshold: synthetic rejected case",
+        }
+        true_g = np.array([1.0, 0.25, 0.12])
+        true_alpha = np.array([0.0, 0.4, -0.6])
+        theta = namespace["spiral_phase"](
+            radius, azimuth, geometry["m_arms"],
+            geometry["pitch_angle"], geometry["Theta0"])
+        factor = 1.0 + 0.24 * namespace["arm_profile"](
+            theta, true_g, true_alpha)
+        self.assertGreater(factor.min(), 0.0)
+        sfr = 0.08 * np.exp(-radius / 3.2) * factor
+        table = pd.DataFrame({
+            "radius_kpc": radius,
+            "azimuth_rad": azimuth,
+            "sfr_linear": sfr,
+            "area_pix": rng.integers(1, 20, radius.size).astype(float),
+        })
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", RuntimeWarning)
+            model = namespace["fit_ktz_profile_fixed_geometry"](
+                table, geometry, {"lambda0_0": 0.07, "h_R": 3.0})
+            maxima = namespace["enumerate_profile_maxima"](
+                model, n_grid=8192)
+        self.assertEqual(caught, [])
+        self.assertEqual(model["m_arms"], geometry["m_arms"])
+        self.assertEqual(model["pitch_angle"], geometry["pitch_angle"])
+        self.assertEqual(model["Theta0"], geometry["Theta0"])
+        self.assertEqual(model["geometry_source"], geometry["geometry_source"])
+        self.assertFalse(model["ridge_accepted"])
+        self.assertEqual(
+            model["ridge_acceptance_reason"], geometry["acceptance_reason"])
+        np.testing.assert_array_equal(model["harmonic_n"], [1, 2, 3])
+        self.assertEqual(model["harmonic_g"].shape, (3,))
+        self.assertEqual(model["harmonic_alpha"].shape, (3,))
+        self.assertTrue(np.isfinite(model["harmonic_g"]).all())
+        self.assertTrue(np.isfinite(model["harmonic_alpha"]).all())
+        self.assertEqual(model["harmonic_g"][0], 1.0)
+        self.assertEqual(model["harmonic_alpha"][0], 0.0)
+        self.assertGreater(model["minimum_rate_factor"], 0.0)
+        self.assertTrue(np.isfinite(model["weighted_log_sse"]))
+        self.assertTrue(np.isfinite(model["robust_cost"]))
+        self.assertTrue(model["success"])
+        self.assertAlmostEqual(model["lambda0_0"], 0.08, delta=2.0e-3)
+        self.assertAlmostEqual(model["h_R"], 3.2, delta=2.0e-3)
+        self.assertAlmostEqual(model["eta"], 0.24, delta=2.0e-3)
+        np.testing.assert_allclose(
+            model["harmonic_g"], true_g, rtol=0.0, atol=2.0e-3)
+        np.testing.assert_allclose(
+            model["harmonic_alpha"], true_alpha,
+            rtol=0.0, atol=5.0e-3)
+        for key in [
+                "active_mask", "active_bound_parameters",
+                "harmonic_bound_limited", "optimality", "nfev", "njev"]:
+            self.assertIn(key, model)
+        self.assertEqual(model["active_mask"], [0] * 7)
+        self.assertEqual(model["active_bound_parameters"], {})
+        self.assertFalse(model["harmonic_bound_limited"])
+        self.assertGreater(model["nfev"], 0)
+        self.assertGreaterEqual(model["njev"], 0)
+        self.assertGreaterEqual(model["optimality"], 0.0)
+        self.assertFalse(maxima.empty)
+        self.assertEqual(maxima.columns.tolist(), [
+            "theta_peak", "h_peak", "rate_factor",
+            "enhanced_above_background",
+        ])
+        self.assertTrue(np.isfinite(
+            maxima[["theta_peak", "h_peak", "rate_factor"]]).all().all())
+        self.assertTrue((maxima["rate_factor"] > 0.0).all())
+        self.assertTrue((np.diff(maxima["rate_factor"]) <= 0.0).all())
+
+    def test_profile_maxima_respect_circular_boundary_counts_and_stationarity(self):
+        namespace = extracted_function_namespace([
+            "wrap_angle", "enumerate_profile_maxima",
+        ])
+        enumerate_maxima = namespace["enumerate_profile_maxima"]
+        self.assertEqual(enumerate_maxima.__defaults__, (65536,))
+
+        boundary_model = {
+            "eta": 0.2,
+            "harmonic_n": np.array([1]),
+            "harmonic_g": np.array([1.0]),
+            "harmonic_alpha": np.array([np.pi]),
+        }
+        boundary_maxima = enumerate_maxima(boundary_model, n_grid=4096)
+        self.assertEqual(len(boundary_maxima), 1)
+        boundary_distance = abs(np.angle(np.exp(
+            1j * (boundary_maxima.iloc[0]["theta_peak"] - np.pi))))
+        self.assertLess(boundary_distance, 1.0e-7)
+
+        triple_model = {
+            "eta": 0.25,
+            "harmonic_n": np.array([3]),
+            "harmonic_g": np.array([1.0]),
+            "harmonic_alpha": np.array([0.0]),
+        }
+        triple_maxima = enumerate_maxima(triple_model, n_grid=4096)
+        self.assertEqual(len(triple_maxima), 3)
+        self.assertTrue(
+            (np.diff(triple_maxima["rate_factor"]) <= 0.0).all())
+        theta_peaks = triple_maxima["theta_peak"].to_numpy(float)
+        circular_separations = []
+        for left in range(len(theta_peaks)):
+            for right in range(left + 1, len(theta_peaks)):
+                circular_separations.append(abs(np.angle(np.exp(
+                    1j * (theta_peaks[left] - theta_peaks[right])))))
+        self.assertGreater(min(circular_separations), 2.0)
+
+        epsilon = 1.0e-6
+        for theta_peak in theta_peaks:
+            rate_plus = 1.0 + 0.25 * np.cos(3.0 * (theta_peak + epsilon))
+            rate_minus = 1.0 + 0.25 * np.cos(3.0 * (theta_peak - epsilon))
+            derivative = (rate_plus - rate_minus) / (2.0 * epsilon)
+            self.assertLess(abs(derivative), 1.0e-7)
 
     def test_m234_comparative_figures_and_table_are_declared(self):
         code = notebook_code_source()
