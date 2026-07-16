@@ -76,9 +76,18 @@ def extracted_function_namespace(function_names, extra_namespace=None):
         "LOGPOLAR_AZIMUTH_BROAD_SIGMA_BINS": 30.0,
         "LOGPOLAR_N_U": 4,
         "LOGPOLAR_N_PHI": 8,
-        "RIDGE_GUARD_BINS": 4,
-        "RIDGE_N_SECTORS": 12,
+        "LOGPOLAR_N_RADIAL_BANDS": 4,
+        "RIDGE_GUARD_BINS": 1,
+        "RIDGE_N_SECTORS": 4,
+        "RIDGE_N_PHASE": 72,
+        "RIDGE_CORE_WIDTH_KPC": 0.25,
+        "RIDGE_BROAD_RATIO": 3.0,
+        "RIDGE_SHORTLIST_PER_FAMILY": 2,
+        "RIDGE_MIN_HELD_OUT_SECTORS": 3,
+        "M_COMPARE": np.array([2, 3, 4], dtype=int),
+        "RIDGE_PITCH_GRID_DEG": np.array([-30.0, -20.0]),
         "R_REF_KPC": 1.0,
+        "pd": pd,
     }
     if extra_namespace is not None:
         namespace.update(extra_namespace)
@@ -234,9 +243,8 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIn("conditional_ridge_search", notebook_function_names())
         conditional_source = function_source("conditional_ridge_search")
         self.assertIn("leakage_controlled_negative_winding_ridge", conditional_source)
-        code = notebook_code_source()
-        self.assertIn("ridge_geometry_table", code)
-        self.assertIn("RIDGE_M234_REAL_COMPLETE", code)
+        self.assertIn("ridge_geometry_table", conditional_source)
+        self.assertIn("ranked_candidates", conditional_source)
 
     def test_raw_logpolar_sector_folds_are_declared(self):
         function_names = notebook_function_names()
@@ -268,9 +276,10 @@ class NotebookContractTests(unittest.TestCase):
         code = notebook_code_source()
         self.assertIn("RIDGE_LEAKAGE_GUARD_PASS", code)
 
-    def test_synthetic_logpolar_returns_only_the_processed_map(self):
+    def test_synthetic_logpolar_returns_raw_and_processed_maps(self):
         sentinel_pixels = object()
         sentinel_radial = object()
+        sentinel_raw = {"raw": "state"}
         sentinel_processed = {"u": np.array([0.0]), "valid": np.ones((1, 1), bool)}
 
         def fake_synthetic_sfr_pixels(*args, **kwargs):
@@ -279,7 +288,7 @@ class NotebookContractTests(unittest.TestCase):
         def fake_build_log_polar_contrast(pixels, radial_parameters):
             self.assertIs(pixels, sentinel_pixels)
             self.assertIs(radial_parameters, sentinel_radial)
-            return {"raw": "state"}, sentinel_processed
+            return sentinel_raw, sentinel_processed
 
         namespace = extracted_function_namespace(
             ["synthetic_logpolar"],
@@ -288,9 +297,70 @@ class NotebookContractTests(unittest.TestCase):
                 "build_log_polar_contrast": fake_build_log_polar_contrast,
             },
         )
-        result = namespace["synthetic_logpolar"](
+        raw_result, processed_result = namespace["synthetic_logpolar"](
             3, -30.0, 0.7, 4254, noise_sigma=0.0)
-        self.assertIs(result, sentinel_processed)
+        self.assertIs(raw_result, sentinel_raw)
+        self.assertIs(processed_result, sentinel_processed)
+
+    def test_three_synthetic_m234_cases_recover_with_fixed_tolerances(self):
+        namespace = extracted_function_namespace(
+            [
+                "preprocess_logpolar_raw",
+                "build_log_polar_contrast",
+                "sector_columns",
+                "circular_dilate",
+                "circular_erode",
+                "logpolar_fold_masks",
+                "build_sector_fold_maps",
+                "wrap_angle",
+                "phase_row_histograms",
+                "variable_width_ridge_response",
+                "aggregate_radial_response",
+                "ridge_curve_for_map",
+                "conditional_ridge_search",
+                "synthetic_sfr_pixels",
+                "synthetic_logpolar",
+            ],
+            extra_namespace={
+                "LOGPOLAR_N_U": 120,
+                "LOGPOLAR_N_PHI": 360,
+                "LOGPOLAR_N_RADIAL_BANDS": 24,
+                "RIDGE_GUARD_BINS": 4,
+                "RIDGE_N_SECTORS": 12,
+                "RIDGE_N_PHASE": 360,
+                "RIDGE_CORE_WIDTH_KPC": 0.25,
+                "RIDGE_BROAD_RATIO": 3.0,
+                "RIDGE_SHORTLIST_PER_FAMILY": 5,
+                "RIDGE_MIN_HELD_OUT_SECTORS": 10,
+                "RIDGE_PITCH_GRID_DEG": np.arange(-45.0, -4.9, 1.0),
+                "R_REF_KPC": 1.0,
+            },
+        )
+        cases = [(2, -22.0), (3, -30.0), (4, -38.0)]
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always", RuntimeWarning)
+            for case_index, (m_true, pitch_true) in enumerate(cases):
+                raw_state, _ = namespace["synthetic_logpolar"](
+                    m_true, pitch_true, 0.7, 4254 + case_index)
+                geometry, _, _, cache_bytes = (
+                    namespace["conditional_ridge_search"](
+                        raw_state,
+                        m_compare=np.array([m_true], dtype=int),
+                        pitch_grid=np.arange(-45.0, -4.9, 1.0),
+                    ))
+                self.assertEqual(len(geometry), 1)
+                recovered = geometry.iloc[0]
+                phase_error_deg = np.rad2deg(abs(namespace["wrap_angle"](
+                    recovered["Theta0"] - 0.7)))
+                self.assertEqual(int(recovered["m_arms"]), m_true)
+                self.assertLess(recovered["pitch_angle"], 0.0)
+                self.assertLessEqual(
+                    abs(recovered["pitch_angle"] - pitch_true), 2.0)
+                self.assertLessEqual(phase_error_deg, 5.0)
+                self.assertGreaterEqual(recovered["valid_held_out"], 10)
+                self.assertGreater(recovered["validated_score"], 0.0)
+                self.assertEqual(cache_bytes, 0)
+        self.assertEqual(caught, [])
 
     def test_repeated_radii_are_rejected_before_endpoint_expansion(self):
         namespace = extracted_function_namespace([
@@ -411,10 +481,109 @@ class NotebookContractTests(unittest.TestCase):
     def test_conditional_search_uses_raw_fold_field_without_cache(self):
         self.assertIn("conditional_ridge_search", notebook_function_names())
         conditional_source = function_source("conditional_ridge_search")
-        self.assertIn('field="radial_residual"', conditional_source)
+        ridge_curve_source = function_source("ridge_curve_for_map")
+        self.assertIn("ridge_curve_for_map", conditional_source)
+        self.assertIn('field="radial_residual"', ridge_curve_source)
         self.assertIn("histogram_cache_payload_bytes = 0", conditional_source)
-        self.assertNotIn('field="local_ridge"', conditional_source)
+        self.assertNotIn('field="local_ridge"', ridge_curve_source)
         self.assertNotIn("histogram_cache = {}", conditional_source)
+
+    def test_phase_histograms_and_variable_width_response_are_scale_invariant(self):
+        namespace = extracted_function_namespace([
+            "phase_row_histograms",
+            "variable_width_ridge_response",
+        ])
+        n_u = 8
+        n_phi = 36
+        u = np.linspace(np.log(0.8), np.log(5.0), n_u)
+        phi = np.linspace(-np.pi, np.pi, n_phi, endpoint=False)
+        uu, pp = np.meshgrid(u, phi, indexing="ij")
+        field = np.cos(
+            (2.0 / np.tan(np.deg2rad(-20.0))) * uu - 2.0 * pp)
+        logpolar_map = {
+            "u": u,
+            "phi": phi,
+            "radial_residual": field,
+            "coverage": np.full_like(field, 5.0),
+            "valid": np.ones_like(field, dtype=bool),
+        }
+        weighted, support = namespace["phase_row_histograms"](
+            logpolar_map, 2, -20.0, n_phase=72)
+        self.assertEqual(weighted.shape, (n_u, 72))
+        self.assertEqual(support.shape, (n_u, 72))
+        response = namespace["variable_width_ridge_response"](
+            weighted, support, u, 2, -20.0, n_radial_bands=4)
+        scaled = namespace["variable_width_ridge_response"](
+            6.0 * weighted, 6.0 * support, u, 2, -20.0,
+            n_radial_bands=4)
+        np.testing.assert_allclose(
+            response["response"], scaled["response"],
+            equal_nan=True, atol=1.0e-12)
+        self.assertGreaterEqual(response["low_clamp_count"], 0)
+        self.assertGreaterEqual(response["high_clamp_count"], 0)
+
+    def test_conditional_search_returns_one_geometry_per_requested_mode(self):
+        namespace = extracted_function_namespace([
+            "preprocess_logpolar_raw",
+            "sector_columns",
+            "circular_dilate",
+            "circular_erode",
+            "logpolar_fold_masks",
+            "build_sector_fold_maps",
+            "phase_row_histograms",
+            "variable_width_ridge_response",
+            "aggregate_radial_response",
+            "ridge_curve_for_map",
+            "conditional_ridge_search",
+        ])
+        n_u = 8
+        n_phi = 72
+        u_edges = np.linspace(np.log(0.8), np.log(5.0), n_u + 1)
+        phi_edges = np.linspace(-np.pi, np.pi, n_phi + 1)
+        u = 0.5 * (u_edges[:-1] + u_edges[1:])
+        phi = 0.5 * (phi_edges[:-1] + phi_edges[1:])
+        uu, pp = np.meshgrid(u, phi, indexing="ij")
+        signal = np.zeros((n_u, n_phi), dtype=float)
+        for m_arms, pitch_angle, theta0 in [
+                (2, -20.0, 0.5), (3, -30.0, 1.0)]:
+            phase = ((m_arms / np.tan(np.deg2rad(pitch_angle))) * uu
+                     - m_arms * pp + theta0)
+            wrapped = np.angle(np.exp(1j * phase))
+            signal += 0.7 * np.exp(-0.5 * (wrapped / 0.18)**2)
+        coverage = np.full_like(signal, 40.0)
+        raw_state = {
+            "raw_weighted_sum": coverage * signal,
+            "raw_coverage": coverage,
+            "u": u,
+            "phi": phi,
+            "u_edges": u_edges,
+            "phi_edges": phi_edges,
+        }
+        geometry, candidates, folds, cache_bytes = (
+            namespace["conditional_ridge_search"](
+                raw_state,
+                m_compare=np.array([2, 3]),
+                pitch_grid=np.array([-30.0, -20.0]),
+                guard_bins=1,
+            ))
+        self.assertEqual(geometry["m_arms"].tolist(), [2, 3])
+        self.assertTrue((geometry["pitch_angle"] < 0.0).all())
+        self.assertTrue((geometry["geometry_source"]
+                         == "leakage_controlled_negative_winding_ridge").all())
+        self.assertTrue((geometry["valid_held_out"] >= 3).all())
+        self.assertTrue((geometry["validated_score"] > 0.0).all())
+        self.assertEqual(set(candidates["m_arms"]), {2, 3})
+        self.assertEqual(set(folds["m_arms"]), {2, 3})
+        self.assertEqual(cache_bytes, 0)
+
+    def test_conditional_search_rejects_noninteger_modes_and_nonnegative_pitch(self):
+        search = extracted_function_namespace([
+            "conditional_ridge_search",
+        ])["conditional_ridge_search"]
+        with self.assertRaises(ValueError):
+            search({}, m_compare=np.array([2.5]), pitch_grid=np.array([-20.0]))
+        with self.assertRaises(ValueError):
+            search({}, m_compare=np.array([2]), pitch_grid=np.array([20.0]))
 
     def test_blocked_nulls_are_descriptive_not_selective(self):
         self.assertIn("build_blocked_null_diagnostics", notebook_function_names())
