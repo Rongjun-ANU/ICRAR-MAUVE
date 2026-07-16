@@ -1,6 +1,9 @@
 import ast
+import contextlib
+import io
 import json
 from pathlib import Path
+from time import perf_counter
 import unittest
 import warnings
 
@@ -30,6 +33,18 @@ def notebook_code_source():
         for cell in nb["cells"]
         if cell["cell_type"] == "code"
     )
+
+
+def notebook_cell_source(cell_id):
+    matches = [
+        cell for cell in load_notebook()["cells"]
+        if cell.get("id") == cell_id
+    ]
+    assert len(matches) == 1, (
+        f"Expected one notebook cell with id {cell_id!r}; "
+        f"found {len(matches)}"
+    )
+    return "".join(matches[0]["source"])
 
 
 def notebook_function_nodes():
@@ -88,6 +103,7 @@ def extracted_function_namespace(function_names, extra_namespace=None):
         "RIDGE_PITCH_GRID_DEG": np.array([-30.0, -20.0]),
         "R_REF_KPC": 1.0,
         "pd": pd,
+        "perf_counter": perf_counter,
     }
     if extra_namespace is not None:
         namespace.update(extra_namespace)
@@ -572,6 +588,8 @@ class NotebookContractTests(unittest.TestCase):
                          == "leakage_controlled_negative_winding_ridge").all())
         self.assertTrue((geometry["valid_held_out"] >= 3).all())
         self.assertTrue((geometry["validated_score"] > 0.0).all())
+        self.assertEqual(geometry["accepted"].tolist(), [True, True])
+        self.assertEqual(geometry["acceptance_reason"].tolist(), ["passed", "passed"])
         self.assertEqual(set(candidates["m_arms"]), {2, 3})
         self.assertEqual(set(folds["m_arms"]), {2, 3})
         self.assertEqual(cache_bytes, 0)
@@ -585,6 +603,275 @@ class NotebookContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             search({}, m_compare=np.array([2]), pitch_grid=np.array([20.0]))
 
+    def test_conditional_search_fallback_keeps_each_requested_mode_flagged(self):
+        namespace = extracted_function_namespace([
+            "preprocess_logpolar_raw",
+            "sector_columns",
+            "circular_dilate",
+            "circular_erode",
+            "logpolar_fold_masks",
+            "build_sector_fold_maps",
+            "phase_row_histograms",
+            "variable_width_ridge_response",
+            "aggregate_radial_response",
+            "ridge_curve_for_map",
+            "conditional_ridge_search",
+        ], extra_namespace={
+            "RIDGE_MIN_HELD_OUT_SECTORS": 5,
+        })
+        n_u = 8
+        n_phi = 72
+        u_edges = np.linspace(np.log(0.8), np.log(5.0), n_u + 1)
+        phi_edges = np.linspace(-np.pi, np.pi, n_phi + 1)
+        u = 0.5 * (u_edges[:-1] + u_edges[1:])
+        phi = 0.5 * (phi_edges[:-1] + phi_edges[1:])
+        uu, pp = np.meshgrid(u, phi, indexing="ij")
+        signal = np.zeros((n_u, n_phi), dtype=float)
+        for m_arms, pitch_angle, theta0 in [
+                (2, -20.0, 0.5), (3, -30.0, 1.0)]:
+            phase = ((m_arms / np.tan(np.deg2rad(pitch_angle))) * uu
+                     - m_arms * pp + theta0)
+            wrapped = np.angle(np.exp(1j * phase))
+            signal += 0.7 * np.exp(-0.5 * (wrapped / 0.18)**2)
+        coverage = np.full_like(signal, 40.0)
+        raw_state = {
+            "raw_weighted_sum": coverage * signal,
+            "raw_coverage": coverage,
+            "u": u,
+            "phi": phi,
+            "u_edges": u_edges,
+            "phi_edges": phi_edges,
+        }
+        search = namespace["conditional_ridge_search"]
+        kwargs = {
+            "m_compare": np.array([2, 3]),
+            "pitch_grid": np.array([-30.0, -20.0]),
+            "guard_bins": 1,
+        }
+        with self.assertRaisesRegex(RuntimeError, "m=2,3"):
+            search(raw_state, **kwargs)
+        geometry, candidates, folds, cache_bytes = search(
+            raw_state, allow_no_acceptance=True, **kwargs)
+        self.assertEqual(len(geometry), 2)
+        self.assertEqual(geometry["m_arms"].tolist(), [2, 3])
+        self.assertEqual(geometry["accepted"].tolist(), [False, False])
+        self.assertTrue(geometry["acceptance_reason"].str.startswith(
+            "below_threshold: valid_held_out=").all())
+        self.assertTrue(geometry["acceptance_reason"].str.contains(
+            "/4; required>=5; validated_score=", regex=False).all())
+        self.assertTrue(np.isfinite(geometry["held_out_score"]).all())
+        self.assertTrue(np.isfinite(geometry["validated_score"]).all())
+        self.assertTrue((geometry["valid_held_out"] == 4).all())
+        for _, selected in geometry.iterrows():
+            family = candidates.loc[
+                (candidates["m_arms"] == int(selected["m_arms"]))
+                & (candidates["valid_held_out"] > 0)
+                & np.isfinite(candidates["held_out_score"])
+            ].sort_values(
+                ["validated_score", "full_ridge_score"],
+                ascending=False,
+                na_position="last",
+            )
+            self.assertFalse(family.empty)
+            expected = family.iloc[0]
+            self.assertEqual(selected["pitch_angle"], expected["pitch_angle"])
+            self.assertEqual(
+                selected["validated_score"], expected["validated_score"])
+        self.assertEqual(set(candidates["m_arms"]), {2, 3})
+        self.assertEqual(set(folds["m_arms"]), {2, 3})
+        self.assertEqual(cache_bytes, 0)
+
+    def test_conditional_search_allow_mode_never_omits_empty_requested_mode(self):
+        namespace = extracted_function_namespace([
+            "preprocess_logpolar_raw",
+            "sector_columns",
+            "circular_dilate",
+            "circular_erode",
+            "logpolar_fold_masks",
+            "build_sector_fold_maps",
+            "phase_row_histograms",
+            "variable_width_ridge_response",
+            "aggregate_radial_response",
+            "ridge_curve_for_map",
+            "conditional_ridge_search",
+            "build_selected_sector_table",
+        ])
+        n_u = 8
+        n_phi = 72
+        u_edges = np.linspace(np.log(0.8), np.log(5.0), n_u + 1)
+        phi_edges = np.linspace(-np.pi, np.pi, n_phi + 1)
+        raw_state = {
+            "raw_weighted_sum": np.zeros((n_u, n_phi)),
+            "raw_coverage": np.zeros((n_u, n_phi)),
+            "u": 0.5 * (u_edges[:-1] + u_edges[1:]),
+            "phi": 0.5 * (phi_edges[:-1] + phi_edges[1:]),
+            "u_edges": u_edges,
+            "phi_edges": phi_edges,
+        }
+        search = namespace["conditional_ridge_search"]
+        kwargs = {
+            "m_compare": np.array([2, 3]),
+            "pitch_grid": np.array([-20.0]),
+            "guard_bins": 1,
+        }
+        with self.assertRaises(RuntimeError):
+            search(raw_state, **kwargs)
+        geometry, candidates, folds, cache_bytes = search(
+            raw_state, allow_no_acceptance=True, **kwargs)
+        self.assertEqual(len(geometry), 2)
+        self.assertEqual(geometry["m_arms"].tolist(), [2, 3])
+        self.assertEqual(geometry["accepted"].tolist(), [False, False])
+        self.assertTrue((geometry["pitch_angle"] < 0.0).all())
+        self.assertTrue(geometry["acceptance_reason"].str.contains(
+            "no_finite_full_map_candidate", regex=False).all())
+        self.assertTrue(candidates.empty)
+        self.assertTrue(folds.empty)
+        for required in [
+            "m_arms",
+            "pitch_angle",
+            "held_sector",
+            "test_score",
+            "train_Theta0",
+        ]:
+            self.assertIn(required, folds.columns)
+        sector_table, expected_fold_rows = namespace[
+            "build_selected_sector_table"](geometry, folds)
+        self.assertEqual(expected_fold_rows, 0)
+        self.assertEqual(len(sector_table), 0)
+        for required in [
+            "m_arms",
+            "pitch_angle",
+            "held_sector",
+            "test_score",
+            "train_Theta0",
+            "accepted",
+            "acceptance_reason",
+        ]:
+            self.assertIn(required, sector_table.columns)
+        self.assertEqual(cache_bytes, 0)
+
+    def test_scramble_logpolar_raw_couples_shifts_and_preserves_input(self):
+        scramble = extracted_function_namespace([
+            "scramble_logpolar_raw",
+        ])["scramble_logpolar_raw"]
+        weighted = np.arange(24, dtype=float).reshape(3, 8)
+        coverage = weighted + 100.0
+        raw_state = {
+            "raw_weighted_sum": weighted.copy(),
+            "raw_coverage": coverage.copy(),
+            "u": np.arange(3, dtype=float),
+            "phi": np.arange(8, dtype=float),
+            "u_edges": np.arange(4, dtype=float),
+            "phi_edges": np.arange(9, dtype=float),
+        }
+        original = {key: value.copy() for key, value in raw_state.items()}
+        scrambled = scramble(raw_state, np.random.default_rng(4254))
+        repeated = scramble(raw_state, np.random.default_rng(4254))
+        np.testing.assert_array_equal(
+            scrambled["raw_coverage"] - scrambled["raw_weighted_sum"],
+            np.full_like(weighted, 100.0),
+        )
+        for key in raw_state:
+            np.testing.assert_array_equal(raw_state[key], original[key])
+            self.assertIsNot(scrambled[key], raw_state[key])
+            np.testing.assert_array_equal(scrambled[key], repeated[key])
+
+    def test_blocked_null_diagnostics_has_exact_draw_cardinality(self):
+        calls = []
+
+        def fake_conditional_ridge_search(raw_state, allow_no_acceptance=False):
+            self.assertTrue(allow_no_acceptance)
+            calls.append(raw_state)
+            draw_index = len(calls) - 1
+            geometry = pd.DataFrame({
+                "m_arms": [2, 3, 4],
+                "validated_score": [
+                    0.10 + draw_index / 1000.0,
+                    0.20 + draw_index / 1000.0,
+                    0.30 + draw_index / 1000.0,
+                ],
+                "accepted": [True, False, True],
+                "acceptance_reason": [
+                    "passed",
+                    "below_threshold: valid_held_out=2/3; validated_score=0.2",
+                    "passed",
+                ],
+                "valid_held_out": [4, 2, 4],
+            })
+            return geometry, pd.DataFrame(), pd.DataFrame(), 0
+
+        namespace = extracted_function_namespace([
+            "scramble_logpolar_raw",
+            "build_blocked_null_diagnostics",
+        ], extra_namespace={
+            "conditional_ridge_search": fake_conditional_ridge_search,
+            "RIDGE_NULL_BLOCK_SEEDS": np.array(
+                [4254, 5254, 6254, 7254], dtype=int),
+            "RIDGE_NULL_DRAWS_PER_BLOCK": 8,
+        })
+        weighted = np.arange(24, dtype=float).reshape(3, 8)
+        raw_state = {
+            "raw_weighted_sum": weighted,
+            "raw_coverage": np.full_like(weighted, 10.0),
+            "u": np.arange(3, dtype=float),
+            "phi": np.arange(8, dtype=float),
+            "u_edges": np.arange(4, dtype=float),
+            "phi_edges": np.arange(9, dtype=float),
+        }
+        progress_stream = io.StringIO()
+        with contextlib.redirect_stdout(progress_stream):
+            draws, pooled, blocks = namespace[
+                "build_blocked_null_diagnostics"](raw_state)
+        progress_lines = [
+            line for line in progress_stream.getvalue().splitlines()
+            if line.startswith("RIDGE_NULL_BLOCK_PROGRESS")
+        ]
+        self.assertEqual(len(progress_lines), 4)
+        for block_index, block_seed in enumerate(
+                [4254, 5254, 6254, 7254], start=1):
+            self.assertIn(
+                f"block={block_index}/4 seed={block_seed} elapsed=",
+                progress_lines[block_index - 1],
+            )
+        self.assertNotIn("draw=", progress_stream.getvalue())
+        self.assertEqual(len(calls), 32)
+        self.assertEqual(len(draws), 96)
+        self.assertEqual(len(blocks), 12)
+        self.assertEqual(
+            draws.groupby("m_arms").size().to_dict(),
+            {2: 32, 3: 32, 4: 32},
+        )
+        self.assertTrue((
+            draws.groupby(["block_index", "block_seed"]).size() == 24
+        ).all())
+        self.assertTrue((
+            draws.groupby(["block_index", "block_seed", "m_arms"]).size()
+            == 8
+        ).all())
+        self.assertEqual(
+            sorted(draws["block_seed"].unique().tolist()),
+            [4254, 5254, 6254, 7254],
+        )
+        self.assertEqual(sorted(draws["draw"].unique().tolist()), list(range(8)))
+        self.assertTrue((draws.loc[~draws["accepted"], "best_null_score"] == 0.0).all())
+        self.assertTrue((pooled["null_count"] == 32).all())
+        self.assertTrue((blocks["null_count"] == 8).all())
+        self.assertTrue((pooled["null_std_floor"] >= 1.0e-6).all())
+        pooled_by_m = pooled.set_index("m_arms")
+        expected_sample_std = pd.Series(
+            np.arange(32, dtype=float) / 1000.0).std(ddof=1)
+        self.assertAlmostEqual(pooled_by_m.at[2, "null_mean"], 0.1155)
+        self.assertAlmostEqual(
+            pooled_by_m.at[2, "null_std"], expected_sample_std)
+        self.assertAlmostEqual(pooled_by_m.at[3, "null_mean"], 0.0)
+        self.assertAlmostEqual(pooled_by_m.at[3, "null_std"], 0.0)
+        self.assertAlmostEqual(pooled_by_m.at[4, "null_mean"], 0.3155)
+        self.assertAlmostEqual(
+            pooled_by_m.at[4, "null_std"], expected_sample_std)
+        for table in [draws, pooled, blocks]:
+            self.assertTrue((table["null_role"]
+                             == "descriptive_not_model_selection").all())
+
     def test_blocked_nulls_are_descriptive_not_selective(self):
         self.assertIn("build_blocked_null_diagnostics", notebook_function_names())
         blocked_null_source = function_source("build_blocked_null_diagnostics")
@@ -592,10 +879,46 @@ class NotebookContractTests(unittest.TestCase):
             "null_block_summary",
             "pooled_null_summary",
             "descriptive_not_model_selection",
+            "RIDGE_NULL_BLOCK_SEEDS",
+            "RIDGE_NULL_DRAWS_PER_BLOCK",
+            "scramble_logpolar_raw",
+            "allow_no_acceptance=True",
+            "RIDGE_NULL_BLOCK_PROGRESS",
+            "perf_counter",
         ]:
             self.assertIn(required, blocked_null_source)
         self.assertNotIn("accepted.iloc[0].to_dict()", blocked_null_source)
-        self.assertIn("RIDGE_NULL_BLOCKS_COMPLETE", notebook_code_source())
+        section_11 = notebook_cell_source("da64c8d1")
+        section_12 = notebook_cell_source("a55074f1")
+        for required in [
+            "RIDGE_NULL_BLOCKS_COMPLETE",
+            "RIDGE_WIDTH_M234_COMPLETE",
+            "RIDGE_WIDTH_PROGRESS",
+            "enumerate(RIDGE_WIDTH_SENSITIVITY_KPC)",
+            "len(ridge_null_draws) == 96",
+            "len(null_block_summary) == 12",
+            "len(ridge_width_table) == 15",
+            'null_role"] = "descriptive_not_model_selection"',
+            "conditional_ridge_search(\n    logpolar_raw, allow_no_acceptance=True",
+            '"accepted"',
+            '"acceptance_reason"',
+        ]:
+            self.assertIn(required, section_11)
+        for required in [
+            "RIDGE_SECTOR_M234_COMPLETE",
+            "RIDGE_M234_REAL_COMPLETE",
+            "ridge_fold_table",
+            '"accepted"',
+            "expected_fold_rows",
+        ]:
+            self.assertIn(required, section_12)
+        for forbidden in [
+            "RIDGE_N_NULL",
+            "M_CANDIDATES",
+            "held_out_ridge_search",
+        ]:
+            self.assertNotIn(forbidden, section_11)
+            self.assertNotIn(forbidden, section_12)
 
     def test_deprojection_and_data_model_ridge_semantics(self):
         text = notebook_source()
@@ -631,6 +954,25 @@ class NotebookContractTests(unittest.TestCase):
             self.assertIn(required, text)
         self.assertNotIn("log_sfr_map + np.log10(B_OVER_A)", text)
         self.assertNotIn("log_sfr_map * B_OVER_A", text)
+
+    def test_fixed_geometry_source_profile_is_assigned_to_task5(self):
+        text = notebook_source()
+        for stale in [
+            "Task 4 will introduce a source-profile fit",
+            "FIXED_GEOMETRY_PROFILE_PENDING_TASK_4",
+            "Task 4 will construct the KTZ-compatible source profile",
+            "After Task 4 fits only the source profile",
+            "Task 4 will provide the source-profile parameters",
+        ]:
+            self.assertNotIn(stale, text)
+        for current in [
+            "Task 5 will introduce a source-profile fit",
+            "FIXED_GEOMETRY_PROFILE_PENDING_TASK_5",
+            "Task 5 will construct the KTZ-compatible source profile",
+            "After Task 5 fits only the source profile",
+            "Task 5 will provide the source-profile parameters",
+        ]:
+            self.assertIn(current, text)
 
     def test_three_fixed_geometry_ktz_fits_are_declared(self):
         self.assertIn("fit_ktz_profile_fixed_geometry", notebook_function_names())
