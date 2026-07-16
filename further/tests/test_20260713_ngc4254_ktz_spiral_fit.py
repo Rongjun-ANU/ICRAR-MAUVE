@@ -10,6 +10,13 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import astropy.units as u
+from astropy.coordinates import FK5, SkyCoord
+from astropy.wcs import WCS
+import matplotlib
+matplotlib.use("Agg", force=True)
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 from scipy.optimize import least_squares, minimize_scalar
 
@@ -1292,22 +1299,440 @@ class NotebookContractTests(unittest.TestCase):
             derivative = (rate_plus - rate_minus) / (2.0 * epsilon)
             self.assertLess(abs(derivative), 1.0e-7)
 
-    def test_m234_comparative_figures_and_table_are_declared(self):
-        code = notebook_code_source()
+    def test_projection_roundtrip_and_negative_winding_direction(self):
+        synthetic_wcs = WCS(naxis=2)
+        synthetic_wcs.wcs.crpix = [128.0, 128.0]
+        synthetic_wcs.wcs.cdelt = np.array([-0.2, 0.2]) / 3600.0
+        synthetic_wcs.wcs.crval = [184.707, 14.418]
+        synthetic_wcs.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+        synthetic_wcs.wcs.radesys = "FK5"
+        synthetic_wcs.wcs.equinox = 2000.0
+        centre = SkyCoord(
+            synthetic_wcs.wcs.crval[0] * u.deg,
+            synthetic_wcs.wcs.crval[1] * u.deg,
+            frame=FK5(equinox="J2000"),
+        )
+        namespace = extracted_function_namespace(
+            [
+                "deproject_sky", "spiral_phase",
+                "skeleton_xy_for_phase", "project_disc_to_pixel",
+            ],
+            extra_namespace={
+                "u": u,
+                "FK5": FK5,
+                "SkyCoord": SkyCoord,
+                "CENTER": centre,
+                "ARCSEC_TO_KPC": 0.08,
+                "POSITION_ANGLE_DEG": 68.0,
+                "INCLINATION_DEG": 39.0,
+                "celestial_wcs": synthetic_wcs,
+                "R_REF_KPC": 1.0,
+            },
+        )
+
+        x_disc = np.array([-2.5, -0.4, 0.0, 1.2, 3.1])
+        y_disc = np.array([1.7, -2.2, 0.0, 0.6, -1.4])
+        x_pixel, y_pixel = namespace["project_disc_to_pixel"](
+            x_disc, y_disc)
+        ra_deg, dec_deg = synthetic_wcs.pixel_to_world_values(
+            x_pixel, y_pixel)
+        recovered = namespace["deproject_sky"](ra_deg, dec_deg)
+        np.testing.assert_allclose(recovered[0], x_disc, atol=2.0e-7)
+        np.testing.assert_allclose(recovered[1], y_disc, atol=2.0e-7)
+
+        radius = np.geomspace(0.8, 8.0, 500)
+        geometry = {
+            "m_arms": 3,
+            "pitch_angle": -25.0,
+            "Theta0": 0.4,
+        }
+        curves = namespace["skeleton_xy_for_phase"](
+            geometry, radius, theta_target=0.0)
+        self.assertEqual(len(curves), 3)
+        first_phi = np.unwrap(np.arctan2(curves[0][1], curves[0][0]))
+        self.assertTrue((np.diff(first_phi) < 0.0).all())
+        recovered_slope = (
+            (first_phi[-1] - first_phi[0])
+            / np.log(radius[-1] / radius[0]))
+        self.assertAlmostEqual(
+            recovered_slope,
+            1.0 / np.tan(np.deg2rad(geometry["pitch_angle"])),
+            places=10,
+        )
+        for x_curve, y_curve in curves:
+            theta = namespace["spiral_phase"](
+                radius,
+                np.arctan2(y_curve, x_curve),
+                geometry["m_arms"],
+                geometry["pitch_angle"],
+                geometry["Theta0"],
+            )
+            np.testing.assert_allclose(
+                np.angle(np.exp(1j * theta)), 0.0, atol=2.0e-14)
+
+    def test_m234_comparative_layouts_are_executable_code_with_status_styles(self):
+        section_13 = notebook_cell_source("1e4ee86a")
+        section_14_markdown = notebook_cell_source("43003e0d")
+        section_14 = notebook_cell_source("c7c05d44")
+        ast.parse(section_13)
+        ast.parse(section_14)
         for required in [
-            "plt.subplots(2, 2",
+            'M_COLORS = {2: "cyan", 3: "lime", 4: "dodgerblue"}',
+            "radius_grid = np.geomspace(",
+            "RIDGE_R_IN_KPC, RIDGE_R_OUT_KPC, 1000",
+            "data_ridge_curves_by_m",
+            "theta_target=0.0",
+            "plt.subplots(2, 2, figsize=(14.5, 12.0), constrained_layout=True)",
             "observed sky-plane",
             "observed deprojected",
             "conditional KTZ harmonic profiles",
+            "fixed-geometry source profiles",
             "ridge-width and descriptive-null comparison",
-            "plt.subplots(3, 2",
+            'facecolors="none"',
+            "descriptive pooled null z",
+            "M234_COMPARISON_LAYOUT_COMPLETE",
+        ]:
+            self.assertIn(required, section_13)
+        for required in [
+            "plt.subplots(3, 2, figsize=(13.5, 18.0), constrained_layout=True)",
+            "enhanced_above_background",
             "conditional source model",
             "observed - model residual",
-            "M234_COMPARISON_LAYOUT_COMPLETE",
+            "np.nanpercentile",
             "M234_MODEL_RESIDUAL_LAYOUT_COMPLETE",
-            "FINAL_M234_PARAMETER_TABLE_COMPLETE",
         ]:
-            self.assertIn(required, code)
+            self.assertIn(required, section_14)
+        for required in [
+            "symmetric 95th-percentile",
+            "outer 5%",
+            "color scale",
+            "data points remain",
+        ]:
+            self.assertIn(required, section_14_markdown)
+
+        namespace = extracted_function_namespace(
+            ["conditional_geometry_style"],
+            extra_namespace={
+                "M_COLORS": {2: "cyan", 3: "lime", 4: "dodgerblue"},
+            },
+        )
+        rejected = namespace["conditional_geometry_style"]({
+            "m_arms": 2, "accepted": False,
+        })
+        accepted = namespace["conditional_geometry_style"]({
+            "m_arms": 3, "accepted": True,
+        })
+        self.assertEqual(
+            rejected,
+            {
+                "color": "cyan", "status": "below threshold",
+                "linestyle": "--", "filled": False,
+            },
+        )
+        self.assertEqual(
+            accepted,
+            {
+                "color": "lime", "status": "accepted",
+                "linestyle": "-", "filled": True,
+            },
+        )
+
+    def test_width_status_artists_draw_rejected_diamonds_last(self):
+        namespace = extracted_function_namespace(
+            ["conditional_geometry_style", "plot_width_status_artists"],
+            extra_namespace={
+                "M_COLORS": {2: "cyan", 3: "lime", 4: "dodgerblue"},
+                "M_COMPARE": np.array([2, 3, 4], dtype=int),
+                "RIDGE_CORE_WIDTH_KPC": 0.25,
+                "Line2D": Line2D,
+            },
+        )
+        geometry_by_m = {
+            2: {"m_arms": 2, "accepted": False},
+            3: {"m_arms": 3, "accepted": True},
+            4: {"m_arms": 4, "accepted": True},
+        }
+        widths = [0.18, 0.22, 0.25, 0.30, 0.35]
+        rows = []
+        for m_arms in [2, 3, 4]:
+            accepted = (
+                [True, False, False, True, True]
+                if m_arms == 2 else [True] * 5)
+            for width, is_accepted in zip(widths, accepted):
+                rows.append({
+                    "m_arms": m_arms,
+                    "core_width_kpc": width,
+                    "pitch_angle": -30.0 - m_arms,
+                    "accepted": is_accepted,
+                })
+        width_table = pd.DataFrame(rows)
+
+        fig, ax = plt.subplots()
+        artists = namespace["plot_width_status_artists"](
+            ax, width_table, geometry_by_m)
+        self.assertEqual(
+            artists["counts_by_m"][2], {"accepted": 3, "rejected": 2})
+        self.assertEqual(artists["line_artists"][2].get_linestyle(), "--")
+        self.assertEqual(artists["line_artists"][3].get_linestyle(), "-")
+        self.assertEqual(artists["line_artists"][4].get_linestyle(), "-")
+        self.assertEqual(artists["accepted_handle"].get_marker(), "o")
+        self.assertEqual(artists["rejected_handle"].get_marker(), "D")
+        accepted_zorder = max(
+            artist.get_zorder() for artist in artists["accepted_artists"])
+        rejected_zorder = min(
+            artist.get_zorder() for artist in artists["rejected_artists"])
+        self.assertGreater(rejected_zorder, accepted_zorder)
+        self.assertIs(ax.get_legend(), artists["status_legend"])
+        self.assertIn(artists["mode_legend"], ax.artists)
+        self.assertEqual(
+            [text.get_text() for text in artists["status_legend"].get_texts()],
+            ["accepted width", "rejected width"],
+        )
+        plt.close(fig)
+
+    def test_skeleton_artists_order_rejections_last_and_report_provenance(self):
+        namespace = extracted_function_namespace(
+            [
+                "conditional_geometry_style",
+                "conditional_geometry_plot_order",
+                "plot_skeleton_curves",
+                "add_model_residual_provenance",
+            ],
+            extra_namespace={
+                "M_COLORS": {2: "cyan", 3: "lime", 4: "dodgerblue"},
+                "M_COMPARE": np.array([2, 3, 4], dtype=int),
+                "Line2D": Line2D,
+            },
+        )
+        geometry_by_m = {
+            2: {"m_arms": 2, "accepted": False},
+            3: {"m_arms": 3, "accepted": True},
+            4: {"m_arms": 4, "accepted": True},
+        }
+        self.assertEqual(
+            namespace["conditional_geometry_plot_order"](geometry_by_m),
+            [3, 4, 2],
+        )
+
+        fig, (ax_model, ax_residual) = plt.subplots(1, 2)
+        curves = [
+            (np.array([0.0, 1.0]), np.array([index, index + 1.0]))
+            for index in range(3)
+        ]
+        style = namespace["conditional_geometry_style"](
+            geometry_by_m[3])
+        source_artists = namespace["plot_skeleton_curves"](
+            ax_model, curves + curves, style,
+            gid_prefix="source-profile-maxima-m3", zorder=4.0,
+            linewidth=1.2)
+        data_artists = namespace["plot_skeleton_curves"](
+            ax_residual, curves, style,
+            gid_prefix="data-derived-ridge-m3", zorder=4.0,
+            linewidth=1.3)
+        self.assertEqual(len(source_artists), 6)
+        self.assertEqual(len(data_artists), 3)
+        self.assertTrue(all(
+            artist.get_gid().startswith("source-profile-maxima-m3")
+            for artist in source_artists))
+        provenance = namespace["add_model_residual_provenance"](
+            ax_model, ax_residual, 3, style,
+            enhanced_peak_count=2,
+            source_branch_count=len(source_artists),
+            data_branch_count=len(data_artists),
+        )
+        self.assertIsNotNone(ax_model.get_legend())
+        self.assertIsNotNone(ax_residual.get_legend())
+        self.assertIn("2 enhanced peaks / 6 branches",
+                      provenance["source_label"])
+        self.assertIn("data-derived ridge: 3 branches",
+                      provenance["data_label"])
+        self.assertNotIn("hidden", provenance["source_label"].lower())
+        plt.close(fig)
+
+    def test_observed_legend_is_outside_data_axes(self):
+        namespace = extracted_function_namespace([
+            "place_observed_map_legend_outside",
+        ])
+        fig, ax = plt.subplots(figsize=(4.0, 3.0))
+        ax.plot([0.0, 1.0], [0.0, 1.0], label="m=2 below threshold")
+        legend = namespace["place_observed_map_legend_outside"](ax)
+        fig.canvas.draw()
+        renderer = fig.canvas.get_renderer()
+        self.assertFalse(legend.get_window_extent(renderer).overlaps(
+            ax.get_window_extent(renderer)))
+        plt.close(fig)
+
+    def test_shared_disc_limits_are_equal_square_and_cover_radius(self):
+        namespace = extracted_function_namespace([
+            "set_shared_disc_limits",
+        ])
+        fig, (ax_model, ax_residual) = plt.subplots(1, 2)
+        limits = namespace["set_shared_disc_limits"](
+            ax_model, ax_residual,
+            np.array([-3.0, 2.0]), np.array([-1.0, 4.0]),
+            radius_out_kpc=5.0, padding=1.05)
+        np.testing.assert_allclose(ax_model.get_xlim(), ax_residual.get_xlim())
+        np.testing.assert_allclose(ax_model.get_ylim(), ax_residual.get_ylim())
+        np.testing.assert_allclose(ax_model.get_xlim(), ax_model.get_ylim())
+        np.testing.assert_allclose(limits, (-5.25, 5.25))
+        self.assertLessEqual(ax_model.get_xlim()[0], -5.0)
+        self.assertGreaterEqual(ax_model.get_xlim()[1], 5.0)
+        plt.close(fig)
+
+    def test_residual_colorbar_discloses_saturation_and_extends_both(self):
+        namespace = extracted_function_namespace([
+            "robust_symmetric_residual_limit",
+            "residual_clipped_fraction",
+            "add_residual_scale_disclosure",
+        ])
+        residuals = np.linspace(-10.0, 10.0, 1001)
+        limit = namespace["robust_symmetric_residual_limit"](
+            residuals, percentile=95.0)
+        clipped_fraction = namespace["residual_clipped_fraction"](
+            residuals, limit)
+        self.assertGreater(clipped_fraction, 0.04)
+        self.assertLess(clipped_fraction, 0.06)
+
+        fig, ax = plt.subplots()
+        scatter = ax.scatter(
+            np.arange(residuals.size), np.zeros(residuals.size),
+            c=residuals, cmap="coolwarm", vmin=-limit, vmax=limit)
+        disclosure = namespace["add_residual_scale_disclosure"](
+            fig, ax, scatter, limit, clipped_fraction)
+        self.assertEqual(disclosure["colorbar"].extend, "both")
+        label = disclosure["colorbar"].ax.get_ylabel()
+        self.assertIn("95th-percentile", label)
+        self.assertIn("data retained", label)
+        self.assertIn("color-saturated", disclosure["annotation"].get_text())
+        plt.close(fig)
+
+    def test_m234_parameter_table_has_three_status_rows_and_no_winner(self):
+        namespace = extracted_function_namespace([
+            "build_m234_parameter_table",
+        ])
+        geometries = pd.DataFrame({
+            "m_arms": [4, 2, 3],
+            "pitch_angle": [-45.0, -45.0, -31.0],
+            "Theta0": [2.3, 1.2, 6.2],
+            "geometry_source": ["fixed ridge"] * 3,
+            "accepted": [True, False, True],
+            "acceptance_reason": [
+                "passed", "below_threshold: valid_held_out=9/12", "passed",
+            ],
+            "validated_score": [0.02, 0.03, 0.04],
+            "valid_held_out": [12, 9, 12],
+            "phase_stability": [0.99, 0.69, 0.98],
+            "null_mean": [0.012, 0.017, 0.016],
+            "null_std": [0.009, 0.012, 0.011],
+            "null_z": [1.0, 1.6, 2.1],
+            "pitch_boundary": [True, True, False],
+        })
+        models = {}
+        maxima_by_m = {}
+        for m_arms in [2, 3, 4]:
+            limited = m_arms in [2, 4]
+            models[m_arms] = {
+                "lambda0_0": 0.09,
+                "h_R": 3.1,
+                "gradient_dex_per_kpc": -0.14,
+                "eta": 0.05 * m_arms,
+                "harmonic_n": np.array([1, 2, 3]),
+                "harmonic_g": np.array([1.0, 1.5 if limited else 0.8, 0.6]),
+                "harmonic_alpha": np.array([0.0, 0.2, -0.3]),
+                "minimum_rate_factor": 0.75,
+                "weighted_log_sse": 100.0 + m_arms,
+                "robust_cost": 20.0 + m_arms,
+                "active_bound_parameters": ({"g2": "upper"}
+                                            if limited else {}),
+                "harmonic_bound_limited": limited,
+                "nfev": 10 + m_arms,
+                "njev": 9 + m_arms,
+                "optimality": 0.01 * m_arms,
+            }
+            maxima_by_m[m_arms] = pd.DataFrame({
+                "enhanced_above_background": [True, False, True],
+            })
+        block_summary = pd.DataFrame([
+            {"m_arms": m_arms, "null_mean": 0.01 * m_arms + draw / 1000.0}
+            for m_arms in [2, 3, 4] for draw in range(4)
+        ])
+        width_rows = []
+        accepted_counts = {2: 2, 3: 5, 4: 4}
+        for m_arms in [2, 3, 4]:
+            for width_index, width in enumerate([0.18, 0.22, 0.25, 0.30, 0.35]):
+                width_rows.append({
+                    "m_arms": m_arms,
+                    "core_width_kpc": width,
+                    "accepted": width_index < accepted_counts[m_arms],
+                })
+        width_table = pd.DataFrame(width_rows)
+
+        result = namespace["build_m234_parameter_table"](
+            geometries, models, maxima_by_m, block_summary,
+            width_table,
+            residual_display_limit_dex=0.98,
+            residual_color_saturated_fraction=0.05,
+        )
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result["m_arms"].tolist(), [2, 3, 4])
+        self.assertEqual(
+            result["ridge_accepted"].tolist(), [False, True, True])
+        self.assertEqual(
+            result["width_accepted_count"].tolist(), [2, 5, 4])
+        self.assertEqual(result["width_total_count"].tolist(), [5, 5, 5])
+        self.assertEqual(result["width_rejected_count"].tolist(), [3, 0, 1])
+        self.assertEqual(result["all_maxima_count"].tolist(), [3, 3, 3])
+        self.assertEqual(
+            result["enhanced_maxima_count"].tolist(), [2, 2, 2])
+        self.assertEqual(
+            result["harmonic_bound_limited"].tolist(), [True, False, True])
+        for required in [
+            "ridge_acceptance_reason", "validated_ridge_score",
+            "valid_held_sectors", "phase_stability",
+            "pooled_null_mean", "pooled_null_std", "descriptive_null_z",
+            "block_null_mean_min", "block_null_mean_max",
+            "pitch_boundary", "active_bound_parameters",
+            "weighted_log_sse", "robust_cost", "nfev", "njev",
+            "optimality",
+            "residual_display_limit_dex",
+            "residual_color_saturated_fraction",
+        ]:
+            self.assertIn(required, result.columns)
+        np.testing.assert_allclose(
+            result["residual_display_limit_dex"], 0.98)
+        np.testing.assert_allclose(
+            result["residual_color_saturated_fraction"], 0.05)
+        lowered_columns = {column.lower() for column in result.columns}
+        for forbidden in ["winner", "rank", "preferred"]:
+            self.assertFalse(any(
+                forbidden in column for column in lowered_columns))
+
+        section_15 = notebook_cell_source("95fdc1a2")
+        ast.parse(section_15)
+        self.assertIn("build_m234_parameter_table", section_15)
+        self.assertIn("display(parameter_table)", section_15)
+        self.assertIn("display(profile_maxima_by_m[int(m_arms)])", section_15)
+        self.assertIn("FINAL_M234_PARAMETER_TABLE_COMPLETE", section_15)
+
+    def test_task6_final_interpretation_states_conditional_limits(self):
+        final_markdown = notebook_cell_source("d876a478")
+        for required in [
+            "all three results are conditional",
+            "negative winding",
+            "m=2",
+            "9/12",
+            "descriptive",
+            "ridge width",
+            "held sectors",
+            "h_R",
+            "e-folding",
+            "eta",
+            "constraint-limited",
+            "diffusion",
+            "metallicity-covariance",
+            "no arm-number winner",
+        ]:
+            self.assertIn(required, final_markdown)
 
     def test_adversarial_sector_signal_has_zero_training_field(self):
         namespace = extracted_function_namespace([
