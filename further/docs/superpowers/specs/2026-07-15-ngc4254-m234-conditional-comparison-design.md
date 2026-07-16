@@ -191,6 +191,12 @@ report:
 - blockwise pitch rank or candidate rank; and
 - whether the descriptive ordering changes across blocks.
 
+The null statistic is the finite leakage-controlled `validated_score` for
+every returned fixed-`m` row.  Ridge acceptance remains separate metadata:
+below-threshold null rows retain their finite score and must not be replaced
+with zero.  A non-finite score is an execution error rather than a synthetic
+zero draw.  This keeps the real and null statistics on the same scale.
+
 These null values diagnose how unusual each conditional ridge score is under
 row scrambling.  They do not select among `m=2,3,4`, are not Gaussian
 detection significances, and are not posterior probabilities.  The notebook
@@ -329,8 +335,10 @@ Tests must verify:
 Disposable execution must establish:
 
 - all 681,856 finite HII pixels remain represented;
-- reduced synthetic negative-winding cases recover their injected `m`, pitch,
-  and phase within declared tolerances;
+- reduced synthetic negative-winding cases, each run with `m` supplied as a
+  one-element comparison set, preserve that fixed `m` and recover injected
+  pitch and phase within declared tolerances; this is not an arm-number
+  discrimination test;
 - the adversarial leakage test passes;
 - every real conditional case has at least 10 finite held sectors and a
   positive validated score;

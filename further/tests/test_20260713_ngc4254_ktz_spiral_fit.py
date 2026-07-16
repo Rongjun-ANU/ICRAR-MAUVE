@@ -1,8 +1,10 @@
 import ast
 import contextlib
+import hashlib
 import io
 import json
 from pathlib import Path
+import re
 from time import perf_counter
 from types import SimpleNamespace
 import unittest
@@ -136,6 +138,27 @@ def notebook_output_text():
     return "".join(pieces)
 
 
+def notebook_source_sha256(notebook_document=None):
+    """Hash cell identity, type, and source while excluding saved outputs."""
+    if notebook_document is None:
+        notebook_document = load_notebook()
+    source_manifest = [
+        {
+            "cell_type": cell["cell_type"],
+            "id": cell.get("id"),
+            "source": "".join(cell.get("source", [])),
+        }
+        for cell in notebook_document["cells"]
+    ]
+    payload = json.dumps(
+        source_manifest,
+        ensure_ascii=True,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
 class NotebookContractTests(unittest.TestCase):
     def test_notebook_has_explanation_before_every_code_cell(self):
         cells = load_notebook()["cells"]
@@ -161,7 +184,7 @@ class NotebookContractTests(unittest.TestCase):
             "harmonic_n",
             "harmonic_g",
             "harmonic_alpha",
-            "Synthetic ridge-recovery",
+            "Synthetic fixed-m ridge-recovery",
             "data-derived skeleton",
             "Arm profile",
             "Interpretation limits",
@@ -175,15 +198,19 @@ class NotebookContractTests(unittest.TestCase):
         self.assertTrue(code_cells)
         self.assertTrue(all(cell["execution_count"] is not None for cell in code_cells))
         text_outputs = []
+        error_outputs = []
         image_count = 0
         for cell in code_cells:
             for output in cell.get("outputs", []):
+                if output.get("output_type") == "error":
+                    error_outputs.append(output)
                 if output.get("output_type") == "stream":
                     text = output.get("text", [])
                     text_outputs.extend([text] if isinstance(text, str) else text)
                 data = output.get("data", {})
                 image_count += int("image/png" in data)
         joined = "".join(text_outputs)
+        self.assertEqual(error_outputs, [])
         for marker in [
             "BROWN_GEOMETRY_PASS",
             "BA_FACTOR_PASS",
@@ -212,6 +239,11 @@ class NotebookContractTests(unittest.TestCase):
             self.assertIn(marker, joined)
         self.assertGreaterEqual(image_count, 9)
         self.assertNotIn("RuntimeWarning", joined)
+        source_hash_match = re.search(
+            r"NOTEBOOK_SOURCE_SHA256=([0-9a-f]{64})", joined)
+        self.assertIsNotNone(source_hash_match)
+        self.assertEqual(
+            source_hash_match.group(1), notebook_source_sha256(nb))
 
     def test_fit_domain_uses_every_valid_hii_bin(self):
         nb = load_notebook()
@@ -332,7 +364,7 @@ class NotebookContractTests(unittest.TestCase):
         self.assertIs(raw_result, sentinel_raw)
         self.assertIs(processed_result, sentinel_processed)
 
-    def test_three_synthetic_m234_cases_recover_with_fixed_tolerances(self):
+    def test_three_synthetic_fixed_m_cases_recover_pitch_and_phase(self):
         namespace = extracted_function_namespace(
             [
                 "preprocess_logpolar_raw",
@@ -369,20 +401,20 @@ class NotebookContractTests(unittest.TestCase):
         cases = [(2, -22.0), (3, -30.0), (4, -38.0)]
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always", RuntimeWarning)
-            for case_index, (m_true, pitch_true) in enumerate(cases):
+            for case_index, (m_fixed, pitch_true) in enumerate(cases):
                 raw_state, _ = namespace["synthetic_logpolar"](
-                    m_true, pitch_true, 0.7, 4254 + case_index)
+                    m_fixed, pitch_true, 0.7, 4254 + case_index)
                 geometry, _, _, cache_bytes = (
                     namespace["conditional_ridge_search"](
                         raw_state,
-                        m_compare=np.array([m_true], dtype=int),
+                        m_compare=np.array([m_fixed], dtype=int),
                         pitch_grid=np.arange(-45.0, -4.9, 1.0),
                     ))
                 self.assertEqual(len(geometry), 1)
                 recovered = geometry.iloc[0]
                 phase_error_deg = np.rad2deg(abs(namespace["wrap_angle"](
                     recovered["Theta0"] - 0.7)))
-                self.assertEqual(int(recovered["m_arms"]), m_true)
+                self.assertEqual(int(recovered["m_arms"]), m_fixed)
                 self.assertLess(recovered["pitch_angle"], 0.0)
                 self.assertLessEqual(
                     abs(recovered["pitch_angle"] - pitch_true), 2.0)
@@ -391,6 +423,24 @@ class NotebookContractTests(unittest.TestCase):
                 self.assertGreater(recovered["validated_score"], 0.0)
                 self.assertEqual(cache_bytes, 0)
         self.assertEqual(caught, [])
+
+    def test_synthetic_validation_is_labeled_as_fixed_m_geometry_recovery(self):
+        geometry_markdown = notebook_cell_source("bd590527")
+        synthetic_markdown = notebook_cell_source("ca2620fa")
+        synthetic_code = notebook_cell_source("c9d26c41")
+        self.assertIn("compare fixed negative-winding", geometry_markdown)
+        self.assertIn("Synthetic fixed-m ridge-recovery", synthetic_markdown)
+        self.assertIn("m is supplied", synthetic_markdown)
+        self.assertIn("m_fixed", synthetic_code)
+        self.assertIn('"pitch_recovered_deg"', synthetic_code)
+        for misleading in [
+            "select arm number",
+            "recover the fixed arm number",
+            "m_recovered",
+        ]:
+            self.assertNotIn(misleading, geometry_markdown)
+            self.assertNotIn(misleading, synthetic_markdown)
+            self.assertNotIn(misleading, synthetic_code)
 
     def test_repeated_radii_are_rejected_before_endpoint_expansion(self):
         namespace = extracted_function_namespace([
@@ -867,7 +917,8 @@ class NotebookContractTests(unittest.TestCase):
             [4254, 5254, 6254, 7254],
         )
         self.assertEqual(sorted(draws["draw"].unique().tolist()), list(range(8)))
-        self.assertTrue((draws.loc[~draws["accepted"], "best_null_score"] == 0.0).all())
+        np.testing.assert_allclose(
+            draws["best_null_score"], draws["validated_score"])
         self.assertTrue((pooled["null_count"] == 32).all())
         self.assertTrue((blocks["null_count"] == 8).all())
         self.assertTrue((pooled["null_std_floor"] >= 1.0e-6).all())
@@ -877,8 +928,9 @@ class NotebookContractTests(unittest.TestCase):
         self.assertAlmostEqual(pooled_by_m.at[2, "null_mean"], 0.1155)
         self.assertAlmostEqual(
             pooled_by_m.at[2, "null_std"], expected_sample_std)
-        self.assertAlmostEqual(pooled_by_m.at[3, "null_mean"], 0.0)
-        self.assertAlmostEqual(pooled_by_m.at[3, "null_std"], 0.0)
+        self.assertAlmostEqual(pooled_by_m.at[3, "null_mean"], 0.2155)
+        self.assertAlmostEqual(
+            pooled_by_m.at[3, "null_std"], expected_sample_std)
         self.assertAlmostEqual(pooled_by_m.at[4, "null_mean"], 0.3155)
         self.assertAlmostEqual(
             pooled_by_m.at[4, "null_std"], expected_sample_std)
@@ -889,6 +941,7 @@ class NotebookContractTests(unittest.TestCase):
     def test_blocked_nulls_are_descriptive_not_selective(self):
         self.assertIn("build_blocked_null_diagnostics", notebook_function_names())
         blocked_null_source = function_source("build_blocked_null_diagnostics")
+        self.assertIn('"best_null_score": validated_score', blocked_null_source)
         for required in [
             "null_block_summary",
             "pooled_null_summary",

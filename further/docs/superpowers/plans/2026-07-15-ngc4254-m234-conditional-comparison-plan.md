@@ -802,7 +802,7 @@ print("RIDGE_BRANCH_NORMALIZATION_PASS")
 
 - [ ] **Step 3: Run the synthetic block in memory**
 
-Execute notebook code only through cell `c9d26c41` under Matplotlib `Agg`.  Require the leakage marker, the two synthetic markers, exact recovery of all three arm numbers, negative pitch, declared tolerances, and zero `RuntimeWarning`.
+Execute notebook code only through cell `c9d26c41` under Matplotlib `Agg`.  Require the leakage marker, the two synthetic markers, preservation of each supplied fixed arm number, recovery of negative pitch and phase within the declared tolerances, explicit wording that this is not arm-number discrimination, and zero `RuntimeWarning`.
 
 - [ ] **Step 4: Verify memory-safe source and commit**
 
@@ -854,14 +854,20 @@ def build_blocked_null_diagnostics(raw_state):
                 scrambled, allow_no_acceptance=True)
             for m_arms in M_COMPARE:
                 match = geometries.loc[geometries["m_arms"] == m_arms]
+                if len(match) != 1:
+                    raise RuntimeError(
+                        f"Expected one blocked-null row for m={m_arms}")
+                validated_score = float(match.iloc[0]["validated_score"])
+                if not np.isfinite(validated_score):
+                    raise RuntimeError(
+                        f"Non-finite blocked-null score for m={m_arms}")
                 rows.append({
                     "block_index": block_index,
                     "block_seed": int(block_seed),
                     "draw_index": draw_index,
                     "m_arms": int(m_arms),
-                    "best_null_score": (
-                        float(match.iloc[0]["validated_score"])
-                        if len(match) else 0.0),
+                    "validated_score": validated_score,
+                    "best_null_score": validated_score,
                 })
     draws = pd.DataFrame(rows)
     expected = (len(RIDGE_NULL_BLOCK_SEEDS)
@@ -1360,9 +1366,9 @@ git -C /Users/Igniz/Desktop/ICRAR commit -m "feat: compare m234 spiral skeletons
 
 - Modify: `further/20260713_NGC4254_KTZ_spiral_fit.ipynb`
 - Modify: `further/docs/superpowers/plans/2026-07-15-ngc4254-m234-conditional-comparison-plan.md`
-- Append job log: `/Users/Igniz/Desktop/Codex_log/2026_07_15.md`
+- Append job log: `/Users/Igniz/Desktop/Codex_log/2026_07_16.md`
 
-- [ ] **Step 1: Run all source and behavioral contracts before execution**
+- [x] **Step 1: Run all source and behavioral contracts before execution**
 
 Run:
 
@@ -1373,7 +1379,7 @@ Run:
 
 Expected before execution: every source/behavioral test passes; only the saved-result contract fails because outputs are cleared.
 
-- [ ] **Step 2: Execute the notebook with writable Jupyter directories**
+- [x] **Step 2: Execute the notebook with writable Jupyter directories**
 
 Run:
 
@@ -1400,11 +1406,11 @@ PY
 
 If local port binding is sandbox-blocked, rerun the exact command with the minimum required escalation.  Do not reduce null draws, arm cases, widths, or validation thresholds to shorten execution.
 
-- [ ] **Step 3: Run the complete test suite**
+- [x] **Step 3: Run the complete test suite**
 
 Run the same `unittest` command again.  Expected: all tests, including saved outputs, pass; at least nine PNG outputs; no `RuntimeWarning`.
 
-- [ ] **Step 4: Extract and inspect every PNG**
+- [x] **Step 4: Extract and inspect every PNG**
 
 Extract images to `/private/tmp/ngc4254_m234_figures` with a read-only `nbformat` script.  Inspect every PNG using `view_image` at original detail.  Confirm:
 
@@ -1418,7 +1424,7 @@ Extract images to `/private/tmp/ngc4254_m234_figures` with a read-only `nbformat
 
 If a visual defect is found, return to the relevant task, patch via TDD, re-execute, and inspect again.
 
-- [ ] **Step 5: Record exact live results in this plan**
+- [x] **Step 5: Record exact live results in this plan**
 
 Append an `## Execution record` section containing:
 
@@ -1431,19 +1437,92 @@ Append an `## Execution record` section containing:
 - notebook runtime and warning count; and
 - figure-inspection outcome.
 
-- [ ] **Step 6: Append the required job log**
+- [x] **Step 6: Append the required job log**
 
-Using `apply_patch` on a temporary log fragment and the minimum approved copy/write operation, append a concise entry to `/Users/Igniz/Desktop/Codex_log/2026_07_15.md`.  Include request, files changed, commits, tests, numerical checks, visual checks, unresolved conditionality, subagent roles, and confirmation that unrelated dirty files were untouched.
+Using `apply_patch` on a temporary log fragment and the minimum approved copy/write operation, append a concise entry to `/Users/Igniz/Desktop/Codex_log/2026_07_16.md`.  Include request, files changed, commits, tests, numerical checks, visual checks, unresolved conditionality, subagent roles, and confirmation that unrelated dirty files were untouched.
 
-- [ ] **Step 7: Stage only notebook and plan, verify, and commit**
+- [x] **Step 7: Stage only the scoped notebook, tests, design, and plan; verify and commit**
 
 ```bash
 git -C /Users/Igniz/Desktop/ICRAR add -- \
   further/20260713_NGC4254_KTZ_spiral_fit.ipynb \
+  further/tests/test_20260713_ngc4254_ktz_spiral_fit.py \
+  further/docs/superpowers/specs/2026-07-15-ngc4254-m234-conditional-comparison-design.md \
   further/docs/superpowers/plans/2026-07-15-ngc4254-m234-conditional-comparison-plan.md
 git -C /Users/Igniz/Desktop/ICRAR diff --cached --check
 git -C /Users/Igniz/Desktop/ICRAR diff --cached --name-only
-git -C /Users/Igniz/Desktop/ICRAR commit -m "chore: execute conditional NGC4254 m234 comparison"
+git -C /Users/Igniz/Desktop/ICRAR commit -m "fix: finalize conditional NGC4254 m234 comparison"
 ```
 
-Expected staged names: exactly the notebook and this plan.  Never stage the unrelated dirty workspace files.
+Expected staged names: exactly the notebook, its test file, the corrected design, and this plan. The final review required the design/test additions to keep the null statistic, fixed-m synthetic claim, and saved-output freshness contract synchronized. Never stage the unrelated dirty workspace files.
+
+## Execution record
+
+Execution completed on 2026-07-16 against the live `NGC4254_gas_bin_maps_further.fits` product. The final corrected in-place Jupyter run took 118.554 s from the first execute request to the final idle event. All 15 code cells have non-null execution counts; the notebook has 33 unique cell IDs, zero error outputs, zero `RuntimeWarning` or `ResourceWarning` messages, and nine embedded PNG outputs. The saved `NOTEBOOK_SOURCE_SHA256` fingerprint matches the current cell IDs, types, and sources, so outputs are not stale. The complete contract suite passed 43/43 tests.
+
+### Conditional ridge geometries
+
+Negative winding was imposed for every arm-number case. These rows are parallel conditional results, not an arm-number ranking.
+
+| m | pitch (deg) | Theta0 (rad) | held sectors | phase stability | validated score | status |
+|---:|---:|---:|---:|---:|---:|:---|
+| 2 | -45.0 | 1.169371 | 9/12 | 0.691157 | 0.036330 | below threshold |
+| 3 | -31.0 | 6.230825 | 12/12 | 0.996595 | 0.038074 | accepted |
+| 4 | -45.0 | 2.356194 | 12/12 | 0.999667 | 0.022002 | accepted |
+
+The m=2 and m=4 pitches touch the declared -45 degree search boundary. The m=2 row remains visible as a sensitivity case but fails the unchanged requirement of at least 10 valid held sectors.
+
+### Descriptive blocked-null evidence
+
+Each pooled row contains 32 draws. The z values are descriptive only and were not used to select an arm number.
+
+| m | pooled mean | pooled std | descriptive z |
+|---:|---:|---:|---:|
+| 2 | 0.017069 | 0.012251 | 1.572242 |
+| 3 | 0.015611 | 0.010654 | 2.108400 |
+| 4 | 0.012512 | 0.009187 | 1.032962 |
+
+Block means and within-block standard deviations, eight draws per `(seed, m)` pair:
+
+| seed | m=2 | m=3 | m=4 |
+|---:|:---|:---|:---|
+| 4254 | 0.019911 +/- 0.014339 | 0.018183 +/- 0.009351 | 0.011127 +/- 0.008405 |
+| 5254 | 0.016662 +/- 0.012329 | 0.010578 +/- 0.009148 | 0.012772 +/- 0.008435 |
+| 6254 | 0.019625 +/- 0.008448 | 0.012169 +/- 0.011772 | 0.014059 +/- 0.010161 |
+| 7254 | 0.012076 +/- 0.013794 | 0.021513 +/- 0.010154 | 0.012091 +/- 0.011114 |
+
+### Ridge-width sensitivity
+
+The five widths produce exactly 15 conditional rows. Status counts are 3/5 accepted for m=2 and 5/5 accepted for both m=3 and m=4.
+
+| width (kpc) | m | pitch (deg) | Theta0 (rad) | held | score | accepted |
+|---:|---:|---:|---:|---:|---:|:---:|
+| 0.18 | 2 | -40.0 | 1.047198 | 10 | 0.003853 | yes |
+| 0.18 | 3 | -32.0 | 4.084070 | 12 | 0.038255 | yes |
+| 0.18 | 4 | -45.0 | 2.338741 | 12 | 0.013535 | yes |
+| 0.22 | 2 | -45.0 | 1.169371 | 8 | 0.053338 | no |
+| 0.22 | 3 | -30.0 | 0.366519 | 12 | 0.055132 | yes |
+| 0.22 | 4 | -45.0 | 2.356194 | 12 | 0.027840 | yes |
+| 0.25 | 2 | -45.0 | 1.169371 | 9 | 0.036330 | no |
+| 0.25 | 3 | -31.0 | 6.230825 | 12 | 0.038074 | yes |
+| 0.25 | 4 | -45.0 | 2.356194 | 12 | 0.022002 | yes |
+| 0.30 | 2 | -29.0 | 0.558505 | 12 | 0.009282 | yes |
+| 0.30 | 3 | -31.0 | 6.265732 | 12 | 0.047169 | yes |
+| 0.30 | 4 | -44.0 | 2.670354 | 12 | 0.015318 | yes |
+| 0.35 | 2 | -29.0 | 0.593412 | 12 | 0.010596 | yes |
+| 0.35 | 3 | -36.0 | 4.468043 | 12 | 0.032605 | yes |
+| 0.35 | 4 | -45.0 | 2.286381 | 12 | 0.007522 | yes |
+
+### Fixed-geometry KTZ-compatible source-profile fits
+
+| m | lambda0,0 | h_R (kpc) | gradient (dex/kpc) | eta | harmonic g | harmonic alpha (rad) | min factor | weighted log SSE | robust cost | maxima (all/enhanced) | bound note |
+|---:|---:|---:|---:|---:|:---|:---|---:|---:|---:|:---:|:---|
+| 2 | 0.091046 | 3.090290 | -0.140535 | 0.058503 | [1.000000, 1.500000, 1.500000] | [0.000000, -2.414377, 2.236639] | 0.794064 | 116471.586894 | 15936.011107 | 3/3 | g2 and g3 at upper bounds |
+| 3 | 0.089783 | 3.119706 | -0.139210 | 0.208699 | [1.000000, 0.967117, 0.617365] | [0.000000, 0.751508, 0.543879] | 0.775121 | 115026.578819 | 15701.681331 | 3/2 | no active bounds |
+| 4 | 0.088905 | 3.134492 | -0.138553 | 0.028582 | [1.000000, 1.500000, 1.500000] | [0.000000, 0.484076, 0.249337] | 0.934987 | 117348.146057 | 16008.125890 | 3/2 | g2 and g3 at upper bounds |
+
+All fitted rate factors remain positive. The m=2 and m=4 harmonic shapes are explicitly reported as constraint-limited because both higher-order amplitudes reached their upper bounds. The notebook now displays the compact fit summary, all nine `(m, n, g_n, alpha_n)` coefficient rows, the complete 37-column audit table, and all maxima tables without hiding the requested quantities behind column elision.
+
+### Figure inspection and acceptance
+
+All nine saved PNGs were extracted and inspected at original detail. The two skeleton panels show the same negative-winding conditional geometries on the observed sky-plane and deprojected SFR maps; the 2-by-2 comparison and 3-by-2 model/residual layouts are legible; source-profile maxima and data-ridge provenance are distinguished; m=2 is consistently dashed/open and labeled below threshold; axes, legends, color bars, and residual-saturation disclosures are not clipped. After the null-statistic correction, eight unaffected PNGs remained byte-identical and the one changed blocked-null distribution figure was re-inspected at original detail. No arm-number winner is claimed.
