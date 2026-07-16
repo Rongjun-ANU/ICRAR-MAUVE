@@ -197,6 +197,8 @@ class NotebookContractTests(unittest.TestCase):
             "RIDGE_M234_REAL_COMPLETE",
             "RIDGE_NULL_BLOCKS_COMPLETE",
             "RIDGE_WIDTH_M234_COMPLETE",
+            "RIDGE_M234_SCORE_DIAGNOSTIC_COMPLETE",
+            "RIDGE_M234_NULL_DISTRIBUTION_FIGURE_COMPLETE",
             "RIDGE_SECTOR_M234_COMPLETE",
             "KTZ_M234_PROFILE_FITS_COMPLETE",
             "HARMONIC_M234_MAXIMA_COMPLETE",
@@ -931,6 +933,36 @@ class NotebookContractTests(unittest.TestCase):
         ]:
             self.assertNotIn(forbidden, section_11)
             self.assertNotIn(forbidden, section_12)
+
+    def test_task4_score_and_null_distribution_figures_are_executable(self):
+        section_11_markdown = notebook_cell_source("1a8e087a")
+        section_11 = notebook_cell_source("da64c8d1")
+        ast.parse(section_11)
+        for required in [
+            'M_COLORS = {2: "cyan", 3: "lime", 4: "dodgerblue"}',
+            "plt.subplots(1, 2, figsize=(13.5, 5.2), constrained_layout=True)",
+            "ridge_candidate_table",
+            '"full_ridge_score"',
+            '"validated_score"',
+            "pitch-grid boundary (-45 deg)",
+            "RIDGE_M234_SCORE_DIAGNOSTIC_COMPLETE",
+            "plt.subplots(1, 3, figsize=(15.2, 4.8), constrained_layout=True)",
+            '"best_null_score"',
+            "null_block_summary",
+            '"block_seed"',
+            "descriptive only, not model selection",
+            "RIDGE_M234_NULL_DISTRIBUTION_FIGURE_COMPLETE",
+        ]:
+            self.assertIn(required, section_11)
+        self.assertEqual(section_11.count("plt.show()"), 2)
+        for required in [
+            "candidate-score diagnostic",
+            "all 32 blocked-null draws",
+            "below-threshold m=2",
+            "descriptive only",
+            "does not declare an arm-number winner",
+        ]:
+            self.assertIn(required, section_11_markdown)
 
     def test_deprojection_and_data_model_ridge_semantics(self):
         text = notebook_source()
@@ -1711,6 +1743,11 @@ class NotebookContractTests(unittest.TestCase):
         ast.parse(section_15)
         self.assertIn("build_m234_parameter_table", section_15)
         self.assertIn("display(parameter_table)", section_15)
+        self.assertIn("fit_summary_columns", section_15)
+        self.assertIn(
+            "display(parameter_table[fit_summary_columns])", section_15)
+        self.assertIn("harmonic_parameter_table", section_15)
+        self.assertIn("display(harmonic_parameter_table)", section_15)
         self.assertIn("display(profile_maxima_by_m[int(m_arms)])", section_15)
         self.assertIn("FINAL_M234_PARAMETER_TABLE_COMPLETE", section_15)
 
