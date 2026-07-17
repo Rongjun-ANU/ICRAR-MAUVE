@@ -14,6 +14,11 @@ fi
 
 mkdir -p "${PWD}/QC"
 
+python_bin="/opt/miniconda3/envs/ICRAR/bin/python"
+if [ ! -x "$python_bin" ]; then
+    python_bin="/arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python"
+fi
+
 jobs="${JOBS:-${QC_JOBS:-}}"
 if [ -z "$jobs" ]; then
     jobs="$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)"
@@ -22,4 +27,4 @@ fi
 find "$product_root" -mindepth 2 -maxdepth 2 -name '*_sfh_maps.fits' -print |
     sed -E 's#.*/([^/]+)/[^/]+_sfh_maps\.fits#\1#' |
     sort -u |
-    xargs -P "$jobs" -I {} /opt/miniconda3/envs/ICRAR/bin/python "$qc_py" {}
+    xargs -P "$jobs" -I {} "$python_bin" "$qc_py" {}
