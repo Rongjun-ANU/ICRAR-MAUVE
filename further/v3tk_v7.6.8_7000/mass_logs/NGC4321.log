@@ -1,0 +1,38 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/projects/mauve/products
+Product subdir   : v3tk_v7.6.8_7000
+Cube root        : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root : <none>
+PHANGS VOS dir   : vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES
+PHANGS stage root: /scratch
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+
+Staging PHANGS cube: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.fits -> /scratch/NGC4321_PHANGS_DATACUBE_native.fits
+WARNING: Current version vos 3.6.3. A newer version, 3.6.4, is available on PyPI
+Traceback (most recent call last):
+  File "/arc/home/RongjunHuang/ICRAR/further/Mass.py", line 584, in <module>
+    input_keyword, product_paths = resolve_keyworded_input_group(
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "stellar-population product FITS inputs",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        },
+        ^^
+    )
+    ^
+  File "/arc/home/RongjunHuang/ICRAR/further/Mass.py", line 420, in resolve_keyworded_input_group
+    raise FileNotFoundError(
+    ...<4 lines>...
+    )
+FileNotFoundError: Could not find stellar-population product FITS inputs with a shared optional keyword.
+Each required product input must use the same text between 'NGC4321_' and its product suffix.
+Found keyword groups:
+  - spatial binning FITS: <none>
+  - SFH FITS: none
+  - SFH weights FITS: none
+🛑  NGC4321 failed (exit 1) after 20m36s – see /arc/projects/mauve/products/v3tk_v7.6.8_7000/mass_logs/NGC4321.log

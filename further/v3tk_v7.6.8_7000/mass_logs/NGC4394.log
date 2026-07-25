@@ -1,0 +1,150 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/projects/mauve/products
+Product subdir   : v3tk_v7.6.8_7000
+Cube root        : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root : <none>
+PHANGS VOS dir   : vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES
+PHANGS stage root: /scratch
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+
+
+=== Using the following files ===
+Product root : /arc/projects/mauve/products
+Product subdir: v3tk_v7.6.8_7000
+Cube root    : /arc/projects/mauve/cubes/v3tk
+Fallback root: /arc/home/RongjunHuang/ICRAR/further
+Input keyword: <none>
+Cube         : /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Binning map  : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps.fits
+SFH map      : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_sfh_maps.fits
+Weights      : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_sfh_weights.fits
+Photometry   : /arc/home/RongjunHuang/ICRAR/further/BaSTI+Chabrier.dat
+Output       : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps_further.fits 
+
+Thread control: forcing 16 BLAS/OpenMP threads
+Vectorized processing row-block size: 16
+Loading: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps.fits
+Filename: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU       4   ()      
+  1  BINID         1 ImageHDU        26   (624, 647)   float64   
+  2  FLUX          1 ImageHDU        26   (624, 647)   float64   
+  3  SNR           1 ImageHDU        26   (624, 647)   float64   
+  4  SNRBIN        1 ImageHDU        26   (624, 647)   float64   
+  5  XBIN          1 ImageHDU        26   (624, 647)   float64   
+  6  YBIN          1 ImageHDU        26   (624, 647)   float64   
+None
+Loading: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_sfh_weights.fits
+Filename: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_sfh_weights.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU      27   ()      
+  1  WEIGHTS       1 BinTableHDU     31   12678R x 1C   [477D]   
+  2  GRID          1 BinTableHDU     35   477R x 3C   [D, D, D]   
+None
+Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
+Raw SFH weight-sum [min, p16, p50, p84, max] = [1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00]
+Normalized SFH weight-sum check [min, max] = [1.000000, 1.000000]
+Composite ML_R candidates [median] (light_r, light_norm_to_r, light_v_to_r, mass_harmonic) = [2.3535, 2.4229, 2.4564, 1.0142]
+Template-library LIGHT normalization for ML_R: /arc/home/RongjunHuang/ICRAR/further/EMILES_baseFe_safe (LMIN=4800.0, LMAX=7000.0 Angstrom)
+Selected SFH-weight interpretation for ML_R: light_norm_to_r
+BINID range check for ML_R mapping: max BINID=12677, n_weight_rows=12678
+Loading: /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Using STAT variance extension for photometric error propagation.
+Cube dimensions (nz, ny, nx): 3761, 647, 624
+Approx. DATA footprint: 5.66 GiB
+Approx. STAT footprint: 5.66 GiB
+Building exact speclite linear operator for AB maggies...
+  Linear-operator chunk 1/8 (wave bins 0:512, elapsed 0.0s)
+  Linear-operator chunk 2/8 (wave bins 512:1024, elapsed 0.0s)
+  Linear-operator chunk 3/8 (wave bins 1024:1536, elapsed 0.1s)
+  Linear-operator chunk 4/8 (wave bins 1536:2048, elapsed 0.1s)
+  Linear-operator chunk 5/8 (wave bins 2048:2560, elapsed 0.1s)
+  Linear-operator chunk 6/8 (wave bins 2560:3072, elapsed 0.1s)
+  Linear-operator chunk 7/8 (wave bins 3072:3584, elapsed 0.1s)
+  Linear-operator chunk 8/8 (wave bins 3584:3761, elapsed 0.1s)
+Using contiguous filter-support slice: [641:3441] (2800 bins).
+Photometric propagation method: exact discrete first-order Jacobian through speclite AB-maggies operator (support bins=2800/3761).
+STAT assumption: independent spectral-bin variances (no covariance provided by cube).
+Computing AB maggies with vectorized blocks... (estimated support-slice stream volume: 8.42 GiB, DATA+STAT)
+Processed rows 0:16/647 (  2.5%, block 1/41, block 0.40s, elapsed 0.01 min, ETA 0.26 min)
+Processed rows 16:32/647 (  4.9%, block 2/41, block 0.40s, elapsed 0.01 min, ETA 0.26 min)
+Processed rows 32:48/647 (  7.4%, block 3/41, block 0.40s, elapsed 0.02 min, ETA 0.25 min)
+Processed rows 48:64/647 (  9.9%, block 4/41, block 0.39s, elapsed 0.03 min, ETA 0.24 min)
+Processed rows 64:80/647 ( 12.4%, block 5/41, block 0.40s, elapsed 0.03 min, ETA 0.24 min)
+Processed rows 80:96/647 ( 14.8%, block 6/41, block 0.39s, elapsed 0.04 min, ETA 0.23 min)
+Processed rows 96:112/647 ( 17.3%, block 7/41, block 0.40s, elapsed 0.05 min, ETA 0.22 min)
+Processed rows 112:128/647 ( 19.8%, block 8/41, block 0.39s, elapsed 0.05 min, ETA 0.22 min)
+Processed rows 128:144/647 ( 22.3%, block 9/41, block 0.39s, elapsed 0.06 min, ETA 0.21 min)
+Processed rows 144:160/647 ( 24.7%, block 10/41, block 0.37s, elapsed 0.07 min, ETA 0.20 min)
+Processed rows 160:176/647 ( 27.2%, block 11/41, block 0.37s, elapsed 0.07 min, ETA 0.20 min)
+Processed rows 176:192/647 ( 29.7%, block 12/41, block 0.40s, elapsed 0.08 min, ETA 0.19 min)
+Processed rows 192:208/647 ( 32.1%, block 13/41, block 0.37s, elapsed 0.08 min, ETA 0.18 min)
+Processed rows 208:224/647 ( 34.6%, block 14/41, block 0.37s, elapsed 0.09 min, ETA 0.17 min)
+Processed rows 224:240/647 ( 37.1%, block 15/41, block 0.39s, elapsed 0.10 min, ETA 0.17 min)
+Processed rows 240:256/647 ( 39.6%, block 16/41, block 0.39s, elapsed 0.10 min, ETA 0.16 min)
+Processed rows 256:272/647 ( 42.0%, block 17/41, block 0.38s, elapsed 0.11 min, ETA 0.16 min)
+Processed rows 272:288/647 ( 44.5%, block 18/41, block 0.40s, elapsed 0.12 min, ETA 0.15 min)
+Processed rows 288:304/647 ( 47.0%, block 19/41, block 0.39s, elapsed 0.12 min, ETA 0.14 min)
+Processed rows 304:320/647 ( 49.5%, block 20/41, block 0.40s, elapsed 0.13 min, ETA 0.14 min)
+Processed rows 320:336/647 ( 51.9%, block 21/41, block 0.38s, elapsed 0.14 min, ETA 0.13 min)
+Processed rows 336:352/647 ( 54.4%, block 22/41, block 0.40s, elapsed 0.14 min, ETA 0.12 min)
+Processed rows 352:368/647 ( 56.9%, block 23/41, block 0.38s, elapsed 0.15 min, ETA 0.12 min)
+Processed rows 368:384/647 ( 59.4%, block 24/41, block 0.38s, elapsed 0.16 min, ETA 0.11 min)
+Processed rows 384:400/647 ( 61.8%, block 25/41, block 0.39s, elapsed 0.16 min, ETA 0.10 min)
+Processed rows 400:416/647 ( 64.3%, block 26/41, block 0.39s, elapsed 0.17 min, ETA 0.10 min)
+Processed rows 416:432/647 ( 66.8%, block 27/41, block 0.39s, elapsed 0.17 min, ETA 0.09 min)
+Processed rows 432:448/647 ( 69.2%, block 28/41, block 0.39s, elapsed 0.18 min, ETA 0.08 min)
+Processed rows 448:464/647 ( 71.7%, block 29/41, block 0.38s, elapsed 0.19 min, ETA 0.08 min)
+Processed rows 464:480/647 ( 74.2%, block 30/41, block 0.39s, elapsed 0.19 min, ETA 0.07 min)
+Processed rows 480:496/647 ( 76.7%, block 31/41, block 0.39s, elapsed 0.20 min, ETA 0.06 min)
+Processed rows 496:512/647 ( 79.1%, block 32/41, block 0.37s, elapsed 0.21 min, ETA 0.06 min)
+Processed rows 512:528/647 ( 81.6%, block 33/41, block 0.39s, elapsed 0.21 min, ETA 0.05 min)
+Processed rows 528:544/647 ( 84.1%, block 34/41, block 0.39s, elapsed 0.22 min, ETA 0.05 min)
+Processed rows 544:560/647 ( 86.6%, block 35/41, block 0.39s, elapsed 0.23 min, ETA 0.04 min)
+Processed rows 560:576/647 ( 89.0%, block 36/41, block 0.39s, elapsed 0.23 min, ETA 0.03 min)
+Processed rows 576:592/647 ( 91.5%, block 37/41, block 0.39s, elapsed 0.24 min, ETA 0.03 min)
+Processed rows 592:608/647 ( 94.0%, block 38/41, block 0.40s, elapsed 0.25 min, ETA 0.02 min)
+Processed rows 608:624/647 ( 96.4%, block 39/41, block 0.40s, elapsed 0.25 min, ETA 0.01 min)
+Processed rows 624:640/647 ( 98.9%, block 40/41, block 0.39s, elapsed 0.26 min, ETA 0.01 min)
+Processed rows 640:647/647 (100.0%, block 41/41, block 0.18s, elapsed 0.26 min, ETA 0.00 min)
+AB maggies vectorized pass completed in 0.26 min
+Estimated effective streaming throughput: 548.4 MiB/s over support-slice read volume
+Filter-support fraction [p16, p50, p84] = [0.000000, 0.000000, 1.000000]
+Strict all-finite support pixels vs accepted relaxed-support pixels = 181,658 vs 182,513 (threshold=0.9000)
+Finite binned flux-error bins: 12678/12678 (STAT=12678, sample=12678)
+Finite binned magnitude-error bins: 12678/12678
+Median binned relative flux error : 5.8220e-04
+Binned magnitude error min/max   : 1.7625e-04 .. 9.5177e-04 mag
+Binned magnitude error [p16, p50, p84] = [5.5316e-04, 6.3212e-04, 6.9634e-04] mag
+Warning: No EBV error extension found; EBV uncertainty term will be omitted.
+R-band magnitude calculation completed!
+Filter used: bessell-R
+Magnitude range: 18.74 to 25.68
+Distance modulus: 31.09 mag
+Total R-band magnitude (uncorrected) : 11.119 mag (AB)
+Total R-band magnitude (corrected)   : 10.928 mag (AB)
+Total R-band luminosity              : 9.908 log10(L☉)
+Total stellar mass (R)               : 10.263 log10(M☉)
+Integrated stellar M/L_R             : 2.2670 M☉/L☉
+Median LOGMSTAR_ERR      : 2.6455e-04 dex
+LOGMSTAR_ERR [p16, p50, p84] = [2.4276e-04, 2.6455e-04, 2.9521e-04] dex
+LOGMSTAR_ERR min/max     : 7.0500e-05 .. 3.8071e-04 dex
+Error budget note (LOGMSTAR): includes photometric+extinction propagation; excludes M/L model, distance, and inclination/area systematic uncertainties.
+Saved further file to /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps_further.fits
+M/L_R layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps_further.fits
+Stellar-mass layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps_further.fits
+Galaxy NGC4394 inclination: 32.0° (cos θ = 0.848)
+Inclination correction ENABLED: applying b/a = 0.855 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
+Median LOGMASS_SURFACE_DENSITY_ERR: 2.6455e-04 dex
+LOGMASS_SURFACE_DENSITY_ERR [p16, p50, p84] = [2.4276e-04, 2.6455e-04, 2.9521e-04] dex
+LOGMASS_SURFACE_DENSITY_ERR min/max: 7.0500e-05 .. 3.8071e-04 dex
+Consistency check |LOGMSTAR_ERR - LOGMASS_SURFACE_DENSITY_ERR| median=0.0000e+00 dex, max=1.0842e-19 dex
+Stellar mass surface density layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps_further.fits
+r-band magnitude layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps_further.fits
+r-band uncorrected magnitude layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4394/NGC4394_spatial_binning_maps_further.fits
+✅  NGC4394 finished in 2m30s
