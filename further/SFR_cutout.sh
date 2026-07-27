@@ -105,10 +105,6 @@ if [[ $# -gt 0 ]]; then
   GALAXY_ARGS=("$@")
 fi
 
-if [[ ${#GALAXY_ARGS[@]} -eq 0 ]]; then
-  GALAXY_ARGS=(NGC4254 NGC4535)
-fi
-
 task_count=0
 for run_label in "${RUN_LABELS[@]}"; do
   product_subdir="$(run_subdir "$run_label")"
