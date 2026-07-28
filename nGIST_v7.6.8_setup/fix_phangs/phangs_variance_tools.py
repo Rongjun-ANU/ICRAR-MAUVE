@@ -3,12 +3,12 @@
 
 The workflow targets the three PHANGS-native cubes staged in
 /scratch/pawsey1308/mauve/cubes/v3tk. Detection is restricted to the useful
-4750-9100 A wavelength interval, excludes the AO/LGS gap, ignores spatial
-pixels masked by {GALID}_mask.fits, and ignores spaxels whose DATA HDU is
-non-finite in the checked non-AO wavelength range. A STAT gap is fillable only
-when it is bracketed by finite positive STAT values inside the checked mask.
-Fixing copies the input cube and replaces each fillable bad STAT run with the
-nanmean of the immediate bracketing STAT values.
+4700-9350 A open wavelength interval, excludes the AO/LGS gap, and ignores
+spatial pixels masked by {GALID}_mask.fits. A bad STAT sample with finite DATA is
+filled spectrally from one or two immediate positive STAT bounds. A voxel where
+both DATA and STAT are NaN is filled spatially in both HDUs from the original
+finite neighbors inside a 1 arcsec-diameter circle (2.5-pixel radius); STAT uses
+only positive neighbors.
 """
 
 import argparse
@@ -27,15 +27,41 @@ from astropy.io import fits
 DEFAULT_GALAXIES = ("NGC4254", "NGC4321", "NGC4535")
 DEFAULT_CUBE_DIR = Path("/scratch/pawsey1308/mauve/cubes/v3tk")
 LOG_NAME = "check_phangs_variance.log"
-WAVE_MIN = 4750.0
-WAVE_MAX = 9100.0
+WAVE_MIN = 4700.0
+WAVE_MAX = 9350.0
 AO_GAP_RANGES = ((5800.0, 5970.0),)
+SPATIAL_DIAMETER_ARCSEC = 1.0
+PIXEL_SCALE_ARCSEC = 0.2
+SPATIAL_RADIUS_PIXELS = SPATIAL_DIAMETER_ARCSEC / (2.0 * PIXEL_SCALE_ARCSEC)
 
 
 class StatGap(object):
-    __slots__ = ("z_start", "z_end", "y", "x", "fillable", "reason", "wave_start", "wave_end")
+    __slots__ = (
+        "z_start",
+        "z_end",
+        "y",
+        "x",
+        "fillable",
+        "reason",
+        "wave_start",
+        "wave_end",
+        "lower_z",
+        "upper_z",
+    )
 
-    def __init__(self, z_start, z_end, y, x, fillable, reason, wave_start=None, wave_end=None):
+    def __init__(
+        self,
+        z_start,
+        z_end,
+        y,
+        x,
+        fillable,
+        reason,
+        wave_start=None,
+        wave_end=None,
+        lower_z=None,
+        upper_z=None,
+    ):
         self.z_start = z_start
         self.z_end = z_end
         self.y = y
@@ -44,28 +70,72 @@ class StatGap(object):
         self.reason = reason
         self.wave_start = wave_start
         self.wave_end = wave_end
+        self.lower_z = lower_z
+        self.upper_z = upper_z
 
     @property
     def length(self):
         return self.z_end - self.z_start + 1
 
 
-class GapReport(object):
-    __slots__ = ("galid", "cube_path", "shape", "gaps")
+class SpatialGap(object):
+    __slots__ = (
+        "z",
+        "y",
+        "x",
+        "fillable",
+        "reason",
+        "wave",
+        "data_fill",
+        "stat_fill",
+    )
 
-    def __init__(self, galid, cube_path, shape, gaps):
+    def __init__(
+        self,
+        z,
+        y,
+        x,
+        fillable,
+        reason,
+        wave=None,
+        data_fill=None,
+        stat_fill=None,
+    ):
+        self.z = z
+        self.y = y
+        self.x = x
+        self.fillable = fillable
+        self.reason = reason
+        self.wave = wave
+        self.data_fill = data_fill
+        self.stat_fill = stat_fill
+
+
+class GapReport(object):
+    __slots__ = ("galid", "cube_path", "shape", "gaps", "spatial_gaps")
+
+    def __init__(self, galid, cube_path, shape, gaps, spatial_gaps=()):
         self.galid = galid
         self.cube_path = cube_path
         self.shape = shape
         self.gaps = gaps
+        self.spatial_gaps = spatial_gaps
 
     @property
-    def fillable_count(self):
+    def spectral_fillable_count(self):
         return sum(1 for gap in self.gaps if gap.fillable)
 
     @property
+    def spatial_fillable_count(self):
+        return sum(1 for gap in self.spatial_gaps if gap.fillable)
+
+    @property
+    def fillable_count(self):
+        return self.spectral_fillable_count + self.spatial_fillable_count
+
+    @property
     def unfillable_count(self):
-        return len(self.gaps) - self.fillable_count
+        return len(self.gaps) + len(self.spatial_gaps) - self.fillable_count
 
 
 def cube_path_for(galid: str, cube_dir: Path = DEFAULT_CUBE_DIR) -> Path:
@@ -143,7 +213,7 @@ def wavelength_axis_from_hdul(hdul, nz):
 
 
 def checked_wavelength_mask(wavelengths):
-    mask = (wavelengths >= WAVE_MIN) & (wavelengths <= WAVE_MAX)
+    mask = (wavelengths > WAVE_MIN) & (wavelengths < WAVE_MAX)
     for start, end in AO_GAP_RANGES:
         mask &= ~((wavelengths >= start) & (wavelengths <= end))
     return mask
@@ -172,11 +242,56 @@ def is_masked_spaxel(mask_data, y, x):
     return (not np.isfinite(value)) or value != 0
 
 
-def data_has_nonfinite_in_checked_range(data_cube, checked_mask, y, x):
+def checked_data_mask(data_cube, checked_mask, y, x):
     if data_cube is None:
-        return False
+        return checked_mask
     spectrum = np.asarray(data_cube[:, y, x])
-    return np.any(~np.isfinite(spectrum[checked_mask]))
+    return checked_mask & np.isfinite(spectrum)
+
+
+def spatial_circle_offsets():
+    limit = int(np.floor(SPATIAL_RADIUS_PIXELS))
+    offsets = []
+    for dy in range(-limit, limit + 1):
+        for dx in range(-limit, limit + 1):
+            if dx == 0 and dy == 0:
+                continue
+            if dx * dx + dy * dy <= SPATIAL_RADIUS_PIXELS**2:
+                offsets.append((dy, dx))
+    return tuple(offsets)
+
+
+SPATIAL_CIRCLE_OFFSETS = spatial_circle_offsets()
+
+
+def spatial_mean_at(cube, z, y, x, mask_data=None, positive_only=False):
+    ny, nx = cube.shape[1:]
+    values = []
+    for dy, dx in SPATIAL_CIRCLE_OFFSETS:
+        neighbor_y = y + dy
+        neighbor_x = x + dx
+        if neighbor_y < 0 or neighbor_y >= ny or neighbor_x < 0 or neighbor_x >= nx:
+            continue
+        if is_masked_spaxel(mask_data, neighbor_y, neighbor_x):
+            continue
+        value = cube[z, neighbor_y, neighbor_x]
+        if not np.isfinite(value):
+            continue
+        if positive_only and value <= 0:
+            continue
+        values.append(float(value))
+    if not values:
+        return None
+    return float(np.mean(values))
+
+
+def make_spatial_gap(data_cube, stat_data, z, y, x, wavelengths=None, mask_data=None):
+    data_fill = spatial_mean_at(data_cube, z, y, x, mask_data)
+    stat_fill = spatial_mean_at(stat_data, z, y, x, mask_data, positive_only=True)
+    fillable = data_fill is not None and stat_fill is not None
+    reason = "one_arcsec_spatial_mean" if fillable else "no_valid_spatial_neighbors"
+    wave = None if wavelengths is None else float(wavelengths[z])
+    return SpatialGap(z, y, x, fillable, reason, wave, data_fill, stat_fill)
 
 
 def find_runs(mask: np.ndarray) -> Iterable[Tuple[int, int]]:
@@ -190,16 +305,29 @@ def find_runs(mask: np.ndarray) -> Iterable[Tuple[int, int]]:
         yield int(start), int(end)
 
 
-def classify_gap(spectrum: np.ndarray, start: int, end: int, checked_mask=None) -> Tuple[bool, str]:
+def positive_bound_indices(spectrum: np.ndarray, start: int, end: int, checked_mask=None):
     before_idx = start - 1
     after_idx = end + 1
-    if before_idx < 0 or after_idx >= spectrum.size:
-        return False, "edge_or_checked_window"
-    if checked_mask is not None and (not checked_mask[before_idx] or not checked_mask[after_idx]):
-        return False, "edge_or_checked_window"
-    if positive_finite(spectrum[before_idx]) and positive_finite(spectrum[after_idx]):
+    lower_z = None
+    upper_z = None
+    if before_idx >= 0 and (checked_mask is None or checked_mask[before_idx]):
+        if positive_finite(spectrum[before_idx]):
+            lower_z = before_idx
+    if after_idx < spectrum.size and (checked_mask is None or checked_mask[after_idx]):
+        if positive_finite(spectrum[after_idx]):
+            upper_z = after_idx
+    return lower_z, upper_z
+
+
+def classify_gap(spectrum: np.ndarray, start: int, end: int, checked_mask=None) -> Tuple[bool, str]:
+    lower_z, upper_z = positive_bound_indices(spectrum, start, end, checked_mask)
+    if lower_z is not None and upper_z is not None:
         return True, "bounded_by_positive_values"
-    return False, "neighbor_value_not_positive_finite"
+    if lower_z is not None:
+        return True, "bounded_below_by_positive_value"
+    if upper_z is not None:
+        return True, "bounded_above_by_positive_value"
+    return False, "no_positive_finite_bound"
 
 
 def find_stat_gaps(
@@ -219,25 +347,62 @@ def find_stat_gaps(
         checked_mask = checked_wavelength_mask(wavelengths)
 
     gaps = []  # type: List[StatGap]
+    spatial_gaps = []  # type: List[SpatialGap]
     nz, ny, nx = stat_data.shape
     for y in range(ny):
         for x in range(nx):
             if is_masked_spaxel(mask_data, y, x):
                 continue
-            if data_has_nonfinite_in_checked_range(data_cube, checked_mask, y, x):
-                continue
+            eligible_mask = checked_data_mask(data_cube, checked_mask, y, x)
             spectrum = np.asarray(stat_data[:, y, x])
-            bad = (~positive_finite(spectrum)) & checked_mask
+            bad = (~positive_finite(spectrum)) & eligible_mask
             for start, end in find_runs(bad):
-                fillable, reason = classify_gap(spectrum, start, end, checked_mask)
+                fillable, reason = classify_gap(spectrum, start, end, eligible_mask)
+                lower_z, upper_z = positive_bound_indices(spectrum, start, end, eligible_mask)
                 wave_start = None if wavelengths is None else float(wavelengths[start])
                 wave_end = None if wavelengths is None else float(wavelengths[end])
-                gaps.append(StatGap(start, end, y, x, fillable, reason, wave_start, wave_end))
+                gaps.append(
+                    StatGap(
+                        start,
+                        end,
+                        y,
+                        x,
+                        fillable,
+                        reason,
+                        wave_start,
+                        wave_end,
+                        lower_z,
+                        upper_z,
+                    )
+                )
 
-    return GapReport(galid, Path(cube_path), tuple(stat_data.shape), tuple(gaps))
+            if data_cube is not None:
+                joint_nan = np.isnan(data_cube[:, y, x]) & np.isnan(spectrum) & checked_mask
+                for z in np.flatnonzero(joint_nan):
+                    spatial_gap = make_spatial_gap(
+                        data_cube,
+                        stat_data,
+                        int(z),
+                        y,
+                        x,
+                        wavelengths,
+                        mask_data,
+                    )
+                    if spatial_gap.fillable:
+                        spatial_gaps.append(spatial_gap)
+
+    return GapReport(
+        galid,
+        Path(cube_path),
+        tuple(stat_data.shape),
+        tuple(gaps),
+        tuple(spatial_gaps),
+    )
 
 
-def _scan_y_range(args: Tuple[str, Path, int, int]) -> Tuple[Tuple[int, ...], Tuple[StatGap, ...]]:
+def _scan_y_range(
+    args: Tuple[str, Path, int, int]
+) -> Tuple[Tuple[int, ...], Tuple[StatGap, ...], Tuple[SpatialGap, ...]]:
     galid, cube_path, y_start, y_end = args
     with fits.open(cube_path, memmap=True) as hdul:
         stat = hdul["STAT"].data
@@ -246,6 +411,7 @@ def _scan_y_range(args: Tuple[str, Path, int, int]) -> Tuple[Tuple[int, ...], Tu
         checked_mask = np.ones(stat.shape[0], dtype=bool) if wavelengths is None else checked_wavelength_mask(wavelengths)
         mask_data = mask_data_from_path(mask_path_for(galid, cube_path.parent))
         gaps = []  # type: List[StatGap]
+        spatial_gaps = []  # type: List[SpatialGap]
         nz, ny, nx = stat.shape
         if y_start < 0 or y_end > ny:
             raise ValueError(f"Bad y range {y_start}:{y_end} for STAT shape {stat.shape}")
@@ -253,16 +419,44 @@ def _scan_y_range(args: Tuple[str, Path, int, int]) -> Tuple[Tuple[int, ...], Tu
             for x in range(nx):
                 if is_masked_spaxel(mask_data, y, x):
                     continue
-                if data_has_nonfinite_in_checked_range(data_cube, checked_mask, y, x):
-                    continue
+                eligible_mask = checked_data_mask(data_cube, checked_mask, y, x)
                 spectrum = np.asarray(stat[:, y, x])
-                bad = (~positive_finite(spectrum)) & checked_mask
+                bad = (~positive_finite(spectrum)) & eligible_mask
                 for start, end in find_runs(bad):
-                    fillable, reason = classify_gap(spectrum, start, end, checked_mask)
+                    fillable, reason = classify_gap(spectrum, start, end, eligible_mask)
+                    lower_z, upper_z = positive_bound_indices(spectrum, start, end, eligible_mask)
                     wave_start = None if wavelengths is None else float(wavelengths[start])
                     wave_end = None if wavelengths is None else float(wavelengths[end])
-                    gaps.append(StatGap(start, end, y, x, fillable, reason, wave_start, wave_end))
-        return (nz, ny, nx), tuple(gaps)
+                    gaps.append(
+                        StatGap(
+                            start,
+                            end,
+                            y,
+                            x,
+                            fillable,
+                            reason,
+                            wave_start,
+                            wave_end,
+                            lower_z,
+                            upper_z,
+                        )
+                    )
+
+                if data_cube is not None:
+                    joint_nan = np.isnan(data_cube[:, y, x]) & np.isnan(spectrum) & checked_mask
+                    for z in np.flatnonzero(joint_nan):
+                        spatial_gap = make_spatial_gap(
+                            data_cube,
+                            stat,
+                            int(z),
+                            y,
+                            x,
+                            wavelengths,
+                            mask_data,
+                        )
+                        if spatial_gap.fillable:
+                            spatial_gaps.append(spatial_gap)
+        return (nz, ny, nx), tuple(gaps), tuple(spatial_gaps)
 
 
 def y_ranges(ny: int, workers: int) -> List[Tuple[int, int]]:
@@ -285,24 +479,24 @@ def scan_cube(cube_path: Path, galid: str, workers: int) -> GapReport:
     ranges = y_ranges(shape[1], workers)
     tasks = [(galid, cube_path, start, end) for start, end in ranges]
     gaps = []  # type: List[StatGap]
+    spatial_gaps = []  # type: List[SpatialGap]
     with concurrent.futures.ProcessPoolExecutor(max_workers=len(tasks)) as executor:
-        for chunk_shape, chunk_gaps in executor.map(_scan_y_range, tasks):
+        for chunk_shape, chunk_gaps, chunk_spatial_gaps in executor.map(_scan_y_range, tasks):
             if tuple(chunk_shape) != shape:
                 raise RuntimeError(f"STAT shape changed while scanning {cube_path}")
             gaps.extend(chunk_gaps)
+            spatial_gaps.extend(chunk_spatial_gaps)
     gaps.sort(key=lambda gap: (gap.y, gap.x, gap.z_start, gap.z_end))
-    return GapReport(galid, cube_path, shape, tuple(gaps))
+    spatial_gaps.sort(key=lambda gap: (gap.y, gap.x, gap.z))
+    return GapReport(galid, cube_path, shape, tuple(gaps), tuple(spatial_gaps))
 
 
 def fill_value_for_gap(stat_data: np.ndarray, gap: StatGap) -> float:
-    values = np.array(
-        [
-            stat_data[gap.z_start - 1, gap.y, gap.x],
-            stat_data[gap.z_end + 1, gap.y, gap.x],
-        ],
-        dtype=float,
-    )
-    return float(np.nanmean(values))
+    bound_indices = [index for index in (gap.lower_z, gap.upper_z) if index is not None]
+    if not bound_indices:
+        raise ValueError("Cannot fill a gap without a finite positive bound")
+    values = np.array([stat_data[index, gap.y, gap.x] for index in bound_indices], dtype=float)
+    return float(np.mean(values))
 
 
 def fill_stat_gaps(stat_data: np.ndarray, gaps: Sequence[StatGap]) -> np.ndarray:
@@ -314,6 +508,17 @@ def fill_stat_gaps(stat_data: np.ndarray, gaps: Sequence[StatGap]) -> np.ndarray
     return fixed
 
 
+def fill_spatial_gaps(data_cube, stat_data, spatial_gaps):
+    fixed_data = np.array(data_cube, copy=True)
+    fixed_stat = np.array(stat_data, copy=True)
+    for gap in spatial_gaps:
+        if not gap.fillable:
+            continue
+        fixed_data[gap.z, gap.y, gap.x] = gap.data_fill
+        fixed_stat[gap.z, gap.y, gap.x] = gap.stat_fill
+    return fixed_data, fixed_stat
+
+
 def fix_cube(input_path: Path, output_path: Path, workers: int = 1, galid: str = "") -> GapReport:
     report = scan_cube(input_path, galid or input_path.stem, workers) if workers > 1 else _scan_single(input_path, galid)
     if report.fillable_count == 0:
@@ -322,10 +527,17 @@ def fix_cube(input_path: Path, output_path: Path, workers: int = 1, galid: str =
     shutil.copy2(input_path, output_path)
     with fits.open(output_path, mode="update", memmap=True) as hdul:
         stat = hdul["STAT"].data
+        data_cube = hdul["DATA"].data if "DATA" in hdul else None
         for gap in report.gaps:
             if not gap.fillable:
                 continue
             stat[gap.z_start : gap.z_end + 1, gap.y, gap.x] = fill_value_for_gap(stat, gap)
+        if data_cube is not None:
+            for gap in report.spatial_gaps:
+                if not gap.fillable:
+                    continue
+                data_cube[gap.z, gap.y, gap.x] = gap.data_fill
+                stat[gap.z, gap.y, gap.x] = gap.stat_fill
         hdul.flush()
     return report
 
@@ -351,15 +563,28 @@ def format_gap(galid: str, gap: StatGap) -> str:
     )
 
 
+def format_spatial_gap(galid, gap):
+    wave_text = "wave=unknown" if gap.wave is None else f"wave={gap.wave:.2f}"
+    return (
+        f"{galid} (x,y)=({gap.x},{gap.y}) z={gap.z} {wave_text} "
+        f"method=spatial_1arcsec data_fill={gap.data_fill:.6g} "
+        f"stat_fill={gap.stat_fill:.6g} reason={gap.reason}"
+    )
+
+
 def format_report(report: GapReport) -> List[str]:
     target_gaps = [gap for gap in report.gaps if gap.fillable]
+    spatial_targets = [gap for gap in report.spatial_gaps if gap.fillable]
     lines = [
         f"[{report.galid}] cube={report.cube_path}",
-        f"[{report.galid}] STAT shape={report.shape} fillable_gaps={len(target_gaps)}",
+        f"[{report.galid}] STAT shape={report.shape} "
+        f"spectral_fillable_gaps={len(target_gaps)} "
+        f"spatial_fillable_voxels={len(spatial_targets)}",
     ]
     lines.extend(format_gap(report.galid, gap) for gap in target_gaps)
-    if not target_gaps:
-        lines.append(f"[{report.galid}] no fillable non-positive or non-finite STAT gaps found")
+    lines.extend(format_spatial_gap(report.galid, gap) for gap in spatial_targets)
+    if not target_gaps and not spatial_targets:
+        lines.append(f"[{report.galid}] no fillable spectral or spatial gaps found")
     return lines
 
 

@@ -173,22 +173,27 @@ The default cube path is:
 
 `check_phangs_variance.py` scans the `STAT` HDU for non-positive or non-finite
 runs along the wavelength axis and writes the screen report to
-`check_phangs_variance.log`. The scan is limited to the `4750-9100 A` wavelength
-range and excludes the AO/LGS gap region (`5800-5970 A`). It also skips spatial
+`check_phangs_variance.log`. The scan uses the open `4700-9350 A` wavelength
+interval (the frames exactly at `4700 A` and `9350 A` are excluded) and excludes
+the AO/LGS gap region (`5800-5970 A`). It also skips spatial
 pixels masked by:
 
 ```text
 /scratch/pawsey1308/mauve/cubes/v3tk/{GALID}_mask.fits
 ```
 
-and skips any spaxel whose `DATA` HDU has non-finite values inside the checked
-non-AO wavelength range. This avoids reporting variance gaps from unobserved
-pointing regions or already-masked spatial pixels.
+At each unmasked spaxel, the workflow separates two target types:
 
-A gap is marked fillable only when the bad `STAT` run is between finite positive
-neighboring `STAT` values inside the checked wavelength mask. The log only lists
-fillable target gaps. Each reported row includes the `(x,y)` position, `z` index
-range, wavelength range, gap length, and reason.
+1. If `STAT` is non-positive or non-finite while `DATA` is finite, the target is
+   handled spectrally. A `DATA` NaN at another wavelength does not suppress it.
+2. If `DATA` and `STAT` are both NaN at the same voxel, the target is handled
+   spatially at that wavelength.
+
+All separate bad `STAT` runs at each spaxel are checked, so one spaxel may have
+multiple reported gaps. A gap is marked fillable when at least one immediate
+side is a finite positive `STAT` value inside the checked wavelength mask. The
+log only lists fillable target gaps. Each reported row includes the `(x,y)`
+position, `z` index range, wavelength range, gap length, and reason.
 
 `fix_phangs_variance.py` writes:
 
@@ -196,9 +201,21 @@ range, wavelength range, gap length, and reason.
 /scratch/pawsey1308/mauve/cubes/v3tk/{GALID}_PHANGS_DATACUBE_native_fixed.fits
 ```
 
-For each fillable gap, it fills the bad `STAT` samples with the `nanmean` of the
-immediate bracketing `STAT` values. The original input cube is not modified. If
-a galaxy has no fillable gaps, the fixed cube is not written.
+For each spectral gap, it fills the bad `STAT` samples with the mean of the
+available immediate positive bounding values: the mean of both sides when both
+are valid, or the single valid side for a one-sided gap. Excluded wavelength
+frames are never used as bounds.
+
+For each joint `DATA`/`STAT` NaN voxel, it takes separate spatial means in the
+two HDUs from a `1 arcsec`-diameter circle centered on that spaxel. At 0.2
+arcsec/pixel, the circle radius is `2.5` pixels. Non-finite and spatially
+masked neighbors are excluded, and the `STAT` mean additionally requires
+positive values. Means are calculated from the original cube, so newly filled
+values do not propagate into other targets or across large unobserved regions.
+A joint-NaN target is filled only when both spatial means are available.
+
+The original input cube is not modified. If a galaxy has no fillable spectral
+or spatial targets, the fixed cube is not written.
 
 Submit the Setonix wrapper from the `fix_phangs/` directory:
 
@@ -278,10 +295,11 @@ The slurm scripts are copied from `v3tk_v7.6.8_setonix.slurm` and
 `v3tk_v7.6.8_7000_setonix.slurm` by replacing the literal `GALID` placeholder
 with the current galaxy ID.
 
-The generated slurm scripts keep the scheduler settings from those templates.
-To change partition, memory, walltime, mail settings, output logs, or the run
-command for newly generated scripts, edit the template first and rerun
-`27_creation.sh`.
+The generated slurm scripts start with the scheduler settings from those
+templates. `27_creation.sh` then applies the run-specific partition, memory,
+and walltime overrides described below. To change mail settings, output logs,
+or the run command for newly generated scripts, edit the relevant template and
+rerun `27_creation.sh`.
 
 The current templates request:
 
@@ -291,6 +309,30 @@ The current templates request:
 #SBATCH --mem=230G
 #SBATCH --time=24:00:00
 ```
+
+For normal runs, the existing queue overrides remain in effect:
+
+- `NGC4192`, `NGC4254`, `NGC4298`, `NGC4321`, `NGC4330`, `NGC4380`,
+  `NGC4396`, `NGC4501`, `NGC4535`, `NGC4567_8`, `NGC4569`, and `NGC4698`
+  use `highmem`, `980G`, and `96:00:00`.
+- `NGC4293`, `NGC4302`, `NGC4383`, `NGC4419`, and `NGC4457` use `long`,
+  `230G`, and `96:00:00`. `NGC4298` is also in the normal long-runtime list,
+  but its high-memory override takes precedence.
+- All other normal runs retain the template defaults: `work`, `230G`, and
+  `24:00:00`.
+
+The shorter 7000 A runs use a separate resource policy based on the completed
+job memory report. The nine run IDs whose measured `MaxRSS` exceeded 220 GiB
+use `highmem`, `980G`, and `96:00:00`:
+
+```text
+NGC4192  NGC4254  NGC4298  NGC4380  NGC4501
+NGC4535  NGC4567_8  NGC4569  NGC4698
+```
+
+The normal-run long-runtime list is not applied to 7000 A runs. Every other
+7000 A run therefore retains the template defaults: `work`, `230G`, and
+`24:00:00`.
 
 The 39 generated run IDs are:
 
