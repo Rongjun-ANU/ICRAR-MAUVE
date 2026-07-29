@@ -184,10 +184,11 @@ pixels masked by:
 
 At each unmasked spaxel, the workflow separates two target types:
 
-1. If `STAT` is non-positive or non-finite while `DATA` is finite, the target is
-   handled spectrally. A `DATA` NaN at another wavelength does not suppress it.
+1. If `STAT` is non-positive or non-finite while `DATA` is finite and strictly
+   positive, the target is handled spectrally. A `DATA` NaN at another
+   wavelength does not suppress it.
 2. If `DATA` and `STAT` are both NaN at the same voxel, the target is handled
-   spatially at that wavelength.
+   as part of a spatial component at that wavelength.
 
 All separate bad `STAT` runs at each spaxel are checked, so one spaxel may have
 multiple reported gaps. A gap is marked fillable when at least one immediate
@@ -206,13 +207,28 @@ available immediate positive bounding values: the mean of both sides when both
 are valid, or the single valid side for a one-sided gap. Excluded wavelength
 frames are never used as bounds.
 
-For each joint `DATA`/`STAT` NaN voxel, it takes separate spatial means in the
-two HDUs from a `1 arcsec`-diameter circle centered on that spaxel. At 0.2
-arcsec/pixel, the circle radius is `2.5` pixels. Non-finite and spatially
-masked neighbors are excluded, and the `STAT` mean additionally requires
-positive values. Means are calculated from the original cube, so newly filled
-values do not propagate into other targets or across large unobserved regions.
-A joint-NaN target is filled only when both spatial means are available.
+For the spatial case, each wavelength plane is labeled into 8-connected
+joint-NaN components, so corner-touching NaN spaxels belong to the same
+component. A component is accepted only when:
+
+- it does not touch the image edge or a masked spatial pixel;
+- every pixel in its complete one-pixel, 8-neighbor boundary has finite `DATA`
+  (including zero or negative flux) and finite, strictly positive `STAT`; and
+- every component pixel has valid spatial means in both HDUs.
+
+This rejects the large absolute-NaN/unobserved areas and their edges before any
+per-voxel averaging or logging. Each voxel in an accepted component then takes
+separate spatial means in the two HDUs from a `1 arcsec`-diameter circle centered
+on that spaxel. At 0.2 arcsec/pixel, the circle radius is `2.5` pixels. Means
+are calculated from the original cube, so newly filled values do not propagate
+into other targets. Non-finite and masked neighbors are excluded; `STAT` also
+requires positive neighbors.
+
+At the start of each checker run, an existing non-empty
+`check_phangs_variance.log` is renamed with a timestamp and a fresh log is
+created, rather than appending indefinitely or deleting the earlier report.
+Spatial detection runs once per wavelength plane using connected-component
+labeling, while the spectral scan remains parallelized over spatial rows.
 
 The original input cube is not modified. If a galaxy has no fillable spectral
 or spatial targets, the fixed cube is not written.
@@ -225,7 +241,8 @@ sbatch phangs_variance.slurm
 
 The Slurm job uses the `work` partition with `128` CPUs and `230G` memory,
 passes the full CPU count to the Python scanners, and runs the scripts through
-`ngistenv1308` so the nGIST Python environment provides `astropy` and `numpy`.
+`ngistenv1308` so the nGIST Python environment provides `astropy`, `numpy`, and
+`scipy`.
 
 To transfer only selected galaxies, pass the GALID list. For example, this
 stages only the public PHANGS-native `NGC4254` cube:

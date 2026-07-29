@@ -83,6 +83,19 @@ def test_checked_wavelength_range_is_open_4700_to_9350_and_excludes_ao_gap():
     assert checked.tolist() == [False, False, True, True, False, False, False, True, True, False]
 
 
+def test_spatial_components_respect_wavelength_and_ao_exclusions():
+    tools = load_module()
+    wavelengths = np.array([4700.0, 4701.25, 5900.0, 5971.0, 9350.0])
+    data = np.full((5, 7, 7), 2.0, dtype=np.float32)
+    stat = np.full((5, 7, 7), 20.0, dtype=np.float32)
+    data[:, 3, 3] = np.nan
+    stat[:, 3, 3] = np.nan
+
+    report = tools.find_stat_gaps(stat, wavelengths=wavelengths, data_cube=data)
+
+    assert [gap.z for gap in report.spatial_gaps] == [1, 3]
+
+
 def test_one_sided_gap_does_not_use_excluded_window_neighbor():
     tools = load_module()
     stat = np.array([999, 0, 10], dtype=np.float32).reshape(3, 1, 1)
@@ -105,6 +118,19 @@ def test_data_nan_at_other_wavelength_does_not_skip_stat_gap():
     gaps = tools.find_stat_gaps(stat, data_cube=data).gaps
 
     assert [(gap.z_start, gap.z_end, gap.fillable) for gap in gaps] == [(1, 1, True)]
+
+
+def test_stat_gap_with_nonpositive_data_is_not_a_spectral_target():
+    tools = load_module()
+    stat = np.ones((4, 1, 1), dtype=np.float32)
+    stat[1, 0, 0] = np.nan
+    data = np.ones_like(stat)
+    data[1, 0, 0] = 0.0
+
+    report = tools.find_stat_gaps(stat, data_cube=data)
+
+    assert report.gaps == ()
+    assert report.spatial_gaps == ()
 
 
 def test_joint_nan_is_excluded_spectrally_but_considered_spatially():
@@ -146,7 +172,7 @@ def test_joint_data_stat_nan_uses_one_arcsec_spatial_means():
     assert np.isclose(fixed_stat[0, 3, 3], 22.0)
 
 
-def test_spatial_fill_excludes_masked_neighbors():
+def test_spatial_component_touching_mask_is_rejected():
     tools = load_module()
     data = np.full((1, 7, 7), 2.0, dtype=np.float32)
     stat = np.full((1, 7, 7), 20.0, dtype=np.float32)
@@ -159,9 +185,93 @@ def test_spatial_fill_excludes_masked_neighbors():
 
     report = tools.find_stat_gaps(stat, data_cube=data, mask_data=mask)
 
-    assert len(report.spatial_gaps) == 1
-    assert report.spatial_gaps[0].data_fill == 2.0
-    assert report.spatial_gaps[0].stat_fill == 20.0
+    assert report.spatial_gaps == ()
+
+
+def test_spatial_component_with_finite_nonpositive_data_boundary_is_accepted():
+    tools = load_module()
+    for boundary_value in (-2.0, 0.0):
+        data = np.full((1, 7, 7), 2.0, dtype=np.float32)
+        stat = np.full((1, 7, 7), 20.0, dtype=np.float32)
+        data[0, 3, 2:5] = np.nan
+        stat[0, 3, 2:5] = np.nan
+        data[0, 3, 5] = boundary_value
+
+        report = tools.find_stat_gaps(stat, data_cube=data)
+
+        assert len(report.spatial_gaps) == 3
+        assert {(gap.x, gap.y) for gap in report.spatial_gaps} == {
+            (2, 3),
+            (3, 3),
+            (4, 3),
+        }
+        assert all(gap.fillable for gap in report.spatial_gaps)
+
+
+def test_spatial_component_with_nonpositive_stat_boundary_is_rejected():
+    tools = load_module()
+    data = np.full((1, 7, 7), 2.0, dtype=np.float32)
+    stat = np.full((1, 7, 7), 20.0, dtype=np.float32)
+    data[0, 3, 3] = np.nan
+    stat[0, 3, 3] = np.nan
+    stat[0, 2, 2] = 0.0
+
+    report = tools.find_stat_gaps(stat, data_cube=data)
+
+    assert report.spatial_gaps == ()
+
+
+def test_spatial_component_touching_image_edge_is_rejected():
+    tools = load_module()
+    data = np.full((1, 7, 7), 2.0, dtype=np.float32)
+    stat = np.full((1, 7, 7), 20.0, dtype=np.float32)
+    data[0, :, :3] = np.nan
+    stat[0, :, :3] = np.nan
+
+    report = tools.find_stat_gaps(stat, data_cube=data)
+
+    assert report.spatial_gaps == ()
+
+
+def test_diagonally_connected_component_with_invalid_stat_boundary_is_rejected():
+    tools = load_module()
+    data = np.full((1, 8, 8), 2.0, dtype=np.float32)
+    stat = np.full((1, 8, 8), 20.0, dtype=np.float32)
+    data[0, 3, 3] = np.nan
+    stat[0, 3, 3] = np.nan
+    data[0, 4, 4] = np.nan
+    stat[0, 4, 4] = np.nan
+    stat[0, 2, 2] = 0.0
+
+    report = tools.find_stat_gaps(stat, data_cube=data)
+
+    assert report.spatial_gaps == ()
+
+
+def test_diagonally_connected_component_with_positive_boundary_is_accepted():
+    tools = load_module()
+    data = np.full((1, 8, 8), 2.0, dtype=np.float32)
+    stat = np.full((1, 8, 8), 20.0, dtype=np.float32)
+    data[0, 3, 3] = np.nan
+    stat[0, 3, 3] = np.nan
+    data[0, 4, 4] = np.nan
+    stat[0, 4, 4] = np.nan
+
+    report = tools.find_stat_gaps(stat, data_cube=data)
+
+    assert [(gap.y, gap.x) for gap in report.spatial_gaps] == [(3, 3), (4, 4)]
+
+
+def test_thick_bounded_component_is_rejected_all_or_none_without_inner_means():
+    tools = load_module()
+    data = np.full((1, 11, 11), 2.0, dtype=np.float32)
+    stat = np.full((1, 11, 11), 20.0, dtype=np.float32)
+    data[0, 2:9, 2:9] = np.nan
+    stat[0, 2:9, 2:9] = np.nan
+
+    report = tools.find_stat_gaps(stat, data_cube=data)
+
+    assert report.spatial_gaps == ()
 
 
 def test_fix_cube_fills_joint_nan_in_data_and_stat_spatially():
@@ -203,3 +313,20 @@ def test_fix_cube_writes_fixed_output_and_preserves_original():
     finally:
         input_path.unlink(missing_ok=True)
         output_path.unlink(missing_ok=True)
+
+
+def test_start_log_replaces_previous_run():
+    tools = load_module()
+    log_path = Path.cwd() / "synthetic_check_phangs_variance.log"
+
+    try:
+        log_path.write_text("stale 12 GB run\n", encoding="utf-8")
+        backup_path = tools.start_log(log_path, ["new run"])
+
+        assert log_path.read_text(encoding="utf-8") == "new run\n"
+        assert backup_path is not None
+        assert backup_path.read_text(encoding="utf-8") == "stale 12 GB run\n"
+    finally:
+        log_path.unlink(missing_ok=True)
+        if "backup_path" in locals() and backup_path is not None:
+            backup_path.unlink(missing_ok=True)
