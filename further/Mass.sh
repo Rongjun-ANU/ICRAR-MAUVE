@@ -20,6 +20,10 @@
 #     v3tk_v7.6.8 or v3tk_v7.6.8_7000 product folder.
 #   - Auto-discovery only queues IC/NGC galaxy folders that contain stellar
 #     population inputs for the selected run.
+#
+# Changes (2026-07-26):
+#   - Validate every queued galaxy ID, including explicit command-line targets,
+#     so product-side *_logs directories cannot be treated as galaxies.
 
 set -euo pipefail
 
@@ -104,14 +108,7 @@ is_run_selector() {
 }
 
 is_galaxy_dir_name() {
-  case "$1" in
-    IC[0-9]*|NGC[0-9]*) ;;
-    *) return 1 ;;
-  esac
-  case "$1" in
-    *[!ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_]*|*_logs|*_log) return 1 ;;
-    *) return 0 ;;
-  esac
+  [[ "$1" =~ ^(IC[0-9]+|NGC[0-9]+(_[0-9]+)?)$ ]]
 }
 
 has_mass_inputs() {
@@ -174,6 +171,10 @@ for RUN_LABEL in "${RUN_LABELS[@]}"; do
     mapfile -t GALAXIES < <(discover_galaxies_for_run "$RUN_ROOT" "$PRODUCT_SUBDIR")
   fi
   for GAL in "${GALAXIES[@]}"; do
+    if ! is_galaxy_dir_name "$GAL"; then
+      printf 'ERROR: invalid galaxy ID %q; expected IC<digits>, NGC<digits>, or NGC<digits>_<digits>.\n' "$GAL" >&2
+      exit 2
+    fi
     TASKS+=("${RUN_LABEL}|${RUN_ROOT}|${PRODUCT_SUBDIR}|${GAL}")
   done
 done

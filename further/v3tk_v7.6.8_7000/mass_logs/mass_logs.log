@@ -1,0 +1,35 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/projects/mauve/products
+Product subdir   : v3tk_v7.6.8_7000
+Cube root        : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root : <none>
+PHANGS VOS dir   : vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES
+PHANGS stage root: /scratch
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+
+Traceback (most recent call last):
+  File "/arc/home/RongjunHuang/ICRAR/further/Mass.py", line 573, in <module>
+    cube_path = resolve_existing_path(
+        "datacube FITS",
+    ...<6 lines>...
+        *build_named_input_candidates(fallback_root, Path("cubes/v3tk"), cube_names),
+    )
+  File "/arc/home/RongjunHuang/ICRAR/further/Mass.py", line 290, in resolve_existing_path
+    raise FileNotFoundError(f"Could not find {label}. Checked:\n{checked}")
+FileNotFoundError: Could not find datacube FITS. Checked:
+  - /arc/projects/mauve/cubes/v3tk/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+  - /arc/projects/mauve/cubes/v3tk/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits
+  - /arc/projects/mauve/products/cubes/v3tk/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+  - /arc/projects/mauve/products/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+  - /arc/projects/mauve/products/cubes/v3tk/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits
+  - /arc/projects/mauve/products/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits
+  - /arc/home/RongjunHuang/ICRAR/further/cubes/v3tk/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+  - /arc/home/RongjunHuang/ICRAR/further/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
+  - /arc/home/RongjunHuang/ICRAR/further/cubes/v3tk/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits
+  - /arc/home/RongjunHuang/ICRAR/further/MASS_LOGS_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk*.fits
+🛑  mass_logs failed (exit 1) after 0m0s – see /arc/projects/mauve/products/v3tk_v7.6.8_7000/mass_logs/mass_logs.log

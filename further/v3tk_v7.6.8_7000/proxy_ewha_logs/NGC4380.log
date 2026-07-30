@@ -1,0 +1,48 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+Product root        : /arc/projects/mauve/products
+Product subdir      : v3tk_v7.6.8_7000
+Cube root           : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root    : <none>
+PHANGS VOS dir      : vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES
+PHANGS stage root   : /scratch
+Local fallback root : /arc/home/RongjunHuang/ICRAR/further
+Input resolution    : delegated to proxy_EWHa.py
+Redshift file       : /arc/home/RongjunHuang/ICRAR/further/new_redshifts
+
+
+=== proxy_EWHa inputs/outputs ===
+Galaxy          : NGC4380
+Redshift (z)    : 0.003212
+Primary root    : /arc/projects/mauve/products
+Product subdir  : v3tk_v7.6.8_7000
+Fallback root   : /arc/home/RongjunHuang/ICRAR/further
+Cube root       : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root: <none>
+Binning FITS    : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4380/NGC4380_spatial_binning_maps_further.fits
+Gas FITS        : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4380/NGC4380_gas_bin_maps_further.fits
+Continuum FITS  : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4380/NGC4380_cont_cube.fits
+Redshift file   : /arc/home/RongjunHuang/ICRAR/further/new_redshifts
+Output FITS     : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4380/NGC4380_proxy_EW_maps_further.fits
+Halpha window (vacuum, rest) : 6557.600 - 6571.600 A
+Halpha window (air, rest)    : 6555.789 - 6569.785 A
+Halpha lambda (air, rest)    : 6562.795 A
+Halpha Delta lambda (air)    : 13.996 A
+
+Saved: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4380/NGC4380_proxy_EW_maps_further.fits
+Halpha source extension       : HA6562_FLUX
+Halpha velocity extension     : HA6562_VEL
+Legacy R-band source          : magnitude_r_uncorrected
+Continuum cube source HDU     : DATA
+Continuum spectral axis       : AWAV
+Galaxy systemic velocity      : 961.387 km/s
+Finite Halpha velocity pixels : 502758
+Finite Halpha velocity bins   : 8204
+Bin redshift range            : 0.001107 - 0.004934
+Selected rest-frame window    : 6555.789 - 6569.785 A
+Observed-frame window range   : 6563.045 - 6602.198 A
+Continuum planes in window    : 31
+Valid CONT_HA_MEAN pixels     : 502758
+Valid proxy_EWHa pixels       : 502758
+Valid pseudo_EWHa pixels      : 502758
+✅  NGC4380 finished in 0m40s

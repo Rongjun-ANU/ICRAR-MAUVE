@@ -30,7 +30,10 @@ new_workdir() {
   cp "${CONFIG_DIR}/27_send.sh" "$tmp_dir/"
   cp "${CONFIG_DIR}/27_setonix.sh" "$tmp_dir/"
   cp "${CONFIG_DIR}/27_status.sh" "$tmp_dir/"
+  cp "${CONFIG_DIR}/cube_centers_v3tk.csv" "$tmp_dir/"
+  cp "${CONFIG_DIR}/cube_sizes_v3tk.csv" "$tmp_dir/"
   cp "${CONFIG_DIR}/v3tk_v7.6.8_setonix.slurm" "$tmp_dir/"
+  cp "${CONFIG_DIR}/v3tk_v7.6.8_7000_setonix.slurm" "$tmp_dir/"
   if [[ -f "${CONFIG_DIR}/27_galaxies.sh" ]]; then
     cp "${CONFIG_DIR}/27_galaxies.sh" "$tmp_dir/"
   fi
@@ -41,11 +44,15 @@ new_workdir() {
 install_make_gist_stub() {
   local workdir="$1"
   cat > "${workdir}/make_gist_config_try.py" <<'STUB'
-#!/usr/bin/env bash
-set -euo pipefail
-galid="$1"
-printf "%s\n" "$galid" >> created_galaxies.txt
-touch "${galid}_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+#!/usr/bin/env python3
+from pathlib import Path
+import sys
+
+galid = sys.argv[1]
+with Path("created_galaxies.txt").open("a") as stream:
+    stream.write(f"{galid}\n")
+Path(f"{galid}_MAUVE_MasterConfig_v7.6.8_setonix.yaml").touch()
+Path(f"{galid}_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml").touch()
 STUB
   chmod +x "${workdir}/make_gist_config_try.py"
 }
@@ -109,35 +116,62 @@ test_creation_uses_requested_galaxies_only() {
 
   diff -u <(printf "IC3392\nNGC4383\n") "${workdir}/created_galaxies.txt"
   assert_file "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm"
+  assert_file "${workdir}/IC3392_v3tk_v7.6.8_7000_setonix.slurm"
   assert_file "${workdir}/NGC4383_v3tk_v7.6.8_setonix.slurm"
+  assert_file "${workdir}/NGC4383_v3tk_v7.6.8_7000_setonix.slurm"
   assert_no_file "${workdir}/NGC4698_v3tk_v7.6.8_setonix.slurm"
-  assert_contains "${workdir}/creation.out" "Created 2 YAML files and 2 slurm scripts."
+  assert_contains "${workdir}/creation.out" "Created 4 YAML files and 4 slurm scripts."
 }
 
-test_creation_applies_new_highmem_and_work_memory() {
+test_creation_applies_run_specific_queue_overrides() {
   local workdir
   local galid
   workdir="$(new_workdir)"
   install_make_gist_stub "$workdir"
 
-  (cd "$workdir" && ./27_creation.sh IC3392 NGC4254 NGC4321 NGC4535 NGC4569 > creation.out)
+  (
+    cd "$workdir"
+    ./27_creation.sh \
+      IC3392 NGC4192 NGC4254 NGC4293 NGC4298 NGC4321 NGC4330 NGC4380 \
+      NGC4396 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4698 > creation.out
+  )
 
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=work"
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=230G"
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=24:00:00"
+
+  for galid in NGC4192 NGC4254 NGC4298 NGC4380 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4698; do
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=highmem"
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=980G"
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=96:00:00"
+  done
+
+  for galid in NGC4321 NGC4330 NGC4396; do
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=work"
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=230G"
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=24:00:00"
+  done
+
+  assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=work"
+  assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=24:00:00"
 
   for galid in NGC4254 NGC4321 NGC4535 NGC4569; do
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=highmem"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=980G"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=96:00:00"
   done
+
+  assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=long"
+  assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=96:00:00"
 }
 
 test_setonix_submits_requested_galaxies_only() {
   local workdir
   workdir="$(new_workdir)"
   touch "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm"
+  touch "${workdir}/IC3392_v3tk_v7.6.8_7000_setonix.slurm"
   touch "${workdir}/NGC4383_v3tk_v7.6.8_setonix.slurm"
+  touch "${workdir}/NGC4383_v3tk_v7.6.8_7000_setonix.slurm"
   install_sbatch_stub "$workdir"
 
   (
@@ -147,8 +181,8 @@ test_setonix_submits_requested_galaxies_only() {
     ./27_setonix.sh NGC4383 IC3392 > setonix.out
   )
 
-  diff -u <(printf "NGC4383_v3tk_v7.6.8_setonix.slurm\nIC3392_v3tk_v7.6.8_setonix.slurm\n") "${workdir}/sbatch.log"
-  assert_contains "${workdir}/setonix.out" "Submitted 2 Setonix jobs."
+  diff -u <(printf "NGC4383_v3tk_v7.6.8_setonix.slurm\nNGC4383_v3tk_v7.6.8_7000_setonix.slurm\nIC3392_v3tk_v7.6.8_setonix.slurm\nIC3392_v3tk_v7.6.8_7000_setonix.slurm\n") "${workdir}/sbatch.log"
+  assert_contains "${workdir}/setonix.out" "Submitted 4 Setonix jobs;"
 }
 
 test_status_reports_requested_galaxies_only() {
@@ -167,9 +201,13 @@ test_send_copies_requested_galaxies_only() {
   workdir="$(new_workdir)"
   install_ssh_stub "$workdir"
   touch "${workdir}/NGC4383_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+  touch "${workdir}/NGC4383_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml"
   touch "${workdir}/NGC4419_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+  touch "${workdir}/NGC4419_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml"
   touch "${workdir}/NGC4383_v3tk_v7.6.8_setonix.slurm"
+  touch "${workdir}/NGC4383_v3tk_v7.6.8_7000_setonix.slurm"
   touch "${workdir}/NGC4419_v3tk_v7.6.8_setonix.slurm"
+  touch "${workdir}/NGC4419_v3tk_v7.6.8_7000_setonix.slurm"
   mkdir -p "${workdir}/ssh_payloads"
 
   (
@@ -180,8 +218,8 @@ test_send_copies_requested_galaxies_only() {
     ./27_send.sh rhuang NGC4383 NGC4419 > send.out
   )
 
-  assert_contains "${workdir}/send.out" "Sending 2 YAML files"
-  assert_contains "${workdir}/send.out" "Sending 2 slurm scripts plus control scripts"
+  assert_contains "${workdir}/send.out" "Sending 4 YAML files"
+  assert_contains "${workdir}/send.out" "Sending 4 slurm scripts plus control scripts"
   assert_contains "${workdir}/send.out" "Remote login: rhuang@setonix.pawsey.org.au"
   tar -tf "${workdir}/ssh_payloads/payload_1.tar" > "${workdir}/control_payload.txt"
   assert_contains "${workdir}/control_payload.txt" "27_galaxies.sh"
@@ -192,7 +230,9 @@ test_send_accepts_galaxy_only_short_form() {
   workdir="$(new_workdir)"
   install_ssh_stub "$workdir"
   touch "${workdir}/NGC4569_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+  touch "${workdir}/NGC4569_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml"
   touch "${workdir}/NGC4569_v3tk_v7.6.8_setonix.slurm"
+  touch "${workdir}/NGC4569_v3tk_v7.6.8_7000_setonix.slurm"
   mkdir -p "${workdir}/ssh_payloads"
 
   (
@@ -203,14 +243,16 @@ test_send_accepts_galaxy_only_short_form() {
     ./27_send.sh NGC4569 > send.out
   )
 
-  assert_contains "${workdir}/send.out" "Sending 1 YAML files"
-  assert_contains "${workdir}/send.out" "Sending 1 slurm scripts plus control scripts"
+  assert_contains "${workdir}/send.out" "Sending 2 YAML files"
+  assert_contains "${workdir}/send.out" "Sending 2 slurm scripts plus control scripts"
   assert_contains "${workdir}/send.out" "Remote login: rhuang@setonix.pawsey.org.au"
   tar -tf "${workdir}/ssh_payloads/payload_0.tar" > "${workdir}/yaml_payload.txt"
   assert_contains "${workdir}/yaml_payload.txt" "NGC4569_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
+  assert_contains "${workdir}/yaml_payload.txt" "NGC4569_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml"
   assert_not_contains "${workdir}/yaml_payload.txt" "IC3392_MAUVE_MasterConfig_v7.6.8_setonix.yaml"
   tar -tf "${workdir}/ssh_payloads/payload_1.tar" > "${workdir}/slurm_payload.txt"
   assert_contains "${workdir}/slurm_payload.txt" "NGC4569_v3tk_v7.6.8_setonix.slurm"
+  assert_contains "${workdir}/slurm_payload.txt" "NGC4569_v3tk_v7.6.8_7000_setonix.slurm"
   assert_not_contains "${workdir}/slurm_payload.txt" "IC3392_v3tk_v7.6.8_setonix.slurm"
 }
 
@@ -225,7 +267,7 @@ test_unknown_galaxy_is_rejected() {
   assert_contains "${workdir}/unknown.out" "unknown galaxy ID: NGC0000"
 }
 
-test_known_mauve_40_galaxies_are_accepted() {
+test_known_mauve_39_run_ids_are_accepted() {
   local workdir
   workdir="$(new_workdir)"
   install_make_gist_stub "$workdir"
@@ -235,6 +277,7 @@ test_known_mauve_40_galaxies_are_accepted() {
     . ./27_galaxies.sh
     printf "%s\n" "${ALL_GALIDS[@]}" > known_galaxies.txt
     diff -u - known_galaxies.txt <<'EXPECTED'
+IC3392
 NGC4064
 NGC4189
 NGC4192
@@ -258,14 +301,12 @@ NGC4402
 NGC4419
 NGC4424
 NGC4450
-IC3392
 NGC4457
 NGC4501
 NGC4522
 NGC4535
 NGC4548
-NGC4567
-NGC4568
+NGC4567_8
 NGC4569
 NGC4579
 NGC4580
@@ -281,7 +322,8 @@ EXPECTED
 
   diff -u <(printf "NGC4450\n") "${workdir}/created_galaxies.txt"
   assert_file "${workdir}/NGC4450_v3tk_v7.6.8_setonix.slurm"
-  assert_contains "${workdir}/creation.out" "Created 1 YAML files and 1 slurm scripts."
+  assert_file "${workdir}/NGC4450_v3tk_v7.6.8_7000_setonix.slurm"
+  assert_contains "${workdir}/creation.out" "Created 2 YAML files and 2 slurm scripts."
 }
 
 test_queue_override_galaxies_are_known() {
@@ -298,7 +340,7 @@ test_queue_override_galaxies_are_known() {
       is_known_galid "$galid" || fail "queue override references unknown galaxy ID: $galid"
     done < <(
       awk '
-        /^(HIGHMEM_GALIDS|LONG_GALIDS)=\(/ {emit = 1; next}
+        /^[A-Z0-9_]+_GALIDS=\(/ {emit = 1; next}
         emit && /^\)/ {emit = 0; next}
         emit {
           gsub(/^[[:space:]]+|[[:space:]]+$/, "")
@@ -310,13 +352,13 @@ test_queue_override_galaxies_are_known() {
 }
 
 test_creation_uses_requested_galaxies_only
-test_creation_applies_new_highmem_and_work_memory
+test_creation_applies_run_specific_queue_overrides
 test_setonix_submits_requested_galaxies_only
 test_status_reports_requested_galaxies_only
 test_send_copies_requested_galaxies_only
 test_send_accepts_galaxy_only_short_form
 test_unknown_galaxy_is_rejected
-test_known_mauve_40_galaxies_are_accepted
+test_known_mauve_39_run_ids_are_accepted
 test_queue_override_galaxies_are_known
 
-echo "All 40-galaxy selection tests passed."
+echo "All 39-run-ID selection tests passed."

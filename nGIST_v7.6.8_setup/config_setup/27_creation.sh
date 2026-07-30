@@ -11,7 +11,7 @@ SLURM_TEMPLATES=(
   "v3tk_v7.6.8_setonix.slurm"
   "v3tk_v7.6.8_7000_setonix.slurm"
 )
-LONG_GALIDS=(
+NORMAL_LONG_GALIDS=(
   NGC4293
   NGC4298
   NGC4302
@@ -19,7 +19,7 @@ LONG_GALIDS=(
   NGC4419
   NGC4457
 )
-HIGHMEM_GALIDS=(
+NORMAL_HIGHMEM_GALIDS=(
   NGC4192
   NGC4254
   NGC4298
@@ -27,6 +27,17 @@ HIGHMEM_GALIDS=(
   NGC4330
   NGC4380
   NGC4396
+  NGC4501
+  NGC4535
+  NGC4567_8
+  NGC4569
+  NGC4698
+)
+HIGHMEM_7000_GALIDS=(
+  NGC4192
+  NGC4254
+  NGC4298
+  NGC4380
   NGC4501
   NGC4535
   NGC4567_8
@@ -142,11 +153,19 @@ for galid in "${GALIDS[@]}"; do
     "${galid}_MAUVE_MasterConfig_v7.6.8_7000_setonix.slurm"
 
   for slurm_template in "${SLURM_TEMPLATES[@]}"; do
+    if [[ "$slurm_template" == "v3tk_v7.6.8_7000_setonix.slurm" ]]; then
+      highmem_galids=("${HIGHMEM_7000_GALIDS[@]}")
+      long_galids=()
+    else
+      highmem_galids=("${NORMAL_HIGHMEM_GALIDS[@]}")
+      long_galids=("${NORMAL_LONG_GALIDS[@]}")
+    fi
+
     slurm_out="${galid}_${slurm_template}"
     echo "Creating slurm script ${slurm_out}"
     sed "s/GALID/${galid}/g" "$slurm_template" > "$slurm_out"
 
-    if galid_is_in_list "$galid" "${HIGHMEM_GALIDS[@]}"; then
+    if galid_is_in_list "$galid" "${highmem_galids[@]}"; then
       echo "Updating ${slurm_out} for Setonix highmem queue"
       tmp_slurm="${slurm_out}.tmp"
       sed \
@@ -155,7 +174,7 @@ for galid in "${GALIDS[@]}"; do
         -e 's/^#SBATCH --time=24:00:00$/#SBATCH --time=96:00:00/' \
         "$slurm_out" > "$tmp_slurm"
       mv "$tmp_slurm" "$slurm_out"
-    elif galid_is_in_list "$galid" "${LONG_GALIDS[@]}"; then
+    elif [[ "${#long_galids[@]}" -gt 0 ]] && galid_is_in_list "$galid" "${long_galids[@]}"; then
       echo "Updating ${slurm_out} for Setonix long queue"
       tmp_slurm="${slurm_out}.tmp"
       sed \
