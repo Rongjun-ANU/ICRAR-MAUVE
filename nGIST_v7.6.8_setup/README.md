@@ -184,9 +184,9 @@ pixels masked by:
 
 At each unmasked spaxel, the workflow separates two target types:
 
-1. If `STAT` is non-positive or non-finite while `DATA` is finite and strictly
-   positive, the target is handled spectrally. A `DATA` NaN at another
-   wavelength does not suppress it.
+1. If `STAT` is non-positive or non-finite while `DATA` is finite, the target is
+   handled spectrally. Finite zero and negative `DATA` values are accepted and
+   preserved; a `DATA` NaN at another wavelength does not suppress the target.
 2. If `DATA` and `STAT` are both NaN at the same voxel, the target is handled
    as part of a spatial component at that wavelength.
 
@@ -229,6 +229,15 @@ At the start of each checker run, an existing non-empty
 created, rather than appending indefinitely or deleting the earlier report.
 Spatial detection runs once per wavelength plane using connected-component
 labeling, while the spectral scan remains parallelized over spatial rows.
+
+After a fixed cube is written, the fixer makes one plane-by-plane audit pass over
+the checked wavelength range. It counts any remaining unmasked voxel whose
+`DATA` is finite but whose `STAT` is non-finite or non-positive. The summary and
+at most the first 20 `(x,y,z,wavelength)` samples are printed and appended to
+`check_phangs_variance.log`; additional residuals are reported only as an omitted
+count, preventing the audit from creating another oversized log. A zero residual
+count confirms that no case-1 target remains under these criteria. This audit is
+an additional full pass over the fixed `DATA` and `STAT` arrays.
 
 The original input cube is not modified. If a galaxy has no fillable spectral
 or spatial targets, the fixed cube is not written.

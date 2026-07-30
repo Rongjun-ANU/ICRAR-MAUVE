@@ -4,8 +4,9 @@
 The workflow targets the three PHANGS-native cubes staged in
 /scratch/pawsey1308/mauve/cubes/v3tk. Detection is restricted to the useful
 4700-9350 A open wavelength interval, excludes the AO/LGS gap, and ignores
-spatial pixels masked by {GALID}_mask.fits. A bad STAT sample with positive DATA
-is filled spectrally from one or two immediate positive STAT bounds. Joint
+spatial pixels masked by {GALID}_mask.fits. A bad STAT sample with finite DATA
+is filled spectrally from one or two immediate positive STAT bounds. DATA may be
+positive, zero, or negative in this spectral case and is preserved. Joint
 DATA/STAT NaNs are grouped per wavelength into 8-connected spatial components;
 only components with a complete one-pixel boundary containing finite DATA and
 positive finite STAT are filled. Each accepted voxel uses original neighbors
@@ -114,15 +115,51 @@ class SpatialGap(object):
         self.stat_fill = stat_fill
 
 
-class GapReport(object):
-    __slots__ = ("galid", "cube_path", "shape", "gaps", "spatial_gaps")
+class ResidualStatSample(object):
+    __slots__ = ("z", "y", "x", "wave", "data_value", "stat_value")
 
-    def __init__(self, galid, cube_path, shape, gaps, spatial_gaps=()):
+    def __init__(self, z, y, x, wave, data_value, stat_value):
+        self.z = z
+        self.y = y
+        self.x = x
+        self.wave = wave
+        self.data_value = data_value
+        self.stat_value = stat_value
+
+
+class ResidualStatAudit(object):
+    __slots__ = ("count", "samples")
+
+    def __init__(self, count, samples):
+        self.count = count
+        self.samples = samples
+
+
+class GapReport(object):
+    __slots__ = (
+        "galid",
+        "cube_path",
+        "shape",
+        "gaps",
+        "spatial_gaps",
+        "residual_audit",
+    )
+
+    def __init__(
+        self,
+        galid,
+        cube_path,
+        shape,
+        gaps,
+        spatial_gaps=(),
+        residual_audit=None,
+    ):
         self.galid = galid
         self.cube_path = cube_path
         self.shape = shape
         self.gaps = gaps
         self.spatial_gaps = spatial_gaps
+        self.residual_audit = residual_audit
 
     @property
     def spectral_fillable_count(self):
@@ -249,7 +286,7 @@ def checked_data_mask(data_cube, checked_mask, y, x):
     if data_cube is None:
         return checked_mask
     spectrum = np.asarray(data_cube[:, y, x])
-    return checked_mask & positive_finite(spectrum)
+    return checked_mask & np.isfinite(spectrum)
 
 
 def unmasked_spatial_pixels(mask_data, shape):
@@ -262,6 +299,56 @@ def unmasked_spatial_pixels(mask_data, shape):
     overlap = np.asarray(mask_data[:overlap_y, :overlap_x])
     unmasked[:overlap_y, :overlap_x] = np.isfinite(overlap) & (overlap == 0)
     return unmasked
+
+
+def audit_residual_stat(
+    data_cube,
+    stat_data,
+    checked_mask,
+    wavelengths=None,
+    mask_data=None,
+    sample_limit=20,
+):
+    if data_cube.shape != stat_data.shape:
+        raise ValueError(
+            f"DATA and STAT cubes must have the same shape, got "
+            f"{data_cube.shape} and {stat_data.shape}"
+        )
+    if checked_mask.shape != (stat_data.shape[0],):
+        raise ValueError(
+            f"Checked wavelength mask must have shape {(stat_data.shape[0],)}, "
+            f"got {checked_mask.shape}"
+        )
+    if wavelengths is not None and wavelengths.shape != (stat_data.shape[0],):
+        raise ValueError(
+            f"Wavelength array must have shape {(stat_data.shape[0],)}, "
+            f"got {wavelengths.shape}"
+        )
+    sample_limit = max(0, int(sample_limit))
+    unmasked = unmasked_spatial_pixels(mask_data, stat_data.shape[1:])
+    count = 0
+    samples = []
+    for z in np.flatnonzero(checked_mask):
+        data_plane = np.asarray(data_cube[z])
+        stat_plane = np.asarray(stat_data[z])
+        residual = unmasked & np.isfinite(data_plane) & ~positive_finite(stat_plane)
+        plane_count = int(np.count_nonzero(residual))
+        count += plane_count
+        remaining = sample_limit - len(samples)
+        if plane_count and remaining > 0:
+            for y, x in np.argwhere(residual)[:remaining]:
+                wave = None if wavelengths is None else float(wavelengths[z])
+                samples.append(
+                    ResidualStatSample(
+                        int(z),
+                        int(y),
+                        int(x),
+                        wave,
+                        float(data_plane[y, x]),
+                        float(stat_plane[y, x]),
+                    )
+                )
+    return ResidualStatAudit(count, tuple(samples))
 
 
 def spatial_circle_offsets():
@@ -675,6 +762,22 @@ def fix_cube(input_path: Path, output_path: Path, workers: int = 1, galid: str =
                     continue
                 data_cube[gap.z, gap.y, gap.x] = gap.data_fill
                 stat[gap.z, gap.y, gap.x] = gap.stat_fill
+            wavelengths = wavelength_axis_from_hdul(hdul, stat.shape[0])
+            checked_mask = (
+                np.ones(stat.shape[0], dtype=bool)
+                if wavelengths is None
+                else checked_wavelength_mask(wavelengths)
+            )
+            mask_data = mask_data_from_path(
+                mask_path_for(galid or report.galid, input_path.parent)
+            )
+            report.residual_audit = audit_residual_stat(
+                data_cube,
+                stat,
+                checked_mask,
+                wavelengths,
+                mask_data,
+            )
         hdul.flush()
     return report
 
@@ -709,6 +812,24 @@ def format_spatial_gap(galid, gap):
     )
 
 
+def format_residual_audit(galid, audit):
+    lines = [
+        f"[{galid}] post_fix_residual_finite_DATA_invalid_STAT={audit.count} "
+        f"sample_count={len(audit.samples)}"
+    ]
+    for sample in audit.samples:
+        wave_text = "wave=unknown" if sample.wave is None else f"wave={sample.wave:.2f}"
+        lines.append(
+            f"{galid} post_fix_residual (x,y)=({sample.x},{sample.y}) "
+            f"z={sample.z} {wave_text} DATA={sample.data_value:.6g} "
+            f"STAT={sample.stat_value:.6g}"
+        )
+    omitted = audit.count - len(audit.samples)
+    if omitted:
+        lines.append(f"[{galid}] post_fix_residual_samples_omitted={omitted}")
+    return lines
+
+
 def format_report(report: GapReport) -> List[str]:
     target_gaps = [gap for gap in report.gaps if gap.fillable]
     spatial_targets = [gap for gap in report.spatial_gaps if gap.fillable]
@@ -722,6 +843,8 @@ def format_report(report: GapReport) -> List[str]:
     lines.extend(format_spatial_gap(report.galid, gap) for gap in spatial_targets)
     if not target_gaps and not spatial_targets:
         lines.append(f"[{report.galid}] no fillable spectral or spatial gaps found")
+    if report.residual_audit is not None:
+        lines.extend(format_residual_audit(report.galid, report.residual_audit))
     return lines
 
 
@@ -791,8 +914,14 @@ def fix_main(argv=None) -> int:
             if not input_path.exists():
                 raise FileNotFoundError(input_path)
             report = fix_cube(input_path, output_path, args.workers, galid)
-            for line in format_report(report):
+            report_lines = format_report(report)
+            for line in report_lines:
                 print(line)
+            if report.residual_audit is not None:
+                append_log(
+                    Path(args.log),
+                    format_residual_audit(galid, report.residual_audit),
+                )
             if report.fillable_count:
                 print(f"[{galid}] wrote {output_path}")
             else:
