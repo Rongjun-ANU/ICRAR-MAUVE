@@ -120,17 +120,70 @@ def test_data_nan_at_other_wavelength_does_not_skip_stat_gap():
     assert [(gap.z_start, gap.z_end, gap.fillable) for gap in gaps] == [(1, 1, True)]
 
 
-def test_stat_gap_with_nonpositive_data_is_not_a_spectral_target():
+def test_stat_gap_with_nonpositive_finite_data_is_a_spectral_target():
     tools = load_module()
-    stat = np.ones((4, 1, 1), dtype=np.float32)
-    stat[1, 0, 0] = np.nan
-    data = np.ones_like(stat)
-    data[1, 0, 0] = 0.0
+    for data_value in (-2.0, 0.0):
+        stat = np.ones((4, 1, 1), dtype=np.float32)
+        stat[1, 0, 0] = np.nan
+        data = np.ones_like(stat)
+        data[1, 0, 0] = data_value
 
-    report = tools.find_stat_gaps(stat, data_cube=data)
+        report = tools.find_stat_gaps(stat, data_cube=data)
 
-    assert report.gaps == ()
-    assert report.spatial_gaps == ()
+        assert [(gap.z_start, gap.z_end, gap.fillable) for gap in report.gaps] == [
+            (1, 1, True)
+        ]
+        assert report.spatial_gaps == ()
+
+
+def test_residual_audit_counts_only_checked_unmasked_finite_data_bad_stat():
+    tools = load_module()
+    wavelengths = np.array([4700.0, 4701.25, 5900.0, 5971.25])
+    checked = tools.checked_wavelength_mask(wavelengths)
+    data = np.ones((4, 3, 3), dtype=np.float32)
+    stat = np.ones_like(data)
+    mask = np.zeros((3, 3), dtype=np.uint8)
+
+    stat[0, 0, 0] = np.nan  # Excluded wavelength endpoint.
+    data[1, 0, 0] = -2.0
+    stat[1, 0, 0] = np.nan  # Count: finite DATA, bad STAT.
+    data[1, 0, 1] = np.nan
+    stat[1, 0, 1] = np.nan  # Exclude: joint DATA/STAT NaN.
+    mask[1, 1] = 1
+    stat[1, 1, 1] = np.nan  # Exclude: masked spaxel.
+    stat[2, 2, 1] = np.nan  # Exclude: AO gap.
+    data[3, 2, 2] = 0.0
+    stat[3, 2, 2] = -1.0  # Count: finite DATA, non-positive STAT.
+
+    audit = tools.audit_residual_stat(
+        data,
+        stat,
+        checked,
+        wavelengths=wavelengths,
+        mask_data=mask,
+        sample_limit=10,
+    )
+
+    assert audit.count == 2
+    assert [(sample.z, sample.y, sample.x) for sample in audit.samples] == [
+        (1, 0, 0),
+        (3, 2, 2),
+    ]
+
+
+def test_residual_audit_format_is_compact_and_reports_omitted_samples():
+    tools = load_module()
+    sample = tools.ResidualStatSample(7, 2, 3, 5000.0, -2.0, np.nan)
+    audit = tools.ResidualStatAudit(25, (sample,))
+
+    lines = tools.format_residual_audit("NGC4321", audit)
+
+    assert lines == [
+        "[NGC4321] post_fix_residual_finite_DATA_invalid_STAT=25 sample_count=1",
+        "NGC4321 post_fix_residual (x,y)=(3,2) z=7 wave=5000.00 "
+        "DATA=-2 STAT=nan",
+        "[NGC4321] post_fix_residual_samples_omitted=24",
+    ]
 
 
 def test_joint_nan_is_excluded_spectrally_but_considered_spatially():
@@ -313,6 +366,66 @@ def test_fix_cube_writes_fixed_output_and_preserves_original():
     finally:
         input_path.unlink(missing_ok=True)
         output_path.unlink(missing_ok=True)
+
+
+def test_fix_cube_preserves_negative_data_and_reports_no_case1_residual():
+    tools = load_module()
+    input_path = Path.cwd() / "synthetic_negative_DATA_native.fits"
+    output_path = Path.cwd() / "synthetic_negative_DATA_native_fixed.fits"
+    stat = np.ones((4, 1, 1), dtype=np.float32)
+    stat[1, 0, 0] = np.nan
+    data = np.ones_like(stat)
+    data[1, 0, 0] = -2.0
+    write_cube(input_path, stat, data)
+
+    try:
+        report = tools.fix_cube(input_path, output_path)
+        with fits.open(output_path) as fixed:
+            assert fixed["DATA"].data[1, 0, 0] == -2.0
+            assert fixed["STAT"].data[1, 0, 0] == 1.0
+        assert report.residual_audit is not None
+        assert report.residual_audit.count == 0
+    finally:
+        input_path.unlink(missing_ok=True)
+        output_path.unlink(missing_ok=True)
+
+
+def test_fix_main_appends_post_fix_audit_to_checker_log():
+    tools = load_module()
+    cube_dir = Path.cwd() / "synthetic_fix_main_cubes"
+    cube_dir.mkdir(exist_ok=True)
+    input_path = cube_dir / "NGC4321_PHANGS_DATACUBE_native.fits"
+    output_path = cube_dir / "NGC4321_PHANGS_DATACUBE_native_fixed.fits"
+    log_path = cube_dir / "check_phangs_variance.log"
+    stat = np.ones((4, 1, 1), dtype=np.float32)
+    stat[1, 0, 0] = np.nan
+    data = np.ones_like(stat)
+    data[1, 0, 0] = -2.0
+    write_cube(input_path, stat, data)
+
+    try:
+        status = tools.fix_main(
+            [
+                "NGC4321",
+                "--cube-dir",
+                str(cube_dir),
+                "--workers",
+                "1",
+                "--log",
+                str(log_path),
+            ]
+        )
+
+        assert status == 0
+        assert (
+            "[NGC4321] post_fix_residual_finite_DATA_invalid_STAT=0 sample_count=0"
+            in log_path.read_text(encoding="utf-8")
+        )
+    finally:
+        input_path.unlink(missing_ok=True)
+        output_path.unlink(missing_ok=True)
+        log_path.unlink(missing_ok=True)
+        cube_dir.rmdir()
 
 
 def test_start_log_replaces_previous_run():
