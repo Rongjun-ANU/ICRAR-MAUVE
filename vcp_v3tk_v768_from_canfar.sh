@@ -2,6 +2,14 @@
 
 # Download v3tk_v7.6.8 products from CANFAR
 # cadc-get-cert -u RongjunHuang
+#
+# Usage:
+#   ./vcp_v3tk_v768_from_canfar.sh normal            # all galaxies, normal run
+#   ./vcp_v3tk_v768_from_canfar.sh 7000              # all galaxies, 7000 run
+#   ./vcp_v3tk_v768_from_canfar.sh normal NGC4321    # one galaxy, normal run
+#   ./vcp_v3tk_v768_from_canfar.sh 7000 NGC4321      # one galaxy, 7000 run
+#   ./vcp_v3tk_v768_from_canfar.sh NGC4321           # one galaxy, both runs
+# With no arguments, all listed galaxies from both runs are downloaded.
 
 LOCAL_BASE="/Users/Igniz/Desktop/ICRAR/further"
 REMOTE_PRODUCT_ROOT="arc:projects/mauve/products"

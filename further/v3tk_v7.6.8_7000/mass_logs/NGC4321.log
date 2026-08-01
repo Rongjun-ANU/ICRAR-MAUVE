@@ -1,0 +1,15 @@
+Python executable: /var/folders/rm/clp89v210v32vh5vjt2kx7b80000gr/T/tmpjiia7lhc/fake-python
+PYTHONUNBUFFERED: 1
+Product root     : /Users/Igniz/Desktop/ICRAR/further
+Product subdir   : v3tk_v7.6.8_7000
+Cube root        : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root : /var/folders/rm/clp89v210v32vh5vjt2kx7b80000gr/T/tmpjiia7lhc/phangs
+PHANGS VOS dir   : vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES
+PHANGS stage root: /scratch
+Local fallback   : /Users/Igniz/Desktop/ICRAR/further
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 10
+MASS_ROW_BLOCK_SIZE: default
+
+FAKE_PYTHON_ARGS: -u Mass.py -g NGC4321 --root /Users/Igniz/Desktop/ICRAR/further --product-subdir v3tk_v7.6.8_7000 --fallback-root /Users/Igniz/Desktop/ICRAR/further --cube-root /arc/projects/mauve/cubes/v3tk --phangs-cube-root /var/folders/rm/clp89v210v32vh5vjt2kx7b80000gr/T/tmpjiia7lhc/phangs --ncpus 10
+✅  NGC4321 finished in 0m0s

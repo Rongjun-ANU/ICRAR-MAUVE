@@ -5,6 +5,8 @@
 #   ./proxy_EWHa.sh                   # default galaxy list below
 #   ./proxy_EWHa.sh NGC4064 NGC4192   # custom subset
 #   ./proxy_EWHa.sh NGC4254           # one PHANGS-native MAUVE galaxy
+#   ./proxy_EWHa.sh normal NGC4321    # one galaxy from the normal run
+#   ./proxy_EWHa.sh 7000 NGC4321      # one galaxy from the 7000 run
 #
 # Changes (2026-06-13):
 #   - PHANGS_CUBE_ROOT can point NGC4254/NGC4321/NGC4535 at a separate
@@ -24,6 +26,10 @@
 # Changes (2026-07-26):
 #   - Validate every queued galaxy ID, including explicit command-line targets,
 #     so product-side *_logs directories cannot be treated as galaxies.
+#
+# Changes (2026-08-01):
+#   - Document the existing RUN GALAXY form for selecting one galaxy from one
+#     run, e.g. `normal NGC4321` or `7000 NGC4321`.
 #
 # The script checks per-galaxy v3tk products under:
 #   ${ROOT_PRODUCT_BASE}/v3tk_v7.6.8/${GAL}
@@ -140,6 +146,9 @@ discover_galaxies_for_run() {
 }
 
 PRODUCT_PARENT="$(discover_product_parent)"
+# Invocation forms: no args = both runs/all discovered galaxies; RUN = one
+# run/all discovered galaxies; GALAXY = both runs/that galaxy; RUN GALAXY = one
+# run/that galaxy. Multiple galaxy arguments are also accepted.
 RUN_LABELS=(normal 7000)
 GALAXY_ARGS=()
 if [[ $# -gt 0 ]]; then

@@ -4,6 +4,8 @@
 # Usage examples:
 #   ./SFR.sh                   # default galaxy list below
 #   ./SFR.sh NGC4064 NGC4192   # custom subset
+#   ./SFR.sh normal NGC4321    # one galaxy from the normal run
+#   ./SFR.sh 7000 NGC4321      # one galaxy from the 7000 run
 #
 # Per-galaxy runtime is appended to each log, and a grand-total runtime
 # is printed at the end.
@@ -19,6 +21,10 @@
 # Changes (2026-07-26):
 #   - Validate every queued galaxy ID, including explicit command-line targets,
 #     so product-side *_logs directories cannot be treated as galaxies.
+#
+# Changes (2026-08-01):
+#   - Document the existing RUN GALAXY form for selecting one galaxy from one
+#     run, e.g. `normal NGC4321` or `7000 NGC4321`.
 
 set -euo pipefail
 
@@ -127,6 +133,9 @@ discover_galaxies_for_run() {
 }
 
 PRODUCT_PARENT="$(discover_product_parent)"
+# Invocation forms: no args = both runs/all discovered galaxies; RUN = one
+# run/all discovered galaxies; GALAXY = both runs/that galaxy; RUN GALAXY = one
+# run/that galaxy. Multiple galaxy arguments are also accepted.
 RUN_LABELS=(normal 7000)
 GALAXY_ARGS=()
 if [[ $# -gt 0 ]]; then
