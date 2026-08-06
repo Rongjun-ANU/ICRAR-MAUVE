@@ -42,7 +42,10 @@ Outputs (per galaxy XXX):
 
   2. XXX_combined_VRI_mask.png
      - Diagnostic overlay (pixel-locked to the chosen background).
-     - Green outlines = masked stars. Brown outlines = masked background galaxies.
+     - Solid green outlines = final masked stars. Solid brown outlines = masked
+       background galaxies. Dashed green outlines show the pre-fix automatic radius
+       when a manual star-radius adjustment is applied. Dashed brown outlines mark
+       catalog galaxy masks that were manually removed from the final FITS mask.
      - Optional: a dashed contour of the target-galaxy footprint (blue) if enabled.
      - Optional: a dashed/colored contour of the MUSE FoV footprint (yellow) if enabled.
 
@@ -115,6 +118,8 @@ explicitly enabled.
 
    A) Legacy Surveys DR9 (default first-pass; best morphology + photo-z)
       - Query mechanism: NOIRLab Data Lab TAP via pyvo (if available).
+      - Every TAP request, including each 500-ID photo-z chunk, retries until that
+        individual query completes successfully; Ctrl-C can stop a persistent failure.
       - Tables:
           ls_dr9.tractor  (morphology/type + optional shape_r, shape_e1/e2)
           ls_dr9.photo_z  (photometric redshift summary)
@@ -182,8 +187,10 @@ explicitly enabled.
       - Optional SDSS photometric fallback exists but is OFF by default.
 
 4) STAR FALLBACK (SDSS; disabled unless explicit)
-   - If Gaia is unavailable/empty and sdss_star_fallback=True, SDSS “STAR” detections are
-     masked using the same star-radius model (using an r-band magnitude proxy).
+   - Gaia query errors block processing and are retried until the query succeeds.
+   - If astroquery.gaia is unavailable, or a successful Gaia query is empty, and
+     sdss_star_fallback=True, SDSS “STAR” detections are masked using the same
+     star-radius model (using an r-band magnitude proxy).
 
 5) STAR/GALAXY OVERLAP RULE
    - Background-galaxy candidates are first rasterized into a temporary candidate mask.
@@ -370,6 +377,166 @@ try:
     import pyvo
 except Exception:
     pyvo = None
+
+
+# =============================================================================
+# MANUAL PER-GALAXY POST-PROCESSING FIXES
+# =============================================================================
+# Apply these narrowly targeted corrections only after the normal catalog masking
+# workflow. Key every rule by both galaxy and a stable catalog identifier so that
+# unrelated detections are never adjusted.
+MANUAL_MASK_FIXES = {
+    "NGC4222": [
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3920575512204427264",
+            "factor": 1.5,
+        },
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3920575413420922752",
+            "factor": 2.0,
+        },
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3920575409126193408",
+            "factor": 1.2,
+        },
+        {
+            "action": "remove_legacy_galaxy",
+            "ra_deg": 184.079271,
+            "dec_deg": 13.292382,
+        },
+        {
+            "action": "remove_legacy_galaxy",
+            "ra_deg": 184.094236,
+            "dec_deg": 13.298192,
+        },
+    ],
+    "NGC4298": [
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3921151557513852160",
+            "factor": 1.5,
+        },
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3921151557513852416",
+            "factor": 2.0,
+        },
+    ],
+    "NGC4302": [
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3921151694952806272",
+            "factor": 1.5,
+        },
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3921139084928823936",
+            "factor": 2.0,
+        },
+    ],
+    "NGC4388": [
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906626243462179",
+            "ra_deg": 186.4402899837029,
+            "dec_deg": 12.668782823891434,
+            "a_arcsec": 3.3440000534057617,
+            "b_arcsec": 1.7137432850383634,
+            "tractor_phi_deg": 81.595641,
+        },
+    ],
+    "NGC4396": [
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3945348819144380416",
+            "factor": 2.0,
+        },
+    ],
+    "NGC4405": [
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906627523969670",
+            "ra_deg": 186.534709583,
+            "dec_deg": 16.188013169,
+            "a_arcsec": 1.252761,
+            "b_arcsec": 1.252761,
+            "tractor_phi_deg": 0.0,
+        },
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906627523969543",
+            "ra_deg": 186.527757004,
+            "dec_deg": 16.192464597,
+            "a_arcsec": 1.2,
+            "b_arcsec": 1.2,
+            "tractor_phi_deg": 0.0,
+        },
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906627523969511",
+            "ra_deg": 186.525561678,
+            "dec_deg": 16.174609246,
+            "a_arcsec": 1.2,
+            "b_arcsec": 1.2,
+            "tractor_phi_deg": 0.0,
+        },
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906627523969459",
+            "ra_deg": 186.521618733,
+            "dec_deg": 16.180160110,
+            "a_arcsec": 1.2,
+            "b_arcsec": 1.2,
+            "tractor_phi_deg": 0.0,
+        },
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906627523969534",
+            "ra_deg": 186.527126158,
+            "dec_deg": 16.171056539,
+            "a_arcsec": 1.225123,
+            "b_arcsec": 1.225123,
+            "tractor_phi_deg": 0.0,
+        },
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906627523969457",
+            "ra_deg": 186.521514323,
+            "dec_deg": 16.172358794,
+            "a_arcsec": 2.223831,
+            "b_arcsec": 1.2,
+            "tractor_phi_deg": 65.724506,
+        },
+    ],
+    "NGC4424": [
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3903814389447489664",
+            "factor": 2.0,
+        },
+    ],
+    "NGC4654": [
+        {
+            "action": "add_legacy_ellipse",
+            "ls_id": "9906626428669580",
+            "ra_deg": 190.957341690,
+            "dec_deg": 13.125274006,
+            "a_arcsec": 4.416522,
+            "b_arcsec": 2.4,
+            "tractor_phi_deg": 83.450365,
+        },
+    ],
+    "NGC4694": [
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3927389155697596800",
+            "factor": 2.0,
+        },
+    ],
+}
 
 
 @dataclass
@@ -891,6 +1058,7 @@ def star_radius_arcsec_from_g(cfg: Config, gmag: float) -> float:
 
 
 def query_gaia_sources(center: SkyCoord, radius: u.Quantity, cfg: Config):
+        """Return a successful Gaia result, retrying query exceptions until then."""
         if Gaia is None:
                 print("WARNING: astroquery.gaia not available; skipping Gaia query.")
                 return None
@@ -930,21 +1098,19 @@ def query_gaia_sources(center: SkyCoord, radius: u.Quantity, cfg: Config):
         """
 
         import time
-        max_retries = 3
-        for attempt in range(max_retries):
+        attempt = 0
+        while True:
             try:
                 job = Gaia.launch_job_async(query, dump_to_file=False)
                 return job.get_results()
             except Exception as e:
-                # Catch general exceptions including requests.exceptions.HTTPError
-                error_msg = str(e)
-                if "500" in error_msg or "503" in error_msg or "504" in error_msg or "timeout" in error_msg.lower():
-                    if attempt < max_retries - 1:
-                        print(f"WARNING: Gaia query failed with server error ({error_msg}). Retrying {attempt+1}/{max_retries}...")
-                        time.sleep(2 * (attempt + 1))
-                        continue
-                print(f"WARNING: Gaia query failed: {e}")
-                return None
+                attempt += 1
+                wait_seconds = min(2 * attempt, 60)
+                print(
+                    f"WARNING: Gaia query failed on attempt {attempt}: {e}. "
+                    f"Retrying in {wait_seconds}s; press Ctrl-C to stop."
+                )
+                time.sleep(wait_seconds)
 
 
 def table_float_array(tab, name: str, default: float = np.nan) -> np.ndarray:
@@ -1357,21 +1523,20 @@ def query_legacy_dr9_tractor_and_photoz(center: SkyCoord, radius: u.Quantity, cf
 
     def _run_sync(query: str, maxrec: int | None = None):
         import time
-        max_retries = 3
-        for attempt in range(max_retries):
+        attempt = 0
+        while True:
             try:
                 if maxrec is None:
                     return _tap_service().run_sync(query).to_table()
                 return _tap_service().run_sync(query, maxrec=int(maxrec)).to_table()
             except Exception as e:
-                # Catch general exceptions including requests.exceptions.HTTPError
-                error_msg = str(e)
-                if "500" in error_msg or "503" in error_msg or "504" in error_msg or "timeout" in error_msg.lower() or "connection" in error_msg.lower() or "Error 500" in error_msg:
-                    if attempt < max_retries - 1:
-                        print(f"WARNING: Legacy TAP query failed ({error_msg}). Retrying {attempt+1}/{max_retries}...")
-                        time.sleep(2 * (attempt + 1))
-                        continue
-                raise
+                attempt += 1
+                wait_seconds = min(2 * attempt, 60)
+                print(
+                    f"WARNING: Legacy TAP query failed on attempt {attempt}: {e}. "
+                    f"Retrying in {wait_seconds}s; press Ctrl-C to stop."
+                )
+                time.sleep(wait_seconds)
 
     # 1) tractor-like table (morphology/type + potential sizes)
     tractor_table = str(getattr(cfg, "legacy_tractor_table", "ls_dr9.tractor"))
@@ -1724,6 +1889,179 @@ def rasterize_circle(mask: np.ndarray, xi: float, yi: float, r_pix: float, fov_m
     mask[y0 : y1 + 1, x0 : x1 + 1][inside] = 1
 
 
+def apply_manual_mask_fixes(
+    base: str,
+    mask: np.ndarray,
+    foreground_star_mask: np.ndarray,
+    fov_mask: np.ndarray | None,
+    gaia_star_records: list[dict],
+    star_patches: list,
+    legacy_galaxy_records: list[dict],
+    gal_patches: list,
+    w: WCS,
+    cfg: Config,
+    ny: int,
+    use_png_bg: bool,
+) -> int:
+    """Apply explicitly configured per-galaxy fixes after automatic masking."""
+    fixes = MANUAL_MASK_FIXES.get(base, [])
+    if not fixes:
+        return 0
+
+    gaia_by_source_id = {
+        str(record["source_id"]): record
+        for record in gaia_star_records
+    }
+
+    galaxy_count_delta = 0
+    for fix in fixes:
+        action = str(fix.get("action", ""))
+        if action == "add_legacy_ellipse":
+            sc = SkyCoord(
+                ra=float(fix["ra_deg"]) * u.deg,
+                dec=float(fix["dec_deg"]) * u.deg,
+                frame="icrs",
+            )
+            duplicate = False
+            for record in legacy_galaxy_records:
+                existing = SkyCoord(
+                    ra=float(record["ra_deg"]) * u.deg,
+                    dec=float(record["dec_deg"]) * u.deg,
+                    frame="icrs",
+                )
+                if sc.separation(existing).to_value(u.arcsec) <= 0.2:
+                    duplicate = True
+                    break
+            if duplicate:
+                print(
+                    f"[MANUAL] WARNING: {base}: Legacy ls_id={fix['ls_id']} is already "
+                    "in the automatic galaxy mask; manual addition skipped"
+                )
+                continue
+
+            a_arcsec = float(fix["a_arcsec"])
+            b_arcsec = float(fix["b_arcsec"])
+            tractor_phi_deg = float(fix["tractor_phi_deg"])
+            sampling_angle_deg = legacy_wcs_sampling_angle_deg(tractor_phi_deg, cfg)
+            xv, yv = sample_ellipse_via_wcs(
+                w,
+                sc,
+                a_arcsec,
+                b_arcsec,
+                sampling_angle_deg,
+                npts=int(getattr(cfg, "legacy_ellipse_npts", 96)),
+            )
+            if fov_mask is not None and not polygon_overlaps_mask(fov_mask, xv, yv):
+                print(
+                    f"[MANUAL] WARNING: {base}: Legacy ls_id={fix['ls_id']} "
+                    "is outside the MUSE FoV; skipped"
+                )
+                continue
+
+            rasterize_polygon(mask, xv, yv, fov_mask=fov_mask)
+            yv_plot = (ny - 1) - yv if use_png_bg else yv
+            gal_patches.append(Polygon(np.column_stack([xv, yv_plot]), closed=True, fill=False))
+            galaxy_count_delta += 1
+            print(
+                f"[MANUAL] {base}: added Legacy galaxy ellipse ls_id={fix['ls_id']} "
+                f"ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" "
+                f"tractor_phi={tractor_phi_deg:.1f} sample_angle={sampling_angle_deg:.1f}"
+            )
+            continue
+
+        if action == "remove_legacy_galaxy":
+            target = SkyCoord(
+                ra=float(fix["ra_deg"]) * u.deg,
+                dec=float(fix["dec_deg"]) * u.deg,
+                frame="icrs",
+            )
+            matches = [
+                (
+                    target.separation(
+                        SkyCoord(
+                            ra=float(record["ra_deg"]) * u.deg,
+                            dec=float(record["dec_deg"]) * u.deg,
+                            frame="icrs",
+                        )
+                    ).to_value(u.arcsec),
+                    record,
+                )
+                for record in legacy_galaxy_records
+                if not bool(record.get("manual_removed", False))
+            ]
+            if not matches:
+                print(f"[MANUAL] WARNING: {base}: no Legacy candidates available for removal")
+                continue
+            separation_arcsec, record = min(matches, key=lambda item: item[0])
+            if separation_arcsec > 0.2:
+                print(
+                    f"[MANUAL] WARNING: {base}: no Legacy candidate within 0.2\" "
+                    f"of ra={target.ra.deg:.6f} dec={target.dec.deg:.6f}; skipped"
+                )
+                continue
+
+            record["manual_removed"] = True
+            candidate = record["candidate"]
+            mask[candidate > 0] = 0
+            mask[foreground_star_mask > 0] = 1
+            for other in legacy_galaxy_records:
+                if not bool(other.get("manual_removed", False)):
+                    add_candidate_mask(mask, other["candidate"])
+            patch = record.get("patch")
+            if patch in gal_patches:
+                patch.set_linestyle("--")
+            galaxy_count_delta -= 1
+            print(
+                f"[MANUAL] {base}: removed Legacy galaxy mask at "
+                f"ra={record['ra_deg']:.6f} dec={record['dec_deg']:.6f}"
+            )
+            continue
+
+        if action != "scale_gaia_star_radius":
+            print(f"[MANUAL] WARNING: {base}: unknown action {action!r}; skipped")
+            continue
+
+        source_id = str(fix["source_id"])
+        record = gaia_by_source_id.get(source_id)
+        if record is None:
+            print(
+                f"[MANUAL] WARNING: {base}: Gaia DR3 {source_id} was not selected "
+                "by the automatic star workflow; radius scaling skipped"
+            )
+            continue
+
+        factor = float(fix["factor"])
+        if not np.isfinite(factor) or factor <= 1.0:
+            print(
+                f"[MANUAL] WARNING: {base}: invalid radius scale {factor!r} for "
+                f"Gaia DR3 {source_id}; skipped"
+            )
+            continue
+
+        xi = float(record["x"])
+        yi = float(record["y"])
+        old_r_pix = float(record["r_mask_pix"])
+        new_r_pix = old_r_pix * factor
+        rasterize_circle(mask, xi, yi, new_r_pix, fov_mask=fov_mask)
+        rasterize_circle(foreground_star_mask, xi, yi, new_r_pix, fov_mask=fov_mask)
+
+        y_plot = (ny - 1 - yi) if use_png_bg else yi
+        old_patch = record.get("patch")
+        if old_patch in star_patches:
+            old_patch.set_linestyle("--")
+        new_patch = Circle((xi, y_plot), new_r_pix, fill=False)
+        star_patches.append(new_patch)
+        record["patch"] = new_patch
+        old_r_arcsec = float(record["r_arcsec"])
+        print(
+            f"[MANUAL] {base}: Gaia DR3 {source_id} star radius scaled "
+            f"{factor:.2f}x ({old_r_arcsec:.2f}\" -> {old_r_arcsec * factor:.2f}\")"
+        )
+
+    return galaxy_count_delta
+
+
 def circle_intersects_fov(xi: float, yi: float, r_pix: float, nx: int, ny: int) -> bool:
     """True if the circle overlaps the image rectangle, even partially."""
     if not (np.isfinite(xi) and np.isfinite(yi) and np.isfinite(r_pix)) or r_pix <= 0:
@@ -1977,6 +2315,14 @@ def write_ds9_legacy_regions(
     return out
 
 
+def legacy_wcs_sampling_angle_deg(tractor_phi_deg: float, cfg: Config) -> float:
+    """Convert Tractor ellipticity angle to the tangent-plane sampler convention."""
+    angle_deg = float(tractor_phi_deg)
+    if bool(getattr(cfg, "legacy_pa_east_of_north", False)):
+        angle_deg = 90.0 - angle_deg
+    return angle_deg + float(getattr(cfg, "legacy_pa_offset_deg", 0.0))
+
+
 def sample_ellipse_via_wcs(
     w: WCS,
     center: SkyCoord,
@@ -2119,6 +2465,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
         gaia_rad = gaia_rad + (float(getattr(cfg, "gaia_epoch_query_padding_arcsec", 20.0)) * u.arcsec)
     gaia = query_gaia_sources(center, gaia_rad, cfg)
     star_patches = []
+    gaia_star_records = []
     n_star_masked = 0
     star_exclude = np.zeros((ny, nx), dtype=np.uint8)
     gaia_sky = None
@@ -2216,6 +2563,15 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             rasterize_circle(star_exclude, xi, yi, r_pix_fp, fov_mask=fov_mask)
 
             sid = row["source_id"] if "source_id" in row.colnames else "?"
+            gaia_star_records.append(
+                {
+                    "source_id": str(sid),
+                    "x": float(xi),
+                    "y": float(yi),
+                    "r_mask_pix": float(r_mask_pix),
+                    "r_arcsec": float(r_arcsec),
+                }
+            )
             if cfg.log_each_star:
                 ra_hms, dec_dms = format_radec_hmsdms(sc_obs, precision=2)
                 gaia_name = f"Gaia DR3 {sid}"
@@ -2250,7 +2606,9 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
             # The provided PNG background images are typically rendered with a
             # different vertical origin than raw FITS array indices.
             y_plot = (ny - 1 - yi) if use_png_bg else yi
-            star_patches.append(Circle((xi, y_plot), r_mask_pix, fill=False))
+            star_patch = Circle((xi, y_plot), r_mask_pix, fill=False)
+            star_patches.append(star_patch)
+            gaia_star_records[-1]["patch"] = star_patch
 
     target_fp = None
     target_thresh = None
@@ -2263,6 +2621,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
 
     # ---------- Background galaxies (Pan-STARRS preferred) ----------
     gal_patches = []
+    legacy_galaxy_records = []
     gal_tab = None
     gal_catalog = None
     n_gal_masked = 0
@@ -2450,10 +2809,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         use_wcs_sampling = bool(getattr(cfg, "legacy_wcs_sample_ellipses", True))
                         if use_wcs_sampling:
                             try:
-                                angle_for_sampling = float(angle_deg)
-                                if bool(getattr(cfg, "legacy_pa_east_of_north", False)):
-                                    angle_for_sampling = 90.0 - angle_for_sampling
-                                angle_for_sampling = angle_for_sampling + float(getattr(cfg, "legacy_pa_offset_deg", 0.0))
+                                angle_for_sampling = legacy_wcs_sampling_angle_deg(angle_deg, cfg)
                                 xv, yv = sample_ellipse_via_wcs(
                                     w,
                                     sc,
@@ -2517,6 +2873,14 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                         add_candidate_mask(mask, candidate)
                         y_plot = (ny - 1 - yi) if use_png_bg else yi
                         gal_patches.append(Circle((xi, y_plot), r_pix, fill=False))
+                legacy_galaxy_records.append(
+                    {
+                        "ra_deg": float(sc.ra.deg),
+                        "dec_deg": float(sc.dec.deg),
+                        "candidate": candidate,
+                        "patch": gal_patches[-1],
+                    }
+                )
                 n_gal_masked += 1
 
                 if cfg.log_each_galaxy:
@@ -3322,6 +3686,23 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
                     n_star_masked += 1
                     y_plot = (ny - 1 - yi) if use_png_bg else yi
                     star_patches.append(Circle((xi, y_plot), r_mask_pix, fill=False))
+
+    # ---------- Manual per-galaxy fixes (after all automatic masking) ----------
+    manual_galaxy_count_delta = apply_manual_mask_fixes(
+        base=base,
+        mask=mask,
+        foreground_star_mask=foreground_star_mask,
+        fov_mask=fov_mask,
+        gaia_star_records=gaia_star_records,
+        star_patches=star_patches,
+        legacy_galaxy_records=legacy_galaxy_records,
+        gal_patches=gal_patches,
+        w=w,
+        cfg=cfg,
+        ny=ny,
+        use_png_bg=use_png_bg,
+    )
+    n_gal_masked += manual_galaxy_count_delta
 
     # ---------- Write mask FITS (nGIST expects 0=unmasked, 1=masked) ----------
     if fov_mask is not None and fov_mask.shape == mask.shape:
