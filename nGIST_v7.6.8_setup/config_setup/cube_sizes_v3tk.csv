@@ -20,7 +20,7 @@ NGC4298,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad
 NGC4302,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1420, 322)",15477140160,14.414,457240,435030,ok
 NGC4302,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1420, 322)",11454626043,10.668,457240,435030,ok
 NGC4321,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4321_PHANGS_DATACUBE_native.fits,"(3761, 999, 1231)",41626488960,38.768,1229769,977270,ok
-NGC4321,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4321_PHANGS_DATACUBE_native_fixed.fits,"(3761, 999, 1231)",41626488960,38.768,1229769,977270,ok
+NGC4321,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4321_PHANGS_DATACUBE_native_fixed.fits,"(3761, 999, 1231)",41626488960,38.768,1229769,977274,ok
 NGC4330,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 760, 881)",22663967040,21.107,669560,265482,ok
 NGC4330,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 760, 881)",7148746951,6.658,669560,265482,ok
 NGC4351,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 323, 591)",6461562240,6.018,190893,182908,ok
@@ -52,7 +52,7 @@ NGC4501,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad
 NGC4522,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 659, 590)",13160859840,12.257,388810,180578,ok
 NGC4522,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 659, 590)",4835422014,4.503,388810,180578,ok
 NGC4535,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4535_PHANGS_DATACUBE_native.fits,"(3761, 898, 610)",18541837440,17.268,547780,532557,ok
-NGC4535,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4535_PHANGS_DATACUBE_native_fixed.fits,"(3761, 898, 610)",18541837440,17.268,547780,532557,ok
+NGC4535,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4535_PHANGS_DATACUBE_native_fixed.fits,"(3761, 898, 610)",18541837440,17.268,547780,532558,ok
 NGC4567_8,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1059, 971)",34806579840,32.416,1028289,514828,ok
 NGC4567_8,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1059, 971)",13622883659,12.687,1028289,514828,ok
 NGC4569,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1260, 888)",37872996480,35.272,1118880,664444,ok
@@ -63,6 +63,8 @@ NGC4606,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad
 NGC4606,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 435, 434)",2570157622,2.394,188790,96725,ok
 NGC4607,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 598, 315)",6376161600,5.938,188370,181002,ok
 NGC4607,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 598, 315)",4817193830,4.486,188370,181002,ok
+NGC4654,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1013, 1278)",43821423360,40.812,1294614,666751,ok
+NGC4654,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1013, 1278)",17628623232,16.418,1294614,666751,ok
 NGC4694,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 441, 439)",6553157760,6.103,193599,96349,ok
 NGC4694,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 441, 439)",2569183296,2.393,193599,96349,ok
 NGC4698,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1189, 608)",24469876800,22.789,722912,356398,ok

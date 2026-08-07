@@ -3,20 +3,20 @@ Best dense image arrangement report
 
 mode: OR-Tools CP-SAT fallback, not certified
 status: FEASIBLE
-input_count: 34
+input_count: 35
 ratio: 16:9
-lower_bound_k: 376
-heuristic_upper_k: 385
+lower_bound_k: 388
+heuristic_upper_k: 399
 heuristic_method: existing:All_combined_VRI_16_9.proof.txt
-final_k: 385
-final_canvas: 6160x3465
-total_image_area: 20289202
-canvas_area: 21344400
-density: 0.950563
+final_k: 399
+final_canvas: 6384x3591
+total_image_area: 21583816
+canvas_area: 22924944
+density: 0.941499
 time_limit_seconds: 300
-solver_objective_bound: 376.0
-solver_best_objective: 385.0
-solver_wall_time_seconds: 300.060026
+solver_objective_bound: 388.0
+solver_best_objective: 399.0
+solver_wall_time_seconds: 300.070738
 note: synchronized_layout_from: All_combined_VRI_mask_label_16_9.png
 
 Lower-bound formula
@@ -31,37 +31,38 @@ OR-Tools did not return OPTIMAL, so no mathematical optimality proof is claimed 
 Placements
 ----------
 index	file	w	h	x	y
-0	IC3392_combined_VRI_mask.png	437	438	2626	2691
-1	NGC4064_combined_VRI_mask.png	566	665	3108	2799
-2	NGC4189_combined_VRI_mask.png	598	319	4913	2526
-3	NGC4192_combined_VRI_mask.png	1092	1629	0	2
-4	NGC4222_combined_VRI_mask.png	890	748	5235	1174
-5	NGC4254_combined_VRI_mask.png	1012	1190	3881	6
-6	NGC4293_combined_VRI_mask.png	923	532	3942	1199
-7	NGC4294_combined_VRI_mask.png	567	663	4264	2801
-8	NGC4298_combined_VRI_mask.png	1042	995	2017	1240
-9	NGC4302_combined_VRI_mask.png	322	1420	4913	1059
-10	NGC4321_combined_VRI_mask.png	1231	999	4893	0
-11	NGC4330_combined_VRI_mask.png	881	760	3065	2039
-12	NGC4351_combined_VRI_mask.png	591	323	5	2822
-13	NGC4380_combined_VRI_mask.png	967	1044	3946	1757
-14	NGC4383_combined_VRI_mask.png	633	705	1993	2323
-15	NGC4388_combined_VRI_mask.png	870	323	1232	3140
-16	NGC4394_combined_VRI_mask.png	624	647	596	2498
-17	NGC4396_combined_VRI_mask.png	883	755	3059	1264
-18	NGC4402_combined_VRI_mask.png	1152	318	4	3146
-19	NGC4405_combined_VRI_mask.png	522	663	5	2135
-20	NGC4419_combined_VRI_mask.png	629	643	5511	2820
-21	NGC4424_combined_VRI_mask.png	572	335	2536	3129
-22	NGC4450_combined_VRI_mask.png	602	867	527	1631
-23	NGC4457_combined_VRI_mask.png	725	725	1236	2415
-24	NGC4501_combined_VRI_mask.png	1205	1236	2676	0
-25	NGC4522_combined_VRI_mask.png	590	659	3674	2801
-26	NGC4535_combined_VRI_mask.png	610	898	5550	1922
-27	NGC4567_8_combined_VRI_mask.png	971	1059	1097	4
-28	NGC4569_combined_VRI_mask.png	888	1260	1129	1063
-29	NGC4580_combined_VRI_mask.png	647	619	4831	2845
-30	NGC4606_combined_VRI_mask.png	434	435	2102	3028
-31	NGC4607_combined_VRI_mask.png	315	598	5235	1926
-32	NGC4694_combined_VRI_mask.png	439	441	2626	2235
-33	NGC4698_combined_VRI_mask.png	608	1189	2068	0
+0	IC3392_combined_VRI_mask.png	437	438	2063	1834
+1	NGC4064_combined_VRI_mask.png	566	665	1624	999
+2	NGC4189_combined_VRI_mask.png	598	319	1014	1897
+3	NGC4192_combined_VRI_mask.png	1092	1629	3472	0
+4	NGC4222_combined_VRI_mask.png	890	748	4833	2015
+5	NGC4254_combined_VRI_mask.png	1012	1190	2	1059
+6	NGC4293_combined_VRI_mask.png	923	532	2322	2943
+7	NGC4294_combined_VRI_mask.png	567	663	2951	2280
+8	NGC4298_combined_VRI_mask.png	1042	995	1280	2595
+9	NGC4302_combined_VRI_mask.png	322	1420	4564	0
+10	NGC4321_combined_VRI_mask.png	1231	999	973	0
+11	NGC4330_combined_VRI_mask.png	881	760	4755	2763
+12	NGC4351_combined_VRI_mask.png	591	323	1726	2272
+13	NGC4380_combined_VRI_mask.png	967	1044	2505	1236
+14	NGC4383_combined_VRI_mask.png	633	705	5723	2703
+15	NGC4388_combined_VRI_mask.png	870	323	3679	2973
+16	NGC4394_combined_VRI_mask.png	624	647	5723	2056
+17	NGC4396_combined_VRI_mask.png	883	755	4886	1260
+18	NGC4402_combined_VRI_mask.png	1152	318	2	2249
+19	NGC4405_combined_VRI_mask.png	522	663	3518	1629
+20	NGC4419_combined_VRI_mask.png	629	643	2322	2280
+21	NGC4424_combined_VRI_mask.png	572	335	1154	2216
+22	NGC4450_combined_VRI_mask.png	602	867	5774	1189
+23	NGC4457_combined_VRI_mask.png	725	725	4108	1629
+24	NGC4501_combined_VRI_mask.png	1205	1236	2204	0
+25	NGC4522_combined_VRI_mask.png	590	659	3518	2292
+26	NGC4535_combined_VRI_mask.png	610	898	1014	999
+27	NGC4567_8_combined_VRI_mask.png	971	1059	2	0
+28	NGC4569_combined_VRI_mask.png	888	1260	4886	0
+29	NGC4580_combined_VRI_mask.png	647	619	4108	2354
+30	NGC4606_combined_VRI_mask.png	434	435	3245	2951
+31	NGC4607_combined_VRI_mask.png	315	598	2190	1236
+32	NGC4654_combined_VRI_mask.png	1278	1013	2	2567
+33	NGC4694_combined_VRI_mask.png	439	441	1624	1664
+34	NGC4698_combined_VRI_mask.png	608	1189	5774	0

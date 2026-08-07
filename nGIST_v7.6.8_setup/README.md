@@ -62,7 +62,7 @@ Important current settings include:
 
 - Wavelength range: `4800-8900 Angstrom`
 - Voronoi target S/N: `40`
-- Velocity scale: `41 km/s`
+- Velocity scale for both normal and 7000 A runs: `41 km/s`
 - Stellar/SFH mask: `specMask_KIN_narrow10`
 - Gas mask: `specMask_GAS_narrow10`
 - PHANGS-native AO masks: `specMask_KIN_narrow10_AO` and
@@ -339,21 +339,20 @@ The current templates request:
 For normal runs, the existing queue overrides remain in effect:
 
 - `NGC4192`, `NGC4254`, `NGC4298`, `NGC4321`, `NGC4330`, `NGC4380`,
-  `NGC4396`, `NGC4501`, `NGC4535`, `NGC4567_8`, `NGC4569`, and `NGC4698`
-  use `highmem`, `980G`, and `96:00:00`.
+  `NGC4396`, `NGC4501`, `NGC4535`, `NGC4567_8`, `NGC4569`, `NGC4654`, and
+  `NGC4698` use `highmem`, `980G`, and `96:00:00`.
 - `NGC4293`, `NGC4302`, `NGC4383`, `NGC4419`, and `NGC4457` use `long`,
   `230G`, and `96:00:00`. `NGC4298` is also in the normal long-runtime list,
   but its high-memory override takes precedence.
 - All other normal runs retain the template defaults: `work`, `230G`, and
   `24:00:00`.
 
-The shorter 7000 A runs use a separate resource policy based on the completed
-job memory report. The nine run IDs whose measured `MaxRSS` exceeded 220 GiB
-use `highmem`, `980G`, and `96:00:00`:
+The shorter 7000 A runs use a separate resource policy. The following ten run
+IDs use `highmem`, `980G`, and `96:00:00`:
 
 ```text
 NGC4192  NGC4254  NGC4298  NGC4380  NGC4501
-NGC4535  NGC4567_8  NGC4569  NGC4698
+NGC4535  NGC4567_8  NGC4569  NGC4654  NGC4698
 ```
 
 The normal-run long-runtime list is not applied to 7000 A runs. Every other

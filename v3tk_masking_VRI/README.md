@@ -22,6 +22,7 @@ The current snapshot is intended to be a self-contained record of the masking ru
 | `test_gaia_query_retry.py` | 1 | Focused regression test proving that transient Gaia failures are retried until a query succeeds. |
 | `test_legacy_query_retry.py` | 1 | Focused regression test proving that the Legacy tractor query and every photo-z chunk retry independently until successful. |
 | `auto_arrange_and_combine.py` | 1 | Mosaic arranger. Packs per-galaxy PNGs into dense fixed-ratio overview images, with optional OR-Tools proof reports. |
+| `send_mask_to_setonix.sh` | 1 | Uploads every available root-level `*_mask.fits` file to the Setonix v3tk cube directory, overwriting same-named remote masks. |
 | `*_DATACUBE*_VRI.fits` or `.fits.gz` | 34 | Input VRI FITS datacubes used for WCS, pixel geometry, and science-data footprint. Compressed inputs are read directly with Astropy and do not need to be unzipped first. |
 | `*_mask.fits` | 34 | Binary nGIST-compatible spatial masks. `0` means unmasked; `1` means masked. |
 | `*_combined_VRI.png` | 34 | Per-galaxy VRI reference images. |
@@ -130,6 +131,26 @@ The mask convention is:
 - `0`: unmasked spaxel, usually target galaxy or sky.
 - `1`: masked spaxel, usually foreground star or background object.
 
+## Sending Masks to Setonix
+
+Upload all root-level `*_mask.fits` products to
+`/scratch/pawsey1308/mauve/cubes/v3tk` on Setonix with:
+
+```bash
+./send_mask_to_setonix.sh
+```
+
+The default login is `rhuang@setonix.pawsey.org.au`. A different username and
+host can be supplied positionally:
+
+```bash
+./send_mask_to_setonix.sh USERNAME
+./send_mask_to_setonix.sh USERNAME HOST
+```
+
+The remote directory is created if necessary. Files already present there with
+the same names are overwritten; unrelated remote files are left unchanged.
+
 ## Masking Logic
 
 `make_ngist_masks_from_catalogs_VRI.py` is designed as a conservative pre-processing
@@ -159,7 +180,7 @@ Important implementation details:
 - For NGC4396, the largest foreground star (Gaia DR3 `3945348819144380416`) has a 2.0x radius scale; the other foreground star remains unchanged.
 - For NGC4405, six user-selected Legacy sources are manually added at the catalog positions nearest the supplied coordinates. Four `REX` sources use circular radii of 1.20–1.25 arcsec, one `PSF` source uses the 1.20 arcsec unresolved-source radius, and `SER` source `ls_id=9906627523969457` uses `a=2.224`, `b=1.200` arcsec with catalog PA `65.7` degrees converted by the shared Legacy/WCS convention to sampler angle `24.3` degrees.
 - For NGC4424, its single foreground star (Gaia DR3 `3903814389447489664`) has a 2.0x radius scale, from 1.20 to 2.40 arcsec.
-- For NGC4654, Legacy `SER` source `ls_id=9906626428669580` at `(190.957342, 13.125274)` degrees is manually added and enlarged by 2.0x from its padded catalog semi-axes `a=2.208`, `b=1.200` arcsec to `a=4.417`, `b=2.400` arcsec. Its catalog morphology is `shape_r=2.008`, `e1=-0.3848`, and `e2=0.0895`. The Tractor/catalog angle `83.5` degrees is converted by the shared Legacy/WCS convention to sampler angle `6.5` degrees; `z_phot_mean=0.1947` with 95% bounds `0.0901–0.2649`.
+- For NGC4654, Legacy `SER` source `ls_id=9906626428669580` at `(190.957342, 13.125274)` degrees is manually added as a circle. Its radius is 2.5x the padded catalog major axis, `2.5 x 2.208261 = 5.520653` arcsec; the catalog minor axis and PA are intentionally ignored. The source has `shape_r=2.008`, `e1=-0.3848`, `e2=0.0895`, and `z_phot_mean=0.1947` with 95% bounds `0.0901–0.2649`.
 - For NGC4694, its single foreground star (Gaia DR3 `3927389155697596800`) has a 2.0x radius scale, from 1.20 to 2.40 arcsec.
 - Background-galaxy masks use 1.2 arcsec minimum fallback/floor values, 5.0 arcsec maximum fallback/Legacy semi-axis caps, and diagnostic overlay contours are drawn with thinner 0.6 line widths.
 - Legacy DR9 background-galaxy masking uses morphology and photo-z information where available.

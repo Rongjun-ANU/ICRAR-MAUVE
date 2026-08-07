@@ -128,19 +128,21 @@ test_creation_applies_run_specific_queue_overrides() {
   local galid
   workdir="$(new_workdir)"
   install_make_gist_stub "$workdir"
+  printf 'NGC4654,0,0\n' >> "${workdir}/cube_centers_v3tk.csv"
+  printf 'NGC4654,0,0\n' >> "${workdir}/cube_sizes_v3tk.csv"
 
   (
     cd "$workdir"
     ./27_creation.sh \
       IC3392 NGC4192 NGC4254 NGC4293 NGC4298 NGC4321 NGC4330 NGC4380 \
-      NGC4396 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4698 > creation.out
+      NGC4396 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4654 NGC4698 > creation.out
   )
 
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=work"
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=230G"
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=24:00:00"
 
-  for galid in NGC4192 NGC4254 NGC4298 NGC4380 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4698; do
+  for galid in NGC4192 NGC4254 NGC4298 NGC4380 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4654 NGC4698; do
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=highmem"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=980G"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=96:00:00"
@@ -155,7 +157,7 @@ test_creation_applies_run_specific_queue_overrides() {
   assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=work"
   assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=24:00:00"
 
-  for galid in NGC4254 NGC4321 NGC4535 NGC4569; do
+  for galid in NGC4254 NGC4321 NGC4535 NGC4569 NGC4654; do
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=highmem"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=980G"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=96:00:00"
@@ -351,6 +353,19 @@ test_queue_override_galaxies_are_known() {
   )
 }
 
+test_7000_velscale_matches_normal_run() {
+  local config_file
+
+  assert_contains "${CONFIG_DIR}/MAUVE_MasterConfig_v7.6.8_setonix.yaml" "VELSCALE : 41"
+  assert_contains "${CONFIG_DIR}/MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml" "VELSCALE : 41"
+  assert_not_contains "${CONFIG_DIR}/MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml" "VELSCALE : 53"
+
+  for config_file in "${CONFIG_DIR}"/*_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml; do
+    assert_contains "$config_file" "VELSCALE: 41"
+    assert_not_contains "$config_file" "VELSCALE: 53"
+  done
+}
+
 test_creation_uses_requested_galaxies_only
 test_creation_applies_run_specific_queue_overrides
 test_setonix_submits_requested_galaxies_only
@@ -360,5 +375,6 @@ test_send_accepts_galaxy_only_short_form
 test_unknown_galaxy_is_rejected
 test_known_mauve_39_run_ids_are_accepted
 test_queue_override_galaxies_are_known
+test_7000_velscale_matches_normal_run
 
 echo "All 39-run-ID selection tests passed."

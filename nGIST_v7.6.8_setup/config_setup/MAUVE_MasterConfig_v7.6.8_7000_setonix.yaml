@@ -38,7 +38,7 @@ SPATIAL_BINNING :
 # Prepare spectra module
 PREPARE_SPECTRA :
   METHOD : 'default' # Name of the routine in prepareSpectra/ (without .py) to perform the tasks. Set False to turn off module. Set 'default' to use the standard GIST implementation.
-  VELSCALE : 53 # Spectral sampling of the logarithmically rebinned spectra [in km/s]; e.g. velscale = dLambda*C / mean(wave), with the spectral sampling of the linearly binned spectra dLambda, the speed of light C, and the mean wavelength of the spectrum mean(wave). 
+  VELSCALE : 41 # Spectral sampling of the logarithmically rebinned spectra [in km/s]; e.g. velscale = dLambda*C / mean(wave), with the spectral sampling of the linearly binned spectra dLambda, the speed of light C, and the mean wavelength of the spectrum mean(wave).
 
 # Stellar kinematics module
 KIN :

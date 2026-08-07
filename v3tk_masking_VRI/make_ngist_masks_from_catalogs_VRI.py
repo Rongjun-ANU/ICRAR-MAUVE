@@ -520,13 +520,11 @@ MANUAL_MASK_FIXES = {
     ],
     "NGC4654": [
         {
-            "action": "add_legacy_ellipse",
+            "action": "add_legacy_circle",
             "ls_id": "9906626428669580",
             "ra_deg": 190.957341690,
             "dec_deg": 13.125274006,
-            "a_arcsec": 4.416522,
-            "b_arcsec": 2.4,
-            "tractor_phi_deg": 83.450365,
+            "radius_arcsec": 5.520653,
         },
     ],
     "NGC4694": [
@@ -1916,7 +1914,7 @@ def apply_manual_mask_fixes(
     galaxy_count_delta = 0
     for fix in fixes:
         action = str(fix.get("action", ""))
-        if action == "add_legacy_ellipse":
+        if action in {"add_legacy_ellipse", "add_legacy_circle"}:
             sc = SkyCoord(
                 ra=float(fix["ra_deg"]) * u.deg,
                 dec=float(fix["dec_deg"]) * u.deg,
@@ -1939,10 +1937,15 @@ def apply_manual_mask_fixes(
                 )
                 continue
 
-            a_arcsec = float(fix["a_arcsec"])
-            b_arcsec = float(fix["b_arcsec"])
-            tractor_phi_deg = float(fix["tractor_phi_deg"])
-            sampling_angle_deg = legacy_wcs_sampling_angle_deg(tractor_phi_deg, cfg)
+            if action == "add_legacy_circle":
+                a_arcsec = b_arcsec = float(fix["radius_arcsec"])
+                tractor_phi_deg = 0.0
+                sampling_angle_deg = 0.0
+            else:
+                a_arcsec = float(fix["a_arcsec"])
+                b_arcsec = float(fix["b_arcsec"])
+                tractor_phi_deg = float(fix["tractor_phi_deg"])
+                sampling_angle_deg = legacy_wcs_sampling_angle_deg(tractor_phi_deg, cfg)
             xv, yv = sample_ellipse_via_wcs(
                 w,
                 sc,
@@ -1962,12 +1965,19 @@ def apply_manual_mask_fixes(
             yv_plot = (ny - 1) - yv if use_png_bg else yv
             gal_patches.append(Polygon(np.column_stack([xv, yv_plot]), closed=True, fill=False))
             galaxy_count_delta += 1
-            print(
-                f"[MANUAL] {base}: added Legacy galaxy ellipse ls_id={fix['ls_id']} "
-                f"ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
-                f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" "
-                f"tractor_phi={tractor_phi_deg:.1f} sample_angle={sampling_angle_deg:.1f}"
-            )
+            if action == "add_legacy_circle":
+                print(
+                    f"[MANUAL] {base}: added Legacy galaxy circle ls_id={fix['ls_id']} "
+                    f"ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                    f"radius={a_arcsec:.2f}\""
+                )
+            else:
+                print(
+                    f"[MANUAL] {base}: added Legacy galaxy ellipse ls_id={fix['ls_id']} "
+                    f"ra={sc.ra.deg:.6f} dec={sc.dec.deg:.6f} "
+                    f"a={a_arcsec:.2f}\" b={b_arcsec:.2f}\" "
+                    f"tractor_phi={tractor_phi_deg:.1f} sample_angle={sampling_angle_deg:.1f}"
+                )
             continue
 
         if action == "remove_legacy_galaxy":
