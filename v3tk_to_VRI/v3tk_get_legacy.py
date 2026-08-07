@@ -48,7 +48,6 @@ def _require_deps():
 class Job:
 	input_path: pathlib.Path
 	galaxy_id: str
-	observed_png: pathlib.Path
 	legacy_cutout_jpg: pathlib.Path
 	legacy_reprojected_jpg: pathlib.Path
 
@@ -396,26 +395,6 @@ def _reproject_rgb_to_target(
 	return stack
 
 
-def _verify_expected_size(
-	*,
-	galaxy_id: str,
-	shape: tuple[int, int],
-	observed_png: pathlib.Path,
-):
-	# shape is (ny, nx)
-	from PIL import Image
-
-	ny, nx = shape
-	if observed_png.exists():
-		with Image.open(observed_png) as im:
-			w, h = im.size
-			if (w, h) != (nx, ny):
-				raise ValueError(
-					f"Size mismatch for {galaxy_id}: FITS is {nx}x{ny} but {observed_png.name} is {w}x{h}. "
-					"Regenerate observed PNGs from the current FITS with: python v3tk_observed_VRI_image.py"
-				)
-
-
 def _process_one(job: Job, args: argparse.Namespace) -> tuple[str, str]:
 	import numpy as np
 	from PIL import Image
@@ -423,7 +402,6 @@ def _process_one(job: Job, args: argparse.Namespace) -> tuple[str, str]:
 	from astropy.wcs import WCS
 
 	target_wcs, shape_out = _muse_target_wcs_and_shape(job.input_path)
-	_verify_expected_size(galaxy_id=job.galaxy_id, shape=shape_out, observed_png=job.observed_png)
 
 	# Determine center sky coordinate from the *image center pixel*.
 	ny, nx = shape_out
@@ -546,14 +524,12 @@ def _process_one(job: Job, args: argparse.Namespace) -> tuple[str, str]:
 		shape_out=shape_out,
 	)
 
-	# Verify final image size matches target and observed PNG.
+	# Verify final image size matches the target VRI grid.
 	ny, nx = shape_out
 	if (stack_u8.shape[0], stack_u8.shape[1]) != (ny, nx):
 		raise ValueError(
 			f"Internal error for {job.galaxy_id}: reprojected image shape {stack_u8.shape} != expected {(ny, nx)}"
 		)
-	_verify_expected_size(galaxy_id=job.galaxy_id, shape=shape_out, observed_png=job.observed_png)
-
 	out_im = Image.fromarray(stack_u8)
 	out_im.save(job.legacy_reprojected_jpg, format="JPEG", quality=95)
 
@@ -575,14 +551,12 @@ def _discover_jobs(input_dir: pathlib.Path, pattern: str) -> list[Job]:
 	j: list[Job] = []
 	for p in paths:
 		gid = _galaxy_id_from_filename(p)
-		observed_png = input_dir / f"{gid}_observed_VRI.png"
 		legacy_cutout_jpg = input_dir / f"{gid}_Legacy.jpg"
 		legacy_reprojected_jpg = input_dir / f"{gid}_legacy_reprojected.jpg"
 		j.append(
 			Job(
 				input_path=p,
 				galaxy_id=gid,
-				observed_png=observed_png,
 				legacy_cutout_jpg=legacy_cutout_jpg,
 				legacy_reprojected_jpg=legacy_reprojected_jpg,
 			)

@@ -20,10 +20,10 @@ At the time this README was written, the folder contains 26 VRI FITS products an
 | --- | --- |
 | `v3tk_to_VRI.py` | Converts one 3D MUSE cube into V, R, and I flux/magnitude maps. It accepts both `.fits` and `.fits.gz` inputs directly, or a GALID when the matching v3tk cube is in the current directory. |
 | `v3tk_to_VRI.sh` | Batch wrapper that first checks the current directory for selected local `*_v3tk.fits` or `*_v3tk.fits.gz` cubes, then falls back to `/arc/projects/mauve/cubes/v3tk`, runs `v3tk_to_VRI.py` directly on local filesystem inputs without copying, unzipping, or deleting them, and stages only supported PHANGS native public `vos:` inputs with `vcp` when needed. |
-| `v3tk_observed_VRI_image.py` | Renders the VRI FITS products into native-size PNG and PDF images. It discovers both `.fits` and `.fits.gz` products when the pattern ends in `.fits`. |
+| `v3tk_observed_VRI_image.py` | Renders the VRI FITS products into native-size PNG and PDF images using the matching reprojected Legacy image to align the smooth edge color/brightness baseline without blurring VRI detail. It discovers both `.fits` and `.fits.gz` products when the pattern ends in `.fits`. |
 | `v3tk_get_legacy.py` | Downloads Legacy Survey cutouts, obtains matching WCS information, and reprojects the RGB image to the MUSE grid. It uses the same `.fits`/`.fits.gz` adaptive product discovery. |
 | `v3tk_combined_VRI_image.py` | Combines the observed VRI rendering with the reprojected Legacy image, using valid MUSE pixels where available and Legacy pixels outside the MUSE footprint. It also accepts compressed VRI FITS products. |
-| `v3tk_VRI_image.sh` | Top-level image pipeline wrapper for observed rendering, Legacy reprojection, and combined image generation. |
+| `v3tk_VRI_image.sh` | Top-level image pipeline wrapper for Legacy reprojection, Legacy-aware observed rendering, and combined image generation. |
 | `auto_arrange_and_combine.py` | Packs many per-galaxy image panels into one fixed-ratio mosaic. Uses OR-Tools when available for proof-aware layouts and can fall back to fast heuristic layouts. |
 | `cp_to_masking.sh` | Copies the mosaic arranger, per-galaxy VRI FITS/combined PNG products, and the standard labeled and unlabeled 16:9 mosaics/reports into `../v3tk_masking_VRI`. |
 | `v3tk_observed_R_image.py`, `v3tk_combined_R_image.py`, `v3tk_R_image.sh` | Older or parallel R-band-only workflow files. |
@@ -91,10 +91,10 @@ The full VRI workflow is:
 raw upstream cube: *_v3tk.fits or *_v3tk.fits.gz
   -> v3tk_to_VRI.py
   -> *_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
-  -> v3tk_observed_VRI_image.py
-  -> *_observed_VRI.png / *_observed_VRI.pdf
   -> v3tk_get_legacy.py
   -> *_legacy_reprojected.jpg
+  -> v3tk_observed_VRI_image.py (uses VRI FITS + reprojected Legacy)
+  -> *_observed_VRI.png / *_observed_VRI.pdf
   -> v3tk_combined_VRI_image.py
   -> *_combined_VRI.png
   -> auto_arrange_and_combine.py
@@ -139,7 +139,7 @@ R -> green
 V -> blue
 ```
 
-The combined image shows observed MUSE VRI pixels where the VRI flux map is valid and reprojected Legacy Survey RGB pixels outside the observed footprint.
+The combined image is an opaque source replacement: it removes Legacy pixels wherever the VRI flux map is valid, inserts observed MUSE VRI pixels there, and uses reprojected Legacy Survey RGB only outside the observed footprint. The standalone observed image derives a smooth low-frequency color/brightness reference solely from adjacent Legacy pixels outside the footprint over the inner 20-pixel edge region. Covered Legacy pixels are ignored, raw Legacy pixels are never blended into the VRI footprint, and the high-frequency VRI structure remains sharp.
 
 ## Environment
 
@@ -240,10 +240,39 @@ The main image pipeline is:
 The wrapper runs:
 
 ```bash
-python v3tk_observed_VRI_image.py --input-dir . --overwrite --workers "$NCPU"
 python v3tk_get_legacy.py --overwrite --workers "$NCPU" --max-concurrent-downloads "$MAX_DL"
+python v3tk_observed_VRI_image.py --input-dir . --overwrite --workers "$NCPU"
 python v3tk_combined_VRI_image.py --overwrite --workers "$NCPU"
 ```
+
+The observed renderer uses a Lupton/asinh RGB mapping with `I -> red`,
+`R -> green`, and `V -> blue`. Its default `--gamma 0.65` lifts faint and
+mid-tone structure after the Lupton mapping. The `--post-boost 2.75` value sets
+the lift strength, but the curve weights that lift by `1 - max(R,G,B)`, so the
+gain fades smoothly toward white instead of flattening bright centres at the
+display ceiling. One shared scale factor is applied per pixel, retaining the
+RGB channel ratios. After that curve, the VRI contribution is scaled so the
+brightest pixel inside a circular galaxy-centre reference aperture targets the
+default Rec.709 maximum luminance of `255/255`
+(`--target-max-luminance 255`). The aperture is centered on the valid-footprint
+bounding box and its radius is `0.22` times the shorter footprint dimension
+(`--center-radius-fraction 0.22`). A foreground star outside that aperture can
+still clip at 255, but it cannot set the global galaxy scale. If the global
+scale would push a highly colored pixel outside the RGB gamut, that pixel
+receives an additional shared-channel scale rather than independent channel
+clipping. Consequently, a colored central reference can reach channel 255
+while retaining a Rec.709 luminance slightly below 255 instead of being forced
+to white. The matching
+`*_legacy_reprojected.jpg` is a required input. Over the default 20-pixel inward region
+(`--legacy-transition-width 20`), a low-pass Legacy RGB baseline calculated
+only from pixels outside the VRI footprint adjusts the VRI baseline. The
+complete small-scale VRI residual is retained, so stars, arms, and other VRI
+structures are not alpha-blurred. No Legacy pixel underneath the VRI footprint
+is sampled or copied. Pixels outside the standalone observed footprint remain
+black. The former
+`--legacy-feather-width` option remains an alias for
+`--legacy-transition-width`. Use `--gamma 1.0` to disable the nonlinear
+brightness lift.
 
 `MAX_DL` controls the number of simultaneous Legacy Survey downloads. The default is 2. Use a lower value if the Legacy Survey service rate-limits requests:
 
@@ -254,8 +283,8 @@ MAX_DL=1 ./v3tk_VRI_image.sh
 Dry-run the individual stages before writing files:
 
 ```bash
-python v3tk_observed_VRI_image.py --dry-run
 python v3tk_get_legacy.py --dry-run
+python v3tk_observed_VRI_image.py --dry-run
 python v3tk_combined_VRI_image.py --dry-run
 ```
 

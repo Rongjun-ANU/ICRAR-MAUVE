@@ -47,8 +47,8 @@ v3tk_VRI_image_20260521_131131.log
 `v3tk_VRI_image.sh` runs three Python scripts:
 
 ```text
-Step 1: v3tk_observed_VRI_image.py
-Step 2: v3tk_get_legacy.py
+Step 1: v3tk_get_legacy.py
+Step 2: v3tk_observed_VRI_image.py
 Step 3: v3tk_combined_VRI_image.py
 ```
 
@@ -56,8 +56,8 @@ Data flow:
 
 ```text
 *_v3tk_VRI.fits
-  -> *_observed_VRI.png / *_observed_VRI.pdf
   -> *_legacy_reprojected.jpg
+  -> *_observed_VRI.png / *_observed_VRI.pdf
   -> *_combined_VRI.png
 ```
 
@@ -95,19 +95,9 @@ MAX_DL=2
 
 This throttle matters because the Legacy Survey service can rate-limit simultaneous HTTP requests.
 
-Note: the current shell script prints:
-
-```text
-Step 1/3: observed R images
-```
-
-but the actual command is:
-
-```text
-v3tk_observed_VRI_image.py
-```
-
-So the message is just a stale label; the stage is VRI, not R-only.
+The stage order is intentional: the standalone observed renderer now uses the
+reprojected Legacy image to match its inner footprint boundary. Therefore the
+Legacy product must exist before the observed PNG/PDF is rendered.
 
 ## Upstream Prerequisite: `v3tk_to_VRI.sh` and `v3tk_to_VRI.py`
 
@@ -160,7 +150,7 @@ Important converter defaults:
 
 The converter preserves the spatial WCS in the 2D output HDUs.
 
-## Step 1: Observed VRI Rendering
+## Observed VRI Rendering (Pipeline Step 2)
 
 File:
 
@@ -172,6 +162,12 @@ Command used by the shell script:
 
 ```bash
 python v3tk_observed_VRI_image.py --input-dir . --overwrite --workers "$NCPU"
+```
+
+Required inputs for each galaxy are the VRI FITS product and the matching:
+
+```text
+<GALAXY>_legacy_reprojected.jpg
 ```
 
 Default input pattern:
@@ -208,9 +204,26 @@ V -> blue
 
 - applies a gray-world white balance;
 - scales channels using luminance percentiles;
-- applies optional gamma;
 - uses Astropy Lupton/asinh RGB rendering;
-- applies a final post-render brightness boost;
+- applies a color-preserving, highlight-protected gamma lift through one shared
+  multiplier per RGB pixel;
+- builds a circular galaxy-centre reference aperture around the valid-footprint
+  bounding-box centre, with radius `0.22` times the shorter footprint dimension;
+- uses the maximum unquantized Rec.709 luminance in that aperture to set one
+  global VRI multiplier, targeting `255/255` by default, so foreground stars
+  outside the aperture do not determine the galaxy scale;
+- applies any required RGB-gamut protection through an additional shared
+  multiplier per pixel, so one highly colored pixel cannot limit the dynamic
+  range of the whole galaxy or clip channels independently; a colored central
+  reference may therefore reach channel 255 with luminance slightly below 255
+  rather than being forced to white;
+- calculates a smooth Legacy color/brightness baseline only from adjacent
+  pixels outside the VRI footprint and uses it to adjust the inner 20-pixel VRI
+  edge region by default;
+- ignores all Legacy pixels covered by the VRI footprint and retains the
+  complete high-frequency VRI residual so the edge stays sharp;
+- never copies or alpha-blends raw Legacy RGB into a valid VRI pixel;
+- leaves pixels outside the standalone observed footprint black;
 - writes PNG at native image dimensions;
 - writes a PDF with the same visual appearance.
 
@@ -221,8 +234,11 @@ percentile-low: 1.0
 percentile-high: 99.9
 stretch: 1.0
 Q: 8.0
-gamma: 1.0
-post-boost: 2.5
+gamma: 0.65
+post-boost: 2.75
+target-max-luminance: 255.0 (on the 0-255 display scale)
+center-radius-fraction: 0.22 (of the shorter valid-footprint dimension)
+legacy-transition-width: 20 pixels
 workers: os.cpu_count()
 overwrite: true
 ```
@@ -243,7 +259,7 @@ Example:
 MPLCONFIGDIR=/private/tmp/mplconfig ./v3tk_VRI_image.sh
 ```
 
-## Step 2: Legacy Survey Download and Reprojection
+## Legacy Survey Download and Reprojection (Pipeline Step 1)
 
 File:
 
@@ -276,7 +292,6 @@ What the script does:
 
 - selects a 2D flux HDU from the VRI FITS, preferring `R_FLUX`;
 - gets the target MUSE WCS and shape;
-- checks that `<GALAXY>_observed_VRI.png` matches the FITS image size;
 - computes the image-center sky coordinate;
 - estimates the MUSE footprint size from the WCS corners;
 - requests a Legacy Survey cutout centered on the MUSE field;
@@ -313,7 +328,7 @@ If HTTP 429 or 503 occurs, the downloader retries with exponential backoff and r
 MAX_DL=1 ./v3tk_VRI_image.sh
 ```
 
-## Step 3: Combine Observed MUSE and Legacy Background
+## Combine Observed MUSE and Legacy Background (Pipeline Step 3)
 
 File:
 
@@ -350,8 +365,10 @@ finite and > 0
 ```
 
 - flips the mask vertically to match the PNG orientation written by `v3tk_observed_VRI_image.py`;
-- starts from the Legacy reprojected image;
-- replaces valid mask pixels with observed VRI RGB pixels;
+- removes the Legacy reprojected background wherever the valid mask is true;
+- inserts observed VRI RGB pixels opaquely at those valid mask pixels, with no
+  alpha blend or overlapping Legacy contribution;
+- retains Legacy RGB only where the valid mask is false;
 - writes the result as PNG.
 
 The combined image therefore shows:
@@ -465,13 +482,14 @@ No files matched pattern '*_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits'
 
 This means the upstream conversion has not been run, the script is in the wrong directory, or the pattern differs.
 
-Missing observed PNG during Legacy step:
+Missing Legacy image during observed step:
 
 ```text
-Regenerate observed PNGs from the current FITS with: python v3tk_observed_VRI_image.py
+Missing Legacy image required by observed renderer: <GALAXY>_legacy_reprojected.jpg.
+Run v3tk_get_legacy.py first.
 ```
 
-This can happen if Step 2 is run independently before Step 1.
+This happens if pipeline Step 2 is run independently before Step 1.
 
 Size mismatch:
 
@@ -483,7 +501,7 @@ The Legacy Survey server may return rate-limit or temporary service errors. The 
 
 Network required:
 
-Step 2 requires internet access to:
+Step 1 requires internet access to:
 
 ```text
 https://www.legacysurvey.org/viewer/jpeg-cutout
@@ -526,13 +544,32 @@ The observed PNG/PDF products are display renderings:
 - non-finite samples are handled for visualization;
 - negative display values are clipped;
 - gray-world white balance and Lupton/asinh stretch affect visual color;
-- `post_boost=2.5` brightens the final RGB image.
+- `gamma=0.65` lifts faint and mid-tone detail after the Lupton mapping;
+- `post_boost=2.75` controls the strength of that lift;
+- for maximum channel value `m`, the curve is
+  `m_out = m + post_boost * (m**gamma - m) * (1 - m)`, clipped to the display
+  range only as a numerical safeguard;
+- the `(1 - m)` shoulder fades the lift toward white, protecting bright-region
+  contrast, while one shared multiplier per pixel preserves mapped RGB ratios.
+- one global VRI multiplier is set by the maximum unquantized Rec.709 luminance
+  inside a centered circular aperture whose radius is `0.22` times the shorter
+  valid-footprint dimension, targeting `255/255` by default;
+- foreground stars outside that aperture may also saturate, but do not set the
+  galaxy scale; shared-channel gamut protection can leave a colored central
+  reference slightly below Rec.709 luminance 255 rather than destroy its color;
+- only adjacent Legacy pixels outside the VRI footprint contribute to the
+  low-frequency RGB baseline used through the inner 20-pixel footprint region;
+- high-frequency VRI detail is retained, and covered or raw Legacy pixels are
+  never copied or alpha-blended into the VRI footprint;
+- the edge treatment is intentionally display-oriented and does not alter the
+  VRI FITS measurements.
 
 The combined image is a visual overlay product:
 
 - MUSE VRI rendering is used where `R_FLUX` is finite and positive;
 - Legacy Survey is used elsewhere;
+- the observed VRI edge uses a 20-pixel low-frequency baseline derived only
+  from adjacent exterior Legacy pixels, without a raw seam or image overlap;
 - the mask is based on the selected flux map, not on all three V/R/I channels simultaneously.
 
 These choices are appropriate for visually inspecting the MUSE footprint against a Legacy Survey background, but they should not be interpreted as a direct calibrated RGB photometric product without checking the underlying FITS maps.
-

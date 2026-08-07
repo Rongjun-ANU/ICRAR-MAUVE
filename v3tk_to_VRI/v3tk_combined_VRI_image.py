@@ -149,6 +149,28 @@ def _discover_jobs(input_dir: pathlib.Path, pattern: str, suffix: str) -> list[J
 	return j
 
 
+def _replace_legacy_footprint_with_vri(observed_rgb, legacy_rgb, valid_mask):
+	"""Remove covered Legacy pixels, then insert opaque VRI pixels."""
+	import numpy as np
+
+	observed = np.asarray(observed_rgb)
+	legacy = np.asarray(legacy_rgb)
+	mask = np.asarray(valid_mask, dtype=bool)
+	if observed.ndim != 3 or observed.shape[-1] != 3:
+		raise ValueError("observed_rgb must have shape (height, width, 3)")
+	if legacy.shape != observed.shape:
+		raise ValueError("legacy_rgb must have the same shape as observed_rgb")
+	if mask.shape != observed.shape[:2]:
+		raise ValueError("valid_mask must match the RGB image dimensions")
+
+	# Build the Legacy background only where no VRI data exist. Filling the VRI
+	# footprint afterward is an opaque replacement, never an alpha blend.
+	out = np.zeros_like(legacy)
+	out[~mask] = legacy[~mask]
+	out[mask] = observed[mask]
+	return out
+
+
 def _combine_one(job: Job, overwrite: bool) -> tuple[str, str]:
 	import numpy as np
 	from astropy.io import fits
@@ -194,8 +216,7 @@ def _combine_one(job: Job, overwrite: bool) -> tuple[str, str]:
 	if mask.shape != (ny, nx):
 		raise RuntimeError("Internal error: mask shape mismatch")
 
-	out = leg_u8.copy()
-	out[mask] = obs_u8[mask]
+	out = _replace_legacy_footprint_with_vri(obs_u8, leg_u8, mask)
 	Image.fromarray(out).save(job.output_png, format="PNG")
 	return (job.galaxy_id, f"wrote: {job.output_png.name} ({nx}x{ny})")
 

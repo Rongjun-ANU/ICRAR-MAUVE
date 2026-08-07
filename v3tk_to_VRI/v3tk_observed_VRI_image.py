@@ -40,6 +40,7 @@ def _require_deps():
 class Job:
 	input_path: pathlib.Path
 	galaxy_id: str
+	legacy_reprojected_jpg: pathlib.Path
 	output_png: pathlib.Path
 	output_pdf: pathlib.Path
 
@@ -52,6 +53,9 @@ class RenderOptions:
 	Q: float
 	gamma: float
 	post_boost: float
+	target_max_luminance: float
+	center_radius_fraction: float
+	legacy_transition_width: int
 
 
 def _parse_args(argv: list[str]) -> argparse.Namespace:
@@ -60,7 +64,8 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 		description=(
 			"Extract observed V/R/I-band flux images (nanomaggy) from each '*_DATACUBE*_VRI.fits' file "
 			"and render an RGB composite to 'XXX_observed_VRI.png' and 'XXX_observed_VRI.pdf'. Runs in parallel for efficiency. "
-			"Rendering uses a Lupton RGB (asinh) stretch with percentile-based scaling per galaxy. "
+			"Rendering uses a Lupton RGB (asinh) stretch with percentile-based scaling per galaxy, "
+			"then matches its inner edge to the reprojected Legacy image and normalizes its display maximum. "
 			"Channel mapping: I→R, R→G, V→B."
 		),
 	)
@@ -102,18 +107,55 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 	p.add_argument(
 		"--gamma",
 		type=float,
-		default=1.0,
+		default=0.65,
 		help=(
-			"Gamma correction applied to scaled channels before Lupton RGB. "
-			"<1 brightens mid-tones; >1 darkens. Default: 1.0"
+			"Color-preserving gamma applied to the final Lupton RGB intensity. "
+			"<1 brightens faint and mid-tone detail while retaining RGB ratios; "
+			">1 darkens. Default: 0.65"
 		),
 	)
 	p.add_argument(
 		"--post-boost",
 		dest="post_boost",
 		type=float,
-		default=2.5,
-		help="Global brightness multiplier applied to the final RGB image after rendering (default: 2.5)",
+		default=2.75,
+		help=(
+			"Strength of the color-preserving gamma lift in shadows and mid-tones. "
+			"The lift fades to zero toward white to protect highlight detail. Default: 2.75"
+		),
+	)
+	p.add_argument(
+		"--target-max-luminance",
+		dest="target_max_luminance",
+		type=float,
+		default=255.0,
+		help=(
+			"Common maximum Rec.709 display luminance for the galaxy-centre "
+			"reference aperture, on the 0-255 pixel scale. Default: 255"
+		),
+	)
+	p.add_argument(
+		"--center-radius-fraction",
+		dest="center_radius_fraction",
+		type=float,
+		default=0.22,
+		help=(
+			"Radius of the galaxy-centre brightness-reference aperture as a fraction "
+			"of the shorter valid-footprint dimension. Foreground stars outside this "
+			"aperture do not set the global VRI scale. Default: 0.22"
+		),
+	)
+	p.add_argument(
+		"--legacy-transition-width",
+		"--legacy-feather-width",
+		dest="legacy_transition_width",
+		type=int,
+		default=20,
+		help=(
+			"Width in pixels over which only the smooth Legacy color/brightness "
+			"baseline transitions to pure VRI while VRI detail stays sharp. "
+			"The old --legacy-feather-width spelling is retained as an alias. Default: 20"
+		),
 	)
 	p.add_argument(
 		"--workers",
@@ -295,6 +337,259 @@ def _gray_world_white_balance(r, g, b):
 	return r, g, b
 
 
+def _apply_color_preserving_brightness(rgb, *, gamma: float, boost: float):
+	"""Lift shadows through one shared scale factor per RGB pixel.
+
+	The gamma lift is weighted by ``1 - max(R, G, B)``, so its effect fades to
+	zero in the highlights. All three channels receive the same per-pixel
+	multiplier, retaining their ratios without flattening bright regions to white.
+	"""
+	import numpy as np
+
+	if not np.isfinite(gamma) or gamma <= 0:
+		raise ValueError("gamma must be a finite number > 0")
+	if not np.isfinite(boost) or boost <= 0:
+		raise ValueError("post_boost must be a finite number > 0")
+
+	rgb = np.asarray(rgb, dtype=np.float32)
+	if rgb.ndim != 3 or rgb.shape[-1] != 3:
+		raise ValueError("rgb must have shape (height, width, 3)")
+	rgb = np.clip(rgb, 0.0, None)
+	maximum = np.max(rgb, axis=-1)
+	gamma_lifted = np.power(maximum, gamma)
+	target_maximum = np.clip(
+		maximum + boost * (gamma_lifted - maximum) * (1.0 - maximum),
+		0.0,
+		1.0,
+	)
+	scale = np.divide(
+		target_maximum,
+		maximum,
+		out=np.zeros_like(maximum, dtype=np.float32),
+		where=maximum > 0,
+	)
+	return (rgb * scale[..., None]).astype(np.float32, copy=False)
+
+
+def _inner_transition_alpha(valid_mask, width: int):
+	"""Return VRI opacity that rises from 0 at the inner edge to 1 inward."""
+	import numpy as np
+
+	mask = np.asarray(valid_mask, dtype=bool)
+	if mask.ndim != 2:
+		raise ValueError("valid_mask must be a 2D array")
+	if isinstance(width, bool) or not isinstance(width, (int, np.integer)) or width < 0:
+		raise ValueError("transition width must be an integer >= 0")
+
+	alpha = mask.astype(np.float32)
+	if width == 0 or not np.any(mask):
+		return alpha
+
+	remaining = mask.copy()
+	for layer in range(width):
+		padded = np.pad(remaining, 1, mode="constant", constant_values=False)
+		eroded = np.logical_and.reduce(
+			[
+				padded[dy : dy + mask.shape[0], dx : dx + mask.shape[1]]
+				for dy in range(3)
+				for dx in range(3)
+			]
+		)
+		boundary = remaining & ~eroded
+		alpha[boundary] = layer / float(width)
+		remaining = eroded
+		if not np.any(remaining):
+			break
+
+	return alpha
+
+
+def _box_blur_2d(arr, radius: int, *, pad_mode: str):
+	"""Fast square low-pass filter with float64 accumulation for stable edges."""
+	import numpy as np
+
+	values = np.asarray(arr, dtype=np.float32)
+	if values.ndim != 2:
+		raise ValueError("arr must be a 2D array")
+	if isinstance(radius, bool) or not isinstance(radius, (int, np.integer)) or radius < 0:
+		raise ValueError("blur radius must be an integer >= 0")
+	if pad_mode not in {"constant", "edge"}:
+		raise ValueError("pad_mode must be 'constant' or 'edge'")
+	if radius == 0:
+		return values.copy()
+
+	kernel_size = 2 * int(radius) + 1
+	padded = np.pad(values, int(radius), mode=pad_mode)
+	# Accumulate in float64: float32 integral-image subtraction can create a
+	# colored one-pixel contour in large images through cancellation error.
+	integral = np.pad(padded, ((1, 0), (1, 0)), mode="constant")
+	integral = np.cumsum(np.cumsum(integral, axis=0, dtype=np.float64), axis=1, dtype=np.float64)
+	sums = (
+		integral[kernel_size:, kernel_size:]
+		- integral[:-kernel_size, kernel_size:]
+		- integral[kernel_size:, :-kernel_size]
+		+ integral[:-kernel_size, :-kernel_size]
+	)
+	return (sums / float(kernel_size * kernel_size)).astype(np.float32)
+
+
+def _central_reference_mask(valid_mask, *, radius_fraction: float):
+	"""Return a circular brightness-reference mask around the VRI footprint centre."""
+	import numpy as np
+
+	mask = np.asarray(valid_mask, dtype=bool)
+	if mask.ndim != 2:
+		raise ValueError("valid_mask must be a 2D array")
+	if not np.any(mask):
+		raise ValueError("valid_mask contains no VRI pixels")
+	if (
+		isinstance(radius_fraction, bool)
+		or not np.isfinite(radius_fraction)
+		or not (0.0 < radius_fraction <= 0.5)
+	):
+		raise ValueError("center_radius_fraction must be finite and in (0, 0.5]")
+
+	y_valid, x_valid = np.nonzero(mask)
+	x_min, x_max = int(x_valid.min()), int(x_valid.max())
+	y_min, y_max = int(y_valid.min()), int(y_valid.max())
+	width = x_max - x_min + 1
+	height = y_max - y_min + 1
+	x_center = 0.5 * (x_min + x_max)
+	y_center = 0.5 * (y_min + y_max)
+	radius = float(radius_fraction) * min(width, height)
+	y_grid, x_grid = np.ogrid[: mask.shape[0], : mask.shape[1]]
+	reference = mask & (
+		(x_grid - x_center) ** 2 + (y_grid - y_center) ** 2 <= radius**2
+	)
+	if not np.any(reference):
+		raise ValueError("centre reference aperture contains no valid VRI pixels")
+	return reference
+
+
+def _match_vri_edge_to_legacy(
+	vri_rgb,
+	legacy_rgb,
+	valid_mask,
+	*,
+	transition_width: int,
+	target_max_luminance: float,
+	normalization_mask=None,
+):
+	"""Match the VRI edge illumination to Legacy without blurring VRI detail.
+
+	Only Legacy pixels outside the valid VRI footprint contribute to the low-pass
+	edge reference. That reference changes the low-frequency VRI baseline near the
+	edge while the complete high-frequency VRI residual remains in the output.
+	No raw Legacy pixel is copied or cross-faded inside the VRI footprint.
+	"""
+	import numpy as np
+
+	vri = np.asarray(vri_rgb, dtype=np.float32)
+	legacy = np.asarray(legacy_rgb, dtype=np.float32)
+	mask = np.asarray(valid_mask, dtype=bool)
+	if vri.ndim != 3 or vri.shape[-1] != 3:
+		raise ValueError("vri_rgb must have shape (height, width, 3)")
+	if legacy.shape != vri.shape:
+		raise ValueError("legacy_rgb must have the same shape as vri_rgb")
+	if mask.shape != vri.shape[:2]:
+		raise ValueError("valid_mask must match the RGB image dimensions")
+	if not np.isfinite(target_max_luminance) or not (0.0 < target_max_luminance <= 255.0):
+		raise ValueError("target_max_luminance must be finite and in (0, 255]")
+	if not np.any(mask):
+		raise ValueError("valid_mask contains no VRI pixels")
+	if normalization_mask is None:
+		reference_mask = mask
+	else:
+		reference_mask = np.asarray(normalization_mask, dtype=bool)
+		if reference_mask.shape != mask.shape:
+			raise ValueError("normalization_mask must match valid_mask")
+		reference_mask = mask & reference_mask
+		if not np.any(reference_mask):
+			raise ValueError("normalization_mask contains no valid VRI pixels")
+	if (
+		isinstance(transition_width, bool)
+		or not isinstance(transition_width, (int, np.integer))
+		or transition_width < 0
+	):
+		raise ValueError("legacy_transition_width must be an integer >= 0")
+
+	vri = np.clip(np.nan_to_num(vri, nan=0.0, posinf=1.0, neginf=0.0), 0.0, 1.0)
+	legacy = np.clip(np.nan_to_num(legacy, nan=0.0, posinf=1.0, neginf=0.0), 0.0, 1.0)
+	target = float(target_max_luminance) / 255.0
+	weights = np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
+
+	# Scale the original VRI through one global multiplier set by the brightest
+	# pixel in the galaxy-centre reference aperture. This preserves RGB ratios and
+	# stops foreground stars outside the aperture from setting the galaxy scale.
+	# Per-pixel shared gamut protection below prevents any highly colored pixel
+	# from globally limiting the brightness.
+	vri_luma = np.sum(vri * weights, axis=-1)
+	current_max_luma = float(np.max(vri_luma[reference_mask]))
+	if current_max_luma <= 0.0:
+		raise ValueError("VRI image has no positive luminance inside the reference aperture")
+	vri = vri * max(0.0, target / current_max_luma)
+
+	matched = vri.copy()
+	if transition_width > 0:
+		transition_alpha = _inner_transition_alpha(mask, int(transition_width))
+		edge_weight = 1.0 - transition_alpha
+		mask_blur = _box_blur_2d(mask.astype(np.float32), int(transition_width), pad_mode="constant")
+		outside_mask = (~mask).astype(np.float32)
+		legacy_support = _box_blur_2d(
+			outside_mask,
+			int(transition_width),
+			pad_mode="edge",
+		)
+		vri_baseline_channels = []
+		legacy_baseline_channels = []
+		for channel in range(3):
+			vri_sum = _box_blur_2d(
+				vri[..., channel] * mask,
+				int(transition_width),
+				pad_mode="constant",
+			)
+			vri_baseline_channels.append(
+				np.divide(
+					vri_sum,
+					mask_blur,
+					out=np.zeros_like(vri_sum),
+					where=mask_blur > 1e-6,
+				)
+			)
+			legacy_sum = _box_blur_2d(
+				legacy[..., channel] * outside_mask,
+				int(transition_width),
+				pad_mode="edge",
+			)
+			legacy_baseline_channels.append(
+				np.divide(
+					legacy_sum,
+					legacy_support,
+					out=vri_baseline_channels[-1].copy(),
+					where=legacy_support > 1e-6,
+				)
+			)
+		vri_baseline = np.stack(vri_baseline_channels, axis=-1)
+		legacy_baseline = np.stack(legacy_baseline_channels, axis=-1)
+		matched = vri + edge_weight[..., None] * (legacy_baseline - vri_baseline)
+
+	# Keep all color operations coupled while protecting the target luminance and
+	# RGB gamut. High-frequency VRI detail remains present in ``matched``.
+	matched = np.clip(matched, 0.0, None)
+	maximum_channel = np.max(matched, axis=-1)
+	matched = matched / np.maximum(maximum_channel, 1.0)[..., None]
+	matched_luma = np.sum(matched * weights, axis=-1)
+	luma_cap = np.minimum(
+		1.0,
+		np.divide(target, matched_luma, out=np.ones_like(matched_luma), where=matched_luma > 0.0),
+	)
+	matched = matched * luma_cap[..., None]
+
+	out = np.zeros_like(vri, dtype=np.float32)
+	out[mask] = matched[mask]
+	return np.clip(out, 0.0, 1.0).astype(np.float32, copy=False)
+
+
 def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, str]:
 	# Import inside worker for ProcessPool compatibility.
 	from astropy.io import fits
@@ -306,6 +601,12 @@ def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, s
 	matplotlib.use("Agg")
 	from matplotlib.figure import Figure
 	from PIL import Image
+
+	if not job.legacy_reprojected_jpg.exists():
+		raise FileNotFoundError(
+			f"Missing Legacy image required by observed renderer: {job.legacy_reprojected_jpg.name}. "
+			"Run v3tk_get_legacy.py first."
+		)
 
 	with fits.open(job.input_path, memmap=True) as hdul:
 		h_v = _select_band_flux_hdu(hdul, "V")
@@ -322,6 +623,7 @@ def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, s
 	r_raw = _prep_channel(i)
 	g_raw = _prep_channel(r)
 	b_raw = _prep_channel(v)
+	valid_mask = g_raw > 0
 
 	# Pre-balance channels (helps reduce a persistent warm/orange cast).
 	r_raw, g_raw, b_raw = _gray_world_white_balance(r_raw, g_raw, b_raw)
@@ -335,16 +637,10 @@ def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, s
 	if not (np.any(r_raw > 0) or np.any(g_raw > 0) or np.any(b_raw > 0)):
 		raise ValueError("All V/R/I bands are empty after masking; cannot render RGB")
 
-	# Percentile scaling on luminance, optional gamma, then Lupton/asinh stretch.
+	# Percentile scaling on luminance, then Lupton/asinh stretch.
 	r_s, g_s, b_s = _scale_by_luminance_percentiles(r_raw, g_raw, b_raw, opts.percentile_low, opts.percentile_high)
-	if not (opts.gamma > 0):
-		raise ValueError("gamma must be > 0")
-	if opts.gamma != 1.0:
-		r_s = np.power(r_s, opts.gamma, dtype=np.float32)
-		g_s = np.power(g_s, opts.gamma, dtype=np.float32)
-		b_s = np.power(b_s, opts.gamma, dtype=np.float32)
 	# Important: render in float space and only quantize at the end. This avoids
-	# banding/ring artifacts when a large post-boost is applied.
+	# banding/ring artifacts when the post-render tone curve is applied.
 	# make_lupton_rgb can emit benign RuntimeWarnings (e.g. 0/0 in chroma terms);
 	# suppress them so --quiet stays quiet.
 	with np.errstate(divide="ignore", invalid="ignore"), warnings.catch_warnings():
@@ -365,21 +661,41 @@ def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, s
 	# Lupton can emit NaNs in low-intensity regions (e.g. 0/0 in chroma terms).
 	rgb_float = np.nan_to_num(rgb_float, nan=0.0, posinf=1.0, neginf=0.0)
 
-	# Systematic brightness scale-up applied AFTER rendering (still in float).
-	if not np.isfinite(opts.post_boost) or opts.post_boost <= 0:
-		raise ValueError("post_boost must be a finite number > 0")
-	if opts.post_boost != 1.0:
-		rgb_float = np.clip(rgb_float * float(opts.post_boost), 0.0, 1.0)
-	else:
-		rgb_float = np.clip(rgb_float, 0.0, 1.0)
-
-	# Quantize once at the very end.
-	rgb_u8 = np.clip(rgb_float * 255.0 + 0.5, 0.0, 255.0).astype(np.uint8)
+	# Lift faint structure through one scale factor per pixel, with progressively
+	# less gain toward white. This protects highlights and keeps RGB ratios coupled.
+	rgb_float = _apply_color_preserving_brightness(
+		rgb_float,
+		gamma=opts.gamma,
+		boost=opts.post_boost,
+	)
 
 	# "Native resolution": PNG dimensions match data shape exactly.
 	ny, nx = g_raw.shape
-	# Match the PDF/imshow convention (origin='lower'): flip vertically for image file output.
-	rgb_u8_png = np.flipud(rgb_u8)
+	# Legacy JPG and PNG products use display orientation. Flip the VRI image and
+	# mask first, then match its edge illumination to the Legacy background.
+	with Image.open(job.legacy_reprojected_jpg) as im_legacy:
+		legacy_rgb = np.asarray(im_legacy.convert("RGB"), dtype=np.float32) / 255.0
+	if legacy_rgb.shape != (ny, nx, 3):
+		raise ValueError(
+			f"Size mismatch for {job.galaxy_id}: VRI FITS is {nx}x{ny} but "
+			f"{job.legacy_reprojected_jpg.name} is {legacy_rgb.shape[1]}x{legacy_rgb.shape[0]}"
+		)
+	display_mask = np.flipud(valid_mask)
+	normalization_mask = _central_reference_mask(
+		display_mask,
+		radius_fraction=opts.center_radius_fraction,
+	)
+	rgb_png_float = _match_vri_edge_to_legacy(
+		np.flipud(rgb_float),
+		legacy_rgb,
+		display_mask,
+		transition_width=opts.legacy_transition_width,
+		target_max_luminance=opts.target_max_luminance,
+		normalization_mask=normalization_mask,
+	)
+
+	# Quantize once at the very end.
+	rgb_u8_png = np.clip(rgb_png_float * 255.0 + 0.5, 0.0, 255.0).astype(np.uint8)
 	if overwrite or (not job.output_png.exists()):
 		Image.fromarray(rgb_u8_png, mode="RGB").save(job.output_png, format="PNG")
 
@@ -392,7 +708,7 @@ def _extract_one(job: Job, overwrite: bool, opts: RenderOptions) -> tuple[str, s
 	ax.set_facecolor("black")
 	ax.set_axis_off()
 	ax.imshow(
-		rgb_float,
+		np.flipud(rgb_png_float),
 		origin="lower",
 		interpolation="nearest",
 	)
@@ -417,9 +733,18 @@ def _discover_jobs(input_dir: pathlib.Path, pattern: str) -> list[Job]:
 	jobs: list[Job] = []
 	for p in paths:
 		gid = _galaxy_id_from_filename(p)
+		legacy_jpg = input_dir / f"{gid}_legacy_reprojected.jpg"
 		out_png = input_dir / f"{gid}_observed_VRI.png"
 		out_pdf = input_dir / f"{gid}_observed_VRI.pdf"
-		jobs.append(Job(input_path=p, galaxy_id=gid, output_png=out_png, output_pdf=out_pdf))
+		jobs.append(
+			Job(
+				input_path=p,
+				galaxy_id=gid,
+				legacy_reprojected_jpg=legacy_jpg,
+				output_png=out_png,
+				output_pdf=out_pdf,
+			)
+		)
 	return jobs
 
 
@@ -435,6 +760,9 @@ def main(argv: list[str]) -> int:
 			Q=float(args.Q),
 			gamma=float(args.gamma),
 			post_boost=float(args.post_boost),
+			target_max_luminance=float(args.target_max_luminance),
+			center_radius_fraction=float(args.center_radius_fraction),
+			legacy_transition_width=int(args.legacy_transition_width),
 		)
 		input_dir = args.input_dir.resolve()
 		jobs = _discover_jobs(input_dir=input_dir, pattern=args.pattern)
@@ -454,7 +782,10 @@ def main(argv: list[str]) -> int:
 
 		if args.dry_run:
 			for j in jobs:
-				print(f"{j.input_path.name} -> {j.output_png.name} + {j.output_pdf.name}")
+				print(
+					f"{j.input_path.name} + {j.legacy_reprojected_jpg.name} "
+					f"-> {j.output_png.name} + {j.output_pdf.name}"
+				)
 			return 0
 
 		# Use processes to avoid GIL overhead in FITS I/O / decompression.

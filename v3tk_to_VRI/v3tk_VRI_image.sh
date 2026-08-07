@@ -3,8 +3,8 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # Run the full image pipeline:
-#  1) v3tk_observed_VRI_image.py  -> XXX_observed_VRI.png/.pdf
-#  2) v3tk_get_legacy.py        -> XXX_legacy_reprojected.jpg
+#  1) v3tk_get_legacy.py          -> XXX_legacy_reprojected.jpg
+#  2) v3tk_observed_VRI_image.py  -> XXX_observed_VRI.png/.pdf
 #  3) v3tk_combined_VRI_image.py  -> XXX_combined_VRI.png
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -66,12 +66,12 @@ start_epoch="$(date +%s)"
 		fi
 	fi
 
-	echo "[$(date)] Step 1/3: observed R images"
-	"${PY_RUN[@]}" v3tk_observed_VRI_image.py --input-dir . --overwrite --workers "$NCPU"
+	echo "[$(date)] Step 1/3: legacy download + reproject"
+	"${PY_RUN[@]}" v3tk_get_legacy.py --overwrite --workers "$NCPU" --max-concurrent-downloads "$MAX_DL"
 	echo
 
-	echo "[$(date)] Step 2/3: legacy download + reproject"
-	"${PY_RUN[@]}" v3tk_get_legacy.py --overwrite --workers "$NCPU" --max-concurrent-downloads "$MAX_DL"
+	echo "[$(date)] Step 2/3: observed VRI images (Legacy-matched edge)"
+	"${PY_RUN[@]}" v3tk_observed_VRI_image.py --input-dir . --overwrite --workers "$NCPU"
 	echo
 
 	echo "[$(date)] Step 3/3: combine observed on legacy"
@@ -82,4 +82,3 @@ start_epoch="$(date +%s)"
 	elapsed="$((end_epoch - start_epoch))"
 	echo "[$(date)] DONE in ${elapsed}s"
 } 2>&1 | tee "$logfile"
-
