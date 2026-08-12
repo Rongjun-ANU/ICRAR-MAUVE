@@ -86,7 +86,13 @@ printf "%s\n" "${GALAXIES[@]}" | xargs -P "$BATCH_SIZE" -I {} bash -c '
     TARGET_RUN_DIR="${LOCAL_BASE}/${RUN}"
     TARGET_GAL_DIR="${TARGET_RUN_DIR}/${GALID}"
 
-    if ! vls "${SOURCE_GAL_DIR}" >/dev/null 2>&1; then
+    if ! VLS_OUTPUT=$(vls "${SOURCE_GAL_DIR}" 2>&1); then
+        printf "%s\n" "${VLS_OUTPUT}" >&2
+        case "${VLS_OUTPUT}" in
+            *"Expired cert"*|*"expired cert"*)
+                echo "WARNING: CANFAR certificate expired; refresh it with: cadc-get-cert -u RongjunHuang" >&2
+                ;;
+        esac
         echo "Skipping ${RUN}/${GALID}: source folder not found or inaccessible: ${SOURCE_GAL_DIR}"
         exit 0
     fi

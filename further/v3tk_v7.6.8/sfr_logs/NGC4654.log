@@ -1,0 +1,176 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/projects/mauve/products
+Product subdir   : v3tk_v7.6.8
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+
+Matplotlib is building the font cache; this may take a moment.
+Shared input keyword ➜ <none>
+Reading gas-line FITS ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4654/NGC4654_gas_bin_maps.fits
+Matched binning FITS ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4654/NGC4654_spatial_binning_maps_further.fits
+Spatial mask FITS ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4654/NGC4654_mask.fits
+Gas-line maps collapsed onto spatial BINID: 24011 bins
+Available gas-line flux/error pairs:
+  - HB4861
+  - OIII4958
+  - OIII5006
+  - NII5754
+  - OI6300
+  - SIII6312
+  - OI6363
+  - NII6548
+  - HA6562
+  - NII6583
+  - SII6716
+  - SII6730
+  - OII7318
+  - OII7319
+  - OII7329
+  - OII7330
+Te-method optional emission-line availability:
+  - OIII4958: available
+  - NII5754: available
+  - SIII6312: available
+  - NII6548: available
+  - OII7318: available
+  - OII7319: available
+  - OII7329: available
+  - OII7330: available
+  - SIII9068: missing
+Spatial mask applied: MASKFILE[MASK] table; row-major MASK == 0; keep=659232, masked=635382, finite H-alpha after mask=659232
+--------------------------------------------------------------
+Extinction law for k(λ)=A(λ)/E(B−V): calzetti
+k(Hβ 4861Å)  = 4.5981   at λ=0.4861 µm
+k(Hα 6562Å)  = 3.3264   at λ=0.6562 µm
+k([OIII]5006)= 4.4647   at λ=0.5006 µm
+k([NII]6583) = 3.3130   at λ=0.6583 µm
+k([SII]6716) = 3.2298   at λ=0.6716 µm
+k([SII]6730) = 3.2212   at λ=0.6730 µm
+k(OIII4958) = 4.5083   at λ=0.4958 µm
+k(NII5754) = 3.8531   at λ=0.5755 µm
+k(OI6300) = 3.5017   at λ=0.6300 µm
+k(SIII6312) = 3.4934   at λ=0.6312 µm
+k(OI6363) = 3.4582   at λ=0.6363 µm
+k(NII6548) = 3.3355   at λ=0.6548 µm
+k(OII7318) = 2.8906   at λ=0.7319 µm
+k(OII7319) = 2.8901   at λ=0.7320 µm
+k(OII7329) = 2.8854   at λ=0.7329 µm
+k(OII7330) = 2.8844   at λ=0.7331 µm
+k(SIII9068) = 2.1615   at λ=0.9069 µm (line missing; NaN placeholder)
+--------------------------------------------------------------
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1956: RuntimeWarning: divide by zero encountered in log10
+  log_R3_S2 = np.log10(R3/S2)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1981: RuntimeWarning: invalid value encountered in add
+  O_H_PG16[upper_mask] = (a1_upper + a2_upper * log_R3_S2[upper_mask] + a3_upper * log_N2[upper_mask] +
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2053: RuntimeWarning: divide by zero encountered in log10
+  o3n2_ratio = np.log10(oiii_hb / nii_ha)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2100: RuntimeWarning: divide by zero encountered in log10
+  o3n2_ratio = np.log10(oiii_hb / nii_ha)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2159: RuntimeWarning: divide by zero encountered in log10
+  o3n2_ratio = np.log10(oiii_hb / nii_ha)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2265: RuntimeWarning: divide by zero encountered in log10
+  o3s2_ratio = np.log10(oiii_hb / sii_hb)
+Calculating all 6 C20 metallicities for NGC4654...
+Combined C20 metallicity: median = 8.705, range = (8.393, 8.865)
+Combined C20 dominant-weight method usage: O3N2=8210, O3S2=520, RS32=6136, R3=540583, N2=201, S2=103196
+Galaxy NGC4654 inclination: 61.0° (cos θ = 0.485)
+Inclination correction ENABLED: applying b/a = 0.515 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2975: RuntimeWarning: divide by zero encountered in log10
+  logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:3063: RuntimeWarning: invalid value encountered in add
+  mask_N2_up, mask_S2_up = apply_bpt_masks(logN2=logN2, logS2=logS2, logO3=logO3+logO3_err)
+Loaded SII density lookup table: /arc/home/RongjunHuang/ICRAR/further/pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096.npz
+PyNeb Te-method valid-pixel counts:
+  NE_SII finite pixels: 466348
+  NE_SII fixed at 20 cm^-3: 215693/466348 (46.3%)
+  NE_SII exact high-density fallback pixels: 0
+  NE_SII_ALL finite pixels: 659232
+  Te(NII) HII pixels: 3375
+  Te(NII) SF pixels: 3532
+  Brazzini+2024 direct HII pixels: 0
+  Brazzini+2024 direct SF pixels: 0
+  NII+OII7325 semi-direct HII pixels: 1728
+  NII+OII7325 semi-direct SF pixels: 1731
+  Kreckel+2025 NII-only HII pixels: 1445
+  Kreckel+2025 NII-only SF pixels: 1451
+Integrated PyNeb Te-method values:
+  SF:
+    NE_SII: 20.00 +/- 0.00 cm^-3 (n_pix=361734, fixed20=0, exact_high_density=0)
+    Te(NII): 9515.3 +/- 10.4 K (n_pix=4097)
+    O_H_BR24_DIRECT: nan dex (n_pix=0)
+    O_H_NII_OII7325: 8.6518 +/- 0.0541 dex (n_pix=1735)
+    O_H_NII_K25: 8.5477 +/- 0.2006 dex (n_pix=4097)
+  HII:
+    NE_SII: 20.00 +/- 0.01 cm^-3 (n_pix=345718, fixed20=0, exact_high_density=0)
+    Te(NII): 9300.7 +/- 12.3 K (n_pix=3746)
+    O_H_BR24_DIRECT: nan dex (n_pix=0)
+    O_H_NII_OII7325: 8.6544 +/- 0.0541 dex (n_pix=1732)
+    O_H_NII_K25: 8.5732 +/- 0.1986 dex (n_pix=3746)
+Further file written ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4654/NGC4654_gas_bin_maps_further.fits
+--------------------------------------------------------------
+Total non-nan spaxels: 659232
+Number of pixels with Halpha not detected: 53205
+Number of pixels with Halpha detected, Hbeta not detected: 136595
+Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII not detected and unclassified1: 0
+Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII detected and unclassified1: 0
+Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII not detected and unclassified1: 83
+Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII detected and unclassified1: 2192
+Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII not detected and unclassified1: 0
+Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII detected and unclassified1: 0
+Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII not detected and unclassified1: 83
+Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII detected and unclassified1: 2192
+--------------------------------------------------------------
+Total Halpha luminosity map sum (detections + upper-limit substitutions): 4.66e+41 erg/s
+Total corrected Halpha luminosity from SF region: 4.54e+41 erg/s
+Total Halpha SFR map sum (detections + upper-limit substitutions): 2.32 M☉/yr or in log10 scale: 0.37 log(M☉/yr)
+Total Halpha SFR from SF region: 2.26 M☉/yr or in log10 scale: 0.35 log(M☉/yr)
+Total Halpha SFR from HII region: 2.23 M☉/yr or in log10 scale: 0.35 log(M☉/yr)
+--------------------------------------------------------------
+[O/H] D16 SF: Total metallicity in SF region:  8.601924605884662
+[O/H] PG16 SF: Total metallicity in SF region:  8.475619723083511
+[O/H] N2S2-N06 SF: Total metallicity in SF region:  8.938948357815873
+[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.493877398030275
+[O/H] N2-M13 SF: Total metallicity in SF region:  8.499306575872735
+[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.671498912942466
+[O/H] N2-PP04 SF: Total metallicity in SF region:  8.602832470322914
+[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.710407051304143
+[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.798075010493633
+[O/H] RS32-C20 SF: Total metallicity in SF region:  8.713087044134095
+[O/H] R3-C20 SF: Total metallicity in SF region:  8.708708114079837
+[O/H] N2-C20 SF: Total metallicity in SF region:  8.665530568827482
+[O/H] S2-C20 SF: Total metallicity in SF region:  8.544145333798527
+[O/H] Combined-C20 SF: Total metallicity in SF region:  8.664491318060627 (weighted 6 methods; dominant S2)
+--------------------------------------------------------------
+[O/H] D16 HII: Total metallicity in HII region:  8.599390266530426
+[O/H] PG16 HII: Total metallicity in HII region:  8.473190031356125
+[O/H] N2S2-N06 HII: Total metallicity in HII region:  8.937959900893789
+[O/H] O3N2-M13 HII: Total metallicity in HII region:  8.493241789283426
+[O/H] N2-M13 HII: Total metallicity in HII region:  8.49671380712639
+[O/H] O3N2-PP04 HII: Total metallicity in HII region:  8.670548469956525
+[O/H] N2-PP04 HII: Total metallicity in HII region:  8.597424445969716
+[O/H] O3N2-C20 HII: Total metallicity in HII region:  8.70979543171815
+[O/H] O3S2-C20 HII: Total metallicity in HII region:  8.797678192493523
+[O/H] RS32-C20 HII: Total metallicity in HII region:  8.714387380949345
+[O/H] R3-C20 HII: Total metallicity in HII region:  8.709424648170687
+[O/H] N2-C20 HII: Total metallicity in HII region:  8.662100333024945
+[O/H] S2-C20 HII: Total metallicity in HII region:  8.539562597637808
+[O/H] Combined-C20 HII: Total metallicity in HII region:  8.663035180529857 (weighted 6 methods; dominant S2)
+--------------------------------------------------------------
+[O/H] D16: Total metallicity in total region:  8.590580536448533
+[O/H] PG16: Total metallicity in total region:  8.474510390280853
+[O/H] N2S2-N06: Total metallicity in total region:  8.925660027730093
+[O/H] O3N2-M13: Total metallicity in total region:  8.491701183293559
+[O/H] N2-M13: Total metallicity in total region:  8.503990042114184
+[O/H] O3N2-PP04: Total metallicity in total region:  8.668244760065136
+[O/H] N2-PP04: Total metallicity in total region:  8.61272184669106
+[O/H] O3N2-C20: Total metallicity in total region:  8.70831151903491
+[O/H] O3S2-C20: Total metallicity in total region:  8.798869507786165
+[O/H] RS32-C20: Total metallicity in total region:  8.704731170073076
+[O/H] R3-C20: Total metallicity in total region:  8.7031663430482
+[O/H] N2-C20: Total metallicity in total region:  8.671808384248282
+[O/H] S2-C20: Total metallicity in total region:  8.57117593721314
+[O/H] Combined-C20: Total metallicity in total region:  8.6703233410388 (weighted 6 methods; dominant S2)
+--------------------------------------------------------------
+Total runtime: 356.1 s
+✅  NGC4654 finished in 6m18s
