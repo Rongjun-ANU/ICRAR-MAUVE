@@ -1,0 +1,41 @@
+target_id,component,preferred_aliases,stage,yoon_class,koppen_status,history_confidence
+NGC4189,NGC4189,VCC 89; UGC 7235; IC 3050; NGC 4189,pre-peak,0,not included,low-moderate
+NGC4192,NGC4192,M 98; VCC 92; UGC 7231; NGC 4192,pre-peak,IV,active,moderate for weak processing; low for orbital stage
+NGC4222,NGC4222,VCC 187; UGC 7291; IC 3087; NGC 4222,pre-peak,0,active,low
+NGC4254,NGC4254,M 99; VCC 307; UGC 7345; NGC 4254,pre-peak,I,non-deficient,high for a past fast encounter; moderate for current RPS
+NGC4294,NGC4294,VCC 465; UGC 7407; NGC 4294; KPG 330; KPG 330b,pre-peak,I,active,moderate
+NGC4321,NGC4321,M 100; VCC 596; UGC 7450; NGC 4321,pre-peak,0,active,low-moderate
+NGC4351,NGC4351,VCC 692; UGC 7476; NGC 4351; NGC 4354,pre-peak,I,past,moderate-high for active RPS; low for prior tide
+NGC4383,NGC4383,VCC 801; UGC 7507; NGC 4383,pre-peak,0,non-deficient,high for feedback outflow; moderate for recent gas supply; low for orbital history
+NGC4396,NGC4396,VCC 865; UGC 7526; NGC 4396,pre-peak,I,active,moderate
+NGC4535,NGC4535,VCC 1555; UGC 7727; NGC 4535,pre-peak,I,active,moderate-low
+NGC4567_8,NGC4567,VCC 1673; UGC 7777; NGC 4567; KPG 347a; VV 219a,pre-peak,0,not included,high for pair interaction; no secure pair or cluster clock
+NGC4567_8,NGC4568,VCC 1676; UGC 7776; NGC 4568; KPG 347b; VV 219b,pre-peak,0,not included,high for pair interaction; no secure pair or cluster clock
+NGC4298,NGC4298,VCC 483; UGC 7412; NGC 4298; KPG 332a,near-peak,II,active,high for mixed processing; moderate for chronology
+NGC4302,NGC4302,VCC 497; UGC 7418; NGC 4302; KPG 332b,near-peak,II,active,moderate-high
+NGC4330,NGC4330,VCC 630; UGC 7456; NGC 4330,near-peak,II,active,high
+NGC4388,NGC4388,VCC 836; UGC 7520; NGC 4388,near-peak,II,active,very high for stripping; high-moderate for exact ICM/orbit
+NGC4402,NGC4402,VCC 873; UGC 7528; NGC 4402,near-peak,II,active,high
+NGC4424,NGC4424,VCC 979; UGC 7561; NGC 4424,near-peak,II,active,high for compound history; moderate for detailed ordering
+NGC4501,NGC4501,M 88; VCC 1401; UGC 7675; NGC 4501,near-peak,II,active,high
+NGC4522,NGC4522,VCC 1516; UGC 7711; NGC 4522,near-peak,II,active,very high
+NGC4654,NGC4654,VCC 1987; UGC 7902; IC 3708; NGC 4654,near-peak,II,non-deficient,high
+NGC4694,NGC4694,VCC 2066; UGC 7969; NGC 4694,near-peak,II,past,very high for tidal history; low for ICM history
+NGC4064,NGC4064,UGC 7054; NGC 4064,post-peak,III,past,high for past processing and current outflow; moderate for mechanism ordering
+NGC4216,NGC4216,VCC 167; UGC 7284; NGC 4216,post-peak,IV,past,high for minor accretion; low for gas-loss epoch
+NGC4293,NGC4293,VCC 460; UGC 7405; NGC 4293,post-peak,III,past,moderate-high
+NGC4380,NGC4380,VCC 792; UGC 7503; NGC 4380,post-peak,IV,past,moderate for processed status; low for mechanism
+NGC4394,NGC4394,VCC 857; UGC 7523; NGC 4394; KPG 334b,post-peak,IV,not included,low-moderate
+NGC4405,NGC4405,VCC 874; UGC 7529; IC 788; NGC 4405,post-peak,III,past,high
+NGC4419,NGC4419,VCC 958; UGC 7551; NGC 4419,post-peak,III,past,high
+NGC4450,NGC4450,VCC 1110; UGC 7594; NGC 4450,post-peak,IV,past,moderate-low
+IC3392,IC3392,VCC 1126; UGC 7602; IC 3392,post-peak,III,past,high
+NGC4457,NGC4457,VCC 1145; UGC 7609; NGC 4457,post-peak,III,not included,moderate-low
+NGC4548,NGC4548,M 91; VCC 1615; UGC 7753; NGC 4548,post-peak,IV,past,moderate-low
+NGC4569,NGC4569,M 90; VCC 1690; UGC 7786; NGC 4569,post-peak,III,past,very high
+NGC4579,NGC4579,M 58; VCC 1727; UGC 7796; NGC 4579,post-peak,IV,past,moderate-low
+NGC4580,NGC4580,VCC 1730; UGC 7794; NGC 4580,post-peak,III,past,high for past stripping; moderate for backsplash
+NGC4606,NGC4606,VCC 1859; UGC 7839; NGC 4606,post-peak,III,past,moderate
+NGC4607,NGC4607,VCC 1868; UGC 7843; NGC 4607,post-peak,III,past,moderate
+NGC4689,NGC4689,VCC 2058; UGC 7965; NGC 4689,post-peak,IV,past,moderate-low
+NGC4698,NGC4698,VCC 2070; UGC 7970; NGC 4698,post-peak,I,past,high for ancient accretion; low for adopted post-peak ICM status

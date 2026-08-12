@@ -1,0 +1,11 @@
+component,time_myr,unc_myr,limit,clock
+NGC4522,100,50,,outer_quench_lookback
+NGC4402,200,0,<,outer_quench_lookback
+NGC4388,225,100,,outer_quench_lookback
+NGC4424,275,75,,outer_quench_lookback
+NGC4569,300,50,,outer_quench_lookback
+NGC4064,425,75,,outer_quench_lookback
+NGC4405,450,150,,outer_quench_lookback
+NGC4580,475,100,,outer_quench_lookback
+IC3392,500,100,,outer_quench_lookback
+NGC4419,500,150,,outer_quench_lookback

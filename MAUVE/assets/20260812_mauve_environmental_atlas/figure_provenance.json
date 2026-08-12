@@ -1,0 +1,22 @@
+{
+  "generated_on": "2026-08-12",
+  "component_colours": "/Users/Igniz/Desktop/ICRAR/further/MAUVE_galaxy_colors.dat",
+  "stage_palette": {
+    "pre-peak": "#0072B2",
+    "near-peak": "#E69F00",
+    "post-peak": "#D55E00"
+  },
+  "cluster_inputs": {
+    "M87_ra_deg": 187.70593075,
+    "M87_dec_deg": 12.39112331,
+    "distance_mpc": 16.5,
+    "R200_mpc": 1.55,
+    "v_cluster_km_s": 1088,
+    "sigma_km_s": 593
+  },
+  "notes": [
+    "Galaxy identity uses the persisted 40-component Glasbey package.",
+    "Black is reserved for pooled references and annotations.",
+    "Phase space is projected and is not treated as a unique orbit."
+  ]
+}

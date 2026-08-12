@@ -1,0 +1,468 @@
+{
+  "checked_on": "2026-08-12",
+  "n_sources": 78,
+  "checks": [
+    {
+      "doi": "10.1086/151605",
+      "status": "resolved",
+      "title": "On the Infall of Matter Into Clusters of Galaxies and Some Effects on Their Evolution",
+      "bibcode": ""
+    },
+    {
+      "doi": "10.1088/0004-6256/138/6/1741",
+      "status": "resolved",
+      "title": "VLA imaging of Virgo spirals in atomic gas (VIVA). I. The atlas and the H I properties.",
+      "bibcode": "2009AJ....138.1741C"
+    },
+    {
+      "doi": "10.3847/1538-4357/aa6579",
+      "status": "resolved",
+      "title": "A history of H I stripping in Virgo: a phase-space view of VIVA galaxies.",
+      "bibcode": "2017ApJ...838...81Y"
+    },
+    {
+      "doi": "10.1051/0004-6361/200911892",
+      "status": "resolved",
+      "title": "A holistic view on ram pressure stripping in the Virgo cluster. The first complete model-based time sequence.",
+      "bibcode": "2009A&A...502..427V"
+    },
+    {
+      "doi": "10.1093/mnras/sty1610",
+      "status": "resolved",
+      "title": "Ram pressure stripping made easy: an analytical approach.",
+      "bibcode": "2018MNRAS.479.4367K"
+    },
+    {
+      "doi": "10.3847/1538-4365/ac28f5",
+      "status": "resolved",
+      "title": "VERTICO: the Virgo Environment Traced in CO survey.",
+      "bibcode": "2021ApJS..257...21B"
+    },
+    {
+      "doi": "10.18727/0722-6691/5393",
+      "status": "HTTP 404",
+      "title": "Multiphase Astrophysics to Unveil the Virgo Environment (MAUVE)",
+      "bibcode": ""
+    },
+    {
+      "doi": "10.1017/pasa.2021.18",
+      "status": "resolved",
+      "title": "The Dawes Review 9: The role of cold gas stripping on the star formation quenching of satellite galaxies",
+      "bibcode": ""
+    },
+    {
+      "doi": "10.1007/s00159-022-00140-3",
+      "status": "resolved",
+      "title": "Ram pressure stripping in high-density environments",
+      "bibcode": ""
+    },
+    {
+      "doi": "10.1086/423191",
+      "status": "resolved",
+      "title": "H{alpha} morphologies and environmental effects in Virgo cluster spiral galaxies.",
+      "bibcode": "2004ApJ...613..866K"
+    },
+    {
+      "doi": "10.1086/518034",
+      "status": "resolved",
+      "title": "Virgo Galaxies with Long One-sided H I Tails",
+      "bibcode": "2007ApJ...659L.115C"
+    },
+    {
+      "doi": "10.1088/0004-6256/136/4/1623",
+      "status": "resolved",
+      "title": "The stellar populations of stripped spiral galaxies in the Virgo cluster.",
+      "bibcode": "2008AJ....136.1623C"
+    },
+    {
+      "doi": "10.1051/0004-6361/201321163",
+      "status": "resolved",
+      "title": "Large-scale radio continuum properties of 19 Virgo cluster galaxies. The influence of tidal interactions, ram pressure stripping, and accreting gas envelopes.",
+      "bibcode": "2013A&A...553A.116V"
+    },
+    {
+      "doi": "10.1051/0004-6361/202348301",
+      "status": "resolved",
+      "title": "ViCTORIA project: The LOFAR view of environmental effects in Virgo cluster star-forming galaxies.",
+      "bibcode": "2024A&A...683A.149E"
+    },
+    {
+      "doi": "10.3847/1538-3881/ab6988",
+      "status": "resolved",
+      "title": "Faint and fading tails: the fate of stripped H I gas in Virgo cluster galaxies.",
+      "bibcode": "2020AJ....159..218T"
+    },
+    {
+      "doi": "10.3847/1538-4357/ac6e68",
+      "status": "resolved",
+      "title": "VERTICO II: How H I-identified Environmental Mechanisms Affect the Molecular Gas in Cluster Galaxies.",
+      "bibcode": "2022ApJ...933...10Z"
+    },
+    {
+      "doi": "10.1051/0004-6361/202244718",
+      "status": "resolved",
+      "title": "VERTICO III. The Kennicutt-Schmidt relation in Virgo cluster galaxies.",
+      "bibcode": "2023A&A...671A...3J"
+    },
+    {
+      "doi": "10.3847/1538-4357/ac9d3c",
+      "status": "resolved",
+      "title": "VERTICO. IV. Environmental Effects on the Gas Distribution and Star Formation Efficiency of Virgo Cluster Spirals.",
+      "bibcode": "2022ApJ...940..176V"
+    },
+    {
+      "doi": "10.1017/pasa.2023.14",
+      "status": "resolved",
+      "title": "VERTICO V: The environmentally driven evolution of the inner cold gas discs of Virgo cluster galaxies",
+      "bibcode": ""
+    },
+    {
+      "doi": "10.1051/0004-6361/202346599",
+      "status": "resolved",
+      "title": "VERTICO VI. Cold-gas asymmetries in Virgo cluster galaxies.",
+      "bibcode": "2023A&A...675A..78R"
+    },
+    {
+      "doi": "10.3847/1538-4357/acf195",
+      "status": "resolved",
+      "title": "VERTICO. VII. Environmental Quenching Caused by the Suppression of Molecular Gas Content and Star Formation Efficiency in Virgo Cluster Galaxies.",
+      "bibcode": "2023ApJ...956...37B"
+    },
+    {
+      "doi": "10.1093/mnras/staf1230",
+      "status": "resolved",
+      "title": "VERTICO - IX. Signatures of environmental processing of the gas in Virgo cluster spiral galaxies through mapping of CO isotopologues.",
+      "bibcode": "2025MNRAS.541.4031D"
+    },
+    {
+      "doi": "10.1051/0004-6361/202449225",
+      "status": "resolved",
+      "title": "A Virgo Environmental Survey Tracing Ionised Gas Emission (VESTIGE) XVI. The ubiquity of truncated star-forming discs across the Virgo cluster environment.",
+      "bibcode": "2024A&A...691A..20M"
+    },
+    {
+      "doi": "10.3847/1538-4357/ad138a",
+      "status": "resolved",
+      "title": "X-Ray Constraints on the Hot Gaseous Corona of Edge-on Late-type Galaxies in Virgo.",
+      "bibcode": "2024ApJ...961..249H"
+    },
+    {
+      "doi": "10.1086/499075",
+      "status": "resolved",
+      "title": "The nature of the peculiar Virgo cluster galaxies NGC 4064 and NGC 4424.",
+      "bibcode": "2006AJ....131..747C"
+    },
+    {
+      "doi": "10.3847/2041-8213/ae2c51",
+      "status": "resolved",
+      "title": "MAUVE-MUSE: A Star-formation-driven Outflow Caught in the Act of Quenching the Stripped Virgo Galaxy NGC 4064.",
+      "bibcode": "2026ApJ...996L..40A"
+    },
+    {
+      "doi": "10.1088/0004-637X/767/2/133",
+      "status": "resolved",
+      "title": "The next generation Virgo cluster survey. IV. NGC 4216: a bombarded spiral in the Virgo cluster.",
+      "bibcode": "2013ApJ...767..133P"
+    },
+    {
+      "doi": "10.1086/521188",
+      "status": "resolved",
+      "title": "NGC 4254: an act of harassment uncovered by the Arecibo Legacy Fast ALFA survey.",
+      "bibcode": "2007ApJ...665L..19H"
+    },
+    {
+      "doi": "10.1051/0004-6361:20041350",
+      "status": "resolved",
+      "title": "NGC 4254: a spiral galaxy entering the Virgo cluster.",
+      "bibcode": "2005A&A...439..921V"
+    },
+    {
+      "doi": "10.1086/524868",
+      "status": "resolved",
+      "title": "Tidal debris from high-velocity collisions as fake dark galaxies: a numerical model of VIRGOHI 21.",
+      "bibcode": "2008ApJ...673..787D"
+    },
+    {
+      "doi": "10.1111/j.1365-2966.2007.12525.x",
+      "status": "resolved",
+      "title": "Low radio frequency signatures of ram pressure stripping in Virgo spiral NGC 4254.",
+      "bibcode": "2008MNRAS.383..173K"
+    },
+    {
+      "doi": "10.1088/0004-6256/141/5/164",
+      "status": "resolved",
+      "title": "Caught in the act: strong, active ram pressure stripping in Virgo cluster spiral NGC 4330.",
+      "bibcode": "2011AJ....141..164A"
+    },
+    {
+      "doi": "10.1051/0004-6361/201117680",
+      "status": "resolved",
+      "title": "Ram pressure stripping of the multiphase ISM and star formation in the Virgo spiral galaxy NGC 4330.",
+      "bibcode": "2012A&A...537A.143V"
+    },
+    {
+      "doi": "10.1051/0004-6361/201732373",
+      "status": "resolved",
+      "title": "A Virgo Environmental Survey Tracing Ionised Gas Emission (VESTIGE). II. Constraining the quenching time in the stripped galaxy NGC 4330.",
+      "bibcode": "2018A&A...614A..57F"
+    },
+    {
+      "doi": "10.1051/0004-6361/202038507",
+      "status": "resolved",
+      "title": "A Virgo Environmental Survey Tracing Ionised Gas Emission (VESTIGE). VIII. Modeling ram pressure stripping of diffuse gas in the Virgo cluster spiral galaxy NGC 4330.",
+      "bibcode": "2021A&A...645A.121V"
+    },
+    {
+      "doi": "10.1051/0004-6361/202142270",
+      "status": "resolved",
+      "title": "A Virgo Environmental Survey Tracing Ionised Gas Emission (VESTIGE). XI. Two-dimensional H{alpha} kinematics of the edge-on ram pressure stripped galaxy NGC 4330.",
+      "bibcode": "2022A&A...659A..45S"
+    },
+    {
+      "doi": "10.1093/mnras/stae898",
+      "status": "resolved",
+      "title": "MAUVE: a 6 kpc bipolar outflow launched from NGC 4383, one of the most H I-rich galaxies in the Virgo cluster",
+      "bibcode": "2024MNRAS.530.1968W"
+    },
+    {
+      "doi": "10.1051/0004-6361:200500127",
+      "status": "resolved",
+      "title": "A large H I cloud near the centre of the Virgo cluster",
+      "bibcode": "2005A&A...437L..19O"
+    },
+    {
+      "doi": "10.1086/338353",
+      "status": "resolved",
+      "title": "Discovery of a very extended emission-line region around the Seyfert 2 galaxy NGC 4388.",
+      "bibcode": "2002ApJ...567..118Y"
+    },
+    {
+      "doi": "10.1086/380221",
+      "status": "resolved",
+      "title": "Subaru deep spectroscopy of the very extended emission-line region of NGC 4388: ram pressure stripped gas ionized by nuclear radiation.",
+      "bibcode": "2004AJ....127...90Y"
+    },
+    {
+      "doi": "10.1051/0004-6361/201731910",
+      "status": "resolved",
+      "title": "Two uneven sisters. I. NGC 4388 - a strongly constrained ram-pressure stripping event.",
+      "bibcode": "2018A&A...620A.108V"
+    },
+    {
+      "doi": "10.1051/0004-6361/200913612",
+      "status": "resolved",
+      "title": "Pinning down the ram-pressure-induced halt of star formation in the Virgo cluster spiral galaxy NGC 4388. A joint inversion of spectroscopic and photometric data.",
+      "bibcode": "2010A&A...514A..33P"
+    },
+    {
+      "doi": "10.1088/2041-8205/777/2/L36",
+      "status": "resolved",
+      "title": "Multi-wavelength studies of spectacular ram pressure stripping of a galaxy: discovery of an X-ray absorption feature.",
+      "bibcode": "2013ApJ...777L..36G"
+    },
+    {
+      "doi": "10.1051/0004-6361/201526551",
+      "status": "resolved",
+      "title": "Ram pressure stripping in the Virgo Cluster.",
+      "bibcode": "2015A&A...582A...6V"
+    },
+    {
+      "doi": "10.1086/430526",
+      "status": "resolved",
+      "title": "Dense cloud ablation and ram pressure stripping of the Virgo spiral NGC 4402.",
+      "bibcode": "2005AJ....130...65C"
+    },
+    {
+      "doi": "10.3847/1538-4357/abaf54",
+      "status": "resolved",
+      "title": "ALMA evidence for ram pressure compression and stripping of molecular gas in the Virgo Cluster galaxy NGC 4402.",
+      "bibcode": "2020ApJ...901...95C"
+    },
+    {
+      "doi": "10.1088/0004-6256/147/3/63",
+      "status": "resolved",
+      "title": "HUBBLE SPACE TELESCOPEIMAGING OF DECOUPLED DUST CLOUDS IN THE RAM PRESSURE STRIPPED VIRGO SPIRALS NGC 4402 AND NGC 4522",
+      "bibcode": "2014AJ....147...63A"
+    },
+    {
+      "doi": "10.1093/mnras/stw3162",
+      "status": "resolved",
+      "title": "The effect of ram pressure on the molecular gas of galaxies: three case studies in the Virgo cluster.",
+      "bibcode": "2017MNRAS.466.1382L"
+    },
+    {
+      "doi": "10.1086/117768",
+      "status": "resolved",
+      "title": "Evidence for a merger in the peculiar Virgo cluster Sa galaxy NGC 4424.",
+      "bibcode": "1996AJ....111..152K"
+    },
+    {
+      "doi": "10.1051/0004-6361/201833914",
+      "status": "resolved",
+      "title": "A Virgo Environmental Survey Tracing Ionised Gas Emission (VESTIGE). IV. A tail of ionised gas in the merger remnant NGC4424.",
+      "bibcode": "2018A&A...620A.164B"
+    },
+    {
+      "doi": "10.1051/0004-6361:20078139",
+      "status": "resolved",
+      "title": "Pre-peak ram pressure stripping in the Virgo cluster spiral galaxy NGC 4501.",
+      "bibcode": "2008A&A...483...89V"
+    },
+    {
+      "doi": "10.1051/0004-6361/201527021",
+      "status": "resolved",
+      "title": "Effects of environmental gas compression on the multiphase ISM and star formation. The Virgo spiral galaxies NGC 4501 and NGC 4567/68.",
+      "bibcode": "2016A&A...587A.108N"
+    },
+    {
+      "doi": "10.1086/420805",
+      "status": "resolved",
+      "title": "VLA HiObservations of Gas Stripping in the Virgo Cluster Spiral NGC 4522",
+      "bibcode": "2004AJ....127.3361K"
+    },
+    {
+      "doi": "10.1086/508344",
+      "status": "resolved",
+      "title": "The Stellar Population of Stripped Cluster Spiral NGC 4522: A Local Analog to K+A Galaxies?",
+      "bibcode": "2006ApJ...649L..75C"
+    },
+    {
+      "doi": "10.1051/0004-6361:20064954",
+      "status": "resolved",
+      "title": "A dynamical model for the heavily ram pressure stripped Virgo spiral galaxy NGC 4522.",
+      "bibcode": "2006A&A...453..883V"
+    },
+    {
+      "doi": "10.3847/1538-4357/ae39ca",
+      "status": "resolved",
+      "title": "The Impact of Ram Pressure on the Radio Spectral Index and Magnetic Field of NGC 4522: A High-resolution VLA Continuum Study.",
+      "bibcode": "2026ApJ...999..116C"
+    },
+    {
+      "doi": "10.3847/2041-8213/aac895",
+      "status": "resolved",
+      "title": "Discovery of a molecular collision front in interacting galaxies NGC 4567/4568 with ALMA.",
+      "bibcode": "2018ApJ...860L..14K"
+    },
+    {
+      "doi": "10.1093/pasj/psad025",
+      "status": "resolved",
+      "title": "Investigating physical states of molecular gas in the overlapping region of interacting galaxies NGC 4567/4568 using ALMA.",
+      "bibcode": "2023PASJ...75..646K"
+    },
+    {
+      "doi": "10.1093/pasj/psx041",
+      "status": "resolved",
+      "title": "Properties of molecular gas in galaxies in the early and mid stages of interaction. II. Molecular gas fraction",
+      "bibcode": ""
+    },
+    {
+      "doi": "10.1093/pasj/psab129",
+      "status": "resolved",
+      "title": "Properties of molecular gas in galaxies in early and mid stages of Interaction. III. Resolved Kennicutt-Schmidt law.",
+      "bibcode": "2022PASJ...74..343K"
+    },
+    {
+      "doi": "10.1051/0004-6361:20034552",
+      "status": "resolved",
+      "title": "NGC 4569: Recent evidence for a past ram pressure stripping event.",
+      "bibcode": "2004A&A...419...35V"
+    },
+    {
+      "doi": "10.1051/0004-6361/201527795",
+      "status": "resolved",
+      "title": "Spectacular tails of ionized gas in the Virgo cluster galaxy NGC 4569.",
+      "bibcode": "2016A&A...587A..68B"
+    },
+    {
+      "doi": "10.1051/0004-6361/202556225",
+      "status": "resolved",
+      "title": "A Virgo Environmental Survey Tracing Ionised Gas Emission (VESTIGE) XIX. The discovery of a spectacular 230 kpc Hα tail following NGC 4569 in the Virgo cluster.",
+      "bibcode": "2026A&A...705A.139S"
+    },
+    {
+      "doi": "10.1051/0004-6361:20053819",
+      "status": "resolved",
+      "title": "Large-scale magnetized outflows from the Virgo Cluster spiral NGC 4569. A galactic wind in a ram pressure wind.",
+      "bibcode": "2006A&A...447..465C"
+    },
+    {
+      "doi": "10.1051/0004-6361:20021729",
+      "status": "resolved",
+      "title": "NGC 4654: Gravitational interaction or ram pressure stripping?",
+      "bibcode": "2003A&A...398..525V"
+    },
+    {
+      "doi": "10.1051/0004-6361:20054791",
+      "status": "resolved",
+      "title": "NGC 4654: polarized radio continuum emission as a diagnostic tool for a galaxy-cluster interaction. Models versus observations.",
+      "bibcode": "2006A&A...458..727S"
+    },
+    {
+      "doi": "10.1093/pasj/pst011",
+      "status": "resolved",
+      "title": "H I and H2 properties and star formation efficiency of NGC 4654 in the cluster environment",
+      "bibcode": "2014PASJ...66...11C"
+    },
+    {
+      "doi": "10.1051/0004-6361/202038910",
+      "status": "resolved",
+      "title": "Gas compression and stellar feedback in the tidally interacting and ram-pressure stripped Virgo spiral galaxy NGC 4654.",
+      "bibcode": "2021A&A...645A.111L"
+    },
+    {
+      "doi": "10.1051/0004-6361:20078335",
+      "status": "resolved",
+      "title": "VCC 2062: an old tidal dwarf galaxy in the Virgo cluster?",
+      "bibcode": "2007A&A...475..187D"
+    },
+    {
+      "doi": "10.1051/0004-6361/201527887",
+      "status": "resolved",
+      "title": "Molecular gas and star formation in the tidal dwarf galaxy VCC 2062.",
+      "bibcode": "2016A&A...590A..92L"
+    },
+    {
+      "doi": "10.1111/j.1745-3933.2012.01261.x",
+      "status": "resolved",
+      "title": "Polar bulges and polar nuclear discs: the case of NGC 4698.",
+      "bibcode": "2012MNRAS.423L..79C"
+    },
+    {
+      "doi": "10.1086/312111",
+      "status": "resolved",
+      "title": "The bulge-disk orthogonal decoupling in galaxies: NGC 4698.",
+      "bibcode": "1999ApJ...519L.127B"
+    },
+    {
+      "doi": "10.1051/0004-6361/201016344",
+      "status": "resolved",
+      "title": "Hot gas in Mach cones around Virgo cluster spiral galaxies.",
+      "bibcode": "2011A&A...531A..44W"
+    },
+    {
+      "doi": "10.3847/1538-4357/ae632e",
+      "status": "resolved",
+      "title": "MAUVE-MUSE: Ionization and Kinematic Signatures of Environmental Effects on Virgo Cluster Disks.",
+      "bibcode": "2026ApJ..1004...73B"
+    },
+    {
+      "doi": "10.1093/mnras/stag1019",
+      "status": "resolved",
+      "title": "MAUVE-MUSE: when metallicity follows or fights star formation - a mass-dependent inversion in Virgo galaxies.",
+      "bibcode": "2026MNRAS.549g1019H"
+    },
+    {
+      "doi": "10.1111/j.1365-2966.2010.17291.x",
+      "status": "resolved",
+      "title": "A fundamental relation between mass, star formation rate and metallicity in local and high-redshift galaxies",
+      "bibcode": ""
+    },
+    {
+      "doi": "10.1093/mnras/stt817",
+      "status": "resolved",
+      "title": "A fundamental relation between the metallicity, gas content and stellar mass of local galaxies",
+      "bibcode": ""
+    }
+  ]
+}

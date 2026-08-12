@@ -1,0 +1,7 @@
+mechanism_group,pre-peak,near-peak,post-peak
+RPS-dominated,5,6,10
+mixed RPS + gravity,0,3,1
+gravity/accretion,2,1,1
+slow/old depletion,0,0,6
+feedback/outflow,1,0,0
+uncertain/weak,4,0,0
