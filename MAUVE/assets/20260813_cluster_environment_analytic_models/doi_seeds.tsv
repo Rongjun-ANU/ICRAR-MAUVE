@@ -1,0 +1,81 @@
+key	family	doi	inclusion_role
+gunn_gott_1972	cold_disk_rps	10.1086/151605	foundational restoring-force criterion
+cowie_songaila_1977	transport	10.1038/266501a0	thermal evaporation of galactic gas
+cowie_mckee_1977	transport	10.1086/154911	classical and saturated evaporation rates
+larson_tinsley_caldwell_1980	starvation	10.1086/157917	foundational gas-supply cutoff model for S0 evolution
+nulsen_1982	transport	10.1093/mnras/198.4.1007	viscous and turbulent stripping scalings
+merritt_1983	tides	10.1086/160571	tidal truncation in rich clusters
+takeda_nulsen_fabian_1984	cold_disk_rps	10.1093/mnras/208.2.261	time-dependent ram-pressure regimes
+moore_etal_1996	tides	10.1038/379613a0	galaxy-harassment framework
+nfw_1997	cluster_potential	10.1086/304888	analytic halo density and potential building block
+diaferio_1999	cluster_dynamics	10.1046/j.1365-8711.1999.02864.x	caustic mass estimator for cluster phase space
+diaferio_geller_1997	cluster_dynamics	10.1086/304075	foundational analytic caustic boundary for infall regions
+gnedin_2003	tides	10.1086/344636	tidal-field histories and harassment limits
+fujita_nagashima_1999	star_formation_response	10.1086/307139	analytic molecular-cloud and SFR response along cluster infall
+fujita_2004	preprocessing	10.1093/pasj/56.1.29	analytic hierarchical-cluster preprocessing model
+abadi_etal_1999	cold_disk_rps	10.1046/j.1365-8711.1999.02715.x	hydrodynamic validation of analytic stripping radii
+mori_burkert_2000	cold_disk_rps	10.1086/309140	analytic plus hydrodynamic dwarf stripping threshold
+vollmer_etal_2001	individual_inversion	10.1086/323368	time-varying Virgo ram pressure and orbital constraints
+roediger_hensler_2005	cold_disk_rps	10.1051/0004-6361:20042131	generalized restoring-force estimate and stripping phases
+roediger_brueggen_2006	cold_disk_rps	10.1111/j.1365-2966.2006.10335.x	inclination dependence and analytic extension
+roediger_brueggen_2007	cold_disk_rps	10.1111/j.1365-2966.2007.12241.x	orbit-dependent tests of stripping radius and mass loss
+hester_2006	cold_and_hot_rps	10.1086/505614	analytic cluster-group stripping susceptibility
+mccarthy_etal_2008	hot_halo_rps	10.1111/j.1365-2966.2007.12577.x	spherical hot-halo stripping prescription
+tonnesen_bryan_2008	model_validation	10.1086/592066	ICM substructure as a failure mode for smooth analytic pressure
+vollmer_2009	individual_inversion	10.1051/0004-6361/200911892	model-based Virgo stripping time sequence
+koppen_etal_2018	cold_disk_rps	10.1093/mnras/sty1610	peak-pressure versus impulse analytic framework
+zinger_etal_2018	hot_halo_rps	10.1093/mnras/stx3329	analytic stripping and starvation outside cluster virial radius
+singh_etal_2019	cold_disk_rps	10.1093/mnras/stz2523	annular analytic acceleration model across halo mass
+vega_martinez_etal_2022	cluster_icm	10.1093/mnras/stab2908	simulation-calibrated analytic ram-pressure profile
+singh_etal_2024	cold_disk_rps	10.1093/mnras/stae730	orbital and inclination extension of analytic stripping
+kulier_etal_2023	model_validation	10.3847/1538-4357/aceda3	cosmological validation of neutral and ionized analytic stripping
+ghosh_etal_2024	model_validation	10.1093/mnras/stae1345	ISM versus CGM anchoring and drag validation
+cortese_etal_2021	review	10.1017/pasa.2021.18	cold-gas stripping and quenching review
+boselli_fossati_sun_2022	review	10.1007/s00159-022-00140-3	comprehensive ram-pressure review
+font_etal_2008	semi_analytic_population	10.1111/j.1365-2966.2008.13698.x	gradual hot-halo stripping in a galaxy-formation model
+tecce_etal_2010	semi_analytic_population	10.1111/j.1365-2966.2010.17262.x	local-particle ICM ram pressure in a semi-analytic model
+tecce_etal_2011	cluster_icm	10.1111/j.1365-2966.2011.19267.x	simulation-calibrated analytic ram-pressure profile
+luo_etal_2016	semi_analytic_population	10.1093/mnras/stw268	resolution-independent hot and cold environmental prescriptions
+cora_etal_2018	semi_analytic_population	10.1093/mnras/sty1131	SAG gradual stripping, tides, and orphan orbits
+ayromlou_etal_2019	semi_analytic_population	10.1093/mnras/stz1549	local background environment estimator beyond virial radii
+ayromlou_etal_2021	semi_analytic_population	10.1093/mnras/stab1245	continuous L-GALAXIES environmental stripping beyond virial radii
+xie_etal_2020	semi_analytic_population	10.1093/mnras/staa2370	GAEA hot and cold gas environmental evolution
+stevens_brown_2017	semi_analytic_population	10.1093/mnras/stx1596	Dark Sage annular cold-gas and environmental evolution
+wang_etal_2024	model_comparison	10.1093/mnras/stae162	cold-gas comparison of SAMs, simulations, and observations
+brown_etal_2017	model_validation	10.1093/mnras/stw2991	observational constraint showing starvation alone is insufficient for HI
+oman_etal_2013	phase_space	10.1093/mnras/stt328	simulation mapping from phase space to orbital history
+mamon_etal_2010	phase_space	10.1051/0004-6361/200913948	projected-phase-space interloper distribution and clipping model
+mahajan_etal_2011	phase_space	10.1111/j.1365-2966.2011.19236.x	probabilistic virial-infall-backsplash populations in phase space
+hernandez_fernandez_etal_2014	phase_space	10.1093/mnras/stt2354	observational cluster phase space with analytic RPS intensity
+oman_hudson_2016	phase_space	10.1093/mnras/stw2195	projected-phase-space plus delay-time quenching model
+rhee_etal_2017	phase_space	10.3847/1538-4357/aa6d6c	infall-time and tidal-loss zones in projected phase space
+yoon_etal_2017	phase_space	10.3847/1538-4357/aa6579	Virgo HI stripping classes in projected phase space
+jaffe_etal_2015	phase_space	10.1093/mnras/stv100	analytic RPS region embedded in simulated phase space
+jaffe_etal_2018	phase_space	10.1093/mnras/sty500	jellyfish locations and analytic stripping contours
+jaffe_etal_2018_erratum	errata	10.1093/mnras/sty2774	published correction to RPS values and figures
+pasquali_etal_2019	phase_space	10.1093/mnras/sty3530	mean infall-time zones for projected phase space
+oman_etal_2021	quenching_clock	10.1093/mnras/staa3845	orbit-PDF delay between gas stripping and star-formation quenching
+wetzel_etal_2013	quenching_clock	10.1093/mnras/stt469	delayed-then-rapid empirical satellite quenching
+baxter_etal_2022	quenching_clock	10.1093/mnras/stac2149	GOGREEN simulation-matched quenching-time model
+reeves_etal_2023	quenching_clock	10.1093/mnras/stad1069	forward model of stellar ages and quiescent fractions in phase space
+baxter_etal_2023	quenching_clock	10.1093/mnras/stad2995	MCMC onset-radius and time-scale model for high-redshift clusters
+masson_parker_2026	phase_space	10.3847/1538-4357/ae4e21	continuous symbolic-regression infall-time estimator calibrated on IllustrisTNG
+balogh_navarro_morris_2000	starvation	10.1086/309323	gas-consumption model for star-formation gradients
+lilly_etal_2013	gas_regulator	10.1088/0004-637X/772/2/119	gas-regulator equilibrium framework
+peng_maiolino_2014	gas_regulator	10.1093/mnras/stu1288	time-dependent analytic gas regulator
+carton_etal_2015	gas_regulator	10.1093/mnras/stv967	local metallicity equilibrium model
+peng_etal_2015	chemical_clock	10.1038/nature14439	closed-box strangulation inference from stellar metallicity
+trussler_etal_2020	chemical_clock	10.1093/mnras/stz3286	closed- and leaky-box quenching models
+trussler_etal_2021	chemical_clock	10.1093/mnras/staa3545	environmental selection caveat for metallicity clocks
+fillingham_etal_2016	transport	10.1093/mnras/stw2131	analytic ram-pressure and turbulent-viscous stripping of low-mass satellites
+boselli_etal_2006	individual_inversion	10.1086/507766	chemo-spectrophotometric starvation-versus-RPS test for NGC 4569
+boselli_etal_2008	individual_inversion	10.1086/525513	multizone dwarf transformation under RPS and starvation
+fossati_etal_2018	individual_inversion	10.1051/0004-6361/201732373	resolved quenching chronology for NGC 4330
+broderick_etal_2025	quenching_clock	10.3847/1538-4357/add739	toy outside-in slow-then-rapid Coma model
+vollmer_etal_2008	individual_inversion	10.1051/0004-6361:20078139	pre-peak NGC 4501 dynamical model
+vollmer_etal_2018	individual_inversion	10.1051/0004-6361/201731910	post-peak NGC 4388 dynamical model
+vollmer_etal_2006	individual_inversion	10.1051/0004-6361:20064954	NGC 4522 dynamical RPS model
+vollmer_etal_2004	individual_inversion	10.1051/0004-6361:20034552	NGC 4569 dynamical RPS model
+vollmer_etal_2012	individual_inversion	10.1051/0004-6361/201117680	NGC 4330 multiwavelength RPS model
+vollmer_etal_2021	individual_inversion	10.1051/0004-6361/202038507	NGC 4330 spectro-dynamical RPS model
+consolandi_etal_2024	candidate_diagnostic	10.1093/mnras/stad3881	morphological diagnostic diagrams for RPS candidates

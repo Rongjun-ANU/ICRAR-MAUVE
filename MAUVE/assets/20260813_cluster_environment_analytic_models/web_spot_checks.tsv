@@ -1,0 +1,65 @@
+key	primary_surface	content_checked	status	checked_on
+gunn_gott_1972	ADS/publisher	model equation and scope	passed	2026-08-13
+larson_tinsley_caldwell_1980	publisher/OSTI	title, abstract, gas-supply model	passed	2026-08-13
+balogh_navarro_morris_2000	publisher/arXiv	starvation prescription and radial trend	passed	2026-08-13
+hester_2006	publisher/arXiv	analytic scaling, outputs, caveats	passed	2026-08-13
+mccarthy_etal_2008	publisher/arXiv	hot-halo criterion, calibration, finite time	passed	2026-08-13
+font_etal_2008	publisher/arXiv	SAM implementation and colour result	passed	2026-08-13
+tecce_etal_2010	publisher/arXiv	local ICM method and smooth-profile bias	passed	2026-08-13
+tecce_etal_2011	publisher/arXiv	analytic pressure-profile form and domain	passed	2026-08-13
+luo_etal_2016	publisher	annular hot/cold prescriptions and switches	passed	2026-08-13
+cora_etal_2018	publisher/arXiv	environmental mechanisms and population results	passed	2026-08-13
+zinger_etal_2018	publisher/arXiv	outside-virial hot-halo removal and timescale	passed	2026-08-13
+koppen_etal_2018	publisher/arXiv	peak-pressure/impulse regimes and Virgo use	passed	2026-08-13
+ayromlou_etal_2019	publisher/arXiv	Local Background Environment estimator	passed	2026-08-13
+xie_etal_2020	publisher/arXiv	gradual hot/cold stripping and shielding	passed	2026-08-13
+ayromlou_etal_2021	publisher/arXiv	continuous L-GALAXIES environment model	passed	2026-08-13
+vega_martinez_etal_2022	publisher/arXiv	pressure fit and comparison to earlier profile	passed	2026-08-13
+wetzel_etal_2013	publisher/arXiv	delayed-then-rapid timing model	passed	2026-08-13
+diaferio_geller_1997	publisher/arXiv	caustic infall-region construction	passed	2026-08-13
+diaferio_1999	publisher/arXiv	caustic mass estimator assumptions	passed	2026-08-13
+mamon_etal_2010	publisher/arXiv	interloper distribution and contamination	passed	2026-08-13
+mahajan_etal_2011	publisher/arXiv	backsplash probability in phase space	passed	2026-08-13
+oman_etal_2013	publisher/arXiv	orbit library, infall definition, uncertainty	passed	2026-08-13
+hernandez_fernandez_etal_2014	publisher	cluster phase-space RPS-intensity model	passed	2026-08-13
+jaffe_etal_2015	publisher/arXiv	analytic RPS boundary and H I validation	passed	2026-08-13
+jaffe_etal_2018	publisher/erratum	RPS contours, conclusions, unit corrections	passed	2026-08-13
+jaffe_etal_2018_erratum	publisher	corrected values, figures, and unchanged conclusions	passed	2026-08-13
+oman_hudson_2016	publisher/arXiv	phase-space delay/transition model	passed	2026-08-13
+rhee_etal_2017	publisher/arXiv	infall-time and tidal-loss zones	passed	2026-08-13
+yoon_etal_2017	publisher/arXiv	Virgo assumptions and stripping sequence	passed	2026-08-13
+pasquali_etal_2019	publisher/arXiv	mean infall-time zones and scatter	passed	2026-08-13
+oman_etal_2021	publisher/arXiv	gas-stripping/quenching delay likelihood	passed	2026-08-13
+baxter_etal_2022	publisher	GOGREEN quenching-time inference	passed	2026-08-13
+reeves_etal_2023	publisher/arXiv	stellar-age/quiescent-fraction forward model	passed	2026-08-13
+baxter_etal_2023	publisher	onset-radius/timescale degeneracy	passed	2026-08-13
+masson_parker_2026	publisher/arXiv	symbolic-regression estimator and time origin	passed	2026-08-13
+roediger_brueggen_2006	publisher	inclination dependence	passed	2026-08-13
+roediger_brueggen_2007	publisher	orbit-dependent radius and mass-loss test	passed	2026-08-13
+tonnesen_bryan_2008	publisher	ICM substructure pressure scatter	passed	2026-08-13
+singh_etal_2019	publisher	annular acceleration model	passed	2026-08-13
+singh_etal_2024	publisher	orbital and inclination extension	passed	2026-08-13
+kulier_etal_2023	publisher	phase-dependent analytic validation	passed	2026-08-13
+ghosh_etal_2024	publisher	ISM/CGM anchoring and drag comparison	passed	2026-08-13
+cortese_etal_2021	publisher/arXiv	review taxonomy and consensus	passed	2026-08-13
+boselli_fossati_sun_2022	publisher/arXiv	review taxonomy and Virgo context	passed	2026-08-13
+brown_etal_2017	publisher	observational starvation-only constraint	passed	2026-08-13
+peng_maiolino_2014	publisher	analytic regulator solutions	passed	2026-08-13
+carton_etal_2015	publisher	local metallicity equilibrium model	passed	2026-08-13
+peng_etal_2015	publisher	closed-box strangulation inference	passed	2026-08-13
+trussler_etal_2020	publisher	closed/leaky-box quenching models	passed	2026-08-13
+trussler_etal_2021	publisher	environmental selection caveat	passed	2026-08-13
+boselli_etal_2006	publisher	NGC 4569 RPS/starvation comparison	passed	2026-08-13
+fossati_etal_2018	publisher	NGC 4330 resolved quenching chronology	passed	2026-08-13
+vollmer_etal_2008	publisher	NGC 4501 pre-peak model timing	passed	2026-08-13
+vollmer_etal_2018	publisher	NGC 4388 post-peak multi-observable model	passed	2026-08-13
+vollmer_etal_2006	publisher	NGC 4522 post-peak model timing	passed	2026-08-13
+vollmer_etal_2004	publisher	NGC 4569 post-peak model timing	passed	2026-08-13
+vollmer_etal_2012	publisher	NGC 4330 multiwavelength model timing	passed	2026-08-13
+vollmer_etal_2021	publisher	NGC 4330 spectro-dynamical comparison	passed	2026-08-13
+consolandi_etal_2024	publisher	RPS diagnostic diagrams and intended use	passed	2026-08-13
+broderick_etal_2025	publisher	outside-in slow-then-rapid model	passed	2026-08-13
+fujita_nagashima_1999	publisher/arXiv	molecular-cloud SFR compression and stripping model	passed	2026-08-13
+fujita_2004	publisher	analytic preprocessing mechanisms and hierarchy	passed	2026-08-13
+stevens_brown_2017	publisher	Dark Sage cold-gas and environment model	passed	2026-08-13
+fillingham_etal_2016	publisher	low-mass ram and turbulent-viscous stripping calculation	passed	2026-08-13

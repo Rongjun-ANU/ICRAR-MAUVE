@@ -1,0 +1,20 @@
+{
+  "generated_on": "2026-08-13",
+  "generator": "/Users/Igniz/Desktop/ICRAR/MAUVE/assets/20260813_cluster_environment_analytic_models/make_figures.py",
+  "source_registry": "/Users/Igniz/Desktop/ICRAR/MAUVE/assets/20260813_cluster_environment_analytic_models/source_registry.csv",
+  "source_count": 80,
+  "broad_family_counts": {
+    "RPS equations and tests": 20,
+    "Foundations and environment": 13,
+    "Tailored inversions": 11,
+    "Reviews / corrections": 3,
+    "Population semi-analytics": 9,
+    "History and diagnostics": 24
+  },
+  "figures": {
+    "figure_01_literature_timeline": "Counts of DOI-verified sources by publication year and broad model family.",
+    "figure_02_model_stack": "Author synthesis of the model layers needed for individual-galaxy inference.",
+    "figure_03_rps_regimes": "Qualitative synthesis of quasi-static and impulse limits after Takeda et al. (1984) and Koppen et al. (2018).",
+    "figure_04_applicability_matrix": "Author assessment of output scope; qualitative, not a benchmark."
+  }
+}
