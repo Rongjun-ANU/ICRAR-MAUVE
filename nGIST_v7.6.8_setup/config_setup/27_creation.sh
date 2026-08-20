@@ -35,10 +35,22 @@ NORMAL_HIGHMEM_GALIDS=(
   NGC4654
   NGC4698
 )
+LONG_7000_GALIDS=(
+  NGC4293
+  NGC4294
+  NGC4330
+  NGC4383
+  NGC4394
+  NGC4396
+  NGC4450
+  NGC4457
+  NGC4580
+)
 HIGHMEM_7000_GALIDS=(
   NGC4192
   NGC4254
   NGC4298
+  NGC4321
   NGC4380
   NGC4501
   NGC4535
@@ -158,7 +170,7 @@ for galid in "${GALIDS[@]}"; do
   for slurm_template in "${SLURM_TEMPLATES[@]}"; do
     if [[ "$slurm_template" == "v3tk_v7.6.8_7000_setonix.slurm" ]]; then
       highmem_galids=("${HIGHMEM_7000_GALIDS[@]}")
-      long_galids=()
+      long_galids=("${LONG_7000_GALIDS[@]}")
     else
       highmem_galids=("${NORMAL_HIGHMEM_GALIDS[@]}")
       long_galids=("${NORMAL_LONG_GALIDS[@]}")

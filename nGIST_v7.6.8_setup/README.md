@@ -502,6 +502,18 @@ only one run type, add `normal` or `7000` as the final argument:
 ./27_setonix.sh NGC4383 NGC4419 normal
 ```
 
+`27_galaxies.sh` can also be run directly as a short-form launcher. In this
+form, put the optional run mode first:
+
+```bash
+./27_galaxies.sh 7000 NGC4383  # selected 7000 A job only
+./27_galaxies.sh NGC4383       # selected normal and 7000 A jobs
+./27_galaxies.sh 7000          # all available 7000 A jobs
+```
+
+When sourced by the other `27_*.sh` scripts, `27_galaxies.sh` continues to
+provide only the shared galaxy list and selection functions.
+
 The first command submits only
 `NGC4064_v3tk_v7.6.8_setonix.slurm`; the second submits only
 `NGC4064_v3tk_v7.6.8_7000_setonix.slurm`; and the third submits only the normal

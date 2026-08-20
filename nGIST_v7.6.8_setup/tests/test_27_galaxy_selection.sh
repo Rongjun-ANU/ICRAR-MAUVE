@@ -134,28 +134,30 @@ test_creation_applies_run_specific_queue_overrides() {
   (
     cd "$workdir"
     ./27_creation.sh \
-      IC3392 NGC4192 NGC4254 NGC4293 NGC4298 NGC4321 NGC4330 NGC4380 \
-      NGC4396 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4654 NGC4698 > creation.out
+      IC3392 NGC4192 NGC4254 NGC4293 NGC4294 NGC4298 NGC4321 NGC4330 \
+      NGC4380 NGC4383 NGC4394 NGC4396 NGC4450 NGC4457 NGC4501 NGC4535 \
+      NGC4567_8 NGC4569 NGC4580 NGC4654 NGC4698 > creation.out
   )
 
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=work"
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=230G"
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=24:00:00"
 
-  for galid in NGC4192 NGC4254 NGC4298 NGC4380 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4654 NGC4698; do
+  assert_contains "${workdir}/IC3392_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=work"
+  assert_contains "${workdir}/IC3392_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=230G"
+  assert_contains "${workdir}/IC3392_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=24:00:00"
+
+  for galid in NGC4192 NGC4254 NGC4298 NGC4321 NGC4380 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4654 NGC4698; do
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=highmem"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=980G"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=96:00:00"
   done
 
-  for galid in NGC4321 NGC4330 NGC4396; do
-    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=work"
+  for galid in NGC4293 NGC4294 NGC4330 NGC4383 NGC4394 NGC4396 NGC4450 NGC4457 NGC4580; do
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=long"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=230G"
-    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=24:00:00"
+    assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=96:00:00"
   done
-
-  assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=work"
-  assert_contains "${workdir}/NGC4293_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=24:00:00"
 
   for galid in NGC4254 NGC4321 NGC4535 NGC4569 NGC4654; do
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=highmem"
@@ -185,6 +187,44 @@ test_setonix_submits_requested_galaxies_only() {
 
   diff -u <(printf "NGC4383_v3tk_v7.6.8_setonix.slurm\nNGC4383_v3tk_v7.6.8_7000_setonix.slurm\nIC3392_v3tk_v7.6.8_setonix.slurm\nIC3392_v3tk_v7.6.8_7000_setonix.slurm\n") "${workdir}/sbatch.log"
   assert_contains "${workdir}/setonix.out" "Submitted 4 Setonix jobs;"
+}
+
+test_galaxies_command_supports_requested_short_forms() {
+  local workdir
+
+  workdir="$(new_workdir)"
+  touch "${workdir}/NGC4383_v3tk_v7.6.8_setonix.slurm"
+  touch "${workdir}/NGC4383_v3tk_v7.6.8_7000_setonix.slurm"
+  install_sbatch_stub "$workdir"
+
+  (
+    export SBATCH_LOG="${workdir}/sbatch.log"
+    export PATH="${workdir}/bin:${PATH}"
+    cd "$workdir"
+    ./27_galaxies.sh 7000 NGC4383 > galaxies_7000_selected.out
+  )
+
+  diff -u <(printf "NGC4383_v3tk_v7.6.8_7000_setonix.slurm\n") "${workdir}/sbatch.log"
+
+  : > "${workdir}/sbatch.log"
+  (
+    export SBATCH_LOG="${workdir}/sbatch.log"
+    export PATH="${workdir}/bin:${PATH}"
+    cd "$workdir"
+    ./27_galaxies.sh NGC4383 > galaxies_selected.out
+  )
+
+  diff -u <(printf "NGC4383_v3tk_v7.6.8_setonix.slurm\nNGC4383_v3tk_v7.6.8_7000_setonix.slurm\n") "${workdir}/sbatch.log"
+
+  : > "${workdir}/sbatch.log"
+  (
+    export SBATCH_LOG="${workdir}/sbatch.log"
+    export PATH="${workdir}/bin:${PATH}"
+    cd "$workdir"
+    ./27_galaxies.sh 7000 > galaxies_7000_all.out 2>&1
+  )
+
+  diff -u <(printf "NGC4383_v3tk_v7.6.8_7000_setonix.slurm\n") "${workdir}/sbatch.log"
 }
 
 test_status_reports_requested_galaxies_only() {
@@ -369,6 +409,7 @@ test_7000_velscale_matches_normal_run() {
 test_creation_uses_requested_galaxies_only
 test_creation_applies_run_specific_queue_overrides
 test_setonix_submits_requested_galaxies_only
+test_galaxies_command_supports_requested_short_forms
 test_status_reports_requested_galaxies_only
 test_send_copies_requested_galaxies_only
 test_send_accepts_galaxy_only_short_form

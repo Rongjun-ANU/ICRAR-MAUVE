@@ -79,3 +79,29 @@ select_galids() {
     SELECTED_GALIDS+=("$requested")
   done
 }
+
+run_setonix_jobs() {
+  local script_dir
+  local run_mode=""
+
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+  if [[ $# -gt 0 ]]; then
+    case "$1" in
+      normal|7000)
+        run_mode="$1"
+        shift
+        ;;
+    esac
+  fi
+
+  if [[ -n "$run_mode" ]]; then
+    exec "${script_dir}/27_setonix.sh" "$@" "$run_mode"
+  fi
+
+  exec "${script_dir}/27_setonix.sh" "$@"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  run_setonix_jobs "$@"
+fi

@@ -1,61 +1,62 @@
-Table 1 
+Table 1
 The VERTICO Target Sample
+Center-coordinate revision: R.A. and decl. were refreshed from SIMBAD on 2026-08-11; all other columns retain the Brown et al. (2021) values.
 
 
-Galaxy	R.A. (J2000)	Decl. (J2000)	v _opt	i	P.A.	
-			(km s^-1)	(deg)	(deg)	
-IC 3392 ^a	12^h28^m43.s27	14deg59'57."48	1678	68	219	
-IC 3418 ^a	12^h29^m43.s50	11deg24'08."00	38	62	233	
-NGC 4064	12^h04^m11.s26	18deg26'39."12	1000	70	150	
-NGC 4189 ^a	12^h13^m47.s47	13deg25'34."68	1995	42	70	
-NGC 4192 ^a	12^h13^m48.s58	14deg53'57."12	-118	83	333	
-NGC 4216 ^a	12^h15^m54.s19	13deg08'54."96	30	90	20	
-NGC 4222	12^h16^m22.s56	13deg18'25."20	225	90	238	
-NGC 4254 ^a ^, ^b	12^h18^m49.s68	14deg25'05."52	2453	39	243	
-NGC 4293 ^a ^, ^b	12^h21^m13.s47	18deg23'03."12	717	67	239	
-NGC 4294	12^h21^m17.s81	11deg30'39."24	421	74	151	
-NGC 4298 ^a ^, ^b	12^h21^m33.s12	14deg36'19."80	1122	52	132	
-NGC 4299 ^a	12^h21^m40.s71	11deg30'06."12	209	14	128	
-NGC 4302 ^a	12^h21^m42.s24	14deg35'57."12	1111	90	356	
-NGC 4321 ^a ^, ^b	12^h22^m54.s77	15deg49'33."24	1579	32	280	
-NGC 4330	12^h23^m16.s95	11deg22'04."08	1567	90	238	
-NGC 4351 ^a	12^h24^m01.s30	12deg12'15."12	2388	48	251	
-NGC 4380 ^a	12^h25^m22.s16	10deg01'00."12	935	61	158	
-NGC 4383 ^a	12^h25^m25.s47	16deg28'11."64	1663	56	17	
-NGC 4388	12^h25^m46.s61	12deg39'46."44	2538	83	271	
-NGC 4394	12^h25^m55.s66	18deg12'52."20	772	32	312	
-NGC 4396 ^a	12^h25^m59.s66	15deg40'10."20	-115	83	304	
-NGC 4402 ^b	12^h26^m07.s34	13deg06'45."00	190	80	270	
-NGC 4405	12^h26^m07.s11	16deg10'51."60	1751	46	18	
-NGC 4419	12^h26^m56.s35	15deg02'51."36	-228	74	131	
-NGC 4424 ^a ^, ^b	12^h27^m11.s69	09deg25'14."16	447	61	274	
-NGC 4450 ^a	12^h28^m29.s23	17deg05'04."56	2048	51	170	
-NGC 4457 ^a ^, ^b	12^h28^m59.s02	03deg34'14."16	738	37	256	
-NGC 4501 ^a	12^h31^m59.s33	14deg25'10."92	2120	65	320	
-NGC 4522	12^h33^m39.s72	09deg10'26."76	2332	82	35	
-NGC 4532 ^a	12^h34^m19.s35	06deg28'05."52	2154	64	159	
-NGC 4533	12^h34^m22.s03	02deg19'33."24	1753	80	342	
-NGC 4535 ^a ^, ^b	12^h34^m20.s26	08deg11'53."52	1973	48	12	
-NGC 4536 ^a ^, ^b	12^h34^m27.s12	02deg11'16."08	1894	74	118	
-NGC 4548 ^a ^, ^b	12^h35^m26.s64	14deg29'43."80	498	37	318	
-NGC 4561 ^a	12^h36^m08.s14	19deg19'21."72	1441	28	60	
-NGC 4567	12^h36^m33.s07	11deg15'29."16	2213	49	251	
-NGC 4568 ^a	12^h36^m34.s34	11deg14'21."84	2260	70	211	
-NGC 4569 ^a ^, ^b	12^h36^m50.s12	13deg09'55."08	-220	69	203	
-NGC 4579 ^a ^, ^b	12^h37^m43.s44	11deg49'05."52	1627	40	273	
-NGC 4580 ^a	12^h37^m48.s38	05deg22'06."24	1227	46	337	
-NGC 4606	12^h40^m57.s62	11deg54'43."56	1653	69	38	
-NGC 4607	12^h41^m12.s39	11deg53'09."60	2284	90	2	
-NGC 4651 ^a	12^h43^m42.s72	16deg23'37."68	788	53	75	
-NGC 4654 ^a ^, ^b	12^h43^m56.s76	13deg07'32."52	1035	61	300	
-NGC 4689 ^a ^, ^b	12^h47^m45.s68	13deg45'42."12	1522	38	341	
-NGC 4694 ^a ^, ^b	12^h48^m15.s08	10deg59'00."60	1211	62	323	
-NGC 4698 ^a	12^h48^m22.s99	08deg29'15."00	1032	66	347	
-NGC 4713 ^a	12^h49^m57.s65	05deg18'39."60	631	45	89	
-NGC 4772	12^h53^m29.s12	02deg10'06."24	1042	60	325	
-NGC 4808 ^a	12^h55^m48.s94	04deg18'15."12	738	72	127	
-VCC 1581	12^h34^m45.s05	06deg18'03."24	2141	43	329	
-Notes. Columns are (1) galaxy name and unique identifier in this paper; (2) R.A. (J2000) of the galaxy optical center; (3) decl. (J2000) of the galaxy optical center; (4) optical heliocentric recession velocity; (5) optical r-band inclination; (6) optical r-band position angle of the kinematically redshifted half of the galaxy, calculated east of north. Columns (2)-(4) are drawn from the NASA/IPAC Extragalactic Database (https://ned.ipac.caltech.edu/). Columns (5) and (6) are calculated using fits to SDSS photometry described in Section 4.2. This table is published in its entirety in machine-readable format.
+Galaxy	R.A. (J2000)	Decl. (J2000)	v _opt	i	P.A.
+			(km s^-1)	(deg)	(deg)
+IC 3392 ^a	12^h28^m43.s28	14deg59'57."96	1678	68	219
+IC 3418 ^a	12^h29^m43.s92	11deg24'16."87	38	62	233
+NGC 4064	12^h04^m11.s19	18deg26'36."42	1000	70	150
+NGC 4189 ^a	12^h13^m47.s24	13deg25'29."45	1995	42	70
+NGC 4192 ^a	12^h13^m48.s29	14deg54'01."95	-118	83	333
+NGC 4216 ^a	12^h15^m54.s44	13deg08'57."84	30	90	20
+NGC 4222	12^h16^m22.s52	13deg18'25."46	225	90	238
+NGC 4254 ^a ^, ^b	12^h18^m49.s62	14deg24'59."36	2453	39	243
+NGC 4293 ^a ^, ^b	12^h21^m12.s89	18deg22'56."64	717	67	239
+NGC 4294	12^h21^m17.s79	11deg30'39."99	421	74	151
+NGC 4298 ^a ^, ^b	12^h21^m32.s76	14deg36'22."05	1122	52	132
+NGC 4299 ^a	12^h21^m40.s55	11deg29'59."74	209	14	128
+NGC 4302 ^a	12^h21^m42.s48	14deg35'51."94	1111	90	356
+NGC 4321 ^a ^, ^b	12^h22^m54.s93	15deg49'20."30	1579	32	280
+NGC 4330	12^h23^m17.s25	11deg22'04."73	1567	90	238
+NGC 4351 ^a	12^h24^m01.s56	12deg12'18."09	2388	48	251
+NGC 4380 ^a	12^h25^m22.s18	10deg01'00."14	935	61	158
+NGC 4383 ^a	12^h25^m25.s52	16deg28'12."02	1663	56	17
+NGC 4388	12^h25^m46.s82	12deg39'43."45	2538	83	271
+NGC 4394	12^h25^m55.s64	18deg12'50."11	772	32	312
+NGC 4396 ^a	12^h25^m58.s80	15deg40'17."28	-115	83	304
+NGC 4402 ^b	12^h26^m07.s65	13deg06'47."94	190	80	270
+NGC 4405	12^h26^m07.s14	16deg10'51."58	1751	46	18
+NGC 4419	12^h26^m56.s45	15deg02'50."69	-228	74	131
+NGC 4424 ^a ^, ^b	12^h27^m11.s57	09deg25'14."33	447	61	274
+NGC 4450 ^a	12^h28^m29.s59	17deg05'05."98	2048	51	170
+NGC 4457 ^a ^, ^b	12^h28^m59.s03	03deg34'14."22	738	37	256
+NGC 4501 ^a	12^h31^m59.s15	14deg25'13."15	2120	65	320
+NGC 4522	12^h33^m39.s66	09deg10'29."54	2332	82	35
+NGC 4532 ^a	12^h34^m19.s33	06deg28'03."73	2154	64	159
+NGC 4533	12^h34^m22.s02	02deg19'31."41	1753	80	342
+NGC 4535 ^a ^, ^b	12^h34^m20.s34	08deg11'51."91	1973	48	12
+NGC 4536 ^a ^, ^b	12^h34^m27.s13	02deg11'16."37	1894	74	118
+NGC 4548 ^a ^, ^b	12^h35^m26.s44	14deg29'46."76	498	37	318
+NGC 4561 ^a	12^h36^m08.s14	19deg19'21."32	1441	28	60
+NGC 4567	12^h36^m32.s70	11deg15'28."72	2213	49	251
+NGC 4568 ^a	12^h36^m34.s29	11deg14'19."07	2260	70	211
+NGC 4569 ^a ^, ^b	12^h36^m49.s80	13deg09'46."52	-220	69	203
+NGC 4579 ^a ^, ^b	12^h37^m43.s60	11deg49'05."12	1627	40	273
+NGC 4580 ^a	12^h37^m48.s38	05deg22'06."63	1227	46	337
+NGC 4606	12^h40^m57.s56	11deg54'43."87	1653	69	38
+NGC 4607	12^h41^m12.s41	11deg53'11."86	2284	90	2
+NGC 4651 ^a	12^h43^m42.s64	16deg23'36."00	788	53	75
+NGC 4654 ^a ^, ^b	12^h43^m56.s64	13deg07'34."86	1035	61	300
+NGC 4689 ^a ^, ^b	12^h47^m45.s56	13deg45'46."14	1522	38	341
+NGC 4694 ^a ^, ^b	12^h48^m15.s09	10deg59'01."05	1211	62	323
+NGC 4698 ^a	12^h48^m22.s91	08deg29'14."67	1032	66	347
+NGC 4713 ^a	12^h49^m57.s88	05deg18'40."93	631	45	89
+NGC 4772	12^h53^m29.s16	02deg10'06."15	1042	60	325
+NGC 4808 ^a	12^h55^m48.s94	04deg18'14."74	738	72	127
+VCC 1581	12^h34^m44.s93	06deg17'59."58	2141	43	329
+Notes. Columns are (1) galaxy name and unique identifier in this paper; (2) R.A. (J2000) of the adopted galaxy center; (3) decl. (J2000) of the adopted galaxy center; (4) optical heliocentric recession velocity; (5) optical r-band inclination; (6) optical r-band position angle of the kinematically redshifted half of the galaxy, calculated east of north. Columns (2) and (3) were refreshed from the public SIMBAD basic-position fields on 2026-08-11 and rounded to 0.01 seconds of time and 0.01 arcsec, respectively; SIMBAD's underlying coordinate reference and wavelength vary by object. Column (4) retains the Brown et al. (2021) value drawn from the NASA/IPAC Extragalactic Database (https://ned.ipac.caltech.edu/). Columns (5) and (6) retain the Brown et al. (2021) SDSS-photometry fits described in Section 4.2. The original Brown et al. table is available in machine-readable format through VizieR (J/ApJS/257/21).
 ^a Data are from 7 m and Total Power arrays. Other observations are 7 m array only.
 ^b Data are archival ALMA ACA (7 m + total power) ^12CO (2-1) observations at comparable sensitivity to our Cycle 7 observations. The sources of these data are the PHANGS-ALMA program (Leroy et al. 2021b; 14 galaxies) and one regular PI program (Cramer et al. 2019; NGC 4402). See Section 3 and the Acknowledgments section for further details.
 (This table is available in its entirety in FITS format.)
