@@ -293,9 +293,10 @@ Changes (2026-08-23)
   oxygen abundance, LogQ, derived log U, KDE uncertainties, raw pyqz flags,
   off-grid fractions, validity maps, and separately inferred integrated values.
 * Added NebulaBayes 0.9.9 MAPPINGS-5.1 HII-grid products for HII and SF
-  regions: oxygen abundance, log U, log(P/k), asymmetric 68-percent credible
-  intervals, reduced chi-square, posterior/QC flags, validity maps, and
-  separately inferred integrated values.
+  regions: continuous marginal-posterior means, retained sampled marginal
+  modes, asymmetric 68-percent credible intervals, reduced chi-square,
+  parameter-reliability/QC flags, validity maps, and separately inferred
+  integrated values.
 * Both methods use the existing dust-corrected six-line flux/error maps and
   the existing HII/SF masks, with one inference per unique spatial BINID and no
   additional S/N cut. Integrated model values use one common raw six-line
@@ -308,12 +309,14 @@ Changes (2026-08-24)
 -----------------------
 * Added the Peng et al. (2026) implementation of the Ji & Yan (2022; JY22)
   N2/S2/R3 Bayesian metallicity calibration for the existing HII and SF masks.
-* JY22 starts from the raw six-line fluxes and independent raw errors, applies
-  the configured Balmer-decrement correction internally, and propagates the
-  complete first-order N2/S2/R3 covariance. No MaNGA-specific 1.25 error
+* JY22 uses the documented raw close-pair N2/S2/R3 ratios and propagates their
+  complete first-order covariance from independent raw line errors. No
+  Balmer-decrement correction, MaNGA-specific 1.25 error
   inflation, additional S/N cut, EW cut, or three-dimensional selection is used.
-* Added posterior-mean O/H and log U maps, marginal equal-tailed 16th/84th
-  percentiles, minimum chi-square, QC flags, validity maps, and log-only
+* The main JY22 O/H maps are post-depletion gas-phase abundances; explicit
+  pre-depletion maps retain the native Ji-Yan grid scale. Added posterior means,
+  marginal equal-tailed 16th/84th percentiles, minimum chi-square, best-point
+  ratio residuals, nominal fit-adequacy/QC flags, validity maps, and log-only
   integrated HII/SF results from the released Peng2026 grid.
 """
 
@@ -385,7 +388,6 @@ JY22_EXPECTED_GRID_SHA256 = (
 JY22_LOG_U_MIN = -4.0
 JY22_LOG_U_MAX = -0.5
 JY22_SOLAR_O_H = 8.69
-JY22_INTRINSIC_BALMER_RATIO = 2.86
 JY22_ERROR_INFLATION = 1.0  # Do not transfer the MaNGA-specific factor 1.25.
 
 SII_DENSITY_LOOKUP_TEMPERATURES = tuple(range(8000, 13001, 1000))
@@ -430,6 +432,8 @@ if (
 ):
     try:
         from model_grid_diagnostics import (
+            JY22_DEPLETION_OFFSET_DEX,
+            JY22_FORMAL_CHI2_MAX,
             JY22_INTEGER_FIELDS,
             MODEL_LINE_BASES,
             NB_INTEGER_FIELDS,
@@ -3758,12 +3762,15 @@ def store_nebulabayes_region_maps(region, region_mask, broadcast_maps, input_val
     selection = np.asarray(region_mask, dtype=bool) & input_valid
     float_specs = {
         f"O_H_NEBULABAYES_{region}": "o_h",
+        f"O_H_NEBULABAYES_{region}_MODE": "o_h_mode",
         f"O_H_NEBULABAYES_{region}_CI68_LOW": "o_h_ci68_low",
         f"O_H_NEBULABAYES_{region}_CI68_HIGH": "o_h_ci68_high",
         f"LOG_U_NEBULABAYES_{region}": "log_u",
+        f"LOG_U_NEBULABAYES_{region}_MODE": "log_u_mode",
         f"LOG_U_NEBULABAYES_{region}_CI68_LOW": "log_u_ci68_low",
         f"LOG_U_NEBULABAYES_{region}_CI68_HIGH": "log_u_ci68_high",
         f"LOG_PK_NEBULABAYES_{region}": "log_pk",
+        f"LOG_PK_NEBULABAYES_{region}_MODE": "log_pk_mode",
         f"LOG_PK_NEBULABAYES_{region}_CI68_LOW": "log_pk_ci68_low",
         f"LOG_PK_NEBULABAYES_{region}_CI68_HIGH": "log_pk_ci68_high",
         f"NB_CHI2_RED_{region}": "chi2_red",
@@ -3771,6 +3778,9 @@ def store_nebulabayes_region_maps(region, region_mask, broadcast_maps, input_val
     integer_specs = {
         f"NB_NLOCALMAX_{region}": "n_localmax",
         f"NB_FLAG_{region}": "flag",
+        f"NB_OH_RELIABLE_{region}": "o_h_reliable",
+        f"NB_LOGU_RELIABLE_{region}": "log_u_reliable",
+        f"NB_LOGPK_RELIABLE_{region}": "log_pk_reliable",
         f"NB_VALID_{region}": "valid",
     }
     for output_name, field in float_specs.items():
@@ -3790,13 +3800,21 @@ def store_jy22_region_maps(region, region_mask, broadcast_maps, input_valid):
         f"O_H_JY22_{region}": "o_h",
         f"O_H_JY22_{region}_16": "o_h_16",
         f"O_H_JY22_{region}_84": "o_h_84",
+        f"O_H_JY22_PREDEP_{region}": "o_h_pre",
+        f"O_H_JY22_PREDEP_{region}_16": "o_h_pre_16",
+        f"O_H_JY22_PREDEP_{region}_84": "o_h_pre_84",
         f"LOG_U_JY22_{region}": "log_u",
         f"LOG_U_JY22_{region}_16": "log_u_16",
         f"LOG_U_JY22_{region}_84": "log_u_84",
         f"JY22_CHI2_MIN_{region}": "chi2_min",
+        f"JY22_RESID_N2_{region}": "resid_n2",
+        f"JY22_RESID_S2_{region}": "resid_s2",
+        f"JY22_RESID_R3_{region}": "resid_r3",
+        f"JY22_RESID_NORM_{region}": "resid_norm",
     }
     integer_specs = {
         f"JY22_FLAG_{region}": "flag",
+        f"JY22_FIT_OK_{region}": "fit_ok",
         f"JY22_VALID_{region}": "valid",
     }
     for output_name, field in float_specs.items():
@@ -3900,41 +3918,44 @@ if (
         for line_base in MODEL_LINE_BASES
     }
     model_region_union = np.asarray(mask_HII | mask_SF, dtype=bool)
-    model_input_valid = build_model_input_valid_mask(
+    model_corrected_input_valid = build_model_input_valid_mask(
         model_corrected_flux_maps,
         model_corrected_error_maps,
         model_region_union,
     )
     model_bin_spectra = extract_unique_bin_spectra(
         gas_binid_map,
-        model_input_valid,
+        model_corrected_input_valid,
         model_corrected_flux_maps,
         model_corrected_error_maps,
+    )
+    model_raw_input_valid = build_model_input_valid_mask(
+        model_raw_flux_maps,
+        model_raw_error_maps,
+        model_region_union,
     )
     model_raw_bin_spectra = None
     if ENABLE_JY22_METALLICITY_PRODUCTS:
         model_raw_bin_spectra = extract_unique_bin_spectra(
             gas_binid_map,
-            model_input_valid,
+            model_raw_input_valid,
             model_raw_flux_maps,
             model_raw_error_maps,
         )
-        if not (
-            np.array_equal(model_raw_bin_spectra.bin_ids, model_bin_spectra.bin_ids)
-            and np.array_equal(
-                model_raw_bin_spectra.pixel_counts, model_bin_spectra.pixel_counts
-            )
-        ):
-            raise RuntimeError(
-                "Raw and corrected model spectra do not describe identical BINIDs."
-            )
     print("--------------------------------------------------------------")
     print("HII-region model-grid inference")
     print(
-        "Common six-line corrected-input aperture: "
-        f"{np.count_nonzero(model_input_valid)} pixels in "
+        "pyqz/NebulaBayes six-line corrected-input aperture: "
+        f"{np.count_nonzero(model_corrected_input_valid)} pixels in "
         f"{model_bin_spectra.bin_ids.size} unique spatial bins; no extra S/N cut"
     )
+    if ENABLE_JY22_METALLICITY_PRODUCTS:
+        print(
+            "JY22 six-line raw-input aperture: "
+            f"{np.count_nonzero(model_raw_input_valid)} pixels in "
+            f"{model_raw_bin_spectra.bin_ids.size} unique spatial bins; "
+            "no extra S/N cut"
+        )
     print(f"Python interpreter: {sys.executable}")
     if ENABLE_PYQZ_METALLICITY_PRODUCTS or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
         print("pyqz/NebulaBayes compatibility layer: model_grid_compat.py")
@@ -3995,10 +4016,10 @@ if (
             integer_fields=set(PYQZ_INTEGER_FIELDS),
         )
         store_pyqz_region_maps(
-            "HII", mask_HII, pyqz_broadcast, model_input_valid
+            "HII", mask_HII, pyqz_broadcast, model_corrected_input_valid
         )
         store_pyqz_region_maps(
-            "SF", mask_SF, pyqz_broadcast, model_input_valid
+            "SF", mask_SF, pyqz_broadcast, model_corrected_input_valid
         )
 
     nebulabayes_model = None
@@ -4044,10 +4065,10 @@ if (
             integer_fields=set(NB_INTEGER_FIELDS),
         )
         store_nebulabayes_region_maps(
-            "HII", mask_HII, nebulabayes_broadcast, model_input_valid
+            "HII", mask_HII, nebulabayes_broadcast, model_corrected_input_valid
         )
         store_nebulabayes_region_maps(
-            "SF", mask_SF, nebulabayes_broadcast, model_input_valid
+            "SF", mask_SF, nebulabayes_broadcast, model_corrected_input_valid
         )
 
     jy22_bin_run = None
@@ -4070,19 +4091,12 @@ if (
                 "JY22 grid SHA-256 differs from the released grid locked by "
                 f"this pipeline: {JY22_GRID.sha256}"
             )
-        jy22_extinction_coefficients = np.asarray(
-            [GAS_LINE_K[line_base] for line_base in MODEL_LINE_BASES],
-            dtype=np.float64,
-        )
-        jy22_ratio_spectra = build_jy22_ratio_spectra(
-            model_raw_bin_spectra,
-            jy22_extinction_coefficients,
-            intrinsic_balmer_ratio=JY22_INTRINSIC_BALMER_RATIO,
-        )
+        jy22_ratio_spectra = build_jy22_ratio_spectra(model_raw_bin_spectra)
         print(
-            "JY22/Peng2026: ratios=N2,S2,R3; posterior means with marginal "
-            "equal-tailed p16/p84; full raw-flux ratio covariance; "
-            "error inflation=1.0"
+            "JY22/Peng2026: raw close-pair ratios=N2,S2,R3; posterior means "
+            "with marginal equal-tailed p16/p84; full raw-ratio covariance; "
+            f"post-depletion O/H=pre-depletion-{JY22_DEPLETION_OFFSET_DEX:.2f}; "
+            f"nominal fit_ok chi2<={JY22_FORMAL_CHI2_MAX:g}; error inflation=1.0"
         )
         print(
             f"JY22 grid: {JY22_GRID.source_path}; "
@@ -4109,10 +4123,10 @@ if (
             integer_fields=set(JY22_INTEGER_FIELDS),
         )
         store_jy22_region_maps(
-            "HII", mask_HII, jy22_broadcast, model_input_valid
+            "HII", mask_HII, jy22_broadcast, model_raw_input_valid
         )
         store_jy22_region_maps(
-            "SF", mask_SF, jy22_broadcast, model_input_valid
+            "SF", mask_SF, jy22_broadcast, model_raw_input_valid
         )
 
     for region, region_mask in (("HII", mask_HII), ("SF", mask_SF)):
@@ -4128,7 +4142,6 @@ if (
             "pyqz": empty_pyqz_result(),
             "nebulabayes": empty_nebulabayes_result(),
             "jy22": empty_jy22_result(),
-            "jy22_ebv": np.nan,
         }
 
     integrated_regions = [
@@ -4255,9 +4268,7 @@ if (
                 ),
             )
             jy22_integrated_ratios = build_jy22_ratio_spectra(
-                jy22_integrated_raw_spectra,
-                jy22_extinction_coefficients,
-                intrinsic_balmer_ratio=JY22_INTRINSIC_BALMER_RATIO,
+                jy22_integrated_raw_spectra
             )
             jy22_integrated_run = run_jy22_spectra(
                 JY22_GRID, jy22_integrated_ratios
@@ -4268,9 +4279,6 @@ if (
             for index, region in enumerate(jy22_integrated_regions):
                 MODEL_INTEGRATED_RESULTS[region]["jy22"] = record_from_batch(
                     jy22_integrated_run.results, index
-                )
-                MODEL_INTEGRATED_RESULTS[region]["jy22_ebv"] = float(
-                    jy22_integrated_ratios.ebv[index]
                 )
 
     print("Integrated HII/SF model-grid results (common six-line raw aperture)")
@@ -4297,12 +4305,16 @@ if (
         if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
             result = summary["nebulabayes"]
             print(
-                f"    NebulaBayes: O/H={result['o_h']:.5f} "
+                f"    NebulaBayes means: O/H={result['o_h']:.5f} "
                 f"[{result['o_h_ci68_low']:.5f}, {result['o_h_ci68_high']:.5f}]; "
                 f"logU={result['log_u']:.5f} "
                 f"[{result['log_u_ci68_low']:.5f}, {result['log_u_ci68_high']:.5f}]; "
                 f"log(P/k)={result['log_pk']:.5f} "
                 f"[{result['log_pk_ci68_low']:.5f}, {result['log_pk_ci68_high']:.5f}]; "
+                f"sampled modes=({result['o_h_mode']:.5f}, "
+                f"{result['log_u_mode']:.5f}, {result['log_pk_mode']:.5f}); "
+                f"reliable=({result['o_h_reliable']}, "
+                f"{result['log_u_reliable']}, {result['log_pk_reliable']}); "
                 f"chi2_red={result['chi2_red']:.4g}; "
                 f"nlocalmax={result['n_localmax']}; flag={result['flag']}; "
                 f"valid={result['valid']}"
@@ -4310,18 +4322,23 @@ if (
         if ENABLE_JY22_METALLICITY_PRODUCTS:
             result = summary["jy22"]
             print(
-                f"    JY22: O/H={result['o_h']:.5f} "
+                f"    JY22 gas O/H={result['o_h']:.5f} "
                 f"[{result['o_h_16']:.5f}, {result['o_h_84']:.5f}]; "
+                f"pre-depletion O/H={result['o_h_pre']:.5f} "
+                f"[{result['o_h_pre_16']:.5f}, {result['o_h_pre_84']:.5f}]; "
                 f"logU={result['log_u']:.5f} "
                 f"[{result['log_u_16']:.5f}, {result['log_u_84']:.5f}]; "
                 f"chi2_min={result['chi2_min']:.4g}; "
-                f"E(B-V)={summary['jy22_ebv']:.5f}; "
-                f"flag={result['flag']}; valid={result['valid']} "
+                f"residuals(N2,S2,R3)=({result['resid_n2']:.4f}, "
+                f"{result['resid_s2']:.4f}, {result['resid_r3']:.4f}); "
+                f"residual norm={result['resid_norm']:.4f}; "
+                f"fit_ok={result['fit_ok']}; flag={result['flag']}; "
+                f"valid={result['valid']} "
                 "(posterior means; marginal equal-tailed p16/p84)"
             )
     print(
         "Model covariance note: JY22 uses the full first-order N2/S2/R3 "
-        "covariance from raw line errors and the shared Balmer correction; "
+        "covariance from raw close-pair ratios and shared denominators; "
         "pyqz/NebulaBayes independent-error APIs do not represent the analogous "
         "shared covariance."
     )
@@ -6063,8 +6080,24 @@ if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
     new_hdul[0].header['NBPRIOR'] = NB_PRIOR
     new_hdul[0].header['NBDERED'] = NB_DEREDDEN
     new_hdul[0].header['NBNORM'] = NB_NORM_LINE
+    new_hdul[0].header['NBEST'] = (
+        'marginal mean',
+        'Central maps; sampled modes in MODE HDUs',
+    )
     new_hdul[0].header.add_history(
         'NebulaBayes grid_error=0.10 enters likelihood; reported chi2 excludes it.'
+    )
+    new_hdul[0].header.add_history(
+        'NB central maps are quadrature-normalised 1D marginal posterior means.'
+    )
+    new_hdul[0].header.add_history(
+        'NB mode maps retain package sampled marginal modes; they are grid-valued.'
+    )
+    new_hdul[0].header.add_history(
+        'NB chi2 is evaluated at separate marginal modes and is not the posterior objective.'
+    )
+    new_hdul[0].header.add_history(
+        'NB log(P/k) reliability flags expose low-density grid-boundary saturation.'
     )
 if ENABLE_JY22_METALLICITY_PRODUCTS:
     if JY22_GRID is None:
@@ -6100,21 +6133,35 @@ if ENABLE_JY22_METALLICITY_PRODUCTS:
         JY22_GRID.solar_o_h,
         'Solar 12+log(O/H) added to log Z/Zsun',
     )
-    new_hdul[0].header['JY22RAT'] = ('N2,S2,R3', 'Internal ratio order')
-    new_hdul[0].header['JY22COV'] = ('full', 'Full first-order ratio covariance')
+    new_hdul[0].header['JY22RAT'] = (
+        'raw N2,S2,R3',
+        'Raw close-pair ratios; no dust correction',
+    )
+    new_hdul[0].header['JY22COV'] = (
+        'full raw',
+        'Raw-error covariance incl shared denominators',
+    )
+    new_hdul[0].header['JY22DEP'] = (
+        JY22_DEPLETION_OFFSET_DEX,
+        'pre minus post-depletion O/H, dex',
+    )
+    new_hdul[0].header['JY22OH'] = (
+        'post-depletion',
+        'Main O_H_JY22 gas-phase scale',
+    )
+    new_hdul[0].header['JY22FMAX'] = (
+        JY22_FORMAL_CHI2_MAX,
+        'Nominal chi2 maximum for JY22_FIT_OK',
+    )
     new_hdul[0].header['JY22EINF'] = (
         JY22_ERROR_INFLATION,
         'Flux-error inflation; MaNGA 1.25 not used',
-    )
-    new_hdul[0].header['JY22BD'] = (
-        JY22_INTRINSIC_BALMER_RATIO,
-        'Intrinsic Halpha/Hbeta floor',
     )
     new_hdul[0].header.add_history(
         'JY22 uses raw six-line flux/errors, existing HII/SF masks, no extra cut.'
     )
     new_hdul[0].header.add_history(
-        'JY22 corrects SII6716 and SII6730 separately before summing S2.'
+        'JY22 N2/S2/R3 use raw close-pair flux ratios with no dust correction.'
     )
     new_hdul[0].header.add_history(
         'JY22 assumes independent raw line errors before Jacobian propagation.'
@@ -6130,6 +6177,12 @@ if ENABLE_JY22_METALLICITY_PRODUCTS:
     )
     new_hdul[0].header.add_history(
         'JY22 means are central; p16/p84 interpolate cumulative marginals.'
+    )
+    new_hdul[0].header.add_history(
+        'Main JY22 O/H is post-depletion gas phase; PREDEP HDUs retain grid O/H.'
+    )
+    new_hdul[0].header.add_history(
+        'JY22 flag bit 32 marks nominal chi2>9 model-surface mismatch; valid is numeric.'
     )
 
 # Gas E(B-V)
@@ -7029,15 +7082,15 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
         nb_parameter_specs = [
             (
                 "O_H_NEBULABAYES",
-                "12+log(O/H), NebulaBayes marginal-posterior peak",
+                "12+log(O/H), NebulaBayes marginal-posterior mean",
             ),
             (
                 "LOG_U_NEBULABAYES",
-                "log10 dimensionless ionisation parameter, posterior peak",
+                "log10 dimensionless ionisation parameter, posterior mean",
             ),
             (
                 "LOG_PK_NEBULABAYES",
-                "log10(P/k / (K cm-3)), NebulaBayes posterior peak",
+                "log10(P/k / (K cm-3)), NebulaBayes posterior mean",
             ),
         ]
         for stem, description in nb_parameter_specs:
@@ -7069,6 +7122,19 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
                     "credible bound; SF",
                     references=nebulabayes_references,
                 )
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                f"{stem}_HII_MODE",
+                f"{stem}_SF_MODE",
+                MODEL_OUTPUT_MAPS[f"{stem}_HII_MODE"],
+                MODEL_OUTPUT_MAPS[f"{stem}_SF_MODE"],
+                CARTA_DIMENSIONLESS_BUNIT,
+                "NebulaBayes package sampled 1D marginal-posterior mode; "
+                "grid-valued; HII",
+                "NebulaBayes package sampled 1D marginal-posterior mode; "
+                "grid-valued; SF",
+                references=nebulabayes_references,
+            )
         append_named_hii_sf_pair(
             ordered_hdul,
             "NB_CHI2_RED_HII",
@@ -7076,8 +7142,8 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             MODEL_OUTPUT_MAPS["NB_CHI2_RED_HII"],
             MODEL_OUTPUT_MAPS["NB_CHI2_RED_SF"],
             CARTA_DIMENSIONLESS_BUNIT,
-            "NebulaBayes best-model reduced chi-square from observational errors; HII",
-            "NebulaBayes best-model reduced chi-square from observational errors; SF",
+            "NebulaBayes package chi-square at separate marginal modes, excludes grid_error; HII",
+            "NebulaBayes package chi-square at separate marginal modes, excludes grid_error; SF",
             references=nebulabayes_references,
         )
         append_named_hii_sf_pair(
@@ -7110,6 +7176,25 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             dtype=np.int16,
             references=nebulabayes_references,
         )
+        for stem, parameter_label, edge_bit in (
+            ("NB_OH_RELIABLE", "O/H", 1),
+            ("NB_LOGU_RELIABLE", "logU", 2),
+            ("NB_LOGPK_RELIABLE", "logP/k", 4),
+        ):
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                f"{stem}_HII",
+                f"{stem}_SF",
+                MODEL_OUTPUT_MAPS[f"{stem}_HII"],
+                MODEL_OUTPUT_MAPS[f"{stem}_SF"],
+                CARTA_DIMENSIONLESS_BUNIT,
+                f"1=finite {parameter_label} mean and CI68 with edge bit "
+                f"{edge_bit} clear; 0=unreliable; -99=not evaluated; HII",
+                f"1=finite {parameter_label} mean and CI68 with edge bit "
+                f"{edge_bit} clear; 0=unreliable; -99=not evaluated; SF",
+                dtype=np.int16,
+                references=nebulabayes_references,
+            )
         append_named_hii_sf_pair(
             ordered_hdul,
             "NB_VALID_HII",
@@ -7117,15 +7202,22 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             MODEL_OUTPUT_MAPS["NB_VALID_HII"],
             MODEL_OUTPUT_MAPS["NB_VALID_SF"],
             CARTA_DIMENSIONLESS_BUNIT,
-            "1=finite O/H, logU, logP/k; 0=fit failed; -99=not evaluated; HII",
-            "1=finite O/H, logU, logP/k; 0=fit failed; -99=not evaluated; SF",
+            "1=finite NB means and sampled modes; reliability is separate; HII",
+            "1=finite NB means and sampled modes; reliability is separate; SF",
             dtype=np.int16,
             references=nebulabayes_references,
         )
 
     if ENABLE_JY22_METALLICITY_PRODUCTS:
         jy22_parameter_specs = (
-            ("O_H_JY22", "12+log(O/H), JY22 posterior mean"),
+            (
+                "O_H_JY22",
+                "Post-depletion gas-phase 12+log(O/H), JY22 posterior mean",
+            ),
+            (
+                "O_H_JY22_PREDEP",
+                "Pre-depletion 12+log(O/H) on native JY22 grid scale, posterior mean",
+            ),
             ("LOG_U_JY22", "log10 dimensionless ionisation parameter, JY22 posterior mean"),
         )
         for stem, description in jy22_parameter_specs:
@@ -7138,11 +7230,11 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
                 CARTA_DIMENSIONLESS_BUNIT,
                 [
                     f"{description}; existing HII mask",
-                    "N2/S2/R3 likelihood uses full propagated ratio covariance",
+                    "Raw N2/S2/R3 likelihood uses full propagated ratio covariance",
                 ],
                 [
                     f"{description}; existing SF mask",
-                    "N2/S2/R3 likelihood uses full propagated ratio covariance",
+                    "Raw N2/S2/R3 likelihood uses full propagated ratio covariance",
                 ],
                 references=jy22_references,
             )
@@ -7172,6 +7264,23 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             "Minimum JY22 chi-square using full N2/S2/R3 covariance; SF",
             references=jy22_references,
         )
+        for stem, ratio_label in (
+            ("JY22_RESID_N2", "N2"),
+            ("JY22_RESID_S2", "S2"),
+            ("JY22_RESID_R3", "R3"),
+            ("JY22_RESID_NORM", "N2/S2/R3 Euclidean norm"),
+        ):
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                f"{stem}_HII",
+                f"{stem}_SF",
+                MODEL_OUTPUT_MAPS[f"{stem}_HII"],
+                MODEL_OUTPUT_MAPS[f"{stem}_SF"],
+                CARTA_DIMENSIONLESS_BUNIT,
+                f"JY22 best-grid-point observed-minus-model {ratio_label} log-ratio residual; HII",
+                f"JY22 best-grid-point observed-minus-model {ratio_label} log-ratio residual; SF",
+                references=jy22_references,
+            )
         append_named_hii_sf_pair(
             ordered_hdul,
             "JY22_FLAG_HII",
@@ -7181,12 +7290,24 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             CARTA_DIMENSIONLESS_BUNIT,
             [
                 "JY22 QC bits: 1=O/H edge, 2=logU edge, 4=posterior invalid",
-                "8=covariance invalid, 16=exception, -99=not evaluated; HII",
+                "8=covariance invalid, 16=exception, 32=chi2>9 poor fit, -99=not evaluated; HII",
             ],
             [
                 "JY22 QC bits: 1=O/H edge, 2=logU edge, 4=posterior invalid",
-                "8=covariance invalid, 16=exception, -99=not evaluated; SF",
+                "8=covariance invalid, 16=exception, 32=chi2>9 poor fit, -99=not evaluated; SF",
             ],
+            dtype=np.int16,
+            references=jy22_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "JY22_FIT_OK_HII",
+            "JY22_FIT_OK_SF",
+            MODEL_OUTPUT_MAPS["JY22_FIT_OK_HII"],
+            MODEL_OUTPUT_MAPS["JY22_FIT_OK_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "1=numerically valid and nominal chi2<=9 (1 dof); 0=not fit-adequate or invalid; -99 not evaluated; HII",
+            "1=numerically valid and nominal chi2<=9 (1 dof); 0=not fit-adequate or invalid; -99 not evaluated; SF",
             dtype=np.int16,
             references=jy22_references,
         )
@@ -7197,8 +7318,8 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             MODEL_OUTPUT_MAPS["JY22_VALID_HII"],
             MODEL_OUTPUT_MAPS["JY22_VALID_SF"],
             CARTA_DIMENSIONLESS_BUNIT,
-            "1=all JY22 summaries and chi2 finite; 0=invalid; -99=not evaluated; HII",
-            "1=all JY22 summaries and chi2 finite; 0=invalid; -99=not evaluated; SF",
+            "1=all JY22 summaries/residuals finite; model-fit adequacy is separate; HII",
+            "1=all JY22 summaries/residuals finite; model-fit adequacy is separate; SF",
             dtype=np.int16,
             references=jy22_references,
         )
@@ -7343,7 +7464,11 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
         integer_model_names = {
             name
             for name in expected_model_names
-            if "FLAG" in name or "VALID" in name or "NLOCALMAX" in name
+            if "FLAG" in name
+            or "VALID" in name
+            or "NLOCALMAX" in name
+            or "RELIABLE" in name
+            or "FIT_OK" in name
         }
         for name in expected_model_names:
             hdu = ordered_hdul[name]

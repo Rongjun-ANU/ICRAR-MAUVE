@@ -91,3 +91,5 @@ MAUVE/20260607 Total property in rMZR and rFMR.pdf
 # ignore the RSWA folder
 RSWA John Glover /
 
+# ignore the ICRAR_HDR_Retreat_2026 folder
+ICRAR_HDR_Retreat_2026/

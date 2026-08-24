@@ -87,13 +87,14 @@ All methods use the same existing HII and SF masks and the six fitted lines
 `HB4861`, `OIII5006`, `HA6562`, `NII6583`, `SII6716`, and `SII6730`. pyqz and
 NebulaBayes receive the existing dust-corrected fluxes and propagated errors.
 JY22 instead starts from the corresponding raw fluxes and independent raw
-errors so it can propagate the common Balmer-decrement contribution into the
-full ratio covariance. Model names map `OIII5006 -> OIII5007`,
+errors so it can construct the published raw close-pair ratios and
+their shared-denominator covariance. Model names map `OIII5006 -> OIII5007`,
 `NII6583 -> NII6584`, `SII6716 -> SII6717`, and `SII6730 -> SII6731` where the
 published grids use the alternate wavelength convention. A spectrum is
-eligible only when all six common inputs are finite and strictly positive
-inside the existing HII or SF mask. This is an input-domain check, not an
-additional S/N, EW, or three-dimensional selection.
+eligible only when all six inputs for that method are finite and strictly
+positive inside the existing HII or SF mask. pyqz/NebulaBayes apply this check
+to corrected maps; JY22 applies it independently to raw maps. This is an
+input-domain check, not an additional S/N, EW, or three-dimensional selection.
 
 The script evaluates each ascending spatial `BINID` once on the union of the
 HII and SF masks and broadcasts the shared inference back to the map. The HII
@@ -103,10 +104,11 @@ calculated because these grids describe HII regions.
 
 Integrated HII and SF values remain in the run log only. For each region, the
 script selects one common raw six-line aperture, sums each line over exactly
-those pixels, sums raw errors in quadrature, applies one integrated Balmer
-decrement (with the existing 2.86 floor), and fits the integrated spectrum once.
-pyqz/NebulaBayes receive the resulting corrected spectrum. JY22 derives its
-corrected N2/S2/R3 ratios and covariance directly from the raw integrated sums.
+those pixels, and sums raw errors in quadrature. pyqz/NebulaBayes apply one
+integrated Balmer decrement (with the existing 2.86 floor) and receive the
+resulting corrected spectrum. JY22 instead derives its
+raw N2/S2/R3 ratios and covariance directly from the raw integrated sums,
+without using the integrated Balmer correction.
 The script does not average spatial metallicities.
 
 ### Locked model settings
@@ -132,8 +134,17 @@ Before calling NebulaBayes, the script normalises each line to Hbeta and
 propagates the Hbeta denominator error under the independent-error
 approximation. NebulaBayes cannot represent the covariance shared through that
 denominator or through the common Balmer-decrement correction. The reported
-best-model reduced chi-square uses observational errors and does not include the
-separate 10-percent model-grid error term.
+best-model reduced chi-square uses observational errors, is evaluated at the
+tuple of separate sampled marginal modes, and does not include the separate
+10-percent model-grid error term. It is therefore retained as a package
+diagnostic rather than treated as the objective that generated the posterior.
+
+The main NebulaBayes O/H, log U, and log(P/k) products are quadrature-normalised
+one-dimensional marginal posterior means. These continuous summaries remove
+the grid-node banding inherent to the package's sampled marginal modes. The
+original sampled modes remain in explicit `*_MODE` HDUs. Parameter-specific
+`NB_*_RELIABLE` maps require a finite mean, finite CI68 bounds, and a clear edge
+bit; in particular they expose rather than smooth over low-pressure saturation.
 
 JY22 uses the released Peng et al. (2026) interpolated Ji & Yan (2022) grid at
 `Peng2026/photoionization_models/photoionization_grid_interpolated.fits`. Its
@@ -143,14 +154,18 @@ The full file is 40 by 40 in `log(Z/Zsun)` and log U; inference is restricted to
 the documented `-4.0 <= log U <= -0.5` range rather than the file's full
 `-4.0 <= log U <= +1.0` extent. Because there is no exact `-0.5` node, this
 retains 28 sampled log-U nodes ending at `-0.5384615384615388`. Oxygen abundance is
-`12+log(O/H) = log(Z/Zsun) + 8.69`.
+`12+log(O/H) = log(Z/Zsun) + 8.69` on the native **pre-depletion** Ji-Yan
+scale. Ji & Yan's fixed oxygen depletion gives
+`O/H_post = O/H_pre - 0.22 dex`; the main `O_H_JY22` maps use this
+post-depletion gas-phase scale, while `O_H_JY22_PREDEP` retains the grid scale.
 
 The JY22 likelihood uses the log ratios N2=`[N II]6583/Halpha`,
 S2=`([S II]6716+[S II]6730)/Halpha`, and R3=`[O III]5006/Hbeta`, in that
-internal order. The two [S II] components are dust-corrected separately before
-being summed. A first-order Jacobian propagates all six independent raw flux
-errors through the Balmer correction and shared ratio denominators, and the
-likelihood uses the resulting full 3-by-3 covariance. The prior is flat over
+internal order. The two raw [S II] components are summed before forming S2. A
+first-order Jacobian propagates all six independent raw flux
+errors through the raw ratios and shared Halpha denominator, and the likelihood
+uses the resulting full 3-by-3 covariance. No Balmer-decrement correction enters
+N2, S2, or R3. The prior is flat over
 the retained grid. Central O/H and log U values are posterior means; uncertainty
 maps are marginal equal-tailed 16th and 84th percentiles interpolated through
 the ordinary cumulative marginal posterior. The MaNGA-specific
@@ -166,15 +181,15 @@ PyNeb density/temperature products. Every item is an immediate HII/SF pair.
 | --- | --- |
 | pyqz | `O_H_PYQZ_*`, `LOG_Q_PYQZ_*`, `LOG_U_PYQZ_*` and their `*_ERR` maps |
 | pyqz QC | `PYQZ_FLAG_*`, `PYQZ_RS_OFFGRID_*`, `PYQZ_VALID_*` |
-| NebulaBayes | `O_H_NEBULABAYES_*`, `LOG_U_NEBULABAYES_*`, `LOG_PK_NEBULABAYES_*`, each with `*_CI68_LOW` and `*_CI68_HIGH` |
-| NebulaBayes QC | `NB_CHI2_RED_*`, `NB_NLOCALMAX_*`, `NB_FLAG_*`, `NB_VALID_*` |
-| JY22 | `O_H_JY22_*`, `O_H_JY22_*_16`, `O_H_JY22_*_84`, `LOG_U_JY22_*`, `LOG_U_JY22_*_16`, `LOG_U_JY22_*_84` |
-| JY22 QC | `JY22_CHI2_MIN_*`, `JY22_FLAG_*`, `JY22_VALID_*` |
+| NebulaBayes | `O_H_NEBULABAYES_*`, `LOG_U_NEBULABAYES_*`, `LOG_PK_NEBULABAYES_*`, each with `*_CI68_LOW`, `*_CI68_HIGH`, and `*_MODE` |
+| NebulaBayes QC | `NB_CHI2_RED_*`, `NB_NLOCALMAX_*`, `NB_FLAG_*`, `NB_OH_RELIABLE_*`, `NB_LOGU_RELIABLE_*`, `NB_LOGPK_RELIABLE_*`, `NB_VALID_*` |
+| JY22 | Post-depletion `O_H_JY22_*`, pre-depletion `O_H_JY22_PREDEP_*`, their `*_16`/`*_84` maps, and `LOG_U_JY22_*` with `*_16`/`*_84` |
+| JY22 QC | `JY22_CHI2_MIN_*`, `JY22_RESID_N2_*`, `JY22_RESID_S2_*`, `JY22_RESID_R3_*`, `JY22_RESID_NORM_*`, `JY22_FLAG_*`, `JY22_FIT_OK_*`, `JY22_VALID_*` |
 
 Here `*` is `HII` or `SF`. pyqz error maps store the maximum half-extent of
 the peak-normalised 0.61 KDE contour; they should not be relabelled as generic
-Gaussian 1-sigma errors. NebulaBayes maps store the marginal-posterior peak and
-its equal-tailed 68-percent bounds, preserving asymmetric intervals. JY22 maps
+Gaussian 1-sigma errors. NebulaBayes main maps store marginal-posterior means,
+with sampled modes and equal-tailed 68-percent bounds retained separately. JY22 maps
 store posterior means and separate marginal p16/p84 bounds; `JY22_CHI2_MIN` is
 the minimum full-covariance chi-square, not a reduced chi-square.
 
@@ -183,10 +198,15 @@ Monte Carlo samples outside the grid. `NB_FLAG` is a bitmask: 1 is an O/H edge,
 2 a log-U edge, 4 a log(P/k) edge, 8 an open/non-finite 68-percent interval, and
 16 a fit exception. `JY22_FLAG` is a bitmask: 1 is an O/H posterior edge, 2 a
 log-U posterior edge, 4 an invalid posterior, 8 an invalid/non-positive-definite
-covariance, and 16 an unexpected fit exception. For integer model maps, `-99`
+covariance, 16 an unexpected fit exception, and 32 nominal model-surface
+misfit (`chi2_min > 9` for three ratios and two fitted parameters). For integer model maps, `-99`
 means not evaluated; validity is 1 for a finite requested result and 0 for an
 attempted invalid fit. In particular, `JY22_VALID=1` requires finite posterior
-means, both marginal bounds, and minimum chi-square. The three metallicity scales must remain separate:
+means, marginal bounds, minimum chi-square, and residuals; it does not assert
+that the model fits. `JY22_FIT_OK=1` adds the nominal `chi2_min <= 9` criterion.
+`JY22_FIT_OK=0` includes both numerically valid poor fits and attempted invalid
+fits; inspect `JY22_VALID` and `JY22_FLAG` to distinguish them.
+The three metallicity scales must remain separate:
 offsets are expected because their grids, assumptions, and inference schemes
 differ.
 

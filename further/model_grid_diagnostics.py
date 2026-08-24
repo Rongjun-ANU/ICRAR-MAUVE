@@ -50,6 +50,10 @@ JY22_FLAG_LOGU_EDGE = 2
 JY22_FLAG_POSTERIOR_INVALID = 4
 JY22_FLAG_COVARIANCE_INVALID = 8
 JY22_FLAG_EXCEPTION = 16
+JY22_FLAG_POOR_FIT = 32
+
+JY22_DEPLETION_OFFSET_DEX = 0.22
+JY22_FORMAL_CHI2_MAX = 9.0
 
 PYQZ_FLOAT_FIELDS = (
     "o_h",
@@ -63,27 +67,44 @@ PYQZ_FLOAT_FIELDS = (
 PYQZ_INTEGER_FIELDS = ("flag", "valid")
 NB_FLOAT_FIELDS = (
     "o_h",
+    "o_h_mode",
     "o_h_ci68_low",
     "o_h_ci68_high",
     "log_u",
+    "log_u_mode",
     "log_u_ci68_low",
     "log_u_ci68_high",
     "log_pk",
+    "log_pk_mode",
     "log_pk_ci68_low",
     "log_pk_ci68_high",
     "chi2_red",
 )
-NB_INTEGER_FIELDS = ("n_localmax", "flag", "valid")
+NB_INTEGER_FIELDS = (
+    "n_localmax",
+    "flag",
+    "o_h_reliable",
+    "log_u_reliable",
+    "log_pk_reliable",
+    "valid",
+)
 JY22_FLOAT_FIELDS = (
     "o_h",
     "o_h_16",
     "o_h_84",
+    "o_h_pre",
+    "o_h_pre_16",
+    "o_h_pre_84",
     "log_u",
     "log_u_16",
     "log_u_84",
     "chi2_min",
+    "resid_n2",
+    "resid_s2",
+    "resid_r3",
+    "resid_norm",
 )
-JY22_INTEGER_FIELDS = ("flag", "valid")
+JY22_INTEGER_FIELDS = ("flag", "fit_ok", "valid")
 JY22_RATIO_NAMES = ("N2", "S2", "R3")
 JY22_REQUIRED_GRID_COLUMNS = (
     "grid_kind",
@@ -127,7 +148,7 @@ class ModelBatchRun:
 
 @dataclass(frozen=True)
 class JY22Grid:
-    """Validated Peng2026/JY22 grid restricted to its documented log-U range."""
+    """Validated Peng2026/JY22 grid; ``o_h`` is pre-depletion abundance."""
 
     source_path: Path
     sha256: str
@@ -142,12 +163,11 @@ class JY22Grid:
 
 @dataclass(frozen=True)
 class JY22RatioMeasurement:
-    """Dust-corrected JY22 ratios and their raw-flux Jacobian covariance."""
+    """Raw close-pair JY22 ratios and their raw-flux Jacobian covariance."""
 
     log_ratios: np.ndarray
     covariance: np.ndarray
-    ebv: float
-    corrected_fluxes: np.ndarray
+    ratio_fluxes: np.ndarray
     jacobian: np.ndarray
 
 
@@ -159,7 +179,6 @@ class JY22RatioSpectra:
     log_ratios: np.ndarray
     covariances: np.ndarray
     pixel_counts: np.ndarray
-    ebv: np.ndarray
 
 
 def _sha256_file(path: Path) -> str:
@@ -268,68 +287,27 @@ def load_jy22_grid(
 def jy22_log_ratios_and_covariance(
     fluxes: Sequence[float],
     errors: Sequence[float],
-    extinction_coefficients: Sequence[float],
-    *,
-    intrinsic_balmer_ratio: float = 2.86,
 ) -> JY22RatioMeasurement:
-    """Derive dust-corrected N2/S2/R3 and full first-order covariance.
+    """Derive raw close-pair N2/S2/R3 and full first-order covariance.
 
     Inputs follow ``MODEL_LINE_BASES``.  The covariance is propagated directly
-    from the independent raw six-line flux errors, including the shared Balmer
-    decrement and denominator terms.  The Balmer-floor branch has zero dust
-    derivative, matching the pipeline's ``max(Halpha/Hbeta, 2.86)`` rule.
+    from the independent raw six-line flux errors, including shared denominator
+    terms.  Ji & Yan's close-pair N2/S2/R3 inference does not deredden these
+    ratios, so this helper has no extinction-law or Balmer-decrement input.
     """
 
     flux = np.asarray(fluxes, dtype=np.float64)
     error = np.asarray(errors, dtype=np.float64)
-    k_values = np.asarray(extinction_coefficients, dtype=np.float64)
     expected_shape = (len(MODEL_LINE_BASES),)
     if flux.shape != expected_shape:
         raise ValueError(f"JY22 fluxes must have shape {expected_shape}.")
     if error.shape != expected_shape:
         raise ValueError(f"JY22 errors must have shape {expected_shape}.")
-    if k_values.shape != expected_shape:
-        raise ValueError(
-            f"JY22 extinction coefficients must have shape {expected_shape}."
-        )
     if not np.all(np.isfinite(flux) & (flux > 0.0)):
         raise ValueError("JY22 raw fluxes must all be finite and positive.")
     if not np.all(np.isfinite(error) & (error > 0.0)):
         raise ValueError("JY22 raw flux errors must all be finite and positive.")
-    if not np.all(np.isfinite(k_values)):
-        raise ValueError("JY22 extinction coefficients must all be finite.")
-    if not np.isfinite(intrinsic_balmer_ratio) or intrinsic_balmer_ratio <= 0.0:
-        raise ValueError("JY22 intrinsic Balmer ratio must be finite and positive.")
-
-    hb_index, ha_index = 0, 2
-    k_difference = k_values[hb_index] - k_values[ha_index]
-    if not np.isfinite(k_difference) or k_difference == 0.0:
-        raise ValueError("JY22 requires distinct Hbeta and Halpha extinction values.")
-
-    observed_balmer_ratio = flux[ha_index] / flux[hb_index]
-    balmer_ratio = max(observed_balmer_ratio, float(intrinsic_balmer_ratio))
-    ebv_coefficient = 2.5 / k_difference
-    ebv = float(
-        ebv_coefficient * np.log10(balmer_ratio / intrinsic_balmer_ratio)
-    )
-    d_ebv_d_flux = np.zeros(flux.size, dtype=np.float64)
-    if observed_balmer_ratio > intrinsic_balmer_ratio:
-        d_ebv_d_flux[hb_index] = -ebv_coefficient / (
-            np.log(10.0) * flux[hb_index]
-        )
-        d_ebv_d_flux[ha_index] = ebv_coefficient / (
-            np.log(10.0) * flux[ha_index]
-        )
-
-    correction = np.power(10.0, 0.4 * k_values * ebv)
-    corrected = flux * correction
-    corrected_jacobian = np.diag(correction) + (
-        corrected[:, None]
-        * (0.4 * np.log(10.0) * k_values[:, None])
-        * d_ebv_d_flux[None, :]
-    )
-
-    hb, oiii, ha, nii, sii_6716, sii_6730 = corrected
+    hb, oiii, ha, nii, sii_6716, sii_6730 = flux
     sii_sum = sii_6716 + sii_6730
     log_ratios = np.asarray(
         [
@@ -339,18 +317,15 @@ def jy22_log_ratios_and_covariance(
         ],
         dtype=np.float64,
     )
-    ratio_jacobian = np.empty((len(JY22_RATIO_NAMES), flux.size), dtype=np.float64)
+    ratio_jacobian = np.zeros((len(JY22_RATIO_NAMES), flux.size), dtype=np.float64)
     inverse_ln10 = 1.0 / np.log(10.0)
-    ratio_jacobian[0] = inverse_ln10 * (
-        corrected_jacobian[3] / nii - corrected_jacobian[2] / ha
-    )
-    ratio_jacobian[1] = inverse_ln10 * (
-        (corrected_jacobian[4] + corrected_jacobian[5]) / sii_sum
-        - corrected_jacobian[2] / ha
-    )
-    ratio_jacobian[2] = inverse_ln10 * (
-        corrected_jacobian[1] / oiii - corrected_jacobian[0] / hb
-    )
+    ratio_jacobian[0, 3] = inverse_ln10 / nii
+    ratio_jacobian[0, 2] = -inverse_ln10 / ha
+    ratio_jacobian[1, 4] = inverse_ln10 / sii_sum
+    ratio_jacobian[1, 5] = inverse_ln10 / sii_sum
+    ratio_jacobian[1, 2] = -inverse_ln10 / ha
+    ratio_jacobian[2, 1] = inverse_ln10 / oiii
+    ratio_jacobian[2, 0] = -inverse_ln10 / hb
     covariance = ratio_jacobian @ np.diag(error**2) @ ratio_jacobian.T
     covariance = 0.5 * (covariance + covariance.T)
     if not np.all(np.isfinite(log_ratios)) or not np.all(np.isfinite(covariance)):
@@ -359,17 +334,13 @@ def jy22_log_ratios_and_covariance(
     return JY22RatioMeasurement(
         log_ratios=log_ratios,
         covariance=covariance,
-        ebv=ebv,
-        corrected_fluxes=corrected,
+        ratio_fluxes=flux.copy(),
         jacobian=ratio_jacobian,
     )
 
 
 def build_jy22_ratio_spectra(
     spectra: BinSpectra,
-    extinction_coefficients: Sequence[float],
-    *,
-    intrinsic_balmer_ratio: float = 2.86,
 ) -> JY22RatioSpectra:
     """Convert raw six-line spectra into JY22 ratio/covariance measurements."""
 
@@ -391,26 +362,21 @@ def build_jy22_ratio_spectra(
         np.nan,
         dtype=np.float64,
     )
-    ebv = np.full(bin_ids.size, np.nan, dtype=np.float64)
     for index in range(bin_ids.size):
         try:
             measurement = jy22_log_ratios_and_covariance(
                 fluxes[index],
                 errors[index],
-                extinction_coefficients,
-                intrinsic_balmer_ratio=intrinsic_balmer_ratio,
             )
         except ValueError:
             continue
         ratios[index] = measurement.log_ratios
         covariances[index] = measurement.covariance
-        ebv[index] = measurement.ebv
     return JY22RatioSpectra(
         bin_ids=bin_ids,
         log_ratios=ratios,
         covariances=covariances,
         pixel_counts=pixel_counts,
-        ebv=ebv,
     )
 
 
@@ -673,10 +639,42 @@ def _truthy_table_value(value: Any) -> bool:
     return bool(value)
 
 
-def extract_nebulabayes_result(result: Any) -> dict[str, float | int]:
-    """Extract marginal peaks, 68% intervals, and objective NebulaBayes QC."""
+def _nebulabayes_marginal_mean(posterior: Any, parameter: str) -> float:
+    """Return a quadrature-normalised mean from one NebulaBayes marginal PDF."""
 
-    table = result.Posterior.DF_estimates
+    axis = np.asarray(
+        posterior.Grid_spec.paramName2paramValueArr[parameter], dtype=np.float64
+    )
+    density = np.asarray(posterior.marginalised_1D[parameter], dtype=np.float64)
+    if (
+        axis.ndim != 1
+        or density.ndim != 1
+        or axis.shape != density.shape
+        or axis.size < 2
+    ):
+        raise ValueError(
+            f"NebulaBayes marginal for {parameter!r} must have matching 1D axes."
+        )
+    if not (
+        np.all(np.isfinite(axis))
+        and np.all(np.diff(axis) > 0.0)
+        and np.all(np.isfinite(density))
+        and np.all(density >= 0.0)
+    ):
+        raise ValueError(f"NebulaBayes marginal for {parameter!r} is invalid.")
+    normalisation = float(np.trapezoid(density, axis))
+    if not np.isfinite(normalisation) or normalisation <= 0.0:
+        raise ValueError(
+            f"NebulaBayes marginal for {parameter!r} has zero normalisation."
+        )
+    return float(np.trapezoid(axis * density, axis) / normalisation)
+
+
+def extract_nebulabayes_result(result: Any) -> dict[str, float | int]:
+    """Extract continuous marginal means, sampled modes, intervals, and QC."""
+
+    posterior = result.Posterior
+    table = posterior.DF_estimates
     parameters = {
         "o_h": "12 + log O/H",
         "log_u": "log U",
@@ -703,30 +701,38 @@ def extract_nebulabayes_result(result: Any) -> dict[str, float | int]:
         "log_pk": NB_FLAG_LOGPK_EDGE,
     }
     local_maxima: list[int] = []
-    estimates: list[float] = []
+    means: list[float] = []
+    modes: list[float] = []
     interval_bounds: list[float] = []
     for stem, parameter in parameters.items():
         row = table.loc[parameter]
-        estimate = float(row["Estimate"])
+        mode = float(row["Estimate"])
+        mean = _nebulabayes_marginal_mean(posterior, parameter)
         low = float(row["CI68_low"])
         high = float(row["CI68_high"])
-        output[stem] = estimate
+        output[stem] = mean
+        output[f"{stem}_mode"] = mode
         output[f"{stem}_ci68_low"] = low
         output[f"{stem}_ci68_high"] = high
-        estimates.append(estimate)
+        means.append(mean)
+        modes.append(mode)
         interval_bounds.extend((low, high))
         local_maxima.append(int(row["n_local_maxima"]))
-        if _truthy_table_value(row["Est_at_lower?"]) or _truthy_table_value(
+        at_edge = _truthy_table_value(row["Est_at_lower?"]) or _truthy_table_value(
             row["Est_at_upper?"]
-        ):
+        )
+        if at_edge:
             flag |= edge_bits[stem]
+        output[f"{stem}_reliable"] = int(
+            np.all(np.isfinite([mean, low, high])) and not at_edge
+        )
 
     if not np.all(np.isfinite(interval_bounds)):
         flag |= NB_FLAG_OPEN_CI68
-    output["chi2_red"] = float(result.Posterior.best_model["chi2"])
+    output["chi2_red"] = float(posterior.best_model["chi2"])
     output["n_localmax"] = max(local_maxima)
     output["flag"] = flag
-    output["valid"] = int(np.all(np.isfinite(estimates)))
+    output["valid"] = int(np.all(np.isfinite(means + modes)))
     return output
 
 
@@ -747,6 +753,9 @@ def empty_nebulabayes_result(*, exception: bool = False) -> dict[str, float | in
         {
             "n_localmax": NOT_EVALUATED_FLAG,
             "flag": NB_FLAG_EXCEPTION if exception else NOT_EVALUATED_FLAG,
+            "o_h_reliable": 0,
+            "log_u_reliable": 0,
+            "log_pk_reliable": 0,
             "valid": 0,
         }
     )
@@ -770,7 +779,7 @@ def empty_jy22_result(
         flag = JY22_FLAG_POSTERIOR_INVALID
     else:
         flag = NOT_EVALUATED_FLAG
-    result.update({"flag": flag, "valid": 0})
+    result.update({"flag": flag, "fit_ok": 0, "valid": 0})
     return result
 
 
@@ -847,7 +856,12 @@ def infer_jy22_posterior(
     covariance: Any,
     grid: JY22Grid,
 ) -> dict[str, float | int]:
-    """Infer posterior-mean O/H and log U using the full ratio covariance."""
+    """Infer JY22 O/H and log U, retaining fit-to-surface diagnostics.
+
+    The grid axis is the Ji-Yan pre-depletion abundance.  Public ``o_h`` fields
+    are converted to post-depletion gas-phase abundance; explicit ``o_h_pre``
+    fields retain the native model quantity.
+    """
 
     observed = np.asarray(log_ratios, dtype=np.float64)
     covariance_array = np.asarray(covariance, dtype=np.float64)
@@ -873,9 +887,13 @@ def infer_jy22_posterior(
         return empty_jy22_result(posterior_invalid=True)
 
     model_ratios = np.asarray(grid.model_ratios, dtype=np.float64)
-    o_h_axis = np.asarray(grid.o_h, dtype=np.float64)
+    o_h_axis_pre = np.asarray(grid.o_h, dtype=np.float64)
     log_u_axis = np.asarray(grid.log_u, dtype=np.float64)
-    expected_shape = (o_h_axis.size, log_u_axis.size, len(JY22_RATIO_NAMES))
+    expected_shape = (
+        o_h_axis_pre.size,
+        log_u_axis.size,
+        len(JY22_RATIO_NAMES),
+    )
     if model_ratios.shape != expected_shape:
         raise ValueError(
             f"JY22 model ratios have shape {model_ratios.shape}; expected "
@@ -883,7 +901,7 @@ def infer_jy22_posterior(
         )
     if not (
         np.all(np.isfinite(model_ratios))
-        and np.all(np.isfinite(o_h_axis))
+        and np.all(np.isfinite(o_h_axis_pre))
         and np.all(np.isfinite(log_u_axis))
     ):
         return empty_jy22_result(posterior_invalid=True)
@@ -902,31 +920,47 @@ def infer_jy22_posterior(
     marginal_o_h = np.sum(posterior, axis=1)
     marginal_log_u = np.sum(posterior, axis=0)
 
-    o_h_16 = _weighted_axis_quantile(o_h_axis, marginal_o_h, 0.16)
-    o_h_84 = _weighted_axis_quantile(o_h_axis, marginal_o_h, 0.84)
+    o_h_pre_16 = _weighted_axis_quantile(o_h_axis_pre, marginal_o_h, 0.16)
+    o_h_pre_84 = _weighted_axis_quantile(o_h_axis_pre, marginal_o_h, 0.84)
     log_u_16 = _weighted_axis_quantile(log_u_axis, marginal_log_u, 0.16)
     log_u_84 = _weighted_axis_quantile(log_u_axis, marginal_log_u, 0.84)
+    o_h_pre = float(np.sum(marginal_o_h * o_h_axis_pre))
+    best_flat_index = int(np.nanargmin(chi2))
+    best_residual = -residuals[best_flat_index]
+    residual_norm = float(np.linalg.norm(best_residual))
     result: dict[str, float | int] = {
-        "o_h": float(np.sum(marginal_o_h * o_h_axis)),
-        "o_h_16": o_h_16,
-        "o_h_84": o_h_84,
+        "o_h": o_h_pre - JY22_DEPLETION_OFFSET_DEX,
+        "o_h_16": o_h_pre_16 - JY22_DEPLETION_OFFSET_DEX,
+        "o_h_84": o_h_pre_84 - JY22_DEPLETION_OFFSET_DEX,
+        "o_h_pre": o_h_pre,
+        "o_h_pre_16": o_h_pre_16,
+        "o_h_pre_84": o_h_pre_84,
         "log_u": float(np.sum(marginal_log_u * log_u_axis)),
         "log_u_16": log_u_16,
         "log_u_84": log_u_84,
         "chi2_min": chi2_min,
+        "resid_n2": float(best_residual[0]),
+        "resid_s2": float(best_residual[1]),
+        "resid_r3": float(best_residual[2]),
+        "resid_norm": residual_norm,
         "flag": 0,
+        "fit_ok": int(chi2_min <= JY22_FORMAL_CHI2_MAX),
         "valid": 1,
     }
     if not np.all(
         np.isfinite([result[name] for name in JY22_FLOAT_FIELDS])
     ):
         return empty_jy22_result(posterior_invalid=True)
-    if _marginal_touches_edge(o_h_axis, marginal_o_h, o_h_16, o_h_84):
+    if _marginal_touches_edge(
+        o_h_axis_pre, marginal_o_h, o_h_pre_16, o_h_pre_84
+    ):
         result["flag"] |= JY22_FLAG_OH_EDGE
     if _marginal_touches_edge(
         log_u_axis, marginal_log_u, log_u_16, log_u_84
     ):
         result["flag"] |= JY22_FLAG_LOGU_EDGE
+    if chi2_min > JY22_FORMAL_CHI2_MAX:
+        result["flag"] |= JY22_FLAG_POOR_FIT
     return result
 
 
@@ -1183,13 +1217,31 @@ def ordered_model_hdu_names() -> list[str]:
         _append_region_pair(
             names, f"{stem}_HII_CI68_HIGH", f"{stem}_SF_CI68_HIGH"
         )
-    for stem in ("NB_CHI2_RED", "NB_NLOCALMAX", "NB_FLAG", "NB_VALID"):
+        _append_region_pair(names, f"{stem}_HII_MODE", f"{stem}_SF_MODE")
+    for stem in (
+        "NB_CHI2_RED",
+        "NB_NLOCALMAX",
+        "NB_FLAG",
+        "NB_OH_RELIABLE",
+        "NB_LOGU_RELIABLE",
+        "NB_LOGPK_RELIABLE",
+        "NB_VALID",
+    ):
         _append_region_pair(names, f"{stem}_HII", f"{stem}_SF")
 
-    for stem in ("O_H_JY22", "LOG_U_JY22"):
+    for stem in ("O_H_JY22", "O_H_JY22_PREDEP", "LOG_U_JY22"):
         _append_region_pair(names, f"{stem}_HII", f"{stem}_SF")
         _append_region_pair(names, f"{stem}_HII_16", f"{stem}_SF_16")
         _append_region_pair(names, f"{stem}_HII_84", f"{stem}_SF_84")
-    for stem in ("JY22_CHI2_MIN", "JY22_FLAG", "JY22_VALID"):
+    for stem in (
+        "JY22_CHI2_MIN",
+        "JY22_RESID_N2",
+        "JY22_RESID_S2",
+        "JY22_RESID_R3",
+        "JY22_RESID_NORM",
+        "JY22_FLAG",
+        "JY22_FIT_OK",
+        "JY22_VALID",
+    ):
         _append_region_pair(names, f"{stem}_HII", f"{stem}_SF")
     return names

@@ -258,14 +258,13 @@ def test_jy22_loader_reorders_released_ratio_columns_to_n2_s2_r3(tmp_path):
     np.testing.assert_allclose(grid.model_ratios[0, 0], [-1.0, -0.5, 0.1])
 
 
-def test_jy22_ratio_jacobian_matches_finite_differences_above_balmer_floor():
+def test_jy22_raw_ratio_jacobian_matches_finite_differences():
     from model_grid_diagnostics import jy22_log_ratios_and_covariance
 
     fluxes = np.array([10.0, 7.0, 35.0, 5.0, 3.0, 2.0])
     errors = np.array([0.8, 0.5, 1.2, 0.4, 0.3, 0.25])
-    k_values = np.array([4.60, 4.45, 3.30, 3.20, 3.10, 3.00])
 
-    measurement = jy22_log_ratios_and_covariance(fluxes, errors, k_values)
+    measurement = jy22_log_ratios_and_covariance(fluxes, errors)
     numerical = np.empty_like(measurement.jacobian)
     for index, value in enumerate(fluxes):
         step = value * 1.0e-6
@@ -274,14 +273,13 @@ def test_jy22_ratio_jacobian_matches_finite_differences_above_balmer_floor():
         upper[index] += step
         lower[index] -= step
         upper_ratios = jy22_log_ratios_and_covariance(
-            upper, errors, k_values
+            upper, errors
         ).log_ratios
         lower_ratios = jy22_log_ratios_and_covariance(
-            lower, errors, k_values
+            lower, errors
         ).log_ratios
         numerical[:, index] = (upper_ratios - lower_ratios) / (2.0 * step)
 
-    assert measurement.ebv > 0.0
     np.testing.assert_allclose(measurement.jacobian, numerical, rtol=2e-7, atol=2e-9)
     np.testing.assert_allclose(
         measurement.covariance,
@@ -295,17 +293,15 @@ def test_jy22_ratio_jacobian_matches_finite_differences_above_balmer_floor():
     assert np.all(np.linalg.eigvalsh(measurement.covariance) > 0.0)
 
 
-def test_jy22_balmer_floor_has_zero_dust_derivative_and_shared_halpha_covariance():
+def test_jy22_raw_ratios_keep_only_shared_halpha_covariance():
     from model_grid_diagnostics import jy22_log_ratios_and_covariance
 
     fluxes = np.array([10.0, 6.0, 25.0, 5.0, 3.0, 2.0])
     errors = np.array([1.0, 0.6, 2.0, 0.5, 0.3, 0.2])
-    k_values = np.array([4.60, 4.45, 3.30, 3.20, 3.10, 3.00])
 
-    measurement = jy22_log_ratios_and_covariance(fluxes, errors, k_values)
+    measurement = jy22_log_ratios_and_covariance(fluxes, errors)
 
-    assert measurement.ebv == 0.0
-    np.testing.assert_allclose(measurement.corrected_fluxes, fluxes)
+    np.testing.assert_allclose(measurement.ratio_fluxes, fluxes)
     ln10 = np.log(10.0)
     expected_n2_s2_covariance = (errors[2] / fluxes[2] / ln10) ** 2
     assert measurement.covariance[0, 1] == pytest.approx(
@@ -315,65 +311,66 @@ def test_jy22_balmer_floor_has_zero_dust_derivative_and_shared_halpha_covariance
     assert measurement.covariance[1, 2] == pytest.approx(0.0, abs=1e-15)
 
 
-def test_jy22_ratio_covariance_is_scale_invariant_and_corrects_sii_separately():
+def test_jy22_raw_ratio_covariance_is_scale_invariant():
     from model_grid_diagnostics import jy22_log_ratios_and_covariance
 
     fluxes = np.array([10.0, 7.0, 35.0, 5.0, 3.0, 2.0])
     errors = 0.08 * fluxes
-    k_values = np.array([4.60, 4.45, 3.30, 3.20, 3.10, 2.70])
 
-    original = jy22_log_ratios_and_covariance(fluxes, errors, k_values)
+    original = jy22_log_ratios_and_covariance(fluxes, errors)
     scaled = jy22_log_ratios_and_covariance(
-        fluxes * 1.0e5, errors * 1.0e5, k_values
+        fluxes * 1.0e5, errors * 1.0e5
     )
 
     np.testing.assert_allclose(original.log_ratios, scaled.log_ratios, atol=1e-14)
     np.testing.assert_allclose(original.covariance, scaled.covariance, atol=1e-14)
-    expected_s2 = np.log10(
-        (original.corrected_fluxes[4] + original.corrected_fluxes[5])
-        / original.corrected_fluxes[2]
-    )
+    expected_s2 = np.log10((fluxes[4] + fluxes[5]) / fluxes[2])
     assert original.log_ratios[1] == pytest.approx(expected_s2)
-    assert (
-        original.corrected_fluxes[4] / fluxes[4]
-        != pytest.approx(original.corrected_fluxes[5] / fluxes[5])
-    )
+    np.testing.assert_allclose(original.ratio_fluxes, fluxes)
 
 
 @pytest.mark.parametrize(
-    ("fluxes", "errors", "k_values"),
+    ("fluxes", "errors"),
     [
-        ([10, 5, 28.6, 4, 3, 0], [1, 1, 1, 1, 1, 1], [4, 4, 3, 3, 3, 3]),
-        ([10, 5, 28.6, 4, 3, 2], [1, 1, -1, 1, 1, 1], [4, 4, 3, 3, 3, 3]),
-        ([10, 5, 28.6, 4, 3, 2], [1, 1, 1, 1, 1, 1], [4, 4, 3]),
+        ([10, 5, 28.6, 4, 3, 0], [1, 1, 1, 1, 1, 1]),
+        ([10, 5, 28.6, 4, 3, 2], [1, 1, -1, 1, 1, 1]),
     ],
 )
 def test_jy22_ratio_covariance_rejects_invalid_measurements(
-    fluxes, errors, k_values
+    fluxes, errors
 ):
     from model_grid_diagnostics import jy22_log_ratios_and_covariance
 
     with pytest.raises(ValueError):
-        jy22_log_ratios_and_covariance(fluxes, errors, k_values)
+        jy22_log_ratios_and_covariance(fluxes, errors)
 
 
 def test_jy22_posterior_recovers_grid_node_and_equal_tailed_marginals():
-    from model_grid_diagnostics import infer_jy22_posterior
+    from model_grid_diagnostics import JY22_DEPLETION_OFFSET_DEX, infer_jy22_posterior
 
     grid = _make_linear_jy22_grid()
     observed = grid.model_ratios[1, 1]
 
     result = infer_jy22_posterior(observed, np.eye(3) * 1.0e-6, grid)
 
-    assert result["o_h"] == pytest.approx(8.5, abs=1e-12)
-    assert result["o_h_16"] == pytest.approx(8.5, abs=1e-12)
-    assert result["o_h_84"] == pytest.approx(8.5, abs=1e-12)
+    assert JY22_DEPLETION_OFFSET_DEX == pytest.approx(0.22)
+    assert result["o_h_pre"] == pytest.approx(8.5, abs=1e-12)
+    assert result["o_h_pre_16"] == pytest.approx(8.5, abs=1e-12)
+    assert result["o_h_pre_84"] == pytest.approx(8.5, abs=1e-12)
+    assert result["o_h"] == pytest.approx(8.28, abs=1e-12)
+    assert result["o_h_16"] == pytest.approx(8.28, abs=1e-12)
+    assert result["o_h_84"] == pytest.approx(8.28, abs=1e-12)
     assert result["log_u"] == pytest.approx(-3.0, abs=1e-12)
     assert result["log_u_16"] == pytest.approx(-3.0, abs=1e-12)
     assert result["log_u_84"] == pytest.approx(-3.0, abs=1e-12)
     assert result["chi2_min"] == pytest.approx(0.0, abs=1e-14)
+    assert result["resid_n2"] == pytest.approx(0.0, abs=1e-14)
+    assert result["resid_s2"] == pytest.approx(0.0, abs=1e-14)
+    assert result["resid_r3"] == pytest.approx(0.0, abs=1e-14)
+    assert result["resid_norm"] == pytest.approx(0.0, abs=1e-14)
     assert result["flag"] == 0
     assert result["valid"] == 1
+    assert result["fit_ok"] == 1
 
 
 def test_jy22_quantiles_interpolate_through_ordinary_cumulative_marginal():
@@ -387,7 +384,7 @@ def test_jy22_quantiles_interpolate_through_ordinary_cumulative_marginal():
 
 
 def test_jy22_posterior_uses_full_covariance_and_broadens_with_error():
-    from model_grid_diagnostics import infer_jy22_posterior
+    from model_grid_diagnostics import JY22_DEPLETION_OFFSET_DEX, infer_jy22_posterior
 
     grid = _make_linear_jy22_grid()
     observed = grid.model_ratios[1, 1] + np.array([0.10, -0.08, 0.06])
@@ -402,12 +399,25 @@ def test_jy22_posterior_uses_full_covariance_and_broadens_with_error():
     )
     weights = np.exp(-0.5 * (manual_chi2 - np.min(manual_chi2)))
     weights /= np.sum(weights)
-    expected_o_h = np.sum(weights * grid.o_h[:, None])
+    expected_o_h_pre = np.sum(weights * grid.o_h[:, None])
     expected_log_u = np.sum(weights * grid.log_u[None, :])
+    best_index = np.unravel_index(np.argmin(manual_chi2), manual_chi2.shape)
+    expected_residual = observed - grid.model_ratios[best_index]
 
-    assert result["o_h"] == pytest.approx(expected_o_h, abs=1e-12)
+    assert result["o_h_pre"] == pytest.approx(expected_o_h_pre, abs=1e-12)
+    assert result["o_h"] == pytest.approx(
+        expected_o_h_pre - JY22_DEPLETION_OFFSET_DEX, abs=1e-12
+    )
     assert result["log_u"] == pytest.approx(expected_log_u, abs=1e-12)
     assert result["chi2_min"] == pytest.approx(np.min(manual_chi2), abs=1e-12)
+    np.testing.assert_allclose(
+        [result["resid_n2"], result["resid_s2"], result["resid_r3"]],
+        expected_residual,
+        atol=1e-12,
+    )
+    assert result["resid_norm"] == pytest.approx(
+        np.linalg.norm(expected_residual), abs=1e-12
+    )
 
     narrow = infer_jy22_posterior(
         grid.model_ratios[1, 1], np.eye(3) * 0.0025, grid
@@ -442,8 +452,29 @@ def test_jy22_posterior_flags_edges_and_invalid_covariance():
     assert edge["flag"] & JY22_FLAG_OH_EDGE
     assert edge["flag"] & JY22_FLAG_LOGU_EDGE
     assert edge["valid"] == 1
+    assert edge["fit_ok"] == 1
     assert invalid["flag"] == JY22_FLAG_COVARIANCE_INVALID
     assert invalid["valid"] == 0
+    assert invalid["fit_ok"] == 0
+
+
+def test_jy22_posterior_marks_nominally_poor_model_fit_without_invalidating_result():
+    from model_grid_diagnostics import (
+        JY22_FLAG_POOR_FIT,
+        JY22_FORMAL_CHI2_MAX,
+        infer_jy22_posterior,
+    )
+
+    grid = _make_linear_jy22_grid()
+    observed = grid.model_ratios[1, 1] + np.array([0.3, 0.3, 0.3])
+
+    result = infer_jy22_posterior(observed, np.eye(3) * 1.0e-4, grid)
+
+    assert JY22_FORMAL_CHI2_MAX == pytest.approx(9.0)
+    assert result["chi2_min"] > JY22_FORMAL_CHI2_MAX
+    assert result["flag"] & JY22_FLAG_POOR_FIT
+    assert result["valid"] == 1
+    assert result["fit_ok"] == 0
 
 
 def test_jy22_batch_keeps_order_continues_after_bad_covariance_and_is_deterministic():
@@ -463,7 +494,6 @@ def test_jy22_batch_keeps_order_continues_after_bad_covariance_and_is_determinis
             [np.eye(3) * 0.01, np.ones((3, 3)), np.eye(3) * 0.01]
         ),
         pixel_counts=np.array([2, 3, 1]),
-        ebv=np.array([0.0, 0.1, 0.2]),
     )
 
     first = run_jy22_spectra(grid, spectra)
@@ -490,9 +520,7 @@ def test_jy22_preprocessing_failure_is_classified_as_invalid_covariance():
         errors=np.ones((1, 6)),
         pixel_counts=np.array([1]),
     )
-    ratios = build_jy22_ratio_spectra(
-        raw, np.array([4.60, 4.45, 3.30, 3.20, 3.10, 3.00])
-    )
+    ratios = build_jy22_ratio_spectra(raw)
 
     result = run_jy22_spectra(_make_linear_jy22_grid(), ratios)
 
@@ -585,7 +613,7 @@ def test_pyqz_extractor_uses_combined_kde_columns_and_raw_qc():
     assert result["valid"] == 1
 
 
-def test_nebulabayes_extractor_preserves_asymmetric_intervals_and_qc_bits():
+def test_nebulabayes_extractor_uses_continuous_means_and_preserves_modes_and_qc():
     from model_grid_diagnostics import extract_nebulabayes_result
 
     estimates = pd.DataFrame(
@@ -602,11 +630,32 @@ def test_nebulabayes_extractor_preserves_asymmetric_intervals_and_qc_bits():
     posterior = SimpleNamespace(
         DF_estimates=estimates,
         best_model={"chi2": 1.75},
+        Grid_spec=SimpleNamespace(
+            paramName2paramValueArr={
+                "12 + log O/H": np.array([8.4, 8.55, 8.7]),
+                "log U": np.array([-3.4, -3.1, -2.8]),
+                "log P/k": np.array([6.0, 6.4, 6.8]),
+            }
+        ),
+        marginalised_1D={
+            "12 + log O/H": np.array([1.0, 4.0, 2.0]),
+            "log U": np.array([1.0, 3.0, 1.0]),
+            "log P/k": np.array([1.0, 2.0, 1.0]),
+        },
     )
 
     result = extract_nebulabayes_result(SimpleNamespace(Posterior=posterior))
 
-    assert result["o_h"] == pytest.approx(8.55)
+    o_h_axis = posterior.Grid_spec.paramName2paramValueArr["12 + log O/H"]
+    o_h_pdf = posterior.marginalised_1D["12 + log O/H"]
+    expected_o_h_mean = np.trapezoid(o_h_axis * o_h_pdf, o_h_axis) / np.trapezoid(
+        o_h_pdf, o_h_axis
+    )
+    assert result["o_h"] == pytest.approx(expected_o_h_mean)
+    assert result["o_h"] != pytest.approx(result["o_h_mode"])
+    assert result["o_h_mode"] == pytest.approx(8.55)
+    assert result["log_u_mode"] == pytest.approx(-3.1)
+    assert result["log_pk_mode"] == pytest.approx(6.4)
     assert result["o_h_ci68_low"] == pytest.approx(8.45)
     assert result["log_u_ci68_high"] == pytest.approx(-2.9)
     assert result["log_pk_ci68_low"] == -np.inf
@@ -614,6 +663,30 @@ def test_nebulabayes_extractor_preserves_asymmetric_intervals_and_qc_bits():
     assert result["n_localmax"] == 2
     assert result["flag"] == 2 | 8
     assert result["valid"] == 1
+    assert result["o_h_reliable"] == 1
+    assert result["log_u_reliable"] == 0
+    assert result["log_pk_reliable"] == 0
+
+
+def test_nebulabayes_empty_result_has_complete_typed_contract():
+    from model_grid_diagnostics import (
+        NB_FLOAT_FIELDS,
+        NB_INTEGER_FIELDS,
+        _records_to_arrays,
+        empty_nebulabayes_result,
+    )
+
+    result = empty_nebulabayes_result(exception=True)
+
+    assert set(result) == set(NB_FLOAT_FIELDS) | set(NB_INTEGER_FIELDS)
+    assert all(np.isnan(result[name]) for name in NB_FLOAT_FIELDS)
+    assert result["valid"] == 0
+    assert result["o_h_reliable"] == 0
+    assert result["log_u_reliable"] == 0
+    assert result["log_pk_reliable"] == 0
+    arrays = _records_to_arrays([result], NB_FLOAT_FIELDS, NB_INTEGER_FIELDS)
+    assert all(arrays[name].dtype == np.float64 for name in NB_FLOAT_FIELDS)
+    assert all(arrays[name].dtype == np.int16 for name in NB_INTEGER_FIELDS)
 
 
 def test_integrated_lines_use_one_common_aperture_for_every_line():
@@ -654,6 +727,10 @@ def test_ordered_model_hdu_names_keep_immediate_hii_sf_pairs():
         assert names.index(sf_name) == names.index(hii_name) + 1
     assert names[0:2] == ["O_H_PYQZ_HII", "O_H_PYQZ_SF"]
     assert "LOG_PK_NEBULABAYES_HII" in names
+    assert "O_H_NEBULABAYES_HII_MODE" in names
+    assert "NB_OH_RELIABLE_HII" in names
+    assert "NB_LOGU_RELIABLE_HII" in names
+    assert "NB_LOGPK_RELIABLE_HII" in names
     assert "PYQZ_RS_OFFGRID_SF" in names
     expected_jy22 = [
         "O_H_JY22_HII",
@@ -662,6 +739,12 @@ def test_ordered_model_hdu_names_keep_immediate_hii_sf_pairs():
         "O_H_JY22_SF_16",
         "O_H_JY22_HII_84",
         "O_H_JY22_SF_84",
+        "O_H_JY22_PREDEP_HII",
+        "O_H_JY22_PREDEP_SF",
+        "O_H_JY22_PREDEP_HII_16",
+        "O_H_JY22_PREDEP_SF_16",
+        "O_H_JY22_PREDEP_HII_84",
+        "O_H_JY22_PREDEP_SF_84",
         "LOG_U_JY22_HII",
         "LOG_U_JY22_SF",
         "LOG_U_JY22_HII_16",
@@ -670,8 +753,18 @@ def test_ordered_model_hdu_names_keep_immediate_hii_sf_pairs():
         "LOG_U_JY22_SF_84",
         "JY22_CHI2_MIN_HII",
         "JY22_CHI2_MIN_SF",
+        "JY22_RESID_N2_HII",
+        "JY22_RESID_N2_SF",
+        "JY22_RESID_S2_HII",
+        "JY22_RESID_S2_SF",
+        "JY22_RESID_R3_HII",
+        "JY22_RESID_R3_SF",
+        "JY22_RESID_NORM_HII",
+        "JY22_RESID_NORM_SF",
         "JY22_FLAG_HII",
         "JY22_FLAG_SF",
+        "JY22_FIT_OK_HII",
+        "JY22_FIT_OK_SF",
         "JY22_VALID_HII",
         "JY22_VALID_SF",
     ]
@@ -771,6 +864,18 @@ def test_nebulabayes_batch_adapter_prepropagates_hbeta_and_records_qc():
                 index=["12 + log O/H", "log U", "log P/k"],
             )
             posterior = SimpleNamespace(DF_estimates=estimates, best_model={"chi2": 1.2})
+            posterior.Grid_spec = SimpleNamespace(
+                paramName2paramValueArr={
+                    "12 + log O/H": np.array([8.4, 8.5, 8.6]),
+                    "log U": np.array([-3.2, -3.0, -2.8]),
+                    "log P/k": np.array([5.9, 6.2, 6.5]),
+                }
+            )
+            posterior.marginalised_1D = {
+                "12 + log O/H": np.array([1.0, 4.0, 1.0]),
+                "log U": np.array([1.0, 4.0, 1.0]),
+                "log P/k": np.array([1.0, 4.0, 1.0]),
+            }
             return SimpleNamespace(Posterior=posterior)
 
     spectra = BinSpectra(
@@ -807,3 +912,28 @@ def test_nebulabayes_batch_adapter_prepropagates_hbeta_and_records_qc():
     assert run.results["n_localmax"].tolist() == [2, -99]
     assert run.results["flag"].tolist() == [0, 16]
     assert run.failures[0][0] == 5
+
+
+def test_sfr_wires_fixed_model_grid_fields_and_provenance():
+    source = (Path(__file__).resolve().parents[1] / "SFR+Z.py").read_text()
+
+    required = (
+        'f"O_H_NEBULABAYES_{region}_MODE": "o_h_mode"',
+        'f"NB_OH_RELIABLE_{region}": "o_h_reliable"',
+        'f"NB_LOGU_RELIABLE_{region}": "log_u_reliable"',
+        'f"NB_LOGPK_RELIABLE_{region}": "log_pk_reliable"',
+        'f"O_H_JY22_PREDEP_{region}": "o_h_pre"',
+        'f"JY22_RESID_N2_{region}": "resid_n2"',
+        'f"JY22_FIT_OK_{region}": "fit_ok"',
+        "result['resid_norm']",
+        "header['NBEST']",
+        "header['JY22DEP']",
+        "header['JY22OH']",
+        "header['JY22FMAX']",
+        'or "RELIABLE" in name',
+        'or "FIT_OK" in name',
+    )
+    missing = [snippet for snippet in required if snippet not in source]
+    assert not missing, f"SFR+Z.py is missing model-grid contract snippets: {missing}"
+    assert "JY22 corrects SII6716 and SII6730 separately" not in source
+    assert "shared Balmer correction" not in source
