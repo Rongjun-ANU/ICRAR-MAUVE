@@ -286,6 +286,35 @@ Changes (2026-06-29)
 * Added `--product-subdir` so wrappers can run either `v3tk_v7.6.8` or
   `v3tk_v7.6.8_7000` under the selected products root and write outputs back to
   the matching run folder.
+
+Changes (2026-08-23)
+-----------------------
+* Added pyqz 0.8.4.0 MAPPINGS-V model-grid products for HII and SF regions:
+  oxygen abundance, LogQ, derived log U, KDE uncertainties, raw pyqz flags,
+  off-grid fractions, validity maps, and separately inferred integrated values.
+* Added NebulaBayes 0.9.9 MAPPINGS-5.1 HII-grid products for HII and SF
+  regions: oxygen abundance, log U, log(P/k), asymmetric 68-percent credible
+  intervals, reduced chi-square, posterior/QC flags, validity maps, and
+  separately inferred integrated values.
+* Both methods use the existing dust-corrected six-line flux/error maps and
+  the existing HII/SF masks, with one inference per unique spatial BINID and no
+  additional S/N cut. Integrated model values use one common raw six-line
+  aperture, one integrated Balmer-decrement correction, and are log-only.
+* The adjacent `model_grid_compat.py` compatibility script is required when
+  either model-grid method is enabled. It supplies exact-version runtime fixes
+  for current Python/NumPy/SciPy/Matplotlib without modifying site-packages.
+
+Changes (2026-08-24)
+-----------------------
+* Added the Peng et al. (2026) implementation of the Ji & Yan (2022; JY22)
+  N2/S2/R3 Bayesian metallicity calibration for the existing HII and SF masks.
+* JY22 starts from the raw six-line fluxes and independent raw errors, applies
+  the configured Balmer-decrement correction internally, and propagates the
+  complete first-order N2/S2/R3 covariance. No MaNGA-specific 1.25 error
+  inflation, additional S/N cut, EW cut, or three-dimensional selection is used.
+* Added posterior-mean O/H and log U maps, marginal equal-tailed 16th/84th
+  percentiles, minimum chi-square, QC flags, validity maps, and log-only
+  integrated HII/SF results from the released Peng2026 grid.
 """
 
 # ------------------------------------------------------------------
@@ -316,6 +345,49 @@ mw_rv = 3.1  # Used only when extinction_law is "mw"/"ccm89".
 # PyNeb-based Te products. Set False only if you deliberately want to run the
 # legacy strong-line products without electron-density/direct-method outputs.
 ENABLE_TE_METALLICITY_PRODUCTS = True
+
+# HII-region photoionisation-grid products. model_grid_compat.py is required
+# only by the legacy pyqz and NebulaBayes packages; JY22 is implemented by the
+# adjacent pure diagnostic helper and the released Peng2026 FITS grid.
+ENABLE_PYQZ_METALLICITY_PRODUCTS = True
+ENABLE_NEBULABAYES_METALLICITY_PRODUCTS = True
+ENABLE_JY22_METALLICITY_PRODUCTS = True
+
+PYQZ_DIAGNOSTIC = "[NII]/[SII]+;[OIII]/[SII]+"
+PYQZ_QZS = ["LogQ", "gas[O]+12"]
+PYQZ_PK = 5.0
+PYQZ_STRUCT = "pp"
+PYQZ_KAPPA = float("inf")
+PYQZ_SAMPLING = 2
+PYQZ_ERROR_PDF = "normal"
+PYQZ_SRS = 800
+PYQZ_KDE_METHOD = "multiv"
+PYQZ_KDE_QZ_SAMPLING = 101j
+PYQZ_KDE_DO_SINGLES = True
+PYQZ_FLAG_LEVEL = 2.0
+PYQZ_RANDOM_SEED = 20260823
+PYQZ_NPROC = 1
+
+NB_INTERPD_GRID_SHAPE = (40, 20, 160)
+NB_INTERP_ORDER = 1
+NB_GRID_ERROR = 0.10
+NB_NORM_LINE = "Hbeta"
+NB_DEREDDEN = False
+NB_PRIOR = "Uniform"
+NB_LIKELIHOOD_LINES = None
+
+JY22_GRID_RELATIVE_PATH = (
+    "Peng2026/photoionization_models/photoionization_grid_interpolated.fits"
+)
+JY22_EXPECTED_GRID_SHA256 = (
+    "d7a219b60c9a1ea8b29339988c84b1832028b28b3c417d1c3c58b420831eb38a"
+)
+JY22_LOG_U_MIN = -4.0
+JY22_LOG_U_MAX = -0.5
+JY22_SOLAR_O_H = 8.69
+JY22_INTRINSIC_BALMER_RATIO = 2.86
+JY22_ERROR_INFLATION = 1.0  # Do not transfer the MaNGA-specific factor 1.25.
+
 SII_DENSITY_LOOKUP_TEMPERATURES = tuple(range(8000, 13001, 1000))
 SII_DENSITY_LOOKUP_BASENAME = (
     "pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096"
@@ -329,6 +401,7 @@ SII_DENSITY_LOOKUP_CACHE = {}
 # ------------------------------------------------------------------
 
 import argparse, logging, os, re, sys, time
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 import numpy as np
 from astropy.io import fits
@@ -336,11 +409,71 @@ from astropy import units as u
 from astropy.wcs import WCS
 from astropy.wcs.utils import proj_plane_pixel_scales
 
-if ENABLE_TE_METALLICITY_PRODUCTS:
+JY22_GRID_PATH = (
+    Path(__file__).resolve().parent / JY22_GRID_RELATIVE_PATH
+).resolve()
+
+if (
+    ENABLE_TE_METALLICITY_PRODUCTS
+    or ENABLE_PYQZ_METALLICITY_PRODUCTS
+    or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS
+):
     os.environ.setdefault(
         "MPLCONFIGDIR",
         str(Path(os.environ.get("TMPDIR", "/tmp")) / "matplotlib"),
     )
+
+if (
+    ENABLE_PYQZ_METALLICITY_PRODUCTS
+    or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS
+    or ENABLE_JY22_METALLICITY_PRODUCTS
+):
+    try:
+        from model_grid_diagnostics import (
+            JY22_INTEGER_FIELDS,
+            MODEL_LINE_BASES,
+            NB_INTEGER_FIELDS,
+            NB_LINE_LIST,
+            NOT_EVALUATED_FLAG,
+            PYQZ_INTEGER_FIELDS,
+            BinSpectra,
+            broadcast_bin_results,
+            build_jy22_ratio_spectra,
+            build_model_input_valid_mask,
+            empty_jy22_result,
+            empty_nebulabayes_result,
+            empty_pyqz_result,
+            extract_unique_bin_spectra,
+            integrate_line_maps,
+            load_jy22_grid,
+            ordered_model_hdu_names,
+            run_jy22_spectra,
+            run_nebulabayes_spectra,
+            run_pyqz_spectra,
+        )
+    except ImportError as exc:
+        raise RuntimeError(
+            "Enabled model-grid products require the adjacent "
+            "model_grid_diagnostics.py file."
+        ) from exc
+
+if (
+    ENABLE_PYQZ_METALLICITY_PRODUCTS
+    or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS
+):
+    try:
+        from model_grid_compat import (
+            load_nebulabayes_hii_grid,
+            load_pyqz_compat,
+            make_nebulabayes_hii_model,
+        )
+    except ImportError as exc:
+        raise RuntimeError(
+            "pyqz/NebulaBayes products require the adjacent "
+            "model_grid_compat.py exact-version runtime layer."
+        ) from exc
+
+if ENABLE_TE_METALLICITY_PRODUCTS:
     try:
         import pyneb as pn
     except ImportError as exc:
@@ -3541,6 +3674,660 @@ for line_base in GAS_LINE_BASES:
         globals()[f"{source_name}_SF"] = np.where(mask_SF, source_map, np.nan)
 
 # ------------------------------------------------------------------
+# 9b. pyqz, NebulaBayes, and JY22 HII-region model-grid products
+# ------------------------------------------------------------------
+
+MODEL_OUTPUT_MAPS = {}
+MODEL_INTEGRATED_RESULTS = {}
+PYQZ_PACKAGE_VERSION = None
+PYQZ_GRID_ID = None
+NB_PACKAGE_VERSION = None
+NB_GRID_PATH = None
+JY22_GRID = None
+
+
+def model_progress_callback(label):
+    """Build a concise progress reporter for a potentially long model pass."""
+    started = time.perf_counter()
+
+    def report(done, total, bin_id):
+        interval = max(1, int(total) // 10)
+        if done == 1 or done == total or done % interval == 0:
+            elapsed = time.perf_counter() - started
+            print(
+                f"{label}: {done}/{total} spectra complete "
+                f"(BINID {bin_id}, {elapsed:.1f} s)"
+            )
+
+    return report
+
+
+def print_model_failures(label, failures):
+    """Report every failed identifier compactly, grouped by exception text."""
+    if not failures:
+        print(f"{label}: no per-spectrum exceptions")
+        return
+    grouped = {}
+    for bin_id, message in failures:
+        grouped.setdefault(message, []).append(bin_id)
+    print(f"{label}: {len(failures)} per-spectrum exception(s)")
+    for message, bin_ids in grouped.items():
+        for start in range(0, len(bin_ids), 25):
+            identifiers = ",".join(
+                str(bin_id) for bin_id in bin_ids[start : start + 25]
+            )
+            suffix = f": {message}" if start == 0 else " (same exception)"
+            print(f"  BINID(s) {identifiers}{suffix}")
+
+
+def selected_model_field(source_map, selection, *, integer=False):
+    """Apply an HII/SF mask without changing the underlying shared fit."""
+    if integer:
+        output = np.full(source_map.shape, NOT_EVALUATED_FLAG, dtype=np.int16)
+        output[selection] = np.asarray(source_map, dtype=np.int16)[selection]
+        return output
+    return np.where(selection, np.asarray(source_map, dtype=np.float64), np.nan)
+
+
+def store_pyqz_region_maps(region, region_mask, broadcast_maps, input_valid):
+    selection = np.asarray(region_mask, dtype=bool) & input_valid
+    float_specs = {
+        f"O_H_PYQZ_{region}": "o_h",
+        f"O_H_PYQZ_{region}_ERR": "o_h_err",
+        f"LOG_Q_PYQZ_{region}": "log_q",
+        f"LOG_Q_PYQZ_{region}_ERR": "log_q_err",
+        f"LOG_U_PYQZ_{region}": "log_u",
+        f"LOG_U_PYQZ_{region}_ERR": "log_u_err",
+        f"PYQZ_RS_OFFGRID_{region}": "rs_offgrid",
+    }
+    integer_specs = {
+        f"PYQZ_FLAG_{region}": "flag",
+        f"PYQZ_VALID_{region}": "valid",
+    }
+    for output_name, field in float_specs.items():
+        MODEL_OUTPUT_MAPS[output_name] = selected_model_field(
+            broadcast_maps[field], selection
+        )
+    for output_name, field in integer_specs.items():
+        MODEL_OUTPUT_MAPS[output_name] = selected_model_field(
+            broadcast_maps[field], selection, integer=True
+        )
+
+
+def store_nebulabayes_region_maps(region, region_mask, broadcast_maps, input_valid):
+    selection = np.asarray(region_mask, dtype=bool) & input_valid
+    float_specs = {
+        f"O_H_NEBULABAYES_{region}": "o_h",
+        f"O_H_NEBULABAYES_{region}_CI68_LOW": "o_h_ci68_low",
+        f"O_H_NEBULABAYES_{region}_CI68_HIGH": "o_h_ci68_high",
+        f"LOG_U_NEBULABAYES_{region}": "log_u",
+        f"LOG_U_NEBULABAYES_{region}_CI68_LOW": "log_u_ci68_low",
+        f"LOG_U_NEBULABAYES_{region}_CI68_HIGH": "log_u_ci68_high",
+        f"LOG_PK_NEBULABAYES_{region}": "log_pk",
+        f"LOG_PK_NEBULABAYES_{region}_CI68_LOW": "log_pk_ci68_low",
+        f"LOG_PK_NEBULABAYES_{region}_CI68_HIGH": "log_pk_ci68_high",
+        f"NB_CHI2_RED_{region}": "chi2_red",
+    }
+    integer_specs = {
+        f"NB_NLOCALMAX_{region}": "n_localmax",
+        f"NB_FLAG_{region}": "flag",
+        f"NB_VALID_{region}": "valid",
+    }
+    for output_name, field in float_specs.items():
+        MODEL_OUTPUT_MAPS[output_name] = selected_model_field(
+            broadcast_maps[field], selection
+        )
+    for output_name, field in integer_specs.items():
+        MODEL_OUTPUT_MAPS[output_name] = selected_model_field(
+            broadcast_maps[field], selection, integer=True
+        )
+
+
+def store_jy22_region_maps(region, region_mask, broadcast_maps, input_valid):
+    """Store JY22 posterior summaries and QC on one existing region mask."""
+    selection = np.asarray(region_mask, dtype=bool) & input_valid
+    float_specs = {
+        f"O_H_JY22_{region}": "o_h",
+        f"O_H_JY22_{region}_16": "o_h_16",
+        f"O_H_JY22_{region}_84": "o_h_84",
+        f"LOG_U_JY22_{region}": "log_u",
+        f"LOG_U_JY22_{region}_16": "log_u_16",
+        f"LOG_U_JY22_{region}_84": "log_u_84",
+        f"JY22_CHI2_MIN_{region}": "chi2_min",
+    }
+    integer_specs = {
+        f"JY22_FLAG_{region}": "flag",
+        f"JY22_VALID_{region}": "valid",
+    }
+    for output_name, field in float_specs.items():
+        MODEL_OUTPUT_MAPS[output_name] = selected_model_field(
+            broadcast_maps[field], selection
+        )
+    for output_name, field in integer_specs.items():
+        MODEL_OUTPUT_MAPS[output_name] = selected_model_field(
+            broadcast_maps[field], selection, integer=True
+        )
+
+
+def corrected_integrated_model_spectrum(integrated):
+    """Apply one integrated Balmer-decrement correction to six raw sums."""
+    if integrated.n_pixels == 0:
+        return None
+    hb_flux = integrated.fluxes["HB4861"]
+    ha_flux = integrated.fluxes["HA6562"]
+    hb_error = integrated.errors["HB4861"]
+    ha_error = integrated.errors["HA6562"]
+    balmer_decrement = max(ha_flux / hb_flux, R_int)
+    ebv = float(
+        np.asarray(
+            convert_bd_to_ebv(
+                balmer_decrement, k_HB4861, k_HA6562, R_int
+            )
+        )
+    )
+    ebv_error = float(
+        np.asarray(
+            convert_bd_to_ebv_error(
+                ha_flux,
+                hb_flux,
+                ha_error,
+                hb_error,
+                k_HB4861,
+                k_HA6562,
+            )
+        )
+    )
+    corrected_fluxes = []
+    corrected_errors = []
+    for line_base in MODEL_LINE_BASES:
+        raw_flux = integrated.fluxes[line_base]
+        raw_error = integrated.errors[line_base]
+        k_line = GAS_LINE_K[line_base]
+        corrected_fluxes.append(
+            float(np.asarray(correct_flux_with_ebv(raw_flux, ebv, k_line)))
+        )
+        corrected_errors.append(
+            float(
+                np.asarray(
+                    correct_flux_error_with_ebv(
+                        raw_flux,
+                        raw_error,
+                        ebv,
+                        k_line,
+                        ebv_error,
+                    )
+                )
+            )
+        )
+    fluxes = np.asarray(corrected_fluxes, dtype=np.float64)
+    errors = np.asarray(corrected_errors, dtype=np.float64)
+    if not np.all(np.isfinite(fluxes) & (fluxes > 0.0)):
+        return None
+    if not np.all(np.isfinite(errors) & (errors > 0.0)):
+        return None
+    return {
+        "fluxes": fluxes,
+        "errors": errors,
+        "balmer_decrement": balmer_decrement,
+        "ebv": ebv,
+        "ebv_error": ebv_error,
+    }
+
+
+def record_from_batch(batch_results, index):
+    return {name: values[index].item() for name, values in batch_results.items()}
+
+
+if (
+    ENABLE_PYQZ_METALLICITY_PRODUCTS
+    or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS
+    or ENABLE_JY22_METALLICITY_PRODUCTS
+):
+    model_corrected_flux_maps = {
+        line_base: globals()[f"{line_base}_FLUX_corr"]
+        for line_base in MODEL_LINE_BASES
+    }
+    model_corrected_error_maps = {
+        line_base: globals()[f"{line_base}_FLUX_ERR_corr"]
+        for line_base in MODEL_LINE_BASES
+    }
+    model_raw_flux_maps = {
+        line_base: globals()[f"{line_base}_FLUX"]
+        for line_base in MODEL_LINE_BASES
+    }
+    model_raw_error_maps = {
+        line_base: globals()[f"{line_base}_FLUX_ERR"]
+        for line_base in MODEL_LINE_BASES
+    }
+    model_region_union = np.asarray(mask_HII | mask_SF, dtype=bool)
+    model_input_valid = build_model_input_valid_mask(
+        model_corrected_flux_maps,
+        model_corrected_error_maps,
+        model_region_union,
+    )
+    model_bin_spectra = extract_unique_bin_spectra(
+        gas_binid_map,
+        model_input_valid,
+        model_corrected_flux_maps,
+        model_corrected_error_maps,
+    )
+    model_raw_bin_spectra = None
+    if ENABLE_JY22_METALLICITY_PRODUCTS:
+        model_raw_bin_spectra = extract_unique_bin_spectra(
+            gas_binid_map,
+            model_input_valid,
+            model_raw_flux_maps,
+            model_raw_error_maps,
+        )
+        if not (
+            np.array_equal(model_raw_bin_spectra.bin_ids, model_bin_spectra.bin_ids)
+            and np.array_equal(
+                model_raw_bin_spectra.pixel_counts, model_bin_spectra.pixel_counts
+            )
+        ):
+            raise RuntimeError(
+                "Raw and corrected model spectra do not describe identical BINIDs."
+            )
+    print("--------------------------------------------------------------")
+    print("HII-region model-grid inference")
+    print(
+        "Common six-line corrected-input aperture: "
+        f"{np.count_nonzero(model_input_valid)} pixels in "
+        f"{model_bin_spectra.bin_ids.size} unique spatial bins; no extra S/N cut"
+    )
+    print(f"Python interpreter: {sys.executable}")
+    if ENABLE_PYQZ_METALLICITY_PRODUCTS or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
+        print("pyqz/NebulaBayes compatibility layer: model_grid_compat.py")
+
+    pyqz_runtime = None
+    pyqz_bin_run = None
+    if ENABLE_PYQZ_METALLICITY_PRODUCTS:
+        PYQZ_PACKAGE_VERSION = importlib_metadata.version("pyqz")
+        pyqz_runtime = load_pyqz_compat()
+        _, _, pyqz_grid_metadata = pyqz_runtime.get_grid(
+            PYQZ_DIAGNOSTIC,
+            Pk=PYQZ_PK,
+            kappa=PYQZ_KAPPA,
+            struct=PYQZ_STRUCT,
+            sampling=PYQZ_SAMPLING,
+        )
+        PYQZ_GRID_ID = str(
+            pyqz_grid_metadata.get("MV_id", "bundled MAPPINGS V grid")
+        )
+        print(
+            f"pyqz {PYQZ_PACKAGE_VERSION}: diagnostic={PYQZ_DIAGNOSTIC}; "
+            f"Pk={PYQZ_PK}; struct={PYQZ_STRUCT}; kappa={PYQZ_KAPPA}; "
+            f"sampling={PYQZ_SAMPLING}; srs={PYQZ_SRS}; "
+            f"KDE={PYQZ_KDE_METHOD}; seed={PYQZ_RANDOM_SEED}; "
+            f"nproc={PYQZ_NPROC}"
+        )
+        print(f"pyqz runtime overlay: {pyqz_runtime.__file__}")
+        print(f"pyqz grid identity: {PYQZ_GRID_ID}")
+        pyqz_bin_run = run_pyqz_spectra(
+            pyqz_runtime,
+            model_bin_spectra,
+            diagnostic=PYQZ_DIAGNOSTIC,
+            qzs=PYQZ_QZS,
+            pk=PYQZ_PK,
+            kappa=PYQZ_KAPPA,
+            struct=PYQZ_STRUCT,
+            sampling=PYQZ_SAMPLING,
+            error_pdf=PYQZ_ERROR_PDF,
+            random_seed=PYQZ_RANDOM_SEED,
+            srs=PYQZ_SRS,
+            flag_level=PYQZ_FLAG_LEVEL,
+            kde_method=PYQZ_KDE_METHOD,
+            kde_qz_sampling=PYQZ_KDE_QZ_SAMPLING,
+            kde_do_singles=PYQZ_KDE_DO_SINGLES,
+            nproc=PYQZ_NPROC,
+            progress=model_progress_callback("pyqz bins"),
+        )
+        print_model_failures("pyqz bins", pyqz_bin_run.failures)
+        if (
+            model_bin_spectra.bin_ids.size > 0
+            and not np.any(pyqz_bin_run.results["valid"] == 1)
+        ):
+            raise RuntimeError("pyqz failed for every eligible spatial bin.")
+        pyqz_broadcast = broadcast_bin_results(
+            gas_binid_map,
+            model_bin_spectra.bin_ids,
+            pyqz_bin_run.results,
+            integer_fields=set(PYQZ_INTEGER_FIELDS),
+        )
+        store_pyqz_region_maps(
+            "HII", mask_HII, pyqz_broadcast, model_input_valid
+        )
+        store_pyqz_region_maps(
+            "SF", mask_SF, pyqz_broadcast, model_input_valid
+        )
+
+    nebulabayes_model = None
+    nebulabayes_bin_run = None
+    if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
+        NB_PACKAGE_VERSION = importlib_metadata.version("NebulaBayes")
+        _, nb_grid_parameters, NB_GRID_PATH = load_nebulabayes_hii_grid()
+        nebulabayes_model = make_nebulabayes_hii_model(
+            NB_LINE_LIST,
+            interpd_grid_shape=NB_INTERPD_GRID_SHAPE,
+            interp_order=NB_INTERP_ORDER,
+            grid_error=NB_GRID_ERROR,
+        )
+        print(
+            f"NebulaBayes {NB_PACKAGE_VERSION}: grid={NB_GRID_PATH}; "
+            f"parameters={nb_grid_parameters}; shape={NB_INTERPD_GRID_SHAPE}; "
+            f"order={NB_INTERP_ORDER}; grid_error={NB_GRID_ERROR}; "
+            f"norm={NB_NORM_LINE}; deredden={NB_DEREDDEN}; prior={NB_PRIOR}"
+        )
+        nebulabayes_bin_run = run_nebulabayes_spectra(
+            nebulabayes_model,
+            model_bin_spectra,
+            norm_line=NB_NORM_LINE,
+            deredden=NB_DEREDDEN,
+            prior=NB_PRIOR,
+            likelihood_lines=NB_LIKELIHOOD_LINES,
+            progress=model_progress_callback("NebulaBayes bins"),
+        )
+        print_model_failures(
+            "NebulaBayes bins", nebulabayes_bin_run.failures
+        )
+        if (
+            model_bin_spectra.bin_ids.size > 0
+            and not np.any(nebulabayes_bin_run.results["valid"] == 1)
+        ):
+            raise RuntimeError(
+                "NebulaBayes failed for every eligible spatial bin."
+            )
+        nebulabayes_broadcast = broadcast_bin_results(
+            gas_binid_map,
+            model_bin_spectra.bin_ids,
+            nebulabayes_bin_run.results,
+            integer_fields=set(NB_INTEGER_FIELDS),
+        )
+        store_nebulabayes_region_maps(
+            "HII", mask_HII, nebulabayes_broadcast, model_input_valid
+        )
+        store_nebulabayes_region_maps(
+            "SF", mask_SF, nebulabayes_broadcast, model_input_valid
+        )
+
+    jy22_bin_run = None
+    if ENABLE_JY22_METALLICITY_PRODUCTS:
+        if model_raw_bin_spectra is None:
+            raise RuntimeError("JY22 raw spatial spectra were not prepared.")
+        if not np.isclose(JY22_ERROR_INFLATION, 1.0, rtol=0.0, atol=0.0):
+            raise RuntimeError(
+                "JY22_ERROR_INFLATION is scientifically locked to 1.0; the "
+                "MaNGA-specific factor 1.25 is not adopted."
+            )
+        JY22_GRID = load_jy22_grid(
+            JY22_GRID_PATH,
+            min_log_u=JY22_LOG_U_MIN,
+            max_log_u=JY22_LOG_U_MAX,
+            solar_o_h=JY22_SOLAR_O_H,
+        )
+        if JY22_GRID.sha256 != JY22_EXPECTED_GRID_SHA256:
+            raise RuntimeError(
+                "JY22 grid SHA-256 differs from the released grid locked by "
+                f"this pipeline: {JY22_GRID.sha256}"
+            )
+        jy22_extinction_coefficients = np.asarray(
+            [GAS_LINE_K[line_base] for line_base in MODEL_LINE_BASES],
+            dtype=np.float64,
+        )
+        jy22_ratio_spectra = build_jy22_ratio_spectra(
+            model_raw_bin_spectra,
+            jy22_extinction_coefficients,
+            intrinsic_balmer_ratio=JY22_INTRINSIC_BALMER_RATIO,
+        )
+        print(
+            "JY22/Peng2026: ratios=N2,S2,R3; posterior means with marginal "
+            "equal-tailed p16/p84; full raw-flux ratio covariance; "
+            "error inflation=1.0"
+        )
+        print(
+            f"JY22 grid: {JY22_GRID.source_path}; "
+            f"sha256={JY22_GRID.sha256}; "
+            f"requested logU={JY22_GRID.requested_log_u_bounds}; "
+            f"retained logU={JY22_GRID.effective_log_u_bounds}; "
+            f"solar O/H={JY22_GRID.solar_o_h}"
+        )
+        jy22_bin_run = run_jy22_spectra(
+            JY22_GRID,
+            jy22_ratio_spectra,
+            progress=model_progress_callback("JY22 bins"),
+        )
+        print_model_failures("JY22 bins", jy22_bin_run.failures)
+        if (
+            model_raw_bin_spectra.bin_ids.size > 0
+            and not np.any(jy22_bin_run.results["valid"] == 1)
+        ):
+            raise RuntimeError("JY22 failed for every eligible spatial bin.")
+        jy22_broadcast = broadcast_bin_results(
+            gas_binid_map,
+            model_raw_bin_spectra.bin_ids,
+            jy22_bin_run.results,
+            integer_fields=set(JY22_INTEGER_FIELDS),
+        )
+        store_jy22_region_maps(
+            "HII", mask_HII, jy22_broadcast, model_input_valid
+        )
+        store_jy22_region_maps(
+            "SF", mask_SF, jy22_broadcast, model_input_valid
+        )
+
+    for region, region_mask in (("HII", mask_HII), ("SF", mask_SF)):
+        integrated = integrate_line_maps(
+            model_raw_flux_maps,
+            model_raw_error_maps,
+            region_mask,
+            binid_map=gas_binid_map,
+        )
+        MODEL_INTEGRATED_RESULTS[region] = {
+            "aperture": integrated,
+            "spectrum": corrected_integrated_model_spectrum(integrated),
+            "pyqz": empty_pyqz_result(),
+            "nebulabayes": empty_nebulabayes_result(),
+            "jy22": empty_jy22_result(),
+            "jy22_ebv": np.nan,
+        }
+
+    integrated_regions = [
+        region
+        for region in ("HII", "SF")
+        if MODEL_INTEGRATED_RESULTS[region]["spectrum"] is not None
+    ]
+    if integrated_regions:
+        integrated_spectra = BinSpectra(
+            bin_ids=np.arange(len(integrated_regions), dtype=np.int64),
+            fluxes=np.asarray(
+                [
+                    MODEL_INTEGRATED_RESULTS[region]["spectrum"]["fluxes"]
+                    for region in integrated_regions
+                ],
+                dtype=np.float64,
+            ),
+            errors=np.asarray(
+                [
+                    MODEL_INTEGRATED_RESULTS[region]["spectrum"]["errors"]
+                    for region in integrated_regions
+                ],
+                dtype=np.float64,
+            ),
+            pixel_counts=np.asarray(
+                [
+                    MODEL_INTEGRATED_RESULTS[region]["aperture"].n_pixels
+                    for region in integrated_regions
+                ],
+                dtype=np.int64,
+            ),
+        )
+        if ENABLE_PYQZ_METALLICITY_PRODUCTS:
+            for index, region in enumerate(integrated_regions):
+                # Reset the documented seed for each integrated aperture.  If
+                # HII and SF select exactly the same spectrum, their pyqz
+                # result is then identical rather than differing by MC noise.
+                region_spectrum = BinSpectra(
+                    bin_ids=np.asarray([index], dtype=np.int64),
+                    fluxes=integrated_spectra.fluxes[index : index + 1],
+                    errors=integrated_spectra.errors[index : index + 1],
+                    pixel_counts=integrated_spectra.pixel_counts[index : index + 1],
+                )
+                integrated_pyqz_run = run_pyqz_spectra(
+                    pyqz_runtime,
+                    region_spectrum,
+                    diagnostic=PYQZ_DIAGNOSTIC,
+                    qzs=PYQZ_QZS,
+                    pk=PYQZ_PK,
+                    kappa=PYQZ_KAPPA,
+                    struct=PYQZ_STRUCT,
+                    sampling=PYQZ_SAMPLING,
+                    error_pdf=PYQZ_ERROR_PDF,
+                    random_seed=PYQZ_RANDOM_SEED,
+                    srs=PYQZ_SRS,
+                    flag_level=PYQZ_FLAG_LEVEL,
+                    kde_method=PYQZ_KDE_METHOD,
+                    kde_qz_sampling=PYQZ_KDE_QZ_SAMPLING,
+                    kde_do_singles=PYQZ_KDE_DO_SINGLES,
+                    nproc=PYQZ_NPROC,
+                )
+                print_model_failures(
+                    f"pyqz integrated {region}", integrated_pyqz_run.failures
+                )
+                MODEL_INTEGRATED_RESULTS[region]["pyqz"] = record_from_batch(
+                    integrated_pyqz_run.results, 0
+                )
+        if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
+            integrated_nb_run = run_nebulabayes_spectra(
+                nebulabayes_model,
+                integrated_spectra,
+                norm_line=NB_NORM_LINE,
+                deredden=NB_DEREDDEN,
+                prior=NB_PRIOR,
+                likelihood_lines=NB_LIKELIHOOD_LINES,
+            )
+            print_model_failures(
+                "NebulaBayes integrated", integrated_nb_run.failures
+            )
+            for index, region in enumerate(integrated_regions):
+                MODEL_INTEGRATED_RESULTS[region][
+                    "nebulabayes"
+                ] = record_from_batch(integrated_nb_run.results, index)
+
+    if ENABLE_JY22_METALLICITY_PRODUCTS:
+        jy22_integrated_regions = [
+            region
+            for region in ("HII", "SF")
+            if MODEL_INTEGRATED_RESULTS[region]["aperture"].n_pixels > 0
+        ]
+        if jy22_integrated_regions:
+            jy22_integrated_raw_spectra = BinSpectra(
+                bin_ids=np.arange(len(jy22_integrated_regions), dtype=np.int64),
+                fluxes=np.asarray(
+                    [
+                        [
+                            MODEL_INTEGRATED_RESULTS[region]["aperture"].fluxes[
+                                line_base
+                            ]
+                            for line_base in MODEL_LINE_BASES
+                        ]
+                        for region in jy22_integrated_regions
+                    ],
+                    dtype=np.float64,
+                ),
+                errors=np.asarray(
+                    [
+                        [
+                            MODEL_INTEGRATED_RESULTS[region]["aperture"].errors[
+                                line_base
+                            ]
+                            for line_base in MODEL_LINE_BASES
+                        ]
+                        for region in jy22_integrated_regions
+                    ],
+                    dtype=np.float64,
+                ),
+                pixel_counts=np.asarray(
+                    [
+                        MODEL_INTEGRATED_RESULTS[region]["aperture"].n_pixels
+                        for region in jy22_integrated_regions
+                    ],
+                    dtype=np.int64,
+                ),
+            )
+            jy22_integrated_ratios = build_jy22_ratio_spectra(
+                jy22_integrated_raw_spectra,
+                jy22_extinction_coefficients,
+                intrinsic_balmer_ratio=JY22_INTRINSIC_BALMER_RATIO,
+            )
+            jy22_integrated_run = run_jy22_spectra(
+                JY22_GRID, jy22_integrated_ratios
+            )
+            print_model_failures(
+                "JY22 integrated", jy22_integrated_run.failures
+            )
+            for index, region in enumerate(jy22_integrated_regions):
+                MODEL_INTEGRATED_RESULTS[region]["jy22"] = record_from_batch(
+                    jy22_integrated_run.results, index
+                )
+                MODEL_INTEGRATED_RESULTS[region]["jy22_ebv"] = float(
+                    jy22_integrated_ratios.ebv[index]
+                )
+
+    print("Integrated HII/SF model-grid results (common six-line raw aperture)")
+    for region in ("HII", "SF"):
+        summary = MODEL_INTEGRATED_RESULTS[region]
+        aperture = summary["aperture"]
+        spectrum = summary["spectrum"]
+        print(
+            f"  {region}: {aperture.n_pixels} pixels, {aperture.n_bins} bins; "
+            f"integrated E(B-V)="
+            f"{spectrum['ebv']:.5f}+/-{spectrum['ebv_error']:.5f}"
+            if spectrum is not None
+            else f"  {region}: 0 valid common-aperture pixels"
+        )
+        if ENABLE_PYQZ_METALLICITY_PRODUCTS:
+            result = summary["pyqz"]
+            print(
+                f"    pyqz: O/H={result['o_h']:.5f}+/-{result['o_h_err']:.5f}; "
+                f"LogQ={result['log_q']:.5f}+/-{result['log_q_err']:.5f}; "
+                f"logU={result['log_u']:.5f}+/-{result['log_u_err']:.5f}; "
+                f"flag={result['flag']}; off-grid={result['rs_offgrid']:.2f}%; "
+                f"valid={result['valid']} (uncertainties: 0.61 KDE contour)"
+            )
+        if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
+            result = summary["nebulabayes"]
+            print(
+                f"    NebulaBayes: O/H={result['o_h']:.5f} "
+                f"[{result['o_h_ci68_low']:.5f}, {result['o_h_ci68_high']:.5f}]; "
+                f"logU={result['log_u']:.5f} "
+                f"[{result['log_u_ci68_low']:.5f}, {result['log_u_ci68_high']:.5f}]; "
+                f"log(P/k)={result['log_pk']:.5f} "
+                f"[{result['log_pk_ci68_low']:.5f}, {result['log_pk_ci68_high']:.5f}]; "
+                f"chi2_red={result['chi2_red']:.4g}; "
+                f"nlocalmax={result['n_localmax']}; flag={result['flag']}; "
+                f"valid={result['valid']}"
+            )
+        if ENABLE_JY22_METALLICITY_PRODUCTS:
+            result = summary["jy22"]
+            print(
+                f"    JY22: O/H={result['o_h']:.5f} "
+                f"[{result['o_h_16']:.5f}, {result['o_h_84']:.5f}]; "
+                f"logU={result['log_u']:.5f} "
+                f"[{result['log_u_16']:.5f}, {result['log_u_84']:.5f}]; "
+                f"chi2_min={result['chi2_min']:.4g}; "
+                f"E(B-V)={summary['jy22_ebv']:.5f}; "
+                f"flag={result['flag']}; valid={result['valid']} "
+                "(posterior means; marginal equal-tailed p16/p84)"
+            )
+    print(
+        "Model covariance note: JY22 uses the full first-order N2/S2/R3 "
+        "covariance from raw line errors and the shared Balmer correction; "
+        "pyqz/NebulaBayes independent-error APIs do not represent the analogous "
+        "shared covariance."
+    )
+    print("--------------------------------------------------------------")
+
+# ------------------------------------------------------------------
 # 10.  PyNeb electron density and Te-based HII metallicity products
 # ------------------------------------------------------------------
 
@@ -5236,6 +6023,114 @@ new_hdul[0].header['BPTLIMIT'] = 'Low-S/N non-Balmer lines use measured fluxes, 
 new_hdul[0].header['SFRNOTE'] = 'All-spaxel SFR includes upper-limit substitutions where Balmer QC fails'
 new_hdul[0].header['C20COMB'] = 'ivar+scatter'
 new_hdul[0].header['BPTMAPS'] = '-1 unknown, 0 unclassified, positives are stable classes'
+new_hdul[0].header['DUSTLAW'] = str(extinction_law)
+if ENABLE_PYQZ_METALLICITY_PRODUCTS or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
+    new_hdul[0].header['MGRIDCMP'] = (
+        'model_grid_compat.py',
+        'Required exact-version compat layer',
+    )
+    new_hdul[0].header.add_history(
+        'pyqz/NebulaBayes require model_grid_compat.py; site-packages unchanged.'
+    )
+    new_hdul[0].header.add_history(
+        'pyqz/NebulaBayes use existing dust-corrected six-line HII/SF products.'
+    )
+    new_hdul[0].header.add_history(
+        'Their independent-error APIs omit shared Hbeta/Balmer covariance.'
+    )
+if ENABLE_PYQZ_METALLICITY_PRODUCTS:
+    new_hdul[0].header['PYQZVER'] = PYQZ_PACKAGE_VERSION
+    new_hdul[0].header['PYQZGRD'] = 'MAPPINGS V 5.0.16'
+    new_hdul[0].header['PYQZDG'] = PYQZ_DIAGNOSTIC
+    new_hdul[0].header['PYQZPK'] = (PYQZ_PK, 'Fixed log10(P/k / (K cm-3))')
+    new_hdul[0].header['PYQZSTR'] = PYQZ_STRUCT
+    new_hdul[0].header['PYQZKAP'] = ('inf', 'Kappa electron distribution')
+    new_hdul[0].header['PYQZSMP'] = PYQZ_SAMPLING
+    new_hdul[0].header['PYQZSRS'] = PYQZ_SRS
+    new_hdul[0].header['PYQZKDE'] = PYQZ_KDE_METHOD
+    new_hdul[0].header['PYQZSED'] = PYQZ_RANDOM_SEED
+    new_hdul[0].header.add_history(
+        'pyqz pressure is fixed at log(P/k)=5.0; no pressure map is inferred.'
+    )
+if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
+    new_hdul[0].header['NBAYVER'] = NB_PACKAGE_VERSION
+    new_hdul[0].header['NBGRID'] = 'MAPPINGS 5.1 HII'
+    new_hdul[0].header['NBSHAPE'] = ','.join(
+        str(value) for value in NB_INTERPD_GRID_SHAPE
+    )
+    new_hdul[0].header['NBORDER'] = NB_INTERP_ORDER
+    new_hdul[0].header['NBGRERR'] = NB_GRID_ERROR
+    new_hdul[0].header['NBPRIOR'] = NB_PRIOR
+    new_hdul[0].header['NBDERED'] = NB_DEREDDEN
+    new_hdul[0].header['NBNORM'] = NB_NORM_LINE
+    new_hdul[0].header.add_history(
+        'NebulaBayes grid_error=0.10 enters likelihood; reported chi2 excludes it.'
+    )
+if ENABLE_JY22_METALLICITY_PRODUCTS:
+    if JY22_GRID is None:
+        raise RuntimeError("JY22 is enabled but its validated grid metadata is absent.")
+    new_hdul[0].header['JY22EN'] = (True, 'JY22/Peng2026 products enabled')
+    new_hdul[0].header['JY22GRID'] = (
+        JY22_GRID.source_path.name,
+        'Peng2026 grid',
+    )
+    new_hdul[0].header['JY22SHA'] = JY22_GRID.sha256
+    new_hdul[0].header['JY22REF'] = ('Zenodo 21717332', 'Released grid archive')
+    new_hdul[0].header['JY22PRIR'] = (
+        'flat-grid',
+        'Flat prior over retained grid nodes',
+    )
+    new_hdul[0].header['JY22UMIN'] = (
+        JY22_GRID.requested_log_u_bounds[0],
+        'Requested minimum log U',
+    )
+    new_hdul[0].header['JY22UMAX'] = (
+        JY22_GRID.requested_log_u_bounds[1],
+        'Requested maximum log U',
+    )
+    new_hdul[0].header['JY22UELO'] = (
+        JY22_GRID.effective_log_u_bounds[0],
+        'Retained minimum grid log U',
+    )
+    new_hdul[0].header['JY22UEHI'] = (
+        JY22_GRID.effective_log_u_bounds[1],
+        'Retained maximum grid log U',
+    )
+    new_hdul[0].header['JY22SOL'] = (
+        JY22_GRID.solar_o_h,
+        'Solar 12+log(O/H) added to log Z/Zsun',
+    )
+    new_hdul[0].header['JY22RAT'] = ('N2,S2,R3', 'Internal ratio order')
+    new_hdul[0].header['JY22COV'] = ('full', 'Full first-order ratio covariance')
+    new_hdul[0].header['JY22EINF'] = (
+        JY22_ERROR_INFLATION,
+        'Flux-error inflation; MaNGA 1.25 not used',
+    )
+    new_hdul[0].header['JY22BD'] = (
+        JY22_INTRINSIC_BALMER_RATIO,
+        'Intrinsic Halpha/Hbeta floor',
+    )
+    new_hdul[0].header.add_history(
+        'JY22 uses raw six-line flux/errors, existing HII/SF masks, no extra cut.'
+    )
+    new_hdul[0].header.add_history(
+        'JY22 corrects SII6716 and SII6730 separately before summing S2.'
+    )
+    new_hdul[0].header.add_history(
+        'JY22 assumes independent raw line errors before Jacobian propagation.'
+    )
+    new_hdul[0].header.add_history(
+        'JY22 uses a flat discrete prior over the retained grid nodes.'
+    )
+    new_hdul[0].header.add_history(
+        'Released grid spans logU=-4 to +1; inference is cut at requested -0.5.'
+    )
+    new_hdul[0].header.add_history(
+        'No -0.5 node exists; the retained upper logU node is -0.5384615385.'
+    )
+    new_hdul[0].header.add_history(
+        'JY22 means are central; p16/p84 interpolate cumulative marginals.'
+    )
 
 # Gas E(B-V)
 hdu_E_BV_BD = fits.ImageHDU(E_BV_BD.astype(np.float64),
@@ -5746,13 +6641,21 @@ def append_ordered_image(
     comment: str | list[str] | tuple[str, ...] | None = None,
     dtype=np.float64,
     refs: bool = False,
+    references: tuple[str, ...] | list[str] | None = None,
 ) -> None:
     hdu = fits.ImageHDU(np.asarray(data, dtype=dtype), header=gas_header, name=name)
     hdu.header["BUNIT"] = bunit
+    if refs and references is not None:
+        raise ValueError("Use either refs=True or method-specific references, not both.")
     if refs:
-        hdu.header["REF1"] = "Brazzini+2024 A&A 691 A173"
-        hdu.header["REF2"] = "Kreckel+2025 A&A 703 A42"
-        hdu.header["REF3"] = "Mendez-Delgado+2023 Nature"
+        references = (
+            "Brazzini+2024 A&A 691 A173",
+            "Kreckel+2025 A&A 703 A42",
+            "Mendez-Delgado+2023 Nature",
+        )
+    if references is not None:
+        for index, reference in enumerate(references, start=1):
+            hdu.header[f"REF{index}"] = reference
     if comment is not None:
         comments = comment if isinstance(comment, (list, tuple)) else (comment,)
         for item in comments:
@@ -5770,9 +6673,14 @@ def append_region_pair(
     sf_comment: str,
     dtype=np.float64,
     refs: bool = False,
+    references: tuple[str, ...] | list[str] | None = None,
 ) -> None:
-    append_ordered_image(hdul, f"{stem}_HII", hii_data, bunit, hii_comment, dtype, refs)
-    append_ordered_image(hdul, f"{stem}_SF", sf_data, bunit, sf_comment, dtype, refs)
+    append_ordered_image(
+        hdul, f"{stem}_HII", hii_data, bunit, hii_comment, dtype, refs, references
+    )
+    append_ordered_image(
+        hdul, f"{stem}_SF", sf_data, bunit, sf_comment, dtype, refs, references
+    )
 
 
 def append_named_hii_sf_pair(
@@ -5782,13 +6690,18 @@ def append_named_hii_sf_pair(
     hii_data,
     sf_data,
     bunit: str,
-    hii_comment: str,
-    sf_comment: str,
+    hii_comment: str | list[str] | tuple[str, ...],
+    sf_comment: str | list[str] | tuple[str, ...],
     dtype=np.float64,
     refs: bool = False,
+    references: tuple[str, ...] | list[str] | None = None,
 ) -> None:
-    append_ordered_image(hdul, hii_name, hii_data, bunit, hii_comment, dtype, refs)
-    append_ordered_image(hdul, sf_name, sf_data, bunit, sf_comment, dtype, refs)
+    append_ordered_image(
+        hdul, hii_name, hii_data, bunit, hii_comment, dtype, refs, references
+    )
+    append_ordered_image(
+        hdul, sf_name, sf_data, bunit, sf_comment, dtype, refs, references
+    )
 
 
 def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
@@ -6023,7 +6936,274 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
         dtype=np.int16,
     )
 
-    # 5. PyNeb density, temperature, ionic-abundance, and Te-metallicity products.
+    # 5. HII-region photoionisation-grid diagnostics.
+    pyqz_references = (
+        "Dopita+2013 ApJS 208 10",
+        "Vogt+2015 ApJ 799 54 (pyqz)",
+    )
+    nebulabayes_references = (
+        "Thomas+2018 ApJ 856 89 (NebulaBayes)",
+    )
+    jy22_references = (
+        "Ji & Yan 2022 A&A 659 A112",
+        "Peng+2026 arXiv:2608.20239",
+        "Zenodo 21717332 (released model grid)",
+    )
+    if ENABLE_PYQZ_METALLICITY_PRODUCTS:
+        pyqz_parameter_specs = [
+            (
+                "O_H_PYQZ",
+                "12+log(O/H), pyqz combined multivariate-KDE estimate",
+            ),
+            (
+                "LOG_Q_PYQZ",
+                "log10(q / (cm s-1)), pyqz combined multivariate-KDE estimate",
+            ),
+            (
+                "LOG_U_PYQZ",
+                "log10 dimensionless ionisation parameter; LogQ-10.47712125472",
+            ),
+        ]
+        for stem, description in pyqz_parameter_specs:
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                f"{stem}_HII",
+                f"{stem}_SF",
+                MODEL_OUTPUT_MAPS[f"{stem}_HII"],
+                MODEL_OUTPUT_MAPS[f"{stem}_SF"],
+                CARTA_DIMENSIONLESS_BUNIT,
+                f"{description}; existing HII mask",
+                f"{description}; existing SF mask",
+                references=pyqz_references,
+            )
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                f"{stem}_HII_ERR",
+                f"{stem}_SF_ERR",
+                MODEL_OUTPUT_MAPS[f"{stem}_HII_ERR"],
+                MODEL_OUTPUT_MAPS[f"{stem}_SF_ERR"],
+                CARTA_DIMENSIONLESS_BUNIT,
+                "pyqz uncertainty: maximum half-extent of peak-normalised "
+                "0.61 KDE contour; HII mask",
+                "pyqz uncertainty: maximum half-extent of peak-normalised "
+                "0.61 KDE contour; SF mask",
+                references=pyqz_references,
+            )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "PYQZ_FLAG_HII",
+            "PYQZ_FLAG_SF",
+            MODEL_OUTPUT_MAPS["PYQZ_FLAG_HII"],
+            MODEL_OUTPUT_MAPS["PYQZ_FLAG_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "Raw pyqz flag in HII regions; -99 means not evaluated",
+            "Raw pyqz flag in SF regions; -99 means not evaluated",
+            dtype=np.int16,
+            references=pyqz_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "PYQZ_RS_OFFGRID_HII",
+            "PYQZ_RS_OFFGRID_SF",
+            MODEL_OUTPUT_MAPS["PYQZ_RS_OFFGRID_HII"],
+            MODEL_OUTPUT_MAPS["PYQZ_RS_OFFGRID_SF"],
+            "%",
+            "Percentage of pyqz Monte Carlo realisations off-grid; HII mask",
+            "Percentage of pyqz Monte Carlo realisations off-grid; SF mask",
+            references=pyqz_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "PYQZ_VALID_HII",
+            "PYQZ_VALID_SF",
+            MODEL_OUTPUT_MAPS["PYQZ_VALID_HII"],
+            MODEL_OUTPUT_MAPS["PYQZ_VALID_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "1=finite pyqz O/H and LogQ, 0=fit failed, -99=not evaluated; HII",
+            "1=finite pyqz O/H and LogQ, 0=fit failed, -99=not evaluated; SF",
+            dtype=np.int16,
+            references=pyqz_references,
+        )
+
+    if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
+        nb_parameter_specs = [
+            (
+                "O_H_NEBULABAYES",
+                "12+log(O/H), NebulaBayes marginal-posterior peak",
+            ),
+            (
+                "LOG_U_NEBULABAYES",
+                "log10 dimensionless ionisation parameter, posterior peak",
+            ),
+            (
+                "LOG_PK_NEBULABAYES",
+                "log10(P/k / (K cm-3)), NebulaBayes posterior peak",
+            ),
+        ]
+        for stem, description in nb_parameter_specs:
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                f"{stem}_HII",
+                f"{stem}_SF",
+                MODEL_OUTPUT_MAPS[f"{stem}_HII"],
+                MODEL_OUTPUT_MAPS[f"{stem}_SF"],
+                CARTA_DIMENSIONLESS_BUNIT,
+                f"{description}; existing HII mask",
+                f"{description}; existing SF mask",
+                references=nebulabayes_references,
+            )
+            for bound, bound_description in (
+                ("LOW", "lower"),
+                ("HIGH", "upper"),
+            ):
+                append_named_hii_sf_pair(
+                    ordered_hdul,
+                    f"{stem}_HII_CI68_{bound}",
+                    f"{stem}_SF_CI68_{bound}",
+                    MODEL_OUTPUT_MAPS[f"{stem}_HII_CI68_{bound}"],
+                    MODEL_OUTPUT_MAPS[f"{stem}_SF_CI68_{bound}"],
+                    CARTA_DIMENSIONLESS_BUNIT,
+                    f"NebulaBayes equal-tailed 68-percent {bound_description} "
+                    "credible bound; HII",
+                    f"NebulaBayes equal-tailed 68-percent {bound_description} "
+                    "credible bound; SF",
+                    references=nebulabayes_references,
+                )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "NB_CHI2_RED_HII",
+            "NB_CHI2_RED_SF",
+            MODEL_OUTPUT_MAPS["NB_CHI2_RED_HII"],
+            MODEL_OUTPUT_MAPS["NB_CHI2_RED_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "NebulaBayes best-model reduced chi-square from observational errors; HII",
+            "NebulaBayes best-model reduced chi-square from observational errors; SF",
+            references=nebulabayes_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "NB_NLOCALMAX_HII",
+            "NB_NLOCALMAX_SF",
+            MODEL_OUTPUT_MAPS["NB_NLOCALMAX_HII"],
+            MODEL_OUTPUT_MAPS["NB_NLOCALMAX_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "Maximum marginal-PDF local-maximum count; -99 not evaluated; HII",
+            "Maximum marginal-PDF local-maximum count; -99 not evaluated; SF",
+            dtype=np.int16,
+            references=nebulabayes_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "NB_FLAG_HII",
+            "NB_FLAG_SF",
+            MODEL_OUTPUT_MAPS["NB_FLAG_HII"],
+            MODEL_OUTPUT_MAPS["NB_FLAG_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            [
+                "NebulaBayes QC bitmask: 1=O/H edge, 2=logU edge, 4=logP/k edge",
+                "8=open/non-finite CI68, 16=fit exception, -99=not evaluated; HII",
+            ],
+            [
+                "NebulaBayes QC bitmask: 1=O/H edge, 2=logU edge, 4=logP/k edge",
+                "8=open/non-finite CI68, 16=fit exception, -99=not evaluated; SF",
+            ],
+            dtype=np.int16,
+            references=nebulabayes_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "NB_VALID_HII",
+            "NB_VALID_SF",
+            MODEL_OUTPUT_MAPS["NB_VALID_HII"],
+            MODEL_OUTPUT_MAPS["NB_VALID_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "1=finite O/H, logU, logP/k; 0=fit failed; -99=not evaluated; HII",
+            "1=finite O/H, logU, logP/k; 0=fit failed; -99=not evaluated; SF",
+            dtype=np.int16,
+            references=nebulabayes_references,
+        )
+
+    if ENABLE_JY22_METALLICITY_PRODUCTS:
+        jy22_parameter_specs = (
+            ("O_H_JY22", "12+log(O/H), JY22 posterior mean"),
+            ("LOG_U_JY22", "log10 dimensionless ionisation parameter, JY22 posterior mean"),
+        )
+        for stem, description in jy22_parameter_specs:
+            append_named_hii_sf_pair(
+                ordered_hdul,
+                f"{stem}_HII",
+                f"{stem}_SF",
+                MODEL_OUTPUT_MAPS[f"{stem}_HII"],
+                MODEL_OUTPUT_MAPS[f"{stem}_SF"],
+                CARTA_DIMENSIONLESS_BUNIT,
+                [
+                    f"{description}; existing HII mask",
+                    "N2/S2/R3 likelihood uses full propagated ratio covariance",
+                ],
+                [
+                    f"{description}; existing SF mask",
+                    "N2/S2/R3 likelihood uses full propagated ratio covariance",
+                ],
+                references=jy22_references,
+            )
+            for percentile, percentile_description in (
+                ("16", "16th"),
+                ("84", "84th"),
+            ):
+                append_named_hii_sf_pair(
+                    ordered_hdul,
+                    f"{stem}_HII_{percentile}",
+                    f"{stem}_SF_{percentile}",
+                    MODEL_OUTPUT_MAPS[f"{stem}_HII_{percentile}"],
+                    MODEL_OUTPUT_MAPS[f"{stem}_SF_{percentile}"],
+                    CARTA_DIMENSIONLESS_BUNIT,
+                    f"JY22 marginal equal-tailed {percentile_description} posterior percentile; HII",
+                    f"JY22 marginal equal-tailed {percentile_description} posterior percentile; SF",
+                    references=jy22_references,
+                )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "JY22_CHI2_MIN_HII",
+            "JY22_CHI2_MIN_SF",
+            MODEL_OUTPUT_MAPS["JY22_CHI2_MIN_HII"],
+            MODEL_OUTPUT_MAPS["JY22_CHI2_MIN_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "Minimum JY22 chi-square using full N2/S2/R3 covariance; HII",
+            "Minimum JY22 chi-square using full N2/S2/R3 covariance; SF",
+            references=jy22_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "JY22_FLAG_HII",
+            "JY22_FLAG_SF",
+            MODEL_OUTPUT_MAPS["JY22_FLAG_HII"],
+            MODEL_OUTPUT_MAPS["JY22_FLAG_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            [
+                "JY22 QC bits: 1=O/H edge, 2=logU edge, 4=posterior invalid",
+                "8=covariance invalid, 16=exception, -99=not evaluated; HII",
+            ],
+            [
+                "JY22 QC bits: 1=O/H edge, 2=logU edge, 4=posterior invalid",
+                "8=covariance invalid, 16=exception, -99=not evaluated; SF",
+            ],
+            dtype=np.int16,
+            references=jy22_references,
+        )
+        append_named_hii_sf_pair(
+            ordered_hdul,
+            "JY22_VALID_HII",
+            "JY22_VALID_SF",
+            MODEL_OUTPUT_MAPS["JY22_VALID_HII"],
+            MODEL_OUTPUT_MAPS["JY22_VALID_SF"],
+            CARTA_DIMENSIONLESS_BUNIT,
+            "1=all JY22 summaries and chi2 finite; 0=invalid; -99=not evaluated; HII",
+            "1=all JY22 summaries and chi2 finite; 0=invalid; -99=not evaluated; SF",
+            dtype=np.int16,
+            references=jy22_references,
+        )
+
+    # 6. PyNeb density, temperature, ionic-abundance, and Te-metallicity products.
     if ENABLE_TE_METALLICITY_PRODUCTS:
         append_ordered_image(
             ordered_hdul,
@@ -6123,6 +7303,87 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
                 refs=True,
             )
 
+    extension_names = [hdu.name for hdu in ordered_hdul[1:]]
+    duplicate_names = sorted(
+        name for name in set(extension_names) if extension_names.count(name) > 1
+    )
+    if duplicate_names:
+        raise RuntimeError(
+            "Ordered SFR+Z FITS schema contains duplicate EXTNAME values: "
+            + ", ".join(duplicate_names)
+        )
+    if (
+        ENABLE_PYQZ_METALLICITY_PRODUCTS
+        or ENABLE_NEBULABAYES_METALLICITY_PRODUCTS
+        or ENABLE_JY22_METALLICITY_PRODUCTS
+    ):
+        expected_model_names = [
+            name
+            for name in ordered_model_hdu_names()
+            if (
+                (ENABLE_PYQZ_METALLICITY_PRODUCTS and "PYQZ" in name)
+                or (
+                    ENABLE_NEBULABAYES_METALLICITY_PRODUCTS
+                    and ("NEBULABAYES" in name or name.startswith("NB_"))
+                )
+                or (ENABLE_JY22_METALLICITY_PRODUCTS and "JY22" in name)
+            )
+        ]
+    else:
+        expected_model_names = []
+    if expected_model_names:
+        model_start = extension_names.index("COMBINED_C20_METHOD") + 1
+        actual_model_names = extension_names[
+            model_start : model_start + len(expected_model_names)
+        ]
+        if actual_model_names != expected_model_names:
+            raise RuntimeError(
+                "Ordered model-grid FITS schema differs from its tested contract."
+            )
+        integer_model_names = {
+            name
+            for name in expected_model_names
+            if "FLAG" in name or "VALID" in name or "NLOCALMAX" in name
+        }
+        for name in expected_model_names:
+            hdu = ordered_hdul[name]
+            if hdu.data.shape != HA6562_FLUX.shape:
+                raise RuntimeError(
+                    f"Model-grid HDU {name} shape {hdu.data.shape} differs from "
+                    f"gas-map shape {HA6562_FLUX.shape}."
+                )
+            expected_dtype = np.dtype(
+                np.int16 if name in integer_model_names else np.float64
+            )
+            if (
+                hdu.data.dtype.kind != expected_dtype.kind
+                or hdu.data.dtype.itemsize != expected_dtype.itemsize
+            ):
+                raise RuntimeError(
+                    f"Model-grid HDU {name} has dtype {hdu.data.dtype}, expected "
+                    f"{expected_dtype}."
+                )
+            expected_bunit = (
+                "%" if "RS_OFFGRID" in name else CARTA_DIMENSIONLESS_BUNIT
+            )
+            if hdu.header.get("BUNIT") != expected_bunit:
+                raise RuntimeError(
+                    f"Model-grid HDU {name} has BUNIT={hdu.header.get('BUNIT')!r}, "
+                    f"expected {expected_bunit!r}."
+                )
+            if "COMMENT" not in hdu.header:
+                raise RuntimeError(f"Model-grid HDU {name} has no science comment.")
+            for wcs_key in (
+                "CTYPE1", "CTYPE2", "CRPIX1", "CRPIX2", "CRVAL1", "CRVAL2",
+                "CDELT1", "CDELT2", "CD1_1", "CD1_2", "CD2_1", "CD2_2",
+            ):
+                if (
+                    wcs_key in gas_header
+                    and hdu.header.get(wcs_key) != gas_header.get(wcs_key)
+                ):
+                    raise RuntimeError(
+                        f"Model-grid HDU {name} changed WCS card {wcs_key}."
+                    )
     return ordered_hdul
 
 

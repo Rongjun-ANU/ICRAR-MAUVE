@@ -1,0 +1,33 @@
+{
+  "edge_on_integral": {
+    "central_chord": 2.0000000000001945,
+    "central_chord_expected": 2.0,
+    "central_relative_error": 9.725553695716371e-14,
+    "max_relative_error_direct_vs_bessel_representation": 2.0194246689168952e-10
+  },
+  "impulse_limits_km_s": {
+    "wphi_0": 458.257569495584,
+    "wphi_0_expected": 458.257569495584,
+    "wphi_minus1": 700.0,
+    "wphi_minus1_expected": 700.0,
+    "wphi_plus1": 300.0,
+    "wphi_plus1_expected": 300.0
+  },
+  "miyamoto_nagai": {
+    "max_relative_error_dPhi_dR": 4.887083362182958e-11,
+    "max_relative_error_dPhi_dz": 6.158073387614233e-10
+  },
+  "nfw": {
+    "max_relative_error_force": 4.0952319311618194e-10
+  },
+  "point_mass_extrema": {
+    "radial_R_at_max": 1.5,
+    "radial_R_expected": 1.5,
+    "radial_gmax": 0.14814814814814814,
+    "radial_gmax_expected": 0.14814814814814814,
+    "vertical_gmax": 0.3849001794594854,
+    "vertical_gmax_expected": 0.3849001794597505,
+    "vertical_z_at_max": 0.7071075,
+    "vertical_z_expected": 0.7071067811865475
+  }
+}

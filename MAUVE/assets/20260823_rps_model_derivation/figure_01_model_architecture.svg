@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1500" viewBox="0 0 1500 1500">
+<rect width="100%" height="100%" fill="white"/>
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#5C646B"/></marker>
+<marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#2F6690"/></marker>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#20252A}.title{font-size:34px;font-weight:700;fill:#16324F}.subtitle{font-size:19px;fill:#5C646B}.boxTitle{font-size:21px;font-weight:700}.body{font-size:17px}.small{font-size:15px;fill:#5C646B}.axis{font-size:17px;fill:#20252A}.label{font-size:18px;font-weight:700}</style>
+</defs>
+<text class="title" x="70" y="65">Observation-to-stripping model architecture</text>
+<text class="subtitle" x="70" y="98">Every arrow carries an assumption; branch structure is retained instead of collapsed.</text>
+<rect x="65" y="155" width="250" height="185" rx="18" fill="#EAF1F5" stroke="#16324F" stroke-width="3"/>
+<text class="boxTitle" x="89" y="193" fill="#16324F">Observed cluster</text>
+<text class="body" x="89" y="227">centre, distance</text>
+<text class="body" x="89" y="254">R_p, Delta v_los</text>
+<text class="body" x="89" y="281">ICM beta profile</text>
+<text class="body" x="89" y="308">mass profile</text>
+<rect x="375" y="155" width="250" height="185" rx="18" fill="white" stroke="#2F6690" stroke-width="3"/>
+<text class="boxTitle" x="399" y="193" fill="#2F6690">Radial deprojection</text>
+<text class="body" x="399" y="227">choose energy/apocentre</text>
+<text class="body" x="399" y="254">solve implicit r roots</text>
+<text class="body" x="399" y="281">infall/outgoing linked</text>
+<text class="body" x="399" y="308">retain all valid roots</text>
+<rect x="685" y="155" width="250" height="185" rx="18" fill="#EAF1F5" stroke="#3A8D9D" stroke-width="3"/>
+<text class="boxTitle" x="709" y="193" fill="#3A8D9D">Three-dimensional wind</text>
+<text class="body" x="709" y="227">v_gal = epsilon v r_hat</text>
+<text class="body" x="709" y="254">u_0 = -v_gal</text>
+<text class="body" x="709" y="281">P_ram = rho |u_0|^2</text>
+<text class="body" x="709" y="308">optional local rotation</text>
+<rect x="995" y="155" width="250" height="185" rx="18" fill="#EBF3ED" stroke="#4A7C59" stroke-width="3"/>
+<text class="boxTitle" x="1019" y="193" fill="#4A7C59">Observed galaxy</text>
+<text class="body" x="1019" y="227">q, q_0, PA</text>
+<text class="body" x="1019" y="254">Sigma_g, sigma_z or h_g</text>
+<text class="body" x="1019" y="281">stellar/bulge/halo mass</text>
+<text class="body" x="1019" y="308">rotation curve</text>
+<line x1="323.0" y1="248.0" x2="367.0" y2="248.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<line x1="633.0" y1="248.0" x2="677.0" y2="248.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<line x1="943.0" y1="248.0" x2="987.0" y2="248.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="170" y="430" width="320" height="180" rx="18" fill="white" stroke="#6D597A" stroke-width="3"/>
+<text class="boxTitle" x="194" y="468" fill="#6D597A">Finite-thickness geometry</text>
+<text class="body" x="194" y="502">rho_g(R,z) from HSE</text>
+<text class="body" x="194" y="529">Sigma_w(b) = integral rho ds</text>
+<text class="body" x="194" y="556">finite at exact edge-on</text>
+<text class="body" x="194" y="583">coherence is a closure</text>
+<rect x="590" y="430" width="320" height="180" rx="18" fill="white" stroke="#C76D3A" stroke-width="3"/>
+<text class="boxTitle" x="614" y="468" fill="#C76D3A">Galaxy response</text>
+<text class="body" x="614" y="502">face-on long-pulse force</text>
+<text class="body" x="614" y="529">arbitrary-direction impulse</text>
+<text class="body" x="614" y="556">or coupled vector ODE</text>
+<text class="body" x="614" y="583">never freeze L_z if w_phi != 0</text>
+<rect x="1010" y="430" width="320" height="180" rx="18" fill="#F8E9EA" stroke="#A23E48" stroke-width="3"/>
+<text class="boxTitle" x="1034" y="468" fill="#A23E48">Reported products</text>
+<text class="body" x="1034" y="502">ray-space susceptibility</text>
+<text class="body" x="1034" y="529">R_strip(phi) only with mapping</text>
+<text class="body" x="1034" y="556">branch-weighted uncertainty</text>
+<text class="body" x="1034" y="583">validity and omission flags</text>
+<line x1="810.0" y1="340.0" x2="350.0" y2="430.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<line x1="810.0" y1="340.0" x2="750.0" y2="430.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<line x1="1120.0" y1="340.0" x2="750.0" y2="430.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<line x1="490.0" y1="520.0" x2="590.0" y2="520.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<line x1="910.0" y1="520.0" x2="1010.0" y2="520.0" stroke="#5C646B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="110" y="690" width="1280" height="125" rx="20" fill="#F8E9EA" stroke="#A23E48" stroke-width="3"/>
+<text class="boxTitle" x="145" y="730" fill="#A23E48">Critical validity split</text>
+<text class="body" x="145" y="766">Pressure-only loss of equilibrium is a long-pulse, torque-free result. An arbitrary azimuthal wind changes L_z.</text>
+<text class="body" x="145" y="797">Use the exact vector impulse threshold for a short pulse, or integrate the vector equations for a finite-duration pressure history.</text>
+</svg>
