@@ -169,6 +169,55 @@ def test_jy22_loader_uses_released_grid_and_documented_logu_range():
     assert grid.source_path == JY22_GRID_PATH.resolve()
 
 
+def test_jy22_resampling_matches_paper_grid_and_preserves_linear_surface():
+    from model_grid_diagnostics import resample_jy22_grid
+
+    source = _make_linear_jy22_grid()
+    resampled = resample_jy22_grid(source, n_o_h=200, n_log_u=200)
+
+    assert resampled.o_h.shape == (200,)
+    assert resampled.log_z_zsun.shape == (200,)
+    assert resampled.log_u.shape == (200,)
+    assert resampled.model_ratios.shape == (200, 200, 3)
+    assert resampled.o_h[[0, -1]] == pytest.approx(source.o_h[[0, -1]])
+    assert resampled.log_u[[0, -1]] == pytest.approx(source.log_u[[0, -1]])
+    assert resampled.requested_log_u_bounds == source.requested_log_u_bounds
+    assert resampled.effective_log_u_bounds == source.effective_log_u_bounds
+    assert resampled.source_path == source.source_path
+    assert resampled.sha256 == source.sha256
+
+    z_index, u_index = 73, 121
+    abundance = resampled.o_h[z_index]
+    ionisation = resampled.log_u[u_index]
+    expected = np.array(
+        [
+            -1.0 + 0.8 * (abundance - 8.5) + 0.05 * (ionisation + 3.0),
+            -0.5 + 0.2 * (abundance - 8.5) + 0.25 * (ionisation + 3.0),
+            0.2 - 0.4 * (abundance - 8.5) + 0.35 * (ionisation + 3.0),
+        ]
+    )
+    np.testing.assert_allclose(
+        resampled.model_ratios[z_index, u_index], expected, atol=1.0e-12
+    )
+
+
+def test_jy22_resampling_uses_explicit_inference_logu_bounds():
+    from model_grid_diagnostics import resample_jy22_grid
+
+    source = _make_linear_jy22_grid()
+    resampled = resample_jy22_grid(
+        source,
+        n_o_h=20,
+        n_log_u=30,
+        min_log_u=-3.8,
+        max_log_u=-2.2,
+    )
+
+    assert resampled.log_u[[0, -1]] == pytest.approx([-3.8, -2.2])
+    assert resampled.requested_log_u_bounds == (-3.8, -2.2)
+    assert resampled.effective_log_u_bounds == (-3.8, -2.2)
+
+
 @pytest.mark.parametrize(
     ("rows", "match"),
     [
@@ -930,6 +979,9 @@ def test_sfr_wires_fixed_model_grid_fields_and_provenance():
         "header['JY22DEP']",
         "header['JY22OH']",
         "header['JY22FMAX']",
+        "header['JY22SHP']",
+        "JY22_INFERENCE_GRID_SHAPE = (200, 200)",
+        "JY22_GRID = resample_jy22_grid(",
         'or "RELIABLE" in name',
         'or "FIT_OK" in name',
     )

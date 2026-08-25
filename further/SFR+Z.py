@@ -318,6 +318,16 @@ Changes (2026-08-24)
   marginal equal-tailed 16th/84th percentiles, minimum chi-square, best-point
   ratio residuals, nominal fit-adequacy/QC flags, validity maps, and log-only
   integrated HII/SF results from the released Peng2026 grid.
+
+Changes (2026-08-25)
+-----------------------
+* Resample the released JY22 line-ratio surface to the 200-by-200 O/H--log-U
+  inference grid specified by Peng et al. (2026), over `-4 <= log U <= -0.5`.
+  This removes artificial 0.046-dex abundance bands caused by evaluating
+  narrow posteriors only at the 40-by-28 retained archive nodes.
+* Record the inference shape and linear surface interpolation in the primary
+  FITS header. JY22 fit and edge flags remain required because denser sampling
+  does not repair spectra that are inconsistent with the model surface.
 """
 
 # ------------------------------------------------------------------
@@ -387,6 +397,8 @@ JY22_EXPECTED_GRID_SHA256 = (
 )
 JY22_LOG_U_MIN = -4.0
 JY22_LOG_U_MAX = -0.5
+JY22_SOURCE_LOG_U_MAX = 1.0
+JY22_INFERENCE_GRID_SHAPE = (200, 200)
 JY22_SOLAR_O_H = 8.69
 JY22_ERROR_INFLATION = 1.0  # Do not transfer the MaNGA-specific factor 1.25.
 
@@ -451,6 +463,7 @@ if (
             integrate_line_maps,
             load_jy22_grid,
             ordered_model_hdu_names,
+            resample_jy22_grid,
             run_jy22_spectra,
             run_nebulabayes_spectra,
             run_pyqz_spectra,
@@ -4080,17 +4093,24 @@ if (
                 "JY22_ERROR_INFLATION is scientifically locked to 1.0; the "
                 "MaNGA-specific factor 1.25 is not adopted."
             )
-        JY22_GRID = load_jy22_grid(
+        jy22_source_grid = load_jy22_grid(
             JY22_GRID_PATH,
             min_log_u=JY22_LOG_U_MIN,
-            max_log_u=JY22_LOG_U_MAX,
+            max_log_u=JY22_SOURCE_LOG_U_MAX,
             solar_o_h=JY22_SOLAR_O_H,
         )
-        if JY22_GRID.sha256 != JY22_EXPECTED_GRID_SHA256:
+        if jy22_source_grid.sha256 != JY22_EXPECTED_GRID_SHA256:
             raise RuntimeError(
                 "JY22 grid SHA-256 differs from the released grid locked by "
-                f"this pipeline: {JY22_GRID.sha256}"
+                f"this pipeline: {jy22_source_grid.sha256}"
             )
+        JY22_GRID = resample_jy22_grid(
+            jy22_source_grid,
+            n_o_h=JY22_INFERENCE_GRID_SHAPE[0],
+            n_log_u=JY22_INFERENCE_GRID_SHAPE[1],
+            min_log_u=JY22_LOG_U_MIN,
+            max_log_u=JY22_LOG_U_MAX,
+        )
         jy22_ratio_spectra = build_jy22_ratio_spectra(model_raw_bin_spectra)
         print(
             "JY22/Peng2026: raw close-pair ratios=N2,S2,R3; posterior means "
@@ -4101,6 +4121,7 @@ if (
         print(
             f"JY22 grid: {JY22_GRID.source_path}; "
             f"sha256={JY22_GRID.sha256}; "
+            f"inference_shape={JY22_GRID.model_ratios.shape[:2]}; "
             f"requested logU={JY22_GRID.requested_log_u_bounds}; "
             f"retained logU={JY22_GRID.effective_log_u_bounds}; "
             f"solar O/H={JY22_GRID.solar_o_h}"
@@ -6109,6 +6130,11 @@ if ENABLE_JY22_METALLICITY_PRODUCTS:
     )
     new_hdul[0].header['JY22SHA'] = JY22_GRID.sha256
     new_hdul[0].header['JY22REF'] = ('Zenodo 21717332', 'Released grid archive')
+    new_hdul[0].header['JY22SHP'] = (
+        f'{JY22_GRID.model_ratios.shape[0]},{JY22_GRID.model_ratios.shape[1]}',
+        'Inference O/H,logU grid shape',
+    )
+    new_hdul[0].header['JY22INT'] = ('linear', 'Released-surface interpolation')
     new_hdul[0].header['JY22PRIR'] = (
         'flat-grid',
         'Flat prior over retained grid nodes',

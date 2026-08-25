@@ -150,10 +150,12 @@ JY22 uses the released Peng et al. (2026) interpolated Ji & Yan (2022) grid at
 `Peng2026/photoionization_models/photoionization_grid_interpolated.fits`. Its
 SHA-256 is
 `d7a219b60c9a1ea8b29339988c84b1832028b28b3c417d1c3c58b420831eb38a`.
-The full file is 40 by 40 in `log(Z/Zsun)` and log U; inference is restricted to
-the documented `-4.0 <= log U <= -0.5` range rather than the file's full
-`-4.0 <= log U <= +1.0` extent. Because there is no exact `-0.5` node, this
-retains 28 sampled log-U nodes ending at `-0.5384615384615388`. Oxygen abundance is
+The released file is 40 by 40 in `log(Z/Zsun)` and log U. Following Peng et
+al. (2026), the released line-ratio surface is linearly resampled to a 200 by
+200 inference grid over the documented `-4.0 <= log U <= -0.5` range rather
+than fitted only at the archive nodes or extended over the file's full
+`-4.0 <= log U <= +1.0` extent. This avoids artificial 0.046-dex O/H banding
+when high-S/N likelihoods collapse onto individual archive nodes. Oxygen abundance is
 `12+log(O/H) = log(Z/Zsun) + 8.69` on the native **pre-depletion** Ji-Yan
 scale. Ji & Yan's fixed oxygen depletion gives
 `O/H_post = O/H_pre - 0.22 dex`; the main `O_H_JY22` maps use this
@@ -192,6 +194,10 @@ Gaussian 1-sigma errors. NebulaBayes main maps store marginal-posterior means,
 with sampled modes and equal-tailed 68-percent bounds retained separately. JY22 maps
 store posterior means and separate marginal p16/p84 bounds; `JY22_CHI2_MIN` is
 the minimum full-covariance chi-square, not a reduced chi-square.
+The primary FITS header records the inference sampling in `JY22SHP` and the
+surface interpolation method in `JY22INT`. Finer sampling removes numerical
+banding but does not cure a spectrum that lies away from the model surface;
+`JY22_FIT_OK` and `JY22_FLAG` remain mandatory downstream QC.
 
 `PYQZ_FLAG` is the raw package flag and `PYQZ_RS_OFFGRID` is the percentage of
 Monte Carlo samples outside the grid. `NB_FLAG` is a bitmask: 1 is an O/H edge,

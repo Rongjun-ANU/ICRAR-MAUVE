@@ -284,6 +284,94 @@ def load_jy22_grid(
     )
 
 
+def resample_jy22_grid(
+    grid: JY22Grid,
+    *,
+    n_o_h: int = 200,
+    n_log_u: int = 200,
+    min_log_u: float | None = None,
+    max_log_u: float | None = None,
+) -> JY22Grid:
+    """Interpolate a validated JY22 surface to the Peng et al. sampling."""
+
+    from scipy.interpolate import RegularGridInterpolator
+
+    if isinstance(n_o_h, bool) or not isinstance(n_o_h, (int, np.integer)):
+        raise TypeError("JY22 O/H sampling must be an integer.")
+    if isinstance(n_log_u, bool) or not isinstance(n_log_u, (int, np.integer)):
+        raise TypeError("JY22 log-U sampling must be an integer.")
+    if n_o_h < 2 or n_log_u < 2:
+        raise ValueError("JY22 resampled axes must each contain at least two nodes.")
+
+    source_log_z = np.asarray(grid.log_z_zsun, dtype=np.float64)
+    source_log_u = np.asarray(grid.log_u, dtype=np.float64)
+    source_ratios = np.asarray(grid.model_ratios, dtype=np.float64)
+    expected_shape = (
+        source_log_z.size,
+        source_log_u.size,
+        len(JY22_RATIO_NAMES),
+    )
+    if source_ratios.shape != expected_shape:
+        raise ValueError(
+            f"JY22 model ratios have shape {source_ratios.shape}; expected "
+            f"{expected_shape}."
+        )
+    explicit_log_u_bounds = min_log_u is not None or max_log_u is not None
+    target_min_log_u = (
+        float(source_log_u[0]) if min_log_u is None else float(min_log_u)
+    )
+    target_max_log_u = (
+        float(source_log_u[-1]) if max_log_u is None else float(max_log_u)
+    )
+    if not np.isfinite([target_min_log_u, target_max_log_u]).all():
+        raise ValueError("JY22 resampled log-U bounds must be finite.")
+    if target_min_log_u > target_max_log_u:
+        raise ValueError("JY22 minimum resampled log U must not exceed its maximum.")
+    if (
+        target_min_log_u < source_log_u[0]
+        or target_max_log_u > source_log_u[-1]
+    ):
+        raise ValueError("JY22 resampled log-U bounds exceed the source grid.")
+
+    log_z_axis = np.linspace(
+        source_log_z[0], source_log_z[-1], int(n_o_h), dtype=np.float64
+    )
+    log_u_axis = np.linspace(
+        target_min_log_u, target_max_log_u, int(n_log_u), dtype=np.float64
+    )
+    target_points = np.stack(
+        np.meshgrid(log_z_axis, log_u_axis, indexing="ij"), axis=-1
+    )
+    model_ratios = np.empty(
+        (log_z_axis.size, log_u_axis.size, len(JY22_RATIO_NAMES)),
+        dtype=np.float64,
+    )
+    for ratio_index in range(len(JY22_RATIO_NAMES)):
+        interpolator = RegularGridInterpolator(
+            (source_log_z, source_log_u),
+            source_ratios[..., ratio_index],
+            method="linear",
+            bounds_error=True,
+        )
+        model_ratios[..., ratio_index] = interpolator(target_points)
+
+    return JY22Grid(
+        source_path=grid.source_path,
+        sha256=grid.sha256,
+        log_z_zsun=log_z_axis,
+        o_h=log_z_axis + float(grid.solar_o_h),
+        log_u=log_u_axis,
+        model_ratios=model_ratios,
+        requested_log_u_bounds=(
+            (target_min_log_u, target_max_log_u)
+            if explicit_log_u_bounds
+            else grid.requested_log_u_bounds
+        ),
+        effective_log_u_bounds=(target_min_log_u, target_max_log_u),
+        solar_o_h=float(grid.solar_o_h),
+    )
+
+
 def jy22_log_ratios_and_covariance(
     fluxes: Sequence[float],
     errors: Sequence[float],
