@@ -53,7 +53,13 @@ JY22_FLAG_EXCEPTION = 16
 JY22_FLAG_POOR_FIT = 32
 
 JY22_DEPLETION_OFFSET_DEX = 0.22
-JY22_FORMAL_CHI2_MAX = 9.0
+# Empirical gross-mismatch screen for this MAUVE implementation. This is not a
+# physically meaningful boundary or a literature-calibrated goodness-of-fit
+# threshold; keep the continuous chi-square and residual products for QC.
+JY22_EMPIRICAL_CHI2_MAX = 25.0
+# Compatibility alias for notebooks written before the empirical semantics were
+# made explicit. New production code must use JY22_EMPIRICAL_CHI2_MAX.
+JY22_FORMAL_CHI2_MAX = JY22_EMPIRICAL_CHI2_MAX
 
 PYQZ_FLOAT_FIELDS = (
     "o_h",
@@ -65,6 +71,8 @@ PYQZ_FLOAT_FIELDS = (
     "rs_offgrid",
 )
 PYQZ_INTEGER_FIELDS = ("flag", "valid")
+PYQZ_ADAPTIVE_KDE_GRID_SIZE = 257
+PYQZ_ADAPTIVE_KDE_PADDING_BW = 6.0
 NB_FLOAT_FIELDS = (
     "o_h",
     "o_h_mode",
@@ -140,10 +148,11 @@ class IntegratedLines:
 
 @dataclass(frozen=True)
 class ModelBatchRun:
-    """One complete model pass, including isolated per-spectrum failures."""
+    """One complete model pass, including isolated per-spectrum outcomes."""
 
     results: dict[str, np.ndarray]
     failures: tuple[tuple[int, str], ...]
+    recoveries: tuple[tuple[int, str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -1032,7 +1041,7 @@ def infer_jy22_posterior(
         "resid_r3": float(best_residual[2]),
         "resid_norm": residual_norm,
         "flag": 0,
-        "fit_ok": int(chi2_min <= JY22_FORMAL_CHI2_MAX),
+        "fit_ok": int(chi2_min <= JY22_EMPIRICAL_CHI2_MAX),
         "valid": 1,
     }
     if not np.all(
@@ -1047,7 +1056,7 @@ def infer_jy22_posterior(
         log_u_axis, marginal_log_u, log_u_16, log_u_84
     ):
         result["flag"] |= JY22_FLAG_LOGU_EDGE
-    if chi2_min > JY22_FORMAL_CHI2_MAX:
+    if chi2_min > JY22_EMPIRICAL_CHI2_MAX:
         result["flag"] |= JY22_FLAG_POOR_FIT
     return result
 
@@ -1095,6 +1104,240 @@ def run_jy22_spectra(
     )
 
 
+def _adaptive_pyqz_kde_result(
+    pyqz: Any,
+    data: np.ndarray,
+    data_columns: Sequence[str],
+    *,
+    diagnostic: str,
+    qzs: Sequence[str],
+    pk: float,
+    kappa: float,
+    struct: str,
+    sampling: int,
+    error_pdf: str,
+    srs: int,
+    flag_level: float,
+    kde_method: str,
+) -> dict[str, float | int]:
+    """Replay pyqz sampling and evaluate its KDE on a local adaptive mesh."""
+
+    if tuple(qzs) != ("LogQ", "gas[O]+12"):
+        raise ValueError(
+            "Adaptive pyqz recovery requires qzs=('LogQ', 'gas[O]+12')."
+        )
+    if error_pdf != "normal":
+        raise ValueError("Adaptive pyqz recovery supports error_pdf='normal' only.")
+    if kde_method != "multiv":
+        raise ValueError("Adaptive pyqz recovery supports KDE_method='multiv' only.")
+    if not isinstance(srs, (int, np.integer)) or int(srs) < 3:
+        raise ValueError("Adaptive pyqz recovery requires at least three MC samples.")
+
+    values = np.asarray(data, dtype=np.float64)
+    if values.shape != (1, len(data_columns)):
+        raise ValueError(
+            "Adaptive pyqz recovery requires exactly one spectrum row; "
+            f"received {values.shape}."
+        )
+    line_names = [name for name in data_columns if not name.startswith("std")]
+    if len(line_names) * 2 != len(data_columns):
+        raise ValueError("Adaptive pyqz recovery requires flux/error column pairs.")
+
+    from scipy import stats
+
+    sampled_fluxes = np.full((int(srs) + 1, len(line_names)), np.nan)
+    for line_index, line_name in enumerate(line_names):
+        flux = float(values[0, data_columns.index(line_name)])
+        error_name = f"std{line_name}"
+        if error_name not in data_columns:
+            raise ValueError(f"Missing pyqz uncertainty column {error_name!r}.")
+        error = float(values[0, data_columns.index(error_name)])
+        sampled_fluxes[0, line_index] = flux
+        if not np.isfinite(flux) or flux <= 0.0:
+            continue
+        if error > 0.0:
+            lower = -flux / error
+            distribution = stats.truncnorm(
+                lower, np.inf, loc=flux, scale=error
+            )
+            sampled_fluxes[1:, line_index] = distribution.rvs(int(srs))
+        elif error == 0.0:
+            sampled_fluxes[1:, line_index] = flux
+        else:
+            raise ValueError(
+                "Adaptive pyqz recovery does not support upper-limit or "
+                "negative line uncertainties."
+            )
+
+    ratio_values: list[np.ndarray] = []
+    for ratio in diagnostic.split(";"):
+        numerator, denominator = ratio.split("/", maxsplit=1)
+        if numerator not in line_names or denominator not in line_names:
+            raise ValueError(
+                f"Diagnostic ratio {ratio!r} is not represented by {line_names}."
+            )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            ratio_values.append(
+                np.log10(
+                    sampled_fluxes[:, line_names.index(numerator)]
+                    / sampled_fluxes[:, line_names.index(denominator)]
+                )
+            )
+
+    metadata = pyqz.pyqzm
+    coefficients = metadata.diagnostics[diagnostic]["coeffs"]
+    interpolated: dict[str, np.ndarray] = {}
+    for qz in qzs:
+        qz_values = np.asarray(
+            pyqz.interp_qz(
+                qz,
+                ratio_values,
+                diagnostic,
+                coeffs=coefficients,
+                Pk=pk,
+                kappa=kappa,
+                struct=struct,
+                sampling=sampling,
+            ),
+            dtype=np.float64,
+        ).reshape(-1)
+        if qz_values.shape != (int(srs) + 1,):
+            raise ValueError(
+                f"pyqz interpolation returned {qz_values.shape} for {qz}; "
+                f"expected {(int(srs) + 1,)}."
+            )
+        interpolated[qz] = qz_values
+
+    direct = np.asarray([interpolated[qz][0] for qz in qzs])
+    if not np.all(np.isfinite(direct)):
+        raise ValueError("Central diagnostic ratios are outside the pyqz grid.")
+
+    mc_estimates = np.column_stack(
+        [interpolated[qz][1:] for qz in qzs]
+    )
+    finite = np.all(np.isfinite(mc_estimates), axis=1)
+    estimates = mc_estimates[finite]
+    if estimates.shape[0] < 3:
+        raise ValueError("Fewer than three joint MC estimates are inside the grid.")
+    rs_offgrid = float(np.round(100.0 * np.count_nonzero(~finite) / int(srs), 1))
+
+    bandwidths = (
+        1.06
+        * np.std(estimates, axis=0)
+        * estimates.shape[0] ** (-1.0 / 6.0)
+    )
+    if not np.all(np.isfinite(bandwidths) & (bandwidths > 0.0)):
+        raise ValueError("Adaptive pyqz KDE bandwidth is zero or non-finite.")
+
+    qz_limits = metadata.QZs_lim[metadata.M_version]
+    axes: list[np.ndarray] = []
+    for qz_index, qz in enumerate(qzs):
+        lower_limit, upper_limit = np.asarray(qz_limits[qz], dtype=np.float64)
+        lower = max(
+            float(lower_limit),
+            float(np.min(estimates[:, qz_index]))
+            - PYQZ_ADAPTIVE_KDE_PADDING_BW * float(bandwidths[qz_index]),
+        )
+        upper = min(
+            float(upper_limit),
+            float(np.max(estimates[:, qz_index]))
+            + PYQZ_ADAPTIVE_KDE_PADDING_BW * float(bandwidths[qz_index]),
+        )
+        if not np.isfinite(lower) or not np.isfinite(upper) or upper <= lower:
+            raise ValueError(f"Adaptive pyqz KDE has no finite {qz} interval.")
+        axes.append(
+            np.linspace(lower, upper, PYQZ_ADAPTIVE_KDE_GRID_SIZE)
+        )
+
+    from matplotlib.path import Path as MatplotlibPath
+    import contourpy
+    from statsmodels.nonparametric.kernel_density import KDEMultivariate
+
+    kernel = KDEMultivariate(
+        data=[estimates[:, 0], estimates[:, 1]],
+        var_type="cc",
+        bw=bandwidths,
+    )
+    grid_x, grid_y = np.meshgrid(axes[0], axes[1], indexing="xy")
+    grid_positions = np.vstack([grid_x.ravel(), grid_y.ravel()])
+    density = np.asarray(kernel.pdf(grid_positions), dtype=np.float64).reshape(
+        grid_x.shape
+    )
+    if not np.any(np.isfinite(density)):
+        raise ValueError("Adaptive pyqz KDE density is entirely non-finite.")
+    peak_index = np.unravel_index(np.nanargmax(density), density.shape)
+    peak_value = float(density[peak_index])
+    if not np.isfinite(peak_value) or peak_value <= 0.0:
+        raise ValueError("Adaptive pyqz KDE density has no positive peak.")
+    density /= peak_value
+
+    contour_generator = contourpy.contour_generator(
+        x=axes[0], y=axes[1], z=density, name="serial"
+    )
+    contour_lines = contour_generator.lines(float(metadata.PDF_cont_level))
+    if not contour_lines:
+        raise ValueError("Adaptive pyqz KDE has no 0.61 contour.")
+    peak_point = (
+        float(axes[0][peak_index[1]]),
+        float(axes[1][peak_index[0]]),
+    )
+    enclosing = [
+        vertices
+        for vertices in contour_lines
+        if MatplotlibPath(vertices).contains_point(peak_point)
+    ]
+    if len(enclosing) != 1:
+        raise ValueError(
+            "Adaptive pyqz KDE requires exactly one 0.61 contour around "
+            f"the peak; found {len(enclosing)}."
+        )
+    vertices = np.asarray(enclosing[0], dtype=np.float64)
+    contour_mean = np.mean(vertices, axis=0)
+    contour_error = np.max(np.abs(vertices - contour_mean), axis=0)
+    if not np.all(
+        np.isfinite(contour_mean)
+        & np.isfinite(contour_error)
+        & (contour_error > 0.0)
+    ):
+        raise ValueError("Adaptive pyqz KDE contour summary is invalid.")
+
+    flag = "9" if len(contour_lines) > 1 else ""
+    for qz_index in range(len(qzs)):
+        difference = abs(float(direct[qz_index] - contour_mean[qz_index]))
+        with np.errstate(divide="ignore", invalid="ignore"):
+            consistent_with_direct_scatter = bool(
+                np.divide(difference, 0.0) <= flag_level
+            )
+            consistent_with_kde_error = bool(
+                np.divide(difference, contour_error[qz_index]) <= flag_level
+            )
+        if not consistent_with_direct_scatter:
+            flag += str(len(qzs) * qz_index + 1)
+        if not consistent_with_kde_error:
+            flag += str(len(qzs) * qz_index + 2)
+    if not flag:
+        flag = "0"
+
+    log_q_index = tuple(qzs).index("LogQ")
+    o_h_index = tuple(qzs).index("gas[O]+12")
+    log_q = float(contour_mean[log_q_index])
+    log_q_error = float(contour_error[log_q_index])
+    result: dict[str, float | int] = {
+        "o_h": float(contour_mean[o_h_index]),
+        "o_h_err": float(contour_error[o_h_index]),
+        "log_q": log_q,
+        "log_q_err": log_q_error,
+        "log_u": logq_to_logu(log_q),
+        "log_u_err": log_q_error,
+        "rs_offgrid": rs_offgrid,
+        "flag": int(flag),
+        "valid": 1,
+    }
+    if not np.all(np.isfinite([result[name] for name in PYQZ_FLOAT_FIELDS])):
+        raise ValueError("Adaptive pyqz KDE produced a non-finite result.")
+    return result
+
+
 def run_pyqz_spectra(
     pyqz: Any,
     spectra: BinSpectra,
@@ -1113,9 +1356,10 @@ def run_pyqz_spectra(
     kde_qz_sampling: complex = 101j,
     kde_do_singles: bool = True,
     nproc: int = 1,
+    adaptive_kde_fallback: bool = False,
     progress: Callable[[int, int, int], None] | None = None,
 ) -> ModelBatchRun:
-    """Run the locked pyqz diagnostic once per ascending input BINID."""
+    """Run pyqz per BINID, optionally recovering an under-resolved KDE."""
 
     data_columns = [
         "[NII]",
@@ -1127,6 +1371,7 @@ def run_pyqz_spectra(
     ]
     records: list[dict[str, float | int]] = []
     failures: list[tuple[int, str]] = []
+    recoveries: list[tuple[int, str]] = []
     random_state = np.random.get_state()
     np.random.seed(random_seed)
     try:
@@ -1140,6 +1385,9 @@ def run_pyqz_spectra(
                 [[flux[3], error[3], sii_flux, sii_error, flux[1], error[1]]],
                 dtype=np.float64,
             )
+            native_state_before = np.random.get_state()
+            native_record = empty_pyqz_result()
+            native_exception: Exception | None = None
             try:
                 with warnings.catch_warnings():
                     # Off-grid spectra legitimately leave all-NaN intermediate
@@ -1177,10 +1425,82 @@ def run_pyqz_spectra(
                         f"pyqz returned shape {values.shape}; expected "
                         f"{(1, len(columns))}."
                     )
-                records.append(extract_pyqz_result(values[0], columns))
+                native_record = extract_pyqz_result(values[0], columns)
             except Exception as exc:
-                records.append(empty_pyqz_result(exception=True))
-                failures.append((int(bin_id), f"{type(exc).__name__}: {exc}"))
+                native_exception = exc
+                native_record = empty_pyqz_result(exception=True)
+            native_state_after = np.random.get_state()
+
+            recovered_record: dict[str, float | int] | None = None
+            recovery_exception: Exception | None = None
+            should_recover = (
+                adaptive_kde_fallback
+                and int(native_record["valid"]) == 0
+                and int(native_record["flag"]) != 8
+            )
+            if should_recover:
+                np.random.set_state(native_state_before)
+                try:
+                    if nproc != 1:
+                        raise ValueError(
+                            "Adaptive pyqz recovery requires nproc=1 so the "
+                            "native Monte Carlo stream can be replayed."
+                        )
+                    recovered_record = _adaptive_pyqz_kde_result(
+                        pyqz,
+                        data,
+                        data_columns,
+                        diagnostic=diagnostic,
+                        qzs=qzs,
+                        pk=pk,
+                        kappa=kappa,
+                        struct=struct,
+                        sampling=sampling,
+                        error_pdf=error_pdf,
+                        srs=srs,
+                        flag_level=flag_level,
+                        kde_method=kde_method,
+                    )
+                except Exception as exc:
+                    recovery_exception = exc
+                finally:
+                    np.random.set_state(native_state_after)
+
+            if recovered_record is not None:
+                records.append(recovered_record)
+                native_outcome = (
+                    f"{type(native_exception).__name__}: {native_exception}"
+                    if native_exception is not None
+                    else f"non-finite native flag={native_record['flag']}"
+                )
+                recoveries.append(
+                    (
+                        int(bin_id),
+                        f"{native_outcome}; adaptive local KDE "
+                        f"{PYQZ_ADAPTIVE_KDE_GRID_SIZE}x"
+                        f"{PYQZ_ADAPTIVE_KDE_GRID_SIZE}",
+                    )
+                )
+            else:
+                records.append(native_record)
+                if native_exception is not None:
+                    message = f"{type(native_exception).__name__}: {native_exception}"
+                    if recovery_exception is not None:
+                        message += (
+                            "; adaptive recovery failed: "
+                            f"{type(recovery_exception).__name__}: "
+                            f"{recovery_exception}"
+                        )
+                    failures.append((int(bin_id), message))
+                elif recovery_exception is not None:
+                    failures.append(
+                        (
+                            int(bin_id),
+                            "adaptive recovery after non-finite native result "
+                            f"failed: {type(recovery_exception).__name__}: "
+                            f"{recovery_exception}",
+                        )
+                    )
             if progress is not None:
                 progress(index + 1, spectra.bin_ids.size, int(bin_id))
     finally:
@@ -1189,6 +1509,7 @@ def run_pyqz_spectra(
     return ModelBatchRun(
         results=_records_to_arrays(records, PYQZ_FLOAT_FIELDS, PYQZ_INTEGER_FIELDS),
         failures=tuple(failures),
+        recoveries=tuple(recoveries),
     )
 
 

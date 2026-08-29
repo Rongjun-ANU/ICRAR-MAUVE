@@ -507,8 +507,9 @@ def test_jy22_posterior_flags_edges_and_invalid_covariance():
     assert invalid["fit_ok"] == 0
 
 
-def test_jy22_posterior_marks_nominally_poor_model_fit_without_invalidating_result():
+def test_jy22_posterior_marks_empirical_gross_mismatch_without_invalidating_result():
     from model_grid_diagnostics import (
+        JY22_EMPIRICAL_CHI2_MAX,
         JY22_FLAG_POOR_FIT,
         JY22_FORMAL_CHI2_MAX,
         infer_jy22_posterior,
@@ -519,8 +520,9 @@ def test_jy22_posterior_marks_nominally_poor_model_fit_without_invalidating_resu
 
     result = infer_jy22_posterior(observed, np.eye(3) * 1.0e-4, grid)
 
-    assert JY22_FORMAL_CHI2_MAX == pytest.approx(9.0)
-    assert result["chi2_min"] > JY22_FORMAL_CHI2_MAX
+    assert JY22_EMPIRICAL_CHI2_MAX == pytest.approx(25.0)
+    assert JY22_FORMAL_CHI2_MAX == JY22_EMPIRICAL_CHI2_MAX
+    assert result["chi2_min"] > JY22_EMPIRICAL_CHI2_MAX
     assert result["flag"] & JY22_FLAG_POOR_FIT
     assert result["valid"] == 1
     assert result["fit_ok"] == 0
@@ -820,6 +822,229 @@ def test_ordered_model_hdu_names_keep_immediate_hii_sf_pairs():
     assert names[-len(expected_jy22) :] == expected_jy22
 
 
+class NarrowPdfFakePyqz:
+    def __init__(self, *, central_on_grid=True, native_flag=1234):
+        self.central_on_grid = central_on_grid
+        self.native_flag = native_flag
+        self.interp_calls = 0
+        self.pyqzm = SimpleNamespace(
+            M_version="MV",
+            PDF_cont_level=0.61,
+            QZs_lim={
+                "MV": {
+                    "LogQ": np.array([6.5, 8.5]),
+                    "gas[O]+12": np.array([8.0, 8.875]),
+                }
+            },
+            diagnostics={
+                "[NII]/[SII]+;[OIII]/[SII]+": {
+                    "coeffs": [[1, 0], [0, 1]]
+                }
+            },
+        )
+
+    def get_global_qz(self, data, data_cols, which_grids, **kwargs):
+        del data, data_cols, which_grids, kwargs
+        columns = [
+            "<LogQ{KDE}>",
+            "err(LogQ{KDE})",
+            "<gas[O]+12{KDE}>",
+            "err(gas[O]+12{KDE})",
+            "flag",
+            "rs_offgrid",
+        ]
+        values = np.array(
+            [[np.nan, np.nan, np.nan, np.nan, float(self.native_flag), 0.0]]
+        )
+        return values, columns
+
+    def interp_qz(self, qz, ratio_values, diagnostic, **kwargs):
+        del diagnostic, kwargs
+        self.interp_calls += 1
+        first, second = (
+            np.asarray(value, dtype=float) for value in ratio_values
+        )
+        if qz == "LogQ":
+            output = 7.2 + 0.08 * first + 0.03 * second
+        else:
+            output = 8.5 + 0.02 * first - 0.04 * second
+        if not self.central_on_grid:
+            output = np.full_like(output, np.nan)
+        return output
+
+
+class RngReplayFakePyqz(NarrowPdfFakePyqz):
+    def __init__(self, *, raise_after_sampling=False):
+        super().__init__()
+        self.raise_after_sampling = raise_after_sampling
+        self.native_ratios = None
+        self.fallback_ratio_calls = []
+
+    def get_global_qz(self, data, data_cols, which_grids, **kwargs):
+        from scipy import stats
+
+        del which_grids
+        srs = int(kwargs["srs"])
+        line_names = [name for name in data_cols if not name.startswith("std")]
+        sampled = np.full((srs + 1, len(line_names)), np.nan)
+        for line_index, line_name in enumerate(line_names):
+            flux = float(data[0, data_cols.index(line_name)])
+            error = float(data[0, data_cols.index(f"std{line_name}")])
+            sampled[0, line_index] = flux
+            if error > 0.0:
+                sampled[1:, line_index] = stats.truncnorm(
+                    -flux / error, np.inf, loc=flux, scale=error
+                ).rvs(srs)
+            elif error == 0.0:
+                sampled[1:, line_index] = flux
+            else:
+                raise ValueError("Unexpected synthetic line error.")
+        self.native_ratios = [
+            np.log10(sampled[:, 0] / sampled[:, 1]),
+            np.log10(sampled[:, 2] / sampled[:, 1]),
+        ]
+        if self.raise_after_sampling:
+            raise UnboundLocalError("synthetic native contour failure")
+        return super().get_global_qz(data, data_cols, [], **kwargs)
+
+    def interp_qz(self, qz, ratio_values, diagnostic, **kwargs):
+        self.fallback_ratio_calls.append(
+            [np.asarray(value).copy() for value in ratio_values]
+        )
+        return super().interp_qz(qz, ratio_values, diagnostic, **kwargs)
+
+
+def _narrow_pdf_spectra(bin_id=4):
+    from model_grid_diagnostics import BinSpectra
+
+    return BinSpectra(
+        bin_ids=np.array([bin_id]),
+        fluxes=np.array([[10.0, 5.0, 28.6, 4.0, 3.0, 2.0]]),
+        errors=np.full((1, 6), 0.01),
+        pixel_counts=np.ones(1, dtype=int),
+    )
+
+
+def test_pyqz_adaptive_fallback_recovers_narrow_on_grid_pdf():
+    from model_grid_diagnostics import run_pyqz_spectra
+
+    run = run_pyqz_spectra(
+        NarrowPdfFakePyqz(),
+        _narrow_pdf_spectra(),
+        random_seed=17,
+        srs=800,
+        adaptive_kde_fallback=True,
+    )
+
+    assert run.results["valid"].tolist() == [1]
+    assert np.isfinite(run.results["o_h"][0])
+    assert np.isfinite(run.results["o_h_err"][0])
+    assert np.isfinite(run.results["log_q"][0])
+    assert np.isfinite(run.results["log_q_err"][0])
+    assert run.failures == ()
+    assert run.recoveries and run.recoveries[0][0] == 4
+
+
+def test_pyqz_adaptive_fallback_is_deterministic_and_restores_numpy_state():
+    from model_grid_diagnostics import run_pyqz_spectra
+
+    state_before = np.random.get_state()
+    first = run_pyqz_spectra(
+        NarrowPdfFakePyqz(),
+        _narrow_pdf_spectra(),
+        random_seed=17,
+        srs=800,
+        adaptive_kde_fallback=True,
+    )
+    state_after = np.random.get_state()
+    second = run_pyqz_spectra(
+        NarrowPdfFakePyqz(),
+        _narrow_pdf_spectra(),
+        random_seed=17,
+        srs=800,
+        adaptive_kde_fallback=True,
+    )
+
+    for name in first.results:
+        np.testing.assert_array_equal(first.results[name], second.results[name])
+    for before, after in zip(state_before, state_after):
+        np.testing.assert_array_equal(before, after)
+
+
+@pytest.mark.parametrize("raise_after_sampling", [False, True])
+def test_pyqz_adaptive_fallback_replays_native_mc_draws_exactly(
+    raise_after_sampling,
+):
+    from model_grid_diagnostics import run_pyqz_spectra
+
+    fake = RngReplayFakePyqz(raise_after_sampling=raise_after_sampling)
+    spectra = _narrow_pdf_spectra()
+    spectra.errors[0, 1] = 0.0
+
+    run = run_pyqz_spectra(
+        fake,
+        spectra,
+        random_seed=29,
+        srs=80,
+        adaptive_kde_fallback=True,
+    )
+
+    assert run.results["valid"].tolist() == [1]
+    assert run.results["flag"].tolist() == [13]
+    assert run.results["rs_offgrid"].tolist() == [0.0]
+    assert run.failures == ()
+    assert run.recoveries and run.recoveries[0][0] == 4
+    assert len(fake.fallback_ratio_calls) == 2
+    for ratio_call in fake.fallback_ratio_calls:
+        for expected, actual in zip(fake.native_ratios, ratio_call):
+            np.testing.assert_array_equal(actual, expected)
+    assert np.ptp(fake.native_ratios[1]) > 0.0
+
+
+def test_pyqz_adaptive_fallback_keeps_native_flag8_without_replay():
+    from model_grid_diagnostics import run_pyqz_spectra
+
+    fake = NarrowPdfFakePyqz(central_on_grid=False, native_flag=8)
+    run = run_pyqz_spectra(
+        fake,
+        _narrow_pdf_spectra(bin_id=8),
+        adaptive_kde_fallback=True,
+    )
+
+    assert run.results["valid"].tolist() == [0]
+    assert run.results["flag"].tolist() == [8]
+    assert run.failures == ()
+    assert run.recoveries == ()
+    assert fake.interp_calls == 0
+
+
+def test_pyqz_adaptive_fallback_fails_closed_when_direct_ratios_are_off_grid():
+    from model_grid_diagnostics import run_pyqz_spectra
+
+    run = run_pyqz_spectra(
+        NarrowPdfFakePyqz(central_on_grid=False),
+        _narrow_pdf_spectra(bin_id=9),
+        adaptive_kde_fallback=True,
+    )
+
+    assert run.results["valid"].tolist() == [0]
+    assert run.results["flag"].tolist() == [1234]
+    assert run.recoveries == ()
+    assert len(run.failures) == 1
+    assert "Central diagnostic ratios are outside" in run.failures[0][1]
+
+
+def test_pyqz_adaptive_fallback_is_opt_in():
+    from model_grid_diagnostics import run_pyqz_spectra
+
+    fake = NarrowPdfFakePyqz()
+    run = run_pyqz_spectra(fake, _narrow_pdf_spectra())
+
+    assert run.results["valid"].tolist() == [0]
+    assert run.recoveries == ()
+    assert fake.interp_calls == 0
+
+
 def test_pyqz_batch_adapter_uses_locked_configuration_and_continues_after_failure():
     from model_grid_diagnostics import BinSpectra, run_pyqz_spectra
 
@@ -987,5 +1212,15 @@ def test_sfr_wires_fixed_model_grid_fields_and_provenance():
     )
     missing = [snippet for snippet in required if snippet not in source]
     assert not missing, f"SFR+Z.py is missing model-grid contract snippets: {missing}"
+    assert "empirical chi2<=25 gross-mismatch cut" in source
+    assert "chi2>25 empirical gross mismatch" in source
+    assert source.count("adaptive_kde_fallback=True") == 1
+    assert "adaptive-local-KDE recovery" in source
+    spatial_pyqz_block = source[
+        source.index("pyqz_bin_run = run_pyqz_spectra(") : source.index(
+            'print_model_failures("pyqz bins"'
+        )
+    ]
+    assert "adaptive_kde_fallback" not in spatial_pyqz_block
     assert "JY22 corrects SII6716 and SII6730 separately" not in source
     assert "shared Balmer correction" not in source

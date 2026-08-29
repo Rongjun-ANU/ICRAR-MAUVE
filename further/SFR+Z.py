@@ -316,7 +316,7 @@ Changes (2026-08-24)
 * The main JY22 O/H maps are post-depletion gas-phase abundances; explicit
   pre-depletion maps retain the native Ji-Yan grid scale. Added posterior means,
   marginal equal-tailed 16th/84th percentiles, minimum chi-square, best-point
-  ratio residuals, nominal fit-adequacy/QC flags, validity maps, and log-only
+  ratio residuals, empirical gross-mismatch/QC flags, validity maps, and log-only
   integrated HII/SF results from the released Peng2026 grid.
 
 Changes (2026-08-25)
@@ -328,6 +328,18 @@ Changes (2026-08-25)
 * Record the inference shape and linear surface interpolation in the primary
   FITS header. JY22 fit and edge flags remain required because denser sampling
   does not repair spectra that are inconsistent with the model surface.
+
+Changes (2026-08-29)
+-----------------------
+* Relax the local JY22 gross-mismatch screen from chi-square <= 9 to <= 25.
+  This is an empirical MAUVE QC cut, not a physically meaningful boundary or a
+  literature-calibrated goodness-of-fit threshold; continuous chi-square and
+  N2/S2/R3 residual products remain the authoritative diagnostics.
+* Recover integrated-only pyqz results when its native fixed global KDE mesh
+  under-resolves a narrow Monte Carlo PDF. The fallback replays the documented
+  seed on the same MAPPINGS-V diagnostic and evaluates the same multivariate
+  KDE/0.61 contour on a local adaptive mesh; spatial-bin results and genuinely
+  off-grid integrated spectra remain unchanged.
 """
 
 # ------------------------------------------------------------------
@@ -445,7 +457,7 @@ if (
     try:
         from model_grid_diagnostics import (
             JY22_DEPLETION_OFFSET_DEX,
-            JY22_FORMAL_CHI2_MAX,
+            JY22_EMPIRICAL_CHI2_MAX,
             JY22_INTEGER_FIELDS,
             MODEL_LINE_BASES,
             NB_INTEGER_FIELDS,
@@ -3737,6 +3749,15 @@ def print_model_failures(label, failures):
             print(f"  BINID(s) {identifiers}{suffix}")
 
 
+def print_model_recoveries(label, recoveries):
+    """Report spectra recovered from a non-finite native pyqz KDE result."""
+    if not recoveries:
+        print(f"{label}: native global KDE retained")
+        return
+    for bin_id, message in recoveries:
+        print(f"{label}: BINID {bin_id} adaptive-local-KDE recovery: {message}")
+
+
 def selected_model_field(source_map, selection, *, integer=False):
     """Apply an HII/SF mask without changing the underlying shared fit."""
     if integer:
@@ -4116,7 +4137,8 @@ if (
             "JY22/Peng2026: raw close-pair ratios=N2,S2,R3; posterior means "
             "with marginal equal-tailed p16/p84; full raw-ratio covariance; "
             f"post-depletion O/H=pre-depletion-{JY22_DEPLETION_OFFSET_DEX:.2f}; "
-            f"nominal fit_ok chi2<={JY22_FORMAL_CHI2_MAX:g}; error inflation=1.0"
+            f"empirical chi2<={JY22_EMPIRICAL_CHI2_MAX:g} gross-mismatch cut; "
+            "not a physical boundary; error inflation=1.0"
         )
         print(
             f"JY22 grid: {JY22_GRID.source_path}; "
@@ -4161,6 +4183,7 @@ if (
             "aperture": integrated,
             "spectrum": corrected_integrated_model_spectrum(integrated),
             "pyqz": empty_pyqz_result(),
+            "pyqz_recovered": False,
             "nebulabayes": empty_nebulabayes_result(),
             "jy22": empty_jy22_result(),
         }
@@ -4223,12 +4246,19 @@ if (
                     kde_qz_sampling=PYQZ_KDE_QZ_SAMPLING,
                     kde_do_singles=PYQZ_KDE_DO_SINGLES,
                     nproc=PYQZ_NPROC,
+                    adaptive_kde_fallback=True,
                 )
                 print_model_failures(
                     f"pyqz integrated {region}", integrated_pyqz_run.failures
                 )
+                print_model_recoveries(
+                    f"pyqz integrated {region}", integrated_pyqz_run.recoveries
+                )
                 MODEL_INTEGRATED_RESULTS[region]["pyqz"] = record_from_batch(
                     integrated_pyqz_run.results, 0
+                )
+                MODEL_INTEGRATED_RESULTS[region]["pyqz_recovered"] = bool(
+                    integrated_pyqz_run.recoveries
                 )
         if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
             integrated_nb_run = run_nebulabayes_spectra(
@@ -4316,12 +4346,18 @@ if (
         )
         if ENABLE_PYQZ_METALLICITY_PRODUCTS:
             result = summary["pyqz"]
+            pyqz_method = (
+                "adaptive-local-KDE recovery"
+                if summary["pyqz_recovered"]
+                else "native-global-KDE"
+            )
             print(
                 f"    pyqz: O/H={result['o_h']:.5f}+/-{result['o_h_err']:.5f}; "
                 f"LogQ={result['log_q']:.5f}+/-{result['log_q_err']:.5f}; "
                 f"logU={result['log_u']:.5f}+/-{result['log_u_err']:.5f}; "
                 f"flag={result['flag']}; off-grid={result['rs_offgrid']:.2f}%; "
-                f"valid={result['valid']} (uncertainties: 0.61 KDE contour)"
+                f"valid={result['valid']}; method={pyqz_method} "
+                "(uncertainties: 0.61 KDE contour)"
             )
         if ENABLE_NEBULABAYES_METALLICITY_PRODUCTS:
             result = summary["nebulabayes"]
@@ -6176,8 +6212,8 @@ if ENABLE_JY22_METALLICITY_PRODUCTS:
         'Main O_H_JY22 gas-phase scale',
     )
     new_hdul[0].header['JY22FMAX'] = (
-        JY22_FORMAL_CHI2_MAX,
-        'Nominal chi2 maximum for JY22_FIT_OK',
+        JY22_EMPIRICAL_CHI2_MAX,
+        'Empirical chi2 maximum for JY22_FIT_OK; not physical',
     )
     new_hdul[0].header['JY22EINF'] = (
         JY22_ERROR_INFLATION,
@@ -6208,7 +6244,7 @@ if ENABLE_JY22_METALLICITY_PRODUCTS:
         'Main JY22 O/H is post-depletion gas phase; PREDEP HDUs retain grid O/H.'
     )
     new_hdul[0].header.add_history(
-        'JY22 flag bit 32 marks nominal chi2>9 model-surface mismatch; valid is numeric.'
+        'JY22 flag bit 32 marks chi2>25 empirical gross mismatch; valid is numeric.'
     )
 
 # Gas E(B-V)
@@ -7316,11 +7352,11 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             CARTA_DIMENSIONLESS_BUNIT,
             [
                 "JY22 QC bits: 1=O/H edge, 2=logU edge, 4=posterior invalid",
-                "8=covariance invalid, 16=exception, 32=chi2>9 poor fit, -99=not evaluated; HII",
+                "8=covariance invalid, 16=exception, 32=chi2>25 empirical gross mismatch, -99=not evaluated; HII",
             ],
             [
                 "JY22 QC bits: 1=O/H edge, 2=logU edge, 4=posterior invalid",
-                "8=covariance invalid, 16=exception, 32=chi2>9 poor fit, -99=not evaluated; SF",
+                "8=covariance invalid, 16=exception, 32=chi2>25 empirical gross mismatch, -99=not evaluated; SF",
             ],
             dtype=np.int16,
             references=jy22_references,
@@ -7332,8 +7368,8 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             MODEL_OUTPUT_MAPS["JY22_FIT_OK_HII"],
             MODEL_OUTPUT_MAPS["JY22_FIT_OK_SF"],
             CARTA_DIMENSIONLESS_BUNIT,
-            "1=numerically valid and nominal chi2<=9 (1 dof); 0=not fit-adequate or invalid; -99 not evaluated; HII",
-            "1=numerically valid and nominal chi2<=9 (1 dof); 0=not fit-adequate or invalid; -99 not evaluated; SF",
+            "1=valid and empirical chi2<=25 gross-mismatch cut; not a physical threshold; -99 not evaluated; HII",
+            "1=valid and empirical chi2<=25 gross-mismatch cut; not a physical threshold; -99 not evaluated; SF",
             dtype=np.int16,
             references=jy22_references,
         )

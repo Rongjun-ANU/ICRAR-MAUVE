@@ -199,17 +199,30 @@ surface interpolation method in `JY22INT`. Finer sampling removes numerical
 banding but does not cure a spectrum that lies away from the model surface;
 `JY22_FIT_OK` and `JY22_FLAG` remain mandatory downstream QC.
 
+The log-only integrated HII/SF pyqz calculation first runs the unchanged native
+pyqz global KDE. If that result is non-finite because a high-S/N Monte Carlo PDF
+is narrower than its fixed global mesh, the wrapper replays the same seeded
+samples and evaluates the same multivariate KDE and 0.61 contour on a 257-by-257
+local adaptive mesh clipped to the MAPPINGS-V q/Z limits. Each integrated log
+line records either `native-global-KDE` or `adaptive-local-KDE recovery`.
+Central ratios outside the diagnostic grid remain invalid. This fallback is not
+enabled for spatial bins and does not change the pyqz FITS maps.
+
 `PYQZ_FLAG` is the raw package flag and `PYQZ_RS_OFFGRID` is the percentage of
 Monte Carlo samples outside the grid. `NB_FLAG` is a bitmask: 1 is an O/H edge,
 2 a log-U edge, 4 a log(P/k) edge, 8 an open/non-finite 68-percent interval, and
 16 a fit exception. `JY22_FLAG` is a bitmask: 1 is an O/H posterior edge, 2 a
 log-U posterior edge, 4 an invalid posterior, 8 an invalid/non-positive-definite
-covariance, 16 an unexpected fit exception, and 32 nominal model-surface
-misfit (`chi2_min > 9` for three ratios and two fitted parameters). For integer model maps, `-99`
+covariance, 16 an unexpected fit exception, and 32 empirical model-surface gross
+mismatch (`chi2_min > 25`). The value 25 is a local MAUVE QC choice, not a
+physically meaningful boundary or a literature-calibrated goodness-of-fit
+threshold. For integer model maps, `-99`
 means not evaluated; validity is 1 for a finite requested result and 0 for an
 attempted invalid fit. In particular, `JY22_VALID=1` requires finite posterior
 means, marginal bounds, minimum chi-square, and residuals; it does not assert
-that the model fits. `JY22_FIT_OK=1` adds the nominal `chi2_min <= 9` criterion.
+that the model fits. `JY22_FIT_OK=1` adds the empirical `chi2_min <= 25`
+gross-mismatch screen; continuous chi-square and N2/S2/R3 residuals should be
+retained and inspected rather than treating this binary cut as physical.
 `JY22_FIT_OK=0` includes both numerically valid poor fits and attempted invalid
 fits; inspect `JY22_VALID` and `JY22_FLAG` to distinguish them.
 The three metallicity scales must remain separate:
