@@ -1,0 +1,114 @@
+{
+  "bonnor_ebert": {
+    "xi_critical": 6.4507514441737515,
+    "mass_coefficient": 1.1822265884996543,
+    "density_contrast": 14.042032048638728,
+    "relative_error_vs_1p182": 0.0001916992382862137
+  },
+  "thin_disk_minimum_absolute_error": 8.881784197001252e-16,
+  "thickness_threshold_absolute_residual": 3.4205971388701073e-12,
+  "exact_regulator": [
+    {
+      "label": "Pressure only",
+      "b": 2.0,
+      "k_per_Myr": 0.0,
+      "supply_ratio": 1.0,
+      "K": 0.0,
+      "tau_eq_Myr": 1666.6666666666667,
+      "E_infinity": 1.0,
+      "t_cross_Myr": null,
+      "ODE_max_absolute_error": 2.3303581286882036e-12
+    },
+    {
+      "label": "Pressure + slower stripping",
+      "b": 2.0,
+      "k_per_Myr": 0.002,
+      "supply_ratio": 1.0,
+      "K": 6.666666666666667,
+      "tau_eq_Myr": 384.6153846153846,
+      "E_infinity": 0.23076923076923073,
+      "t_cross_Myr": 320.3496626673476,
+      "ODE_max_absolute_error": 2.2311041902867146e-12
+    },
+    {
+      "label": "Weak boost + faster stripping",
+      "b": 1.1,
+      "k_per_Myr": 0.004,
+      "supply_ratio": 1.0,
+      "K": 13.333333333333334,
+      "tau_eq_Myr": 230.94688221709006,
+      "E_infinity": 0.07621247113163972,
+      "t_cross_Myr": 23.737227400236954,
+      "ODE_max_absolute_error": 2.3290258610586534e-12
+    }
+  ],
+  "pressure_pulse": [
+    {
+      "label": "Windward disc",
+      "chi": 0.6,
+      "u_support_squared": 0.25,
+      "k_peak_per_Myr": 0.002857142857142857,
+      "pressure_sigma_Myr": 80,
+      "response_time_Myr": 15.0,
+      "SFR_peak_ratio": 1.1640278829676554,
+      "SFR_peak_time_Myr": -65.25,
+      "SFR_at_ram_peak": 1.0615311117695267,
+      "gas_at_ram_peak": 0.7455562556858066,
+      "SFR_at_200_Myr": 0.4895683091342366,
+      "gas_at_200_Myr": 0.5771142561451709,
+      "stripped_initial_gas_units_at_200_Myr": 0.4322617874505285,
+      "max_mass_balance_residual": 1.887379141862766e-15
+    },
+    {
+      "label": "Leeward disc",
+      "chi": 0.12,
+      "u_support_squared": 1.0,
+      "k_peak_per_Myr": 0.00625,
+      "pressure_sigma_Myr": 80,
+      "response_time_Myr": 15.0,
+      "SFR_peak_ratio": 1.0,
+      "SFR_peak_time_Myr": -400.0,
+      "SFR_at_ram_peak": 0.40124633831451273,
+      "gas_at_ram_peak": 0.5457526886099984,
+      "SFR_at_200_Myr": 0.21565400977603572,
+      "gas_at_200_Myr": 0.33178245375371757,
+      "stripped_initial_gas_units_at_200_Myr": 0.7278526329012582,
+      "max_mass_balance_residual": 2.0539125955565396e-15
+    }
+  ],
+  "angular_response": {
+    "omega_per_Myr": 0.040908486601827804,
+    "lag_15Myr_degrees": 31.534414609710375,
+    "amplitude_15Myr": 0.8523261727172777,
+    "max_equation_residual": 2.7755575615628914e-16
+  },
+  "worked_example": {
+    "n_e_per_cm3": 0.0003,
+    "mu_e": 1.17,
+    "v_kms": 1000.0,
+    "T_K": 20000000.0,
+    "P_ram_over_k_K_cm3": 42522.77698496793,
+    "P_thermal_over_k_K_cm3": 11699.999999999998,
+    "weight_baseline_over_k_K_cm3": 30911.13843457336,
+    "weight_10pct_support_increase_over_k_K_cm3": 32677.48920226327,
+    "Pmid_baseline_over_k_K_cm3": 42611.13843457336,
+    "Pmid_perturbed_over_k_K_cm3": 65638.87769474724,
+    "p_ratio_with_10pct_support_increase": 1.5404159594452393,
+    "b_ratio_with_10pct_support_increase": 1.128304498291057,
+    "Q_g": 1.1841204685724787,
+    "Q_g_after_g1p5_sR1p2": 0.9472963748579829,
+    "M_BE_Msun_c2kms_Poverk1e5": 14847.435084257879,
+    "pressure_ratio_needed_for_20pct_cloud_support_increase": 4.2998169599999985,
+    "baseline_midplane_tff_Myr": 21.955357979694952,
+    "baseline_H_eff_pc": 73.62765378511781,
+    "baseline_vertical_crossing_Myr": 8.999068396461787
+  },
+  "pressure_inverse_max_relative_error": 7.771561172376096e-16,
+  "runtime": {
+    "python": "3.13.3",
+    "numpy": "2.2.6",
+    "scipy": "1.15.2",
+    "matplotlib": "3.10.3"
+  },
+  "scope": "Illustrative closures; algebra and implementation checked, not observational validation."
+}

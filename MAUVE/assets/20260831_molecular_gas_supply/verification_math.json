@@ -1,0 +1,176 @@
+{
+  "status": "passed",
+  "check_count": 27,
+  "checks": [
+    {
+      "name": "surface_rate_units",
+      "passed": true,
+      "detail": 1.0
+    },
+    {
+      "name": "exact_budget_dictionary",
+      "passed": true,
+      "detail": "256 rational-valued budgets; Eq7-9 and Eq21"
+    },
+    {
+      "name": "paper1_timescale_counterexample",
+      "passed": true,
+      "detail": 1.6666666666666667
+    },
+    {
+      "name": "chemical_factor_two",
+      "passed": true,
+      "detail": 5.281347969004825
+    },
+    {
+      "name": "chemical_solution",
+      "passed": true,
+      "detail": "501 time samples at each of two rates with identical equilibrium"
+    },
+    {
+      "name": "neutral_fraction_budget",
+      "passed": true,
+      "detail": "Eq18-20 exact"
+    },
+    {
+      "name": "neutral_phase_cancellation",
+      "passed": true,
+      "detail": "Chemistry cancels from total gas"
+    },
+    {
+      "name": "gas_response_product_rule",
+      "passed": true,
+      "detail": 0.18000000000000002
+    },
+    {
+      "name": "metal_budget_elimination",
+      "passed": true,
+      "detail": "Eq2"
+    },
+    {
+      "name": "metal_inversion",
+      "passed": true,
+      "detail": "Eq46"
+    },
+    {
+      "name": "base10_differential",
+      "passed": true,
+      "detail": 0.0069077552790255264
+    },
+    {
+      "name": "chemical_worked_example",
+      "passed": true,
+      "detail": [
+        0.3348712804298173,
+        0.11923889468071215,
+        0.21563238574910515
+      ]
+    },
+    {
+      "name": "beam_nonlinearity",
+      "passed": true,
+      "detail": {
+        "local_mean": 0.6134105887206102,
+        "mean_column_rate": 0.3348712804298173,
+        "ratio": 1.831780222936047
+      }
+    },
+    {
+      "name": "formation_coefficient_rounding",
+      "passed": true,
+      "detail": 0.14162105084916404
+    },
+    {
+      "name": "IR_coefficient_rounding",
+      "passed": true,
+      "detail": 0.043619181660921595
+    },
+    {
+      "name": "FUV_coefficient_rounding",
+      "passed": true,
+      "detail": 0.29835520256070375
+    },
+    {
+      "name": "column_to_mass",
+      "passed": true,
+      "detail": 10.89870071794247
+    },
+    {
+      "name": "HI_surface_density_coefficient",
+      "passed": true,
+      "detail": 0.019868331408809118
+    },
+    {
+      "name": "angular_scale",
+      "passed": true,
+      "detail": 79.99425738307343
+    },
+    {
+      "name": "velocity_units",
+      "passed": true,
+      "detail": 1.022712165045695
+    },
+    {
+      "name": "ring_flux_example",
+      "passed": true,
+      "detail": 0.03212945024444468
+    },
+    {
+      "name": "annulus_convergence_sign",
+      "passed": true,
+      "detail": "Inward mass flux increasing outward supplies an annulus"
+    },
+    {
+      "name": "MHONGOOSE_sensitivity_reconstruction",
+      "passed": true,
+      "detail": {
+        "Tb_rms_K": 2.2783386360610596,
+        "NHI_3sigma": 5.897259077099697e+19
+      }
+    },
+    {
+      "name": "beam_sensitivity_scaling",
+      "passed": true,
+      "detail": "Equal flux noise scaling, not an exposure forecast"
+    },
+    {
+      "name": "identical_snapshot_examples",
+      "passed": true,
+      "detail": "Both illustrative molecular budgets are stationary"
+    },
+    {
+      "name": "lifecycle_proxy",
+      "passed": true,
+      "detail": "0.7 Msun pc^-2 Myr^-1; 35 times the toy SFR"
+    },
+    {
+      "name": "net_rate_error",
+      "passed": true,
+      "detail": "Illustrative uncorrelated errors"
+    }
+  ],
+  "method": "Exact rational identities, dimensional checks with astropy, numerical analytic-solution checks; no SymPy dependency",
+  "versions": {
+    "python": "3.13.3",
+    "numpy": "2.2.6",
+    "astropy": "7.0.2",
+    "matplotlib": "3.10.3"
+  },
+  "examples": {
+    "F": 0.3348712804298173,
+    "D_photo": 0.11923889468071215,
+    "net_chemical": 0.21563238574910515,
+    "beam_local_mean": 0.6134105887206102,
+    "beam_mean_column_rate": 0.3348712804298173,
+    "clumping_ratio": 1.831780222936047,
+    "mass_column_Msun_pc2": 10.89870071794247,
+    "formation_Myr": 5.281347969004825,
+    "rate_change_timescale_Myr": 50.54296774615034,
+    "ring_Msun_yr": 0.03212945024444468
+  },
+  "figures": [
+    "reservoir_budget.png",
+    "identifiability_and_beam.png"
+  ],
+  "limits": "Does not validate physical closures or make any MAUVE rate measurement."
+}

@@ -1,0 +1,257 @@
+{
+  "purpose": "Fixed-state emissivity and arithmetic illustration; no MAUVE data used",
+  "pyneb_version": "1.1.30",
+  "density_cm-3": 100.0,
+  "O++_over_H+_input": 0.00025,
+  "atomic_data": {
+    "OIII_A": "o_iii_atom_FFT04-SZ00.dat",
+    "OIII_collision": "o_iii_coll_SSB14.dat",
+    "HI_recombination": "h_i_rec_SH95.hdf5"
+  },
+  "table": [
+    {
+      "Te_K": 5000.0,
+      "OIII5007_over_Hbeta": 0.27716201597673445,
+      "OIII4363_over_4959plus5007": 0.0001803481940286936
+    },
+    {
+      "Te_K": 6000.0,
+      "OIII5007_over_Hbeta": 0.7929748392097865,
+      "OIII4363_over_4959plus5007": 0.0005418422265810991
+    },
+    {
+      "Te_K": 8000.0,
+      "OIII5007_over_Hbeta": 3.0452249265190936,
+      "OIII4363_over_4959plus5007": 0.00214144362912722
+    },
+    {
+      "Te_K": 10000.0,
+      "OIII5007_over_Hbeta": 7.079096578635773,
+      "OIII4363_over_4959plus5007": 0.004881144389468412
+    },
+    {
+      "Te_K": 12000.0,
+      "OIII5007_over_Hbeta": 12.730289647562454,
+      "OIII4363_over_4959plus5007": 0.008447038943278631
+    },
+    {
+      "Te_K": 15000.0,
+      "OIII5007_over_Hbeta": 23.45474343346825,
+      "OIII4363_over_4959plus5007": 0.014599945489634916
+    },
+    {
+      "Te_K": 20000.0,
+      "OIII5007_over_Hbeta": 45.08724504967022,
+      "OIII4363_over_4959plus5007": 0.025154608034854125
+    }
+  ],
+  "isothermal_recovery": {
+    "Te_K": 9997.356846869103,
+    "O++_over_H+": 0.0002502259002635259
+  },
+  "equal_EM_8000_12000K": {
+    "Te_EM_mean_K": 10000.0,
+    "t2": 0.04,
+    "Te_inferred_K": 11148.540300786497,
+    "OIII5007_over_Hbeta": 7.046032963351853,
+    "O++_over_H+_inferred": 0.00017345095893252306,
+    "bias_dex": -0.158763303468003
+  },
+  "critical_densities": [
+    {
+      "ion": "S2",
+      "wave_A_label": 6716,
+      "upper_level": 3,
+      "lower_level": 1,
+      "ncrit_cm-3_at_10000K": 1620.0826737517145,
+      "atom_file": "s_ii_atom_RGJ19.dat",
+      "collision_file": "s_ii_coll_TZ10.dat"
+    },
+    {
+      "ion": "S2",
+      "wave_A_label": 6731,
+      "upper_level": 2,
+      "lower_level": 1,
+      "ncrit_cm-3_at_10000K": 4213.89221221531,
+      "atom_file": "s_ii_atom_RGJ19.dat",
+      "collision_file": "s_ii_coll_TZ10.dat"
+    },
+    {
+      "ion": "N2",
+      "wave_A_label": 6584,
+      "upper_level": 4,
+      "lower_level": 3,
+      "ncrit_cm-3_at_10000K": 88646.73371732041,
+      "atom_file": "n_ii_atom_FFT04.dat",
+      "collision_file": "n_ii_coll_T11.dat"
+    },
+    {
+      "ion": "N2",
+      "wave_A_label": 5755,
+      "upper_level": 5,
+      "lower_level": 4,
+      "ncrit_cm-3_at_10000K": 16361146.202587621,
+      "atom_file": "n_ii_atom_FFT04.dat",
+      "collision_file": "n_ii_coll_T11.dat"
+    },
+    {
+      "ion": "O3",
+      "wave_A_label": 5007,
+      "upper_level": 4,
+      "lower_level": 3,
+      "ncrit_cm-3_at_10000K": 691207.5283787353,
+      "atom_file": "o_iii_atom_FFT04-SZ00.dat",
+      "collision_file": "o_iii_coll_SSB14.dat"
+    },
+    {
+      "ion": "O3",
+      "wave_A_label": 4363,
+      "upper_level": 5,
+      "lower_level": 4,
+      "ncrit_cm-3_at_10000K": 24225039.186746046,
+      "atom_file": "o_iii_atom_FFT04-SZ00.dat",
+      "collision_file": "o_iii_coll_SSB14.dat"
+    },
+    {
+      "ion": "S3",
+      "wave_A_label": 9069,
+      "upper_level": 4,
+      "lower_level": 2,
+      "ncrit_cm-3_at_10000K": 543184.957222012,
+      "atom_file": "s_iii_atom_FFTI06.dat",
+      "collision_file": "s_iii_coll_TG99.dat"
+    },
+    {
+      "ion": "S3",
+      "wave_A_label": 6312,
+      "upper_level": 5,
+      "lower_level": 4,
+      "ncrit_cm-3_at_10000K": 12452794.826709425,
+      "atom_file": "s_iii_atom_FFTI06.dat",
+      "collision_file": "s_iii_coll_TG99.dat"
+    }
+  ],
+  "MUSE_z0_coverage": {
+    "OII3727": {
+      "7000": false,
+      "8900": false,
+      "9300": false
+    },
+    "CII4267": {
+      "7000": false,
+      "8900": false,
+      "9300": false
+    },
+    "OIII4363": {
+      "7000": false,
+      "8900": false,
+      "9300": false
+    },
+    "OII_RL4650": {
+      "7000": false,
+      "8900": false,
+      "9300": false
+    },
+    "Hbeta": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "OIII5007": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "NII5755": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "HeI5876": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "SIII6312": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "Halpha": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "NII6584": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "SII6731": {
+      "7000": true,
+      "8900": true,
+      "9300": true
+    },
+    "HeI7065": {
+      "7000": false,
+      "8900": true,
+      "9300": true
+    },
+    "ArIII7136": {
+      "7000": false,
+      "8900": true,
+      "9300": true
+    },
+    "OII7320": {
+      "7000": false,
+      "8900": true,
+      "9300": true
+    },
+    "OII7330": {
+      "7000": false,
+      "8900": true,
+      "9300": true
+    },
+    "SIII9069": {
+      "7000": false,
+      "8900": false,
+      "9300": true
+    },
+    "SIII9531": {
+      "7000": false,
+      "8900": false,
+      "9300": false
+    }
+  },
+  "redshift_blue_entry": {
+    "OIII4363": 0.10016044006417602,
+    "OII3727": 0.2878991145693588
+  },
+  "N_enhancement_0p3dex_fixed_other_fluxes": {
+    "D16_dOH_dex": 0.3792,
+    "M13_N2_dOH_dex": 0.1386,
+    "M13_O3N2_dOH_dex": 0.0642
+  },
+  "SII_density_ratio_at_10000K": [
+    {
+      "ne_cm-3": 10.0,
+      "I6716_over_I6731": 1.4435106478367716
+    },
+    {
+      "ne_cm-3": 100.0,
+      "I6716_over_I6731": 1.3511179221917717
+    },
+    {
+      "ne_cm-3": 1000.0,
+      "I6716_over_I6731": 0.9138685689968634
+    },
+    {
+      "ne_cm-3": 10000.0,
+      "I6716_over_I6731": 0.5202685183974167
+    },
+    {
+      "ne_cm-3": 100000.0,
+      "I6716_over_I6731": 0.44744396679934006
+    }
+  ]
+}

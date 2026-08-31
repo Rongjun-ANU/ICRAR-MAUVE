@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "date": "2026-08-31",
+  "reviewer": "primary agent",
+  "pdf_sha256": "902420d59c2ba56417a79b4a0f182b3b2954c96c0c8180c0a37e3df3cd12c1fc",
+  "overview_pages": 35,
+  "overview_method": "All 35 pages rendered at 850-pixel maximum dimension; all four labelled contact sheets viewed.",
+  "high_resolution_pages": [1, 4, 7, 10, 13, 16, 17, 18, 19, 21, 22, 27, 29, 30, 35],
+  "high_resolution_max_dimension_px": 1600,
+  "standalone_figures_viewed": ["reservoir_budget.png", "identifiability_and_beam.png"],
+  "findings": [
+    "Cover and contents readable; no unintended blank pages.",
+    "No clipping, overlapping headers/footers, missing glyphs or equation fragments identified.",
+    "Critical chemistry, continuity, resolution and worked-example equations visually readable.",
+    "Long tables continue with repeated headers and intact rows; ranked observing priorities readable.",
+    "Figures are legible and explicitly identify constructed rather than observed values."
+  ],
+  "limits": "Visual review is not an empirical validation of scientific closures. The merged PDF is not accessibility-tagged. Any PDF modification invalidates this hash-bound review."
+}

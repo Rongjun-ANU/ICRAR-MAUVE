@@ -1,0 +1,55 @@
+{
+  "ideal_gas_max_scaled_error": 6.481364778210264e-12,
+  "ideal_stars_max_scaled_error": 6.481402386222206e-12,
+  "ideal_Z_max_yield_scaled_error": 1.1898785586385643e-11,
+  "mass_budget_max_relative_error": 1.0517336499307234e-15,
+  "metal_budget_max_relative_error": 2.7722672324592463e-15,
+  "stellar_Z_max_yield_scaled_error_x_gt_0p01": 5.093641430002497e-10,
+  "differential_loading_max_scaled_errors": [
+    7.351781220836054e-12,
+    1.58455063306584e-11,
+    2.4070244314793966e-11
+  ],
+  "slope_identity_max_absolute_error": 2.2532691991057405e-54,
+  "B_test_range": [
+    0.9996667220682296,
+    4.630928384961367e-19
+  ],
+  "history_counterexample": {
+    "early_late_mixture_weight_at_age_0p2": 0.34027758186458007,
+    "same_gas_error": 0.0,
+    "Z_single_pulse": 0.012,
+    "Z_two_pulses": 0.007642283593457708,
+    "delta_log10_Z": -0.19595809639209927
+  },
+  "positive_exact_family": {
+    "SFR_range": [
+      20.047489345090863,
+      40.094978690181726
+    ],
+    "Z_range": [
+      0.009025717839881,
+      0.010262843292404709
+    ],
+    "age_Gyr_range": [
+      3.077298067387133,
+      6.566589738838471
+    ],
+    "Mstar_Msun": 50118723362.72715,
+    "minimum_dZ_dSFR": 3.974581169263553e-05
+  },
+  "dynamic_response": {
+    "inflow": {
+      "nonlinear_log_slope": -0.4998348140237214,
+      "linear_prediction": -0.5
+    },
+    "efficiency": {
+      "nonlinear_log_slope": 0.4996472155968031,
+      "linear_prediction": 0.5
+    }
+  },
+  "conditioning_example": {
+    "pooled_slope": 0.2733554391413508,
+    "within_exact_mass_slope": -0.35000000000000026
+  }
+}

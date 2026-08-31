@@ -1,0 +1,346 @@
+{
+  "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260830 Nebular Metallicity - Atomic Physics Calibration Atlas and MUSE Guide.pdf",
+  "sha256": "ded7fe3907fd6cf6fdbc433abbfde6a9c4f0c7523361459f5d29b789e7e83cf8",
+  "pages": 55,
+  "outline_entries": 119,
+  "link_counts": {
+    "internal": 140,
+    "external": 232
+  },
+  "invalid_links": [],
+  "out_of_page_words": [],
+  "replacement_character_pages": [],
+  "short_pages_under_250_chars": [],
+  "page_text_summaries": [
+    {
+      "page": 1,
+      "characters": 652,
+      "start": "MAUVE / ICRAR - RESEARCH REPORT Nebular Metallicity Atomic physics, calibration methods, and a MUSE observing guide From abundances and ionizing photons to level populations, line fluxes, and the inverse problem of measu",
+      "end": "ivity - other elements and wavelengths. 30 AUGUST 2026 Prepared for Rongjun | Oxygen abundance by default Literature and physics synthesis. No MAUVE science products were modified."
+    },
+    {
+      "page": 2,
+      "characters": 4008,
+      "start": "Contents Executive answer Scope and how to read this report 1. What abundance are we trying to measure? 1.1 O/H is not the total metal mass fraction 1.2 Gas-phase, gas-plus-dust, and ionized-phase abundances differ 2. Th",
+      "end": "ructure, and biased temperatures 12.5 A comparison table with honest qualifications NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 2 / 55"
+    },
+    {
+      "page": 3,
+      "characters": 1854,
+      "start": "13. The MUSE guide: 7000, 8900, and 9300 A 13.1 Exact wavelength routing 13.2 Method availability is stricter than line availability 13.3 What is gained by each extension? 13.4 Practical checks specific to red aurorals 1",
+      "end": "ference Accuracy and systematic effects Other elements and non-optical measurements NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 3 / 55"
+    },
+    {
+      "page": 4,
+      "characters": 3476,
+      "start": "Executive answer An emission-line spectrum does not measure metallicity by counting metal-line photons alone. It measures the rate at which particular ions, in particular physical conditions, emit photons. To infer an ab",
+      "end": "ini et al. (2024); the qualifications behind those comparisons are developed below. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 4 / 55"
+    },
+    {
+      "page": 5,
+      "characters": 2672,
+      "start": "Scope and how to read this report The default target is gas-phase oxygen abundance in predominantly stellar-photoionized H II regions, measured from rest-frame optical nebular emission. Unless stated otherwise, \u201cmetallic",
+      "end": "e calibration if its output is \ud835\udc34O; that does not mean it directly measured O atoms. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 5 / 55"
+    },
+    {
+      "page": 6,
+      "characters": 2304,
+      "start": "Gas and stellar metallicities need not trace the same element mixture. Stellar EUV opacity and evolution depend strongly on iron and other elements, while a nebular O/H estimate measures oxygen in gas. Setting stellar me",
+      "end": "at C17 is the latest release. The chain can be read as a physical dependency graph: NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 6 / 55"
+    },
+    {
+      "page": 7,
+      "characters": 2168,
+      "start": "Element abundances + ionizing spectral shape + gas/dust geometry | Radiation transfer and ionization | Heating = cooling -> temperature | Collision/recombination populations | Local line emissivities | Volume integration",
+      "end": " The relevant thresholds help explain why different ions do not behave identically: NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 7 / 55"
+    },
+    {
+      "page": 8,
+      "characters": 2068,
+      "start": "Ionization step Approximate threshold Consequence H0 -> H+ 13.60 eV Defines the H-ionizing photon budget S+ -> S++ 23.34 eV S+ is removed by relatively modest- energy EUV photons He0 -> He+ 24.59 eV He recombination line",
+      "end": "2.86, but it varies with physical conditions and is not a universal observed ratio. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 8 / 55"
+    },
+    {
+      "page": 9,
+      "characters": 2928,
+      "start": "2.4 Heating: photon energy above the threshold becomes electron energy A hydrogen photoelectron initially carries approximately \u210e\ud835\udf08\u221213.6 eV. The hydrogen photoionization heating rate per volume is \u0393H = \ud835\udc5b(H0) \u222b \ud835\udf08H \u221e4\ud835\udf0b\ud835\udc3d\ud835\udf08 \u210e\ud835\udf08",
+      "end": "olved observational warning, not a license to discard the energy-balance equations. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 9 / 55"
+    },
+    {
+      "page": 10,
+      "characters": 2711,
+      "start": "3. Atomic and quantum physics: why these particular lines exist 3.1 From the Hamiltonian to wavelengths and transition probabilities For an ion with nuclear charge \ud835\udc4dnuc and several electrons, a schematic nonrelativistic ",
+      "end": "term, and the higher 1\ud835\udc460 term. The important optical transitions are approximately NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 10 / 55"
+    },
+    {
+      "page": 11,
+      "characters": 2298,
+      "start": "1\ud835\udc372 \u21923\ud835\udc432: 5007 A, 1\ud835\udc372 \u21923\ud835\udc431: 4959 A, 1\ud835\udc460 \u21921\ud835\udc372: 4363 A. The auroral 4363 upper state requires more excitation energy than the upper state of 5007 and 4959. That difference, rather than the word \u201cauroral\u201d itself, makes the ",
+      "end": "quires total population inflow to equal outflow. Ignoring pumping for compactness, NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 11 / 55"
+    },
+    {
+      "page": 12,
+      "characters": 1798,
+      "start": "\u2211 \ud835\udc57\u2260\ud835\udc62 \ud835\udc5b\ud835\udc57(\ud835\udc5b\ud835\udc52\ud835\udc5e\ud835\udc57\ud835\udc62+ \ud835\udc34\ud835\udc57\ud835\udc62) = \ud835\udc5b\ud835\udc62\u2211 \ud835\udc57\u2260\ud835\udc62 (\ud835\udc5b\ud835\udc52\ud835\udc5e\ud835\udc62\ud835\udc57+ \ud835\udc34\ud835\udc62\ud835\udc57), where spontaneous upward \ud835\udc34 values are zero, and all levels obey \u2211\ud835\udc57\ud835\udc5b\ud835\udc57= \ud835\udc5b(\ud835\udc4b\ud835\udc56). A two-level reduction gives \ud835\udc5b\ud835\udc62 \ud835\udc5b\ud835\udc59 = \ud835\udc5b\ud835\udc52\ud835\udc5e\ud835\udc59\ud835\udc62 \ud835\udc34\ud835\udc62\ud835\udc59+ \ud835\udc5b\ud835\udc52\ud835\udc5e\ud835\udc62\ud835\udc59 . The total, all-direction emitted power per ",
+      "end": "niversal constants. The exact input files are preserved in the calculation assets. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 12 / 55"
+    },
+    {
+      "page": 13,
+      "characters": 2436,
+      "start": "3.5 Recombination lines are physically different After a free electron recombines with an ion, it can cascade through bound states. For a hydrogen recombination line, \ud835\udc57H\u03b2 = \ud835\udc5b\ud835\udc52\ud835\udc5b\ud835\udc5d\ud835\udefcH\u03b2 eff (\ud835\udc47\ud835\udc52, \ud835\udc5b\ud835\udc52)\u210e\ud835\udf08H\u03b2. For a heavy-element r",
+      "end": "nical footnote for IFU studies: it defines what the inferred abundance represents. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 13 / 55"
+    },
+    {
+      "page": 14,
+      "characters": 2273,
+      "start": "4.2 Reddening correction is part of the inverse problem For a screen model, \ud835\udc39\ud835\udf06= \ud835\udc3c\ud835\udf0610\u22120.4\ud835\udc38(\ud835\udc35\u2212\ud835\udc49)\ud835\udc58(\ud835\udf06), and the Balmer decrement gives \ud835\udc38(\ud835\udc35\u2212\ud835\udc49) = 2.5 \ud835\udc58(H\u03b2) \u2212\ud835\udc58(H\u03b1)log\u206110[ \ud835\udc39H\u03b1/\ud835\udc39H\u03b2 (\ud835\udc3cH\u03b1/\ud835\udc3cH\u03b2)intrinsic ]. One must state the extinct",
+      "end": "itivity to the desired quantity as well as low sensitivity to nuisance quantities. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 14 / 55"
+    },
+    {
+      "page": 15,
+      "characters": 2053,
+      "start": "5. A numerical bridge from atomic physics to abundance recovery 5.1 A fixed-state calculation, not a self-consistent galaxy sequence For this report, PyNeb 1.1.30 was run at \ud835\udc5b\ud835\udc52= 100 cm\u22123 and a fixed O+ + /H+ = 2.5 \u00d7 10\u22124",
+      "end": "n independent validation of the atomic data or of the homogeneous-zone assumption. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 15 / 55"
+    },
+    {
+      "page": 16,
+      "characters": 2539,
+      "start": "5.2 Why auroral/nebular ratios measure temperature Suppose two upper levels of one ion require energies \ud835\udc38\ud835\udc4e> \ud835\udc38\ud835\udc5b above the ground. At low density, \ud835\udc3caur \ud835\udc3cneb \u2248\ud835\udc36(\ud835\udc47\ud835\udc52, \ud835\udc5b\ud835\udc52)exp\u2061[\u2212\ud835\udc38\ud835\udc4e\u2212\ud835\udc38\ud835\udc5b \ud835\udc58\ud835\udc47\ud835\udc52 ]. The ion abundance cancels. For the O",
+      "end": "/calibration sequence, not a universal number derived from oxygen abundance alone. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 16 / 55"
+    },
+    {
+      "page": 17,
+      "characters": 2611,
+      "start": "6. Density-sensitive versus temperature-sensitive ratios 6.1 What \u201csensitive\u201d actually means A ratio \ud835\udc45 is useful as a density diagnostic when |\ud835\udf15ln\u2061\ud835\udc45/\ud835\udf15ln\u2061\ud835\udc5b\ud835\udc52| is appreciable in the density range of interest and temperature",
+      "end": " posterior, not a precise density just because the ratio has many quoted decimals. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 17 / 55"
+    },
+    {
+      "page": 18,
+      "characters": 2471,
+      "start": "2. Intermediate regime: collisional and radiative rates compete differently for the two states. The ratio has useful density sensitivity. 3. High-density limit: both states approach collisionally controlled relative popu",
+      "end": "d denominator. Conversely, measuring [S III]6312 alone does not provide \ud835\udc47\ud835\udc52[S III]. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 18 / 55"
+    },
+    {
+      "page": 19,
+      "characters": 3203,
+      "start": "At higher density, the nebular upper state is often collisionally suppressed before the auroral upper state. The auroral/nebular ratio then rises without a temperature increase. A low-density thermometer would falsely in",
+      "end": "s, pretending that every line shares one density can dominate the abundance error. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 19 / 55"
+    },
+    {
+      "page": 20,
+      "characters": 3006,
+      "start": "7. Direct abundance measurements 7.1 What \u201cdirect\u201d means, and what it does not mean The classical direct CEL method measures temperature-sensitive lines, solves the atomic emissivities, derives ionic abundances, and comb",
+      "end": "can restore it, but apertures, flux scales, PSFs, and attenuation must be matched. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 20 / 55"
+    },
+    {
+      "page": 21,
+      "characters": 2716,
+      "start": "7.3 Red-line direct/temperature-anchored oxygen with MUSE The viable red strategy is not to replace [O III]4363 with an arbitrary strong line. It is to measure other temperature diagnostics and state the remaining temper",
+      "end": "ssumptions, but should be recorded as inferred flux, not an independent detection. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 21 / 55"
+    },
+    {
+      "page": 22,
+      "characters": 2695,
+      "start": "7.5 Heavy-element recombination-line abundances For a recombination line of the product ion, \ud835\udc4b\ud835\udc56+ 1 \ud835\udc3b+ = \ud835\udc3cRL \ud835\udc3cH\u03b2 \ud835\udefcH\u03b2 eff \ud835\udf08H\u03b2 \ud835\udefcRL eff \ud835\udf08RL . The weaker temperature dependence is attractive. Deep spectra of extragalactic H I",
+      "end": "ation Nonlinear weighting; N II stacks all windows, S III full, O+ lines 8900/full NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 22 / 55"
+    },
+    {
+      "page": 23,
+      "characters": 2342,
+      "start": "Some of these are better described as empirical strong-line estimators than semi-direct measurements; the table makes the actual information content explicit rather than relying on a label. 8.2 Why a temperature relation",
+      "end": "imits should not disappear silently from the description of the parent population. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 23 / 55"
+    },
+    {
+      "page": 24,
+      "characters": 2325,
+      "start": "9. Strong-line calibration atlas 9.1 Classification and the contract of a calibration A strong-line prescription requires four pieces of information: the exact ratio definition; its reference abundance scale; its allowed",
+      "end": " numbers above are the temperature-reference versions, not those alternative fits. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 24 / 55"
+    },
+    {
+      "page": 25,
+      "characters": 2727,
+      "start": "Physical content. N2 responds directly to N+/H+, indirectly to temperature, and empirically to the growth of N/O with O/H in the calibrating population. At low O/H, primary nitrogen and scatter in N/O weaken that leverag",
+      "end": "e-reference excitation correction; calibration coverage/branch ambiguity remain No NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 25 / 55"
+    },
+    {
+      "page": 26,
+      "characters": 2697,
+      "start": "Primary references: McGaugh (1991), Zaritsky et al. (1994), Kewley & Dopita (2002), Kobulnicky & Kewley (2004), and Pilyugin & Thuan (2005). The KK04 iterative \ud835\udc5e expression and upper-branch abundance expression are equat",
+      "end": "on and abundance pattern. Record whether the linear or polynomial version is used. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 26 / 55"
+    },
+    {
+      "page": 27,
+      "characters": 2430,
+      "start": "Advantages: every line is strong and close in wavelength; all are available even with the 7000-A limit; the index is designed to reduce a major nuisance direction. Limitations: N/S and N/O assumptions, [S II] quenching, ",
+      "end": " in their normal implementations, so are not complete nearby-MUSE-only estimators. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 27 / 55"
+    },
+    {
+      "page": 28,
+      "characters": 2260,
+      "start": "Pilyugin & Mattsson (2011) developed NS specifically for spectra lacking blue [O II]. With summed/Hbeta \ud835\udc453, \ud835\udc412, \ud835\udc462 and \ud835\udc63= log\u2061(\ud835\udc412/\ud835\udc462), their O/H equation 8 is: \ud835\udc34O = 8.454 \u22120.216log\u2061\ud835\udc453 \u22120.362log\u2061\ud835\udc462 \u22120.101\ud835\udc63, log\u2061\ud835\udc412 > \u22120.1;",
+      "end": "2.268) 0.09 [S II](6717+6731)/Halpha (-0.442, -0.360, -6.271, -8.339, -3.559) 0.06 NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 28 / 55"
+    },
+    {
+      "page": 29,
+      "characters": 3164,
+      "start": "\u211b definition Coefficients (\ud835\udc500, \ud835\udc501, \u2026) Reference \ud835\udf0eO/H, dex RS32 = 5007/Hbeta + [S II]/Halpha (-0.054, -2.546, -1.970, 0.082, 0.222) 0.08 O3S2 = (5007/Hbeta)/([S II]/Halpha) (0.191, -4.292, -2.538, 0.053, 0.332) 0.11 Their",
+      "end": "igh/low ionization plus Ne/O Strong excitation/hardness dependence Not nearby MUSE NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 29 / 55"
+    },
+    {
+      "page": 30,
+      "characters": 3838,
+      "start": "Index family Physical content Main caveat MUSE S2 alone or S3 alone Sulfur ionic emission/hydrogen Density, ion fraction, S/O, DIG S2 all; S3 full Stasinska (2006) introduced useful Ar3O3/S3O3 oxygen indicators. Diaz & P",
+      "end": "necessarily contradictory. Redshift can be a label for changing populations rather NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 30 / 55"
+    },
+    {
+      "page": 31,
+      "characters": 2623,
+      "start": "than the direct cause of a line-ratio change. The practical test is performance on an independent population spanning the same excitation, abundance pattern, density, and stellar-spectrum range. 10. Photoionization-model",
+      "end": "ts exist; grid version, pressure, electron distribution, and allowed domain matter NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 31 / 55"
+    },
+    {
+      "page": 32,
+      "characters": 3297,
+      "start": "Method What is fitted or interpolated Main benefit Principal caveat / MUSE applicability HII-CHI-mistry O/H, N/O, \ud835\udc48 via weighted comparison to a model grid Separates N/O when information permits; can include aurorals MUS",
+      "end": "ing inside a valid grid cell or a clearly documented extrapolation scheme. A point NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 32 / 55"
+    },
+    {
+      "page": 33,
+      "characters": 3132,
+      "start": "outside the grid is a model-domain failure, not evidence that its physical abundance lies exactly at the grid boundary. Selecting another diagnostic for rejected points changes the estimator and potentially the abundance",
+      "end": "he inferred O/H with independent temperature/RL/stellar benchmarks where possible. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 33 / 55"
+    },
+    {
+      "page": 34,
+      "characters": 2839,
+      "start": "Lopez-Sanchez et al. (2012) provide a useful test of methods against synthetic nebular models. Such a test asks whether an estimator can recover a known model input. It does not independently prove that the model\u2019s absol",
+      "end": " and standard oxygen ingredients include [O II]3727. Even this is a model-assisted NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 34 / 55"
+    },
+    {
+      "page": 35,
+      "characters": 2637,
+      "start": "hardness diagnostic, not a universal thermometer for the ionizing stars. Nearby MUSE lacks the usual complete optical oxygen-sulfur softness set. 11.3 Why D16 can cancel U and still be N/O-sensitive D16 combines two indi",
+      "end": ", model error N2 alone Often appreciable U response N/O and saturation in addition NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 35 / 55"
+    },
+    {
+      "page": 36,
+      "characters": 3151,
+      "start": "Method/index U sensitivity or treatment What remains uncontrolled O3N2 / O3S2 / R3 alone Typically strong excitation response Opposing ionic fractions, SED, density and elemental ratios O32, S32, Ne3O2 alone Primarily ex",
+      "end": "on scatter, and absolute accuracy There are at least five different uncertainties: NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 36 / 55"
+    },
+    {
+      "page": 37,
+      "characters": 2774,
+      "start": "1. Measurement uncertainty: photon noise, continuum subtraction, calibration, attenuation, and line blending. 2. Conditional calibration scatter: variation of reference O/H at a given ratio in the training population. 3.",
+      "end": "population relations, but cannot tell which scale is physically correct or restore NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 37 / 55"
+    },
+    {
+      "page": 38,
+      "characters": 3439,
+      "start": "information removed by saturation. The discrepancy can arise from several sources at once: CEL temperature weighting; stellar ionizing SED assumptions; total versus gas-phase abundance; abundance pattern/depletion; press",
+      "end": "he uncontrolled assumptions correlate with the scientific variable being studied?\u201d NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 38 / 55"
+    },
+    {
+      "page": 39,
+      "characters": 1498,
+      "start": "13. The MUSE guide: 7000, 8900, and 9300 A 13.1 Exact wavelength routing The ESO MUSE overview gives 480-930 nm nominal coverage; the user\u2019s requested 4800-9300 A baseline is used throughout. An extended blue mode exists",
+      "end": " Yes Halpha6563, [N II]6548,6584 Hydrogen, N+, red strong-line indices Yes Yes Yes NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 39 / 55"
+    },
+    {
+      "page": 40,
+      "characters": 1876,
+      "start": "Line / feature Main role To 7000 To 8900 To 9300 [S II]6717,6731 Density, S+, excitation/DIG Yes Yes Yes He I7065, [Ar III]7136 Helium, argon, complementary constraints No Yes Yes [O II]7320,7330 O+ abundance at assigned",
+      "end": "cted \ud835\udc47\ud835\udc52 from [S III] No complete pair No complete pair Yes if 6312 and 9069 usable NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 40 / 55"
+    },
+    {
+      "page": 41,
+      "characters": 2970,
+      "start": "Measurement / prescription 4800-7000 4800-8900 4800-9300 O+ from red [O II] with a low- zone temperature No Possible Possible O++ from 5007 with directly measured O III temperature No No No Red temperature-anchored total",
+      "end": "ured. Fit temperatures using the same atomic data and ratio definition throughout. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 41 / 55"
+    },
+    {
+      "page": 42,
+      "characters": 3176,
+      "start": "Noise rescaling, continuum-fit alternatives, and checking auroral widths/velocities against strong lines are useful diagnostics. Their acceptance thresholds should be chosen and justified for the actual data rather than ",
+      "end": "ity flags. A finite number is not automatically a scientifically admissible value. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 42 / 55"
+    },
+    {
+      "page": 43,
+      "characters": 2614,
+      "start": "A particularly helpful naming convention distinguishes measured, inferred from an atomic branching ratio, predicted from a temperature relation, and unconstrained. It prevents a catalog from making the high- ionization t",
+      "end": "undance and N/O For suitable H II conditions, a common approximation is \ud835\udc41 \ud835\udc42\u2243\ud835\udc41+ \ud835\udc42+, NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 43 / 55"
+    },
+    {
+      "page": 44,
+      "characters": 2858,
+      "start": "with an ionization correction when the ionic zones do not track each other adequately. A direct N+/O+ estimate requires temperature-dependent emissivities. N II5755 supplies a low-zone thermometer in MUSE; red O II7320,7",
+      "end": "tion. One [Ar III] detection should not be labeled a model-independent total Ar/H. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 44 / 55"
+    },
+    {
+      "page": 45,
+      "characters": 3123,
+      "start": "15.4 Carbon Carbon is important to cooling and chemical evolution but lacks an easy strong optical abundance pair in the adopted MUSE range. C II4267 recombination emission measures recombining C++, while UV C III]1907,1",
+      "end": "e same ion can provide a temperature because the upper excitation energies differ: NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 45 / 55"
+    },
+    {
+      "page": 46,
+      "characters": 3049,
+      "start": "\ud835\udc3cO III]1661 + 1666 \ud835\udc3c[O III]5007 \u21d2\ud835\udc47\ud835\udc52(O+ + ), followed by the usual ionic-emissivity abundance calculation. Christensen et al. (2012) demonstrate this in lensed galaxies. This is UV plus optical, not UV-only, and its long ",
+      "end": "n O+ remain important. A lone [O III]88-micron luminosity does not determine total NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 46 / 55"
+    },
+    {
+      "page": 47,
+      "characters": 2861,
+      "start": "O/H: it also depends on ionized-gas amount, O++ fraction, and density. Mid-IR neon, argon, and sulfur lines normalized to hydrogen can yield their own ionic/elemental abundances. Giveon et al. (2002) provide a primary IS",
+      "end": "t is context, not the primary support for the optical calibrations in this report. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 47 / 55"
+    },
+    {
+      "page": 48,
+      "characters": 2832,
+      "start": "17. Conclusions and recommended reading path The shortest correct explanation is: a metal/H line ratio counts ions only after correcting for emissivity, and emissivity requires a physical-state solution. Density ratios p",
+      "end": "irect O/H Adding logarithmic ionic abundances Sum O+/H+ and O++/H+ in linear units NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 48 / 55"
+    },
+    {
+      "page": 49,
+      "characters": 2662,
+      "start": "Label or operation Easy mistake Correct practice O II RL Assuming it measures the same parent ion as [O II] CEL RL is produced after recombination from O++; CEL traces O+ Red O II Substituting 7320+7330 into R23 It is a ",
+      "end": "n assessment, not a universal veto on using those lines in a multidimensional fit. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 49 / 55"
+    },
+    {
+      "page": 50,
+      "characters": 3219,
+      "start": "Appendix C. Search, evidence, reproducibility, and limitations Search protocol The search date/cutoff is 2026-08-30. Discovery used bounded searches for atomic emissivities, electron distributions, direct/semi-direct abu",
+      "end": "deliberately distinguish local homogeneous equations from integrated observations. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 50 / 55"
+    },
+    {
+      "page": 51,
+      "characters": 3083,
+      "start": "Production and provenance The Markdown is the text source for the PDF. Mathematical expressions are preserved in the source, and the PDF is checked after rendering for equation, table, and page-layout defects. Scientific",
+      "end": "Sloan Digital Sky Survey. Ionic-abundance and ionization-correction prescriptions. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 51 / 55"
+    },
+    {
+      "page": 52,
+      "characters": 3254,
+      "start": "12. Yates et al. (2020). Present-day mass-metallicity relation for galaxies using a new electron temperature method. A&A 634, A107; semi-direct bias and excitation correction. 13. Esteban et al. (2009). Keck HIRES Spectr",
+      "end": "tallicity relation at z > 3. A&A 488, 463; hybrid calibration, equation 1/Table 4. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 52 / 55"
+    },
+    {
+      "page": 53,
+      "characters": 3208,
+      "start": "32. Mannucci et al. (2010). A fundamental relation between mass, star formation rate and metallicity in local and high-redshift galaxies. MNRAS 408, 2115; composite abundance-selection procedure. 33. Pilyugin, Vilchez & ",
+      "end": "hift universe. 27 indices; Tables 2-4; not presented as a peer-reviewed consensus. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 53 / 55"
+    },
+    {
+      "page": 54,
+      "characters": 3384,
+      "start": "Photoionization grids and inference 48. Charlot & Longhetti (2001). Nebular Emission from Star-Forming Galaxies. MNRAS 323, 887; integrated stellar-population/nebula model. 49. Tremonti et al. (2004). The Origin of the M",
+      "end": "cy in H II regions. Nature 618, 249; observational temperature-structure evidence. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 54 / 55"
+    },
+    {
+      "page": 55,
+      "characters": 2706,
+      "start": "66. Peng et al. (2026, submitted preprint). Surprising increase of electron temperature in metal-rich star- forming region. Recent O+-thermometer warning; unresolved interpretation. Other elements and non-optical measure",
+      "end": " only for broader phase context, not as sole support for calibration coefficients. NEBULAR METALLICITY MAUVE / ICRAR | 30 AUG 2026 Atomic physics - calibration atlas - MUSE 55 / 55"
+    }
+  ]
+}

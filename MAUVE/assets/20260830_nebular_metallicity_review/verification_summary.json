@@ -1,0 +1,78 @@
+{
+  "status": "verified",
+  "date": "2026-08-30",
+  "markdown": {
+    "path": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260830 Nebular Metallicity - Atomic Physics Calibration Atlas and MUSE Guide.md",
+    "sha256": "7c1a3793984ee772c4356ca3708c636350cebea1a30deb9ffe7a552404373136",
+    "bytes": 154281,
+    "wc_word_count": 19935,
+    "canonical_source_byte_identical": true
+  },
+  "pdf": {
+    "path": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260830 Nebular Metallicity - Atomic Physics Calibration Atlas and MUSE Guide.pdf",
+    "sha256": "ded7fe3907fd6cf6fdbc433abbfde6a9c4f0c7523361459f5d29b789e7e83cf8",
+    "bytes": 4807198,
+    "pages": 55,
+    "outline_entries": 119,
+    "internal_links": 140,
+    "external_links": 232,
+    "invalid_links": 0,
+    "out_of_page_words": 0,
+    "replacement_character_pages": 0,
+    "short_pages_under_250_characters": 0
+  },
+  "content_inventory": {
+    "numbered_main_sections": 17,
+    "appendices": 4,
+    "bibliography_entries": 80,
+    "claim_clusters": 40,
+    "display_math_expressions": 91,
+    "inline_math_expressions": 180,
+    "tables": 20,
+    "original_atomic_emissivity_figures": 1,
+    "muse_windows_angstrom": [[4800, 7000], [4800, 8900], [4800, 9300]]
+  },
+  "checks": {
+    "physics": "verify_physics.py executed successfully with ICRAR Python and PyNeb 1.1.30; fixed-state ionic abundance recovered within 0.1 percent; density, temperature-mixture, wavelength, and algebra checks passed",
+    "conversion": "Pandoc MathML conversion with --fail-if-warnings exited 0 with no warnings",
+    "dom": "No merror, unconverted math, broken images, unintended non-web links, or checked horizontal overflow; see dom_audit.json",
+    "pdf_structure": "qa_report.py exited 0; see pdf_audit.json",
+    "markdown_parity": "cmp between final Markdown and report-source.md exited 0; SHA-256 hashes agree",
+    "source_consistency": "Bounded read-only worker verified all 80 bibliography entries against source_registry.json, every ledger source ID, no placeholders/control characters, valid local SVG link, and all requested scope sections",
+    "visual": "Every page covered by contact-sheet review and 20 selected high-resolution page inspections; final wavelength-table correction re-inspected at 150 dpi. The other 53 final page renders are pixel-identical to the reviewed version"
+  },
+  "visual_page_numbers_at_150_dpi": [7, 9, 11, 12, 15, 17, 18, 21, 24, 27, 28, 35, 37, 39, 40, 41, 46, 49, 51, 55],
+  "final_render_delta": {
+    "pages_compared": 55,
+    "changed_pages": [39, 40],
+    "pixel_identical_pages": 53,
+    "changed_pages_reinspected": true
+  },
+  "temporary_build_directory": "/private/tmp/nebular-metallicity-pdf.EeVJq4",
+  "final_temporary_qa_directory": "/private/tmp/nebular-metallicity-final-verified.H9ckxE",
+  "reproduction": {
+    "working_directory": "/Users/Igniz/Desktop/ICRAR/MAUVE",
+    "atomic_calculation": "/opt/miniconda3/envs/ICRAR/bin/python assets/20260830_nebular_metallicity_review/verify_physics.py",
+    "html": "pandoc assets/20260830_nebular_metallicity_review/report-source.md --from=markdown+tex_math_dollars --to=html5 --standalone --mathml --toc --toc-depth=2 --metadata=toc-title:Contents --resource-path=. --embed-resources --css=assets/20260830_nebular_metallicity_review/report.css --fail-if-warnings --output=REPORT.html",
+    "body_pdf": "node assets/20260830_nebular_metallicity_review/render_report.cjs REPORT.html BODY.pdf DOM_AUDIT.json",
+    "assembly": "python3 assets/20260830_nebular_metallicity_review/assemble_pdf.py BODY.pdf FINAL.pdf",
+    "render_all_pages": "pdftoppm -r 100 -png FINAL.pdf QA_DIR/page",
+    "structural_qa": "/opt/miniconda3/envs/ICRAR/bin/python assets/20260830_nebular_metallicity_review/qa_report.py FINAL.pdf QA_DIR",
+    "runtime_note": "Renderer uses the installed bundled Node/Playwright runtime and an isolated headless Chrome profile with HTTP(S) blocked. Assembly uses bundled Python with reportlab and pypdf. Supply actual output paths in place of the descriptive command arguments; render inspection remains a manual step."
+  },
+  "limitations": [
+    "A broad source-traceable calibration atlas, not an exhaustive enumeration of every published polynomial or a PRISMA systematic review.",
+    "Original Pagel1979, Zaritsky1994, and Pilyugin-Thuan2005 full texts were not all accessible; unchecked historical coefficients were not transcribed. Source access and preprint status are explicit in Appendix C and the claim ledger.",
+    "PyNeb examples validate fixed-state arithmetic and inversion, not a self-consistent photoionization grid, atomic-data truth, or measured MAUVE performance.",
+    "MUSE availability is wavelength routing subject to redshift, mode, masks, detectability, and the stated calibration assumptions. No production FITS or pipeline was audited or changed.",
+    "PDF visual, text, and link behavior was checked; full accessibility conformance was not audited.",
+    "Prior MAUVE memory informed report organization and verification conventions only; scientific claims were checked using sources retrieved during this task."
+  ],
+  "delegation": {
+    "worker": "/root/muse_alternative_sources",
+    "name": "Sartre",
+    "scope": "Bounded read-only primary-source discovery, metadata/notation checks, and final mechanical source-report consistency check",
+    "file_writes": false,
+    "scientific_reasoning_and_acceptance": "Main agent"
+  }
+}

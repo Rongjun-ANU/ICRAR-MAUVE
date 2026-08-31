@@ -1,0 +1,24 @@
+{
+  "date": "2026-08-31",
+  "report_markdown": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260831_FMR_Derivation_and_High_Mass_Inversion.md",
+  "report_pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260831_FMR_Derivation_and_High_Mass_Inversion.pdf",
+  "markdown_equals_canonical_source": true,
+  "pdf_equals_compiled_output": true,
+  "pages": 31,
+  "equation_tags_in_markdown": 74,
+  "numeric_equation_labels_1_through_70_found_in_pdf": true,
+  "figure_captions_and_images": 6,
+  "relative_markdown_links_resolve": 9,
+  "pdf_link_annotations": 107,
+  "replacement_characters": 0,
+  "text_spans_outside_safe_page_boundary": [],
+  "visual_review": "All-page contact sheets, selected full-resolution equation/table/figure/opening/closing pages, and all six original standalone figures inspected. Not every page inspected at full resolution.",
+  "scope_limit": "Numerical checks test worked equations and examples, not observational validity or a predicted transition mass.",
+  "sha256": {
+    "20260831_FMR_Derivation_and_High_Mass_Inversion.md": "bf3e47f0e97e6b9f5ee37f50cc1f1f7578fd0e5ee79a60d0f072d3cdb161f6a4",
+    "20260831_FMR_Derivation_and_High_Mass_Inversion.pdf": "a2e6c83ec0a1866e7a74591315600264fe366d72b3519a5aa72f2b18d94103ab",
+    "assets/20260831_fmr_derivation/verify_and_plot.py": "a8a7c6c5c06e188c48d582b6d2dde4255f10c1d1cdee79252c8314707da1a12e",
+    "assets/20260831_fmr_derivation/numerical_checks.json": "8027635b7ac8330ceffaf1bae99431e0b216a4f1d2279a3fae3ae75bd71ec4de",
+    "assets/20260831_fmr_derivation/fixed_mass_families.csv": "a11294d64abfce665e70f22b21805f65c786c7fd8e0052889be350d61e92dc92"
+  }
+}

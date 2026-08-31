@@ -1,0 +1,723 @@
+[
+  {
+    "id": "B01",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "NIST (accessed 2026-08-30)",
+    "title": "Atomic Spectra Database",
+    "url": "https://www.nist.gov/pml/atomic-spectra-database",
+    "notes": "Official levels, wavelengths, transition probabilities and ionization energies.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B02",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "NIST (accessed 2026-08-30)",
+    "title": "Atomic Spectroscopy: A Compendium of Basic Ideas, Notation, Data, and Formulas",
+    "url": "https://www.nist.gov/pml/atomic-spectroscopy-compendium-basic-ideas-notation-data-and-formulas/atomic-spectroscopy",
+    "notes": "Official atomic notation and selection rules.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B03",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Luridiana, Morisset & Shaw (2015)",
+    "title": "PyNeb: a new tool for analyzing emission lines. I. Code description and validation of results",
+    "url": "https://doi.org/10.1051/0004-6361/201323152",
+    "notes": "A&A 573, A42; multi-level emissivity implementation.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B04",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Storey & Hummer (1995)",
+    "title": "Recombination line intensities for hydrogenic ions - IV. Total recombination coefficients and machine-readable tables for Z = 1 to 8",
+    "url": "https://doi.org/10.1093/mnras/272.1.41",
+    "notes": "MNRAS 272, 41; hydrogenic recombination data.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B05",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Storey, Sochi & Badnell (2014)",
+    "title": "Collision strengths for nebular [O III] optical and infrared lines",
+    "url": "https://strathprints.strath.ac.uk/51191/",
+    "notes": "Primary atomic-scattering calculation; institutional record.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B06",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Storey, Sochi & Bastin (2017)",
+    "title": "Recombination coefficients for O II lines in nebular conditions",
+    "url": "https://arxiv.org/abs/1703.09982",
+    "notes": "Primary recombination-coefficient calculation.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B07",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Ferland et al. (2017)",
+    "title": "The 2017 Release of Cloudy",
+    "url": "https://arxiv.org/abs/1705.10877",
+    "notes": "Cloudy C17 forward-model description; not asserted to be the latest release.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B08",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Nicholls, Dopita & Sutherland (2012)",
+    "title": "Resolving the electron temperature discrepancies in H II regions and planetary nebulae: kappa-distributed electrons",
+    "url": "https://arxiv.org/abs/1204.3880",
+    "notes": "Original non-Maxwellian proposal.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B09",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Ferland et al. (2016)",
+    "title": "Electron energy distributions and the abundance discrepancy in gaseous nebulae",
+    "url": "https://uknowledge.uky.edu/physastron_facpub/475/",
+    "notes": "Primary thermalization counter-evidence; institutional full text.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B10",
+    "category": "Atomic physics and forward modeling",
+    "authors_year": "Draine & Kreisch (2018)",
+    "title": "Electron Energy Distributions in H II Regions and Planetary Nebulae: kappa-Distributions Do Not Apply",
+    "url": "https://arxiv.org/abs/1803.10003",
+    "notes": "Primary kinetic calculation; distinguishes local electron distributions from spatial temperature structure.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B11",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "Izotov et al. (2006)",
+    "title": "The chemical composition of metal-poor emission-line galaxies in the Data Release 3 of the Sloan Digital Sky Survey",
+    "url": "https://arxiv.org/abs/astro-ph/0511644",
+    "notes": "Ionic-abundance and ionization-correction prescriptions.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B12",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "Yates et al. (2020)",
+    "title": "Present-day mass-metallicity relation for galaxies using a new electron temperature method",
+    "url": "https://doi.org/10.1051/0004-6361/201936506",
+    "notes": "A&A 634, A107; semi-direct bias and excitation correction.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B13",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "Esteban et al. (2009)",
+    "title": "Keck HIRES Spectroscopy of Extragalactic H II Regions: C and O Abundances from Recombination Lines",
+    "url": "https://doi.org/10.1088/0004-637X/700/1/654",
+    "notes": "ApJ 700, 654; heavy-element RL measurements.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B14",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "Easeman et al. (2024)",
+    "title": "Optimal metallicity diagnostics for MUSE observations of low-z galaxies",
+    "url": "https://doi.org/10.1093/mnras/stad3464",
+    "notes": "MNRAS 527, 5484; online 2023, journal 2024; sulfur-reference comparison.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B15",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "Brazzini et al. (2024)",
+    "title": "Metallicity calibrations based on auroral lines from PHANGS-MUSE data",
+    "url": "https://doi.org/10.1051/0004-6361/202451007",
+    "notes": "A&A 691, A173; detailed locators refer to inspected arXiv:2410.00106v1.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B16",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "Monreal-Ibero et al. (2023)",
+    "title": "UM 462, a local green pea galaxy analogue under the MUSE magnifying glass",
+    "url": "https://doi.org/10.1051/0004-6361/202345891",
+    "notes": "A&A 674, A210; red-line abundance example.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B17",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "Zamora & Diaz (2023)",
+    "title": "Physical properties of circumnuclear ionizing clusters - I. NGC 7742",
+    "url": "https://doi.org/10.1093/mnras/stad2090",
+    "notes": "MNRAS 525, 5767; sulfur thermometer and inferred 9532 line.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B18",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "ESO (accessed 2026-08-30)",
+    "title": "MUSE instrument overview",
+    "url": "https://www.eso.org/sci/facilities/paranal/instruments/muse/overview.html",
+    "notes": "Official instrument documentation.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B19",
+    "category": "Direct, semi-direct, and MUSE measurements",
+    "authors_year": "ESO (accessed 2026-08-30)",
+    "title": "Instrument-specific FAQ: MUSE Phase 2",
+    "url": "https://support.eso.org/en-GB/kb/articles/instrument-specific-faq-muse-phase-2",
+    "notes": "Official wavelength/mode and AO-notch qualifications.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B20",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Pagel et al. (1979)",
+    "title": "On the composition of H II regions in southern galaxies - I. NGC 300 and 1365",
+    "url": "https://doi.org/10.1093/mnras/189.1.95",
+    "notes": "MNRAS 189, 95; original R23 lineage. Limited full-text access in this run.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B21",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "McGaugh (1991)",
+    "title": "H II Region Abundances: Model Oxygen Line Ratios",
+    "url": "https://adsabs.harvard.edu/pdf/1991ApJ...380..140M",
+    "notes": "ApJ 380, 140; DOI 10.1086/170569.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B22",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Zaritsky, Kennicutt & Huchra (1994)",
+    "title": "H II regions and the abundance properties of spiral galaxies",
+    "url": "https://doi.org/10.1086/173544",
+    "notes": "ApJ 420, 87; metadata/method-level evidence, not a checked polynomial transcription.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B23",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Denicolo, Terlevich & Terlevich (2002)",
+    "title": "New light on the search for low-metallicity galaxies - I. The N2 calibrator",
+    "url": "https://arxiv.org/abs/astro-ph/0110356",
+    "notes": "Historical N2 calibration.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B24",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Kewley & Dopita (2002)",
+    "title": "Using Strong Lines to Estimate Abundances in Extragalactic H II Regions and Starburst Galaxies",
+    "url": "https://doi.org/10.1086/341326",
+    "notes": "ApJS 142, 35; joint abundance/ionization and N2O2.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B25",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Pettini & Pagel (2004)",
+    "title": "[O III]/[N II] as an abundance indicator at high redshift",
+    "url": "https://doi.org/10.1111/j.1365-2966.2004.07591.x",
+    "notes": "MNRAS 348, L59; PP04 equations 1-3.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B26",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Kobulnicky & Kewley (2004)",
+    "title": "Metallicities of 0.3 < z < 1.0 Galaxies in the GOODS-North Field",
+    "url": "https://doi.org/10.1086/425299",
+    "notes": "ApJ 617, 240; iterative R23/q prescription.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B27",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Pilyugin & Thuan (2005)",
+    "title": "Oxygen Abundance Determination in H II Regions: The Strong Line Intensities-Abundance Calibration Revisited",
+    "url": "https://doi.org/10.1086/432408",
+    "notes": "ApJ 631, 231; P-method. Original full-text coefficients not independently transcribed here.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B28",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Nagao, Maiolino & Marconi (2006)",
+    "title": "Gas metallicity diagnostics in star-forming galaxies",
+    "url": "https://arxiv.org/abs/astro-ph/0603580",
+    "notes": "Multi-index calibration and diagnostic comparisons.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B29",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Stasinska (2006)",
+    "title": "[Ar III]/[O III] and [S III]/[O III]: well-behaved oxygen abundance indicators for H II regions and star forming galaxies",
+    "url": "https://arxiv.org/abs/astro-ph/0606455",
+    "notes": "Ar3O3 and S3O3 proposals.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B30",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Diaz & Perez-Montero (2000)",
+    "title": "An empirical calibration of nebular abundances based on the sulphur emission lines",
+    "url": "https://arxiv.org/abs/astro-ph/9909492",
+    "notes": "S23 calibration.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B31",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Maiolino et al. (2008)",
+    "title": "AMAZE. I. The evolution of the mass-metallicity relation at z > 3",
+    "url": "https://doi.org/10.1051/0004-6361:200809678",
+    "notes": "A&A 488, 463; hybrid calibration, equation 1/Table 4.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B32",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Mannucci et al. (2010)",
+    "title": "A fundamental relation between mass, star formation rate and metallicity in local and high-redshift galaxies",
+    "url": "https://doi.org/10.1111/j.1365-2966.2010.17291.x",
+    "notes": "MNRAS 408, 2115; composite abundance-selection procedure.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B33",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Pilyugin, Vilchez & Thuan (2010)",
+    "title": "New Improved Calibration Relations for the Determination of Electron Temperatures and Oxygen and Nitrogen Abundances in H II Regions",
+    "url": "https://doi.org/10.1088/0004-637X/720/2/1738",
+    "notes": "ApJ 720, 1738; ON/ONS relations.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B34",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Pilyugin & Mattsson (2011)",
+    "title": "Abundance determination in H II regions from spectra without the [O II]3727+3729 line",
+    "url": "https://doi.org/10.1111/j.1365-2966.2010.17970.x",
+    "notes": "MNRAS 412, 1145; NS equation 8, inspected arXiv:1011.1431.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B35",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Pilyugin, Grebel & Mattsson (2012)",
+    "title": "Counterpart method for abundance determinations in H II regions",
+    "url": "https://doi.org/10.1111/j.1365-2966.2012.21398.x",
+    "notes": "MNRAS 424, 2316; reference-spectrum matching.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B36",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Marino et al. (2013)",
+    "title": "The O3N2 and N2 abundance indicators revisited: improved calibrations based on CALIFA and Te-based literature data",
+    "url": "https://doi.org/10.1051/0004-6361/201321956",
+    "notes": "A&A 559, A114; direct-reference and ONS fits must be distinguished.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B37",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Dopita et al. (2016)",
+    "title": "Chemical abundances in high-redshift galaxies: A powerful new emission line diagnostic",
+    "url": "https://doi.org/10.1007/s10509-016-2657-8",
+    "notes": "Ap&SS 361, 61; D16 equations 1-3.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B38",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Pilyugin & Grebel (2016)",
+    "title": "New calibrations for abundance determinations in H II regions",
+    "url": "https://doi.org/10.1093/mnras/stw238",
+    "notes": "MNRAS 457, 3678; R and S equations 4-7.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B39",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Curti et al. (2017)",
+    "title": "New fully empirical calibrations of strong-line metallicity indicators in star-forming galaxies",
+    "url": "https://doi.org/10.1093/mnras/stw2766",
+    "notes": "MNRAS 465, 1384; stacked temperature-reference scale.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B40",
+    "category": "Classical and widely used strong-line prescriptions",
+    "authors_year": "Curti et al. (2020)",
+    "title": "The mass-metallicity and the fundamental metallicity relation revisited on a fully Te-based abundance scale for galaxies",
+    "url": "https://doi.org/10.1093/mnras/stz2910",
+    "notes": "MNRAS 491, 944; updated nine-index Table 2.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B41",
+    "category": "Population-aware and recent calibrations",
+    "authors_year": "Bian, Kewley & Dopita (2018)",
+    "title": "Direct Gas-phase Metallicity in Local Analogs of High-redshift Galaxies: Empirical Metallicity Calibrations for High-redshift Star-forming Galaxies",
+    "url": "https://doi.org/10.3847/1538-4357/aabd74",
+    "notes": "ApJ 859, 175; analog N2/O3N2, equations 11-12.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B42",
+    "category": "Population-aware and recent calibrations",
+    "authors_year": "Nakajima et al. (2022)",
+    "title": "EMPRESS. V. Metallicity Diagnostics of Galaxies over 12 + log(O/H) approximately 6.9-8.9 Established by a Local Galaxy Census",
+    "url": "https://doi.org/10.3847/1538-4365/ac7710",
+    "notes": "ApJS 262, 3; extended low-abundance/excitation coverage. Title shortened.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B43",
+    "category": "Population-aware and recent calibrations",
+    "authors_year": "Sanders et al. (2024)",
+    "title": "Direct Te-based Metallicities of z = 2-9 Galaxies with JWST/NIRSpec: Empirical Metallicity Calibrations Applicable from Reionization to Cosmic Noon",
+    "url": "https://doi.org/10.3847/1538-4357/ad15fc",
+    "notes": "ApJ 962, 24; arXiv:2303.08149, journal year 2024.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B44",
+    "category": "Population-aware and recent calibrations",
+    "authors_year": "Laseter et al. (2024)",
+    "title": "JADES: Detecting [O III]4363 emitters and testing strong line calibrations in the high-z Universe",
+    "url": "https://arxiv.org/abs/2306.03120",
+    "notes": "A&A 681, A70; rotated Rhat index. Title shortened.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B45",
+    "category": "Population-aware and recent calibrations",
+    "authors_year": "Langeroodi & Hjorth (2026)",
+    "title": "Genesis-metallicity: Universal Nonparametric Gas-phase Metallicity Estimation",
+    "url": "https://doi.org/10.3847/2041-8213/ae346f",
+    "notes": "ApJL 997, L30; published January 2026, first preprint 2024.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B46",
+    "category": "Population-aware and recent calibrations",
+    "authors_year": "Sanders et al. (2026)",
+    "title": "The AURORA Survey: High-redshift Empirical Metallicity Calibrations from Electron Temperature Measurements at z = 2-10",
+    "url": "https://doi.org/10.3847/1538-4357/ae66e2",
+    "notes": "ApJ 1003, 228; first preprint arXiv:2508.10099 in 2025.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B47",
+    "category": "Population-aware and recent calibrations",
+    "authors_year": "Rosales-Ortega et al. (2026, submitted preprint)",
+    "title": "The DESIRED strong-line calibrations: I. New empirical metallicity relations for the local and high-redshift universe",
+    "url": "https://arxiv.org/abs/2604.16273",
+    "notes": "27 indices; Tables 2-4; not presented as a peer-reviewed consensus.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B48",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Charlot & Longhetti (2001)",
+    "title": "Nebular Emission from Star-Forming Galaxies",
+    "url": "https://doi.org/10.1046/j.1365-8711.2001.04260.x",
+    "notes": "MNRAS 323, 887; integrated stellar-population/nebula model.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B49",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Tremonti et al. (2004)",
+    "title": "The Origin of the Mass-Metallicity Relation: Insights from 53,000 Star-Forming Galaxies in the SDSS",
+    "url": "https://arxiv.org/abs/astro-ph/0405537",
+    "notes": "ApJ 613, 898; full multi-line inference versus separate upper-R23 compression.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B50",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Dopita et al. (2013)",
+    "title": "New Strong-line Abundance Diagnostics for H II Regions: Effects of kappa-distributed Electron Energies and New Atomic Data",
+    "url": "https://doi.org/10.1088/0067-0049/208/1/10",
+    "notes": "ApJS 208, 10; D13/pyqz lineage.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B51",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Perez-Montero (2014)",
+    "title": "Deriving model-based Te-consistent chemical abundances in ionized gaseous nebulae",
+    "url": "https://doi.org/10.1093/mnras/stu753",
+    "notes": "MNRAS 441, 2663; HII-CHI-mistry.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B52",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Blanc et al. (2015)",
+    "title": "IZI: Inferring the Gas Phase Metallicity (Z) and Ionization Parameter (q) of Ionized Nebulae using Bayesian Statistics",
+    "url": "https://doi.org/10.1088/0004-637X/798/2/99",
+    "notes": "ApJ 798, 99; Bayesian grid inference.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B53",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Vale Asari et al. (2016)",
+    "title": "BOND: Bayesian Oxygen and Nitrogen abundance Determinations in giant H II regions using strong and semi-strong lines",
+    "url": "https://doi.org/10.1093/mnras/stw971",
+    "notes": "Joint abundance pattern and nebular nuisance dimensions.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B54",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Gutkin, Charlot & Bruzual (2016)",
+    "title": "Modelling the nebular emission from primeval to present-day star-forming galaxies",
+    "url": "https://doi.org/10.1093/mnras/stw1716",
+    "notes": "Abundance/depletion-aware UV/optical forward grids.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B55",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Thomas et al. (2018)",
+    "title": "Interrogating Seyferts with NebulaBayes: Spatially probing the narrow-line region radiation fields and chemical abundances",
+    "url": "https://doi.org/10.3847/1538-4357/aab3db",
+    "notes": "Grid-inference framework; original demonstration does not validate every H II grid.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B56",
+    "category": "Photoionization grids and inference",
+    "authors_year": "Ji & Yan (2022)",
+    "title": "Correlation between the gas-phase metallicity and ionization parameter in extragalactic H II regions",
+    "url": "https://doi.org/10.1051/0004-6361/202142312",
+    "notes": "A&A 659, A112; multidimensional model-observable consistency.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B57",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Stasinska (2005)",
+    "title": "Biases in abundance derivations for metal-rich nebulae",
+    "url": "https://doi.org/10.1051/0004-6361:20042216",
+    "notes": "Model tests of temperature structure and abundance recovery.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B58",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Kewley & Ellison (2008)",
+    "title": "Metallicity Calibrations and the Mass-Metallicity Relation for Star-forming Galaxies",
+    "url": "https://arxiv.org/abs/0801.1849",
+    "notes": "Primary inter-calibration comparison and conversions.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B59",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Peimbert & Peimbert (2010)",
+    "title": "On the O/H, Mg/H, Si/H and Fe/H Gas and Dust Abundance Ratios in Galactic and Extragalactic H II Regions",
+    "url": "https://arxiv.org/abs/1006.0692",
+    "notes": "Gas-versus-total abundances and dust corrections.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B60",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Lopez-Sanchez et al. (2012)",
+    "title": "Eliminating error in the chemical abundance scale for extragalactic H II regions",
+    "url": "https://doi.org/10.1111/j.1365-2966.2012.21145.x",
+    "notes": "MNRAS 426, 2630; synthetic-model recovery benchmark.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B61",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Bresolin et al. (2016)",
+    "title": "Young Stars and Ionized Nebulae in M83: Comparing Chemical Abundances at High Metallicity",
+    "url": "https://doi.org/10.3847/0004-637X/830/2/64",
+    "notes": "ApJ 830, 64; independent stellar/nebular comparison.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B62",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Juan de Dios & Rodriguez (2017)",
+    "title": "The impact of atomic data selection on nebular abundance determinations",
+    "url": "https://doi.org/10.1093/mnras/stx916",
+    "notes": "MNRAS 469, 1036; density-dependent atomic-data effects.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B63",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Sanders et al. (2017)",
+    "title": "Biases in metallicity measurements from global galaxy spectra: the effects of flux-weighting and diffuse ionized gas contamination",
+    "url": "https://arxiv.org/abs/1708.04625",
+    "notes": "Integrated-spectrum mixture calculations.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B64",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Kumari et al. (2019)",
+    "title": "Metallicity calibrations for diffuse ionised gas and low ionisation emission regions",
+    "url": "https://doi.org/10.1093/mnras/stz366",
+    "notes": "Paired-region DIG comparison; different estimand from global-mixing tests.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B65",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Mendez-Delgado et al. (2023)",
+    "title": "Temperature inhomogeneities cause the abundance discrepancy in H II regions",
+    "url": "https://doi.org/10.1038/s41586-023-05956-2",
+    "notes": "Nature 618, 249; observational temperature-structure evidence.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B66",
+    "category": "Accuracy and systematic effects",
+    "authors_year": "Peng et al. (2026, submitted preprint)",
+    "title": "Surprising increase of electron temperature in metal-rich star-forming region",
+    "url": "https://arxiv.org/abs/2603.05434",
+    "notes": "Recent O+-thermometer warning; unresolved interpretation.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B67",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Perez-Montero & Contini (2009)",
+    "title": "The impact of the nitrogen-to-oxygen ratio on ionized nebula diagnostics based on [N II] emission lines",
+    "url": "https://doi.org/10.1111/j.1365-2966.2009.15145.x",
+    "notes": "MNRAS 398, 949; N/O and nitrogen-line biases.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B68",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Perez-Montero et al. (2007)",
+    "title": "Neon and argon optical emission lines in ionized gaseous nebulae: implications and applications",
+    "url": "https://arxiv.org/abs/0707.2691",
+    "notes": "Ne/Ar abundances, ionization corrections and diagnostic use.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B69",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Diaz & Zamora (2022)",
+    "title": "On the use of sulphur as a tracer for abundances in galaxies",
+    "url": "https://doi.org/10.1093/mnras/stac387",
+    "notes": "MNRAS 511, 4377; sulfur abundance methods.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B70",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Aver, Olive & Skillman (2015)",
+    "title": "The effects of He I 10830 on helium abundance determinations",
+    "url": "https://doi.org/10.1088/1475-7516/2015/07/011",
+    "notes": "JCAP 07, 011; helium density/temperature degeneracies.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B71",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Scholte et al. (2026)",
+    "title": "Electron temperature relations and the direct N, O, Ne, S, and Ar abundances of 49 959 star-forming galaxies in DESI data release 2",
+    "url": "https://doi.org/10.1093/mnras/stag1381",
+    "notes": "Published online July 2026; multi-element direct analysis.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B72",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Christensen et al. (2012)",
+    "title": "Gravitationally lensed galaxies at 2 < z < 3.5: direct abundance measurements of Lyman-alpha emitters",
+    "url": "https://doi.org/10.1111/j.1365-2966.2012.22007.x",
+    "notes": "MNRAS 427, 1973; UV/optical temperature abundance measurements.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B73",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Byler et al. (2020)",
+    "title": "A Comparison of UV and Optical Metallicities in Star-forming Galaxies",
+    "url": "https://doi.org/10.3847/1538-4357/ab7ea9",
+    "notes": "ApJ 893, 1; UV diagnostics and cross-scale assessment.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B74",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Giveon et al. (2002)",
+    "title": "The Excitation and Metallicity of Galactic H II Regions from Infrared Space Observatory SWS Observations of Mid-Infrared Fine-Structure Lines",
+    "url": "https://www.usm.uni-muenchen.de/people/adi/Download/papers/contributed/Giveon-2002.pdf",
+    "notes": "ApJ 566, 880; primary IR Ne/Ar abundance measurements.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B75",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Nagao et al. (2011)",
+    "title": "Metallicity diagnostics with infrared fine-structure lines",
+    "url": "https://doi.org/10.1051/0004-6361/201015471",
+    "notes": "A&A 526, A149; model-based IR line ratios.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B76",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Croxall et al. (2013)",
+    "title": "Towards a Removal of Temperature Dependencies from Abundance Determinations",
+    "url": "https://doi.org/10.1088/0004-637X/777/2/96",
+    "notes": "ApJ 777, 96; IR/optical abundance leverage.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B77",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Pereira-Santaella et al. (2017)",
+    "title": "Far-infrared metallicity diagnostics: application to local ultraluminous infrared galaxies",
+    "url": "https://doi.org/10.1093/mnras/stx1284",
+    "notes": "MNRAS 470, 1218; weighted O III/N III fine-structure diagnostic.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B78",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Fernandez-Ontiveros et al. (2021)",
+    "title": "Measuring chemical abundances with infrared nebular lines: HII-CHI-MISTRY-IR",
+    "url": "https://doi.org/10.1051/0004-6361/202039716",
+    "notes": "A&A 652, A23; IR grid inference.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B79",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Lamarche et al. (2022)",
+    "title": "Direct Far-infrared Metal Abundances (FIRA). I. M101",
+    "url": "https://doi.org/10.3847/1538-4357/ac3b4f",
+    "notes": "ApJ 925, 194; primary spatially resolved FIR abundance comparison.",
+    "search_cutoff": "2026-08-30"
+  },
+  {
+    "id": "B80",
+    "category": "Other elements and non-optical measurements",
+    "authors_year": "Peroux & Howk (2020)",
+    "title": "The Cosmic Baryon and Metal Cycles",
+    "url": "https://arxiv.org/abs/2011.01935",
+    "notes": "Review used only for broader phase context, not as sole support for calibration coefficients.",
+    "search_cutoff": "2026-08-30"
+  }
+]
+

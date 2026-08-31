@@ -1,0 +1,66 @@
+{
+  "date": "2026-08-30",
+  "deliverables": {
+    "markdown": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260830_RPS_Local_Star_Formation_Theory_and_Toy_Models.md",
+    "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260830_RPS_Local_Star_Formation_Theory_and_Toy_Models.pdf"
+  },
+  "source_checks": {
+    "word_count_whitespace": 12542,
+    "figures": 6,
+    "tables": 5,
+    "display_math": 82,
+    "inline_math": 310,
+    "equation_tags": 82,
+    "duplicate_equation_tags": [],
+    "reference_definitions": 36,
+    "undefined_references": [],
+    "missing_local_links": [],
+    "source_equals_delivered_markdown": true,
+    "markdown_sha256": "02a6406e6e82d30ceefc84949736c03d5cea20d4bf4388a589f3c7f848581775"
+  },
+  "pdf_checks": {
+    "pages": 37,
+    "pdf_bytes": 408432,
+    "pdf_sha256": "bb03e897780d0c9c6c1162ab6f4955fee5033c72e54a68f059a3098ff029de98",
+    "missing_equation_tags": [],
+    "replacement_characters": 0,
+    "unrendered_tokens": [],
+    "sparse_pages": [],
+    "margin_overflow_words": [],
+    "link_annotations": 158,
+    "external_http_links": 92,
+    "outline_entries": 62
+  },
+  "visual_review": {
+    "all_37_pages_rendered": true,
+    "all_page_layout_contact_sheet_review": true,
+    "detailed_physical_pages": [
+      1,
+      8,
+      11,
+      13,
+      16,
+      17,
+      19,
+      20,
+      21,
+      22,
+      23,
+      25,
+      27,
+      29,
+      32,
+      34
+    ],
+    "all_six_figures_inspected": true,
+    "scope": "All-page layout review plus detailed visual sampling; not a claim of every line visually reread."
+  },
+  "numerical_checks_file": "numerical_checks.json",
+  "limits": [
+    "Illustrative, uncalibrated models; no MAUVE observational data fitted.",
+    "Linked ChatGPT embedded report only partly recoverable; science checked independently.",
+    "Primary source access limitations identified per reference.",
+    "One non-fatal paragraph-spacing warning; no overflow or missing glyphs found."
+  ],
+  "reproduction_script_sha256": "0fd09936ad82c3c2d6bd85d6983beea31015b7d5881a21eb9a1e28f82eb3adee"
+}

@@ -1,0 +1,206 @@
+{
+  "status": "passed",
+  "pdf_pages": 35,
+  "source_words": 13552,
+  "display_equations": 60,
+  "equation_labels": 60,
+  "section_headings_checked": 81,
+  "tables": 10,
+  "figures": 2,
+  "pdf_web_link_annotations": 160,
+  "unique_pdf_web_targets": 90,
+  "md_equals_canonical": true,
+  "markdown_sha256": "5ae5e8f708eb3305eb2b30303859c1d1db33d17a5e726a384b38a6beda97d2a6",
+  "pdf_sha256": "902420d59c2ba56417a79b4a0f182b3b2954c96c0c8180c0a37e3df3cd12c1fc",
+  "figure_sha256": {
+    "assets/20260831_molecular_gas_supply/reservoir_budget.png": "0a75cd5100664d22522e97d1f98df367eae145c41dc33225c7475f8e0ae326b0",
+    "assets/20260831_molecular_gas_supply/identifiability_and_beam.png": "2d6899621026181fd7aa1e836bb6f3ad3cab1da6664016d3d13d957eb344a2b2"
+  },
+  "rendered_pages": 35,
+  "contact_sheets": [
+    "/private/tmp/mauve-gas-supply-YFFLQ3/contact-1.png",
+    "/private/tmp/mauve-gas-supply-YFFLQ3/contact-2.png",
+    "/private/tmp/mauve-gas-supply-YFFLQ3/contact-3.png",
+    "/private/tmp/mauve-gas-supply-YFFLQ3/contact-4.png"
+  ],
+  "visual_qa": "Passed: all-page contact sheets and 15 selected 1600-pixel pages inspected; see verification_visual.json",
+  "visual_record_matches_pdf": true,
+  "limits": "Structural checks do not establish scientific closure validity or all URL reachability.",
+  "page_text_inventory": [
+    {
+      "page": 1,
+      "characters": 606,
+      "start": "MAUVE / ICRAR - DEEP RESEARCH Molecular Gas Supply Definitions, chemical rates, and observational inference From the resolved bathtub model in Paper I to a prac"
+    },
+    {
+      "page": 2,
+      "characters": 3986,
+      "start": "Contents Executive answer What I recommend measuring \ufb01rst Scope and evidence status 1. Start with Paper I, not with a new label 1.1 The reservoir actually used "
+    },
+    {
+      "page": 3,
+      "characters": 3997,
+      "start": "Executive answer Your interpretation captures an important part of the physics, but three different rates must not be given the same name. The mass of atomic ga"
+    },
+    {
+      "page": 4,
+      "characters": 2746,
+      "start": "photometric depths or astrometric residuals. Programme-level resolutions below are therefore benchmarks, not claims about the files in hand. Paper I is Huang et"
+    },
+    {
+      "page": 5,
+      "characters": 2703,
+      "start": "The factor ln(10) is needed if the relation is used quantitatively with base-10 logarithms; it does not change the qualitative sign argument in Paper I. Also, d"
+    },
+    {
+      "page": 6,
+      "characters": 1479,
+      "start": "Quantity De\ufb01nition What it means Net chemical production \ud835\udc36\u2261\ud835\udc39\u2212 \ud835\udc37 Chemical gain of H2 after destruction; can be negative. Net molecular transport \ud835\udc47\ud835\udc5a \u2261\ud835\udc35\ud835\udc5a+ \u2212 \ud835\udc35\ud835\udc5a\u2212 Re"
+    },
+    {
+      "page": 7,
+      "characters": 2816,
+      "start": "Only if the latter transport is negligible, and the first sink convention applies, can \u03a6PI be identified with gross \ud835\udc39. If mass return does not rapidly enter H2,"
+    },
+    {
+      "page": 8,
+      "characters": 3089,
+      "start": "3. What the resolved literature actually measures The relevant literature is broader than papers using the exact phrase \u201cgas supply rate surface density\u201d. The u"
+    },
+    {
+      "page": 9,
+      "characters": 3199,
+      "start": "Study family Main contribution Relevance to this project Burkhart et al. (2024) Companion simulation study connects \ufb02uorescence with cloud formation/destruction"
+    },
+    {
+      "page": 10,
+      "characters": 2564,
+      "start": "Here \ud835\udc45\ud835\udc51 has units cm3 s\u22121. Let \u0393 be the destruction rate per H2 molecule, in s\u22121, so \ud835\udc57\ud835\udc37 = \u0393\ud835\udc5bH2. Each event creates or destroys two hydrogen nuclei in the molecu"
+    },
+    {
+      "page": 11,
+      "characters": 2368,
+      "start": "by simply inserting one beam-averaged density into equation (17). 4.3 A molecular fraction is not an absolute rate Multiply both \ud835\udc45\ud835\udc51\ud835\udc5b and \u0393 by any positive facto"
+    },
+    {
+      "page": 12,
+      "characters": 2943,
+      "start": "5.2 A useful hierarchy of claims Level Defensible product Required quali\ufb01cation State measurement CO intensity, H I brightness, line ratios, stellar \ufb02uxes; infe"
+    },
+    {
+      "page": 13,
+      "characters": 2277,
+      "start": "counts molecular gas. For cloud kinematics, work from the cube rather than interpreting a moment-2 map as an inflow speed. 6.2 MeerKAT 21 cm: the atomic invento"
+    },
+    {
+      "page": 14,
+      "characters": 3463,
+      "start": "For illustration, the calibration in Kennicutt & Evans\u2019 Table 1 is \ud835\udc36\ud835\udefc = 10\u221241.27 \u22435.37\u00d7 10\u221242 for luminosity in erg s\u22121 and SFR in \ud835\udc40\u2299yr\u22121, with their adopted st"
+    },
+    {
+      "page": 15,
+      "characters": 2699,
+      "start": "7. Practical estimator routes from the current data 7.1 Route A: the replenishment required by an equilibrium budget Assume \u0307\u03a3\ud835\udc5a \u22430, adopt Paper I\u2019s recycling co"
+    },
+    {
+      "page": 16,
+      "characters": 2392,
+      "start": "Thus the simple observable proxy is This is a CO-phase throughput proxy. The molecular mass carried into the phase at entry is instead Continuous accretion duri"
+    },
+    {
+      "page": 17,
+      "characters": 2622,
+      "start": "Warps, streaming, inclination, non-axisymmetric geometry and vertical motion can imitate radial flow. Fit the cube with a physically appropriate geometry, propa"
+    },
+    {
+      "page": 18,
+      "characters": 3236,
+      "start": "The exponent follows directly by inserting \ud835\udc41HI= \ud835\udc53HI\ud835\udc41 into equation (13). The useful point is that a rate normalization is supplied by a simulation-derived densi"
+    },
+    {
+      "page": 19,
+      "characters": 2813,
+      "start": "where \ud835\udc3cIRUV includes only the UV-pumped contribution. For the approximate \ud835\udca9IR \u22433.6 model, the reference coefficient is 0.044(\ud835\udf07\ud835\udc3b/1.4)\ud835\udc3c5IR in the same surface-rat"
+    },
+    {
+      "page": 20,
+      "characters": 2878,
+      "start": "For the adopted helium convention \ud835\udc4b\ud835\udc3b \u22431/1.36, with a small correction if the metal mass is retained explicitly. Do not insert a value such as 8.6 directly into "
+    },
+    {
+      "page": 21,
+      "characters": 3154,
+      "start": "Data or capability Angular / physical benchmark What must be checked in MAUVE MeerKAT benchmark, \ufb01nest MHONGOOSE cube 8.2 by 7.1 arcsec, approximately 656 by 56"
+    },
+    {
+      "page": 22,
+      "characters": 3124,
+      "start": "information can recover extended structure; matched spectral frames, flux scales and adequate overlapping spatial frequencies must be verified. 10.3 Two defensi"
+    },
+    {
+      "page": 23,
+      "characters": 3069,
+      "start": "11. If resolved H I is missing, what can substitute? 11.1 Dust and extinction: useful, but not equivalent to H I Dust emission can constrain total gas through a"
+    },
+    {
+      "page": 24,
+      "characters": 3225,
+      "start": "Alternative What it can add Why it does not replace a resolved H I mass map Stellar extinction or UV attenuation Fine-scale dust geometry and shielding informat"
+    },
+    {
+      "page": 25,
+      "characters": 2610,
+      "start": "\u03a6req: equilibrium replenishment demand with a grid of loss/recycling assumptions. \u0302\u03a6CO,cycle: CO-visible lifecycle throughput proxy with population-scale suppor"
+    },
+    {
+      "page": 26,
+      "characters": 2881,
+      "start": "Near formation\u2013destruction balance, even modest component uncertainties can leave the sign of \ud835\udc36 unresolved. Report absolute intervals or \ud835\udc43(\ud835\udc36> 0), not a misleadi"
+    },
+    {
+      "page": 27,
+      "characters": 3969,
+      "start": "Priority and missing parameter Observation or action Gain and residual limitation 1A: molecular mass/excitation Matched CO(1\u20130), with selected 13CO/C 18O or oth"
+    },
+    {
+      "page": 28,
+      "characters": 3310,
+      "start": "MIRI spectroscopy adds H2 rotational lines and other excitation information over approximately 4.9\u201327.9 micrometres, with wavelength-dependent spatial resolutio"
+    },
+    {
+      "page": 29,
+      "characters": 2541,
+      "start": "Both give the same current molecular inventory and depletion time, \ud835\udf0fdep = 1000 Myr. If Paper I subtracts only the boundary loss and uses \ud835\udc45= 0.4, then \u03a6PI= 0.020"
+    },
+    {
+      "page": 30,
+      "characters": 2863,
+      "start": "14.4 A cloud-scale boundary-\ufb02ux illustration For an idealized circular thin-disc boundary with radius 50 pc, \u03a3\ud835\udc5a = 50\ud835\udc40\u2299pc\u22122 and coherent inward speed 2 km s\u22121, T"
+    },
+    {
+      "page": 31,
+      "characters": 2681,
+      "start": "Symbol De\ufb01nition / convention \ud835\udc39,\ud835\udc37,\ud835\udc36 Gross chemical formation, total destruction, and signed net chemical production \ud835\udc39\u2212 \ud835\udc37. \ud835\udc35\ud835\udc5a+,\ud835\udc35\ud835\udc5a\u2212,\ud835\udc47\ud835\udc5a Inward/outward molecular bo"
+    },
+    {
+      "page": 32,
+      "characters": 2449,
+      "start": "Appendix C. Search method and source access The search began with the exact Paper I identifier and its full model, then followed five primary-source lanes: reso"
+    },
+    {
+      "page": 33,
+      "characters": 3395,
+      "start": "References Core framework and chemical physics Huang, R., Cortese, L., Catinella, B., et al. (2026). MAUVE\u2013MUSE: when metallicity follows or fights star formati"
+    },
+    {
+      "page": 34,
+      "characters": 3880,
+      "start": "Kruijssen, J. M. D., et al. (2018). An uncertainty principle for star formation. II. A new method for characterizing the cloud-scale physics of star formation a"
+    },
+    {
+      "page": 35,
+      "characters": 1758,
+      "start": "Walter, F., Brinks, E., de Blok, W. J. G., et al. (2008). THINGS: The H I Nearby Galaxy Survey. Full institutional copy. Dutta, R., Srianand, R., Gupta, N., et "
+    }
+  ]
+}
