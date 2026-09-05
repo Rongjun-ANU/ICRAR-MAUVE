@@ -1,0 +1,132 @@
+{
+  "notebook": "/Users/Igniz/Desktop/ICRAR/further/20260904_check_combined_SF_fraction_categories_by_stage_SNR_postfit.ipynb",
+  "stage_counts": {
+    "close-to-peak": 5,
+    "post-peak": 13,
+    "pre-peak": 8
+  },
+  "model_support": {
+    "uncut_equal:radius_re": [
+      0.125,
+      0.375,
+      0.625,
+      0.875,
+      1.125,
+      1.375,
+      1.625,
+      1.875,
+      2.125,
+      2.375
+    ],
+    "uncut_equal:log_sigma_star": [
+      6.875,
+      7.125,
+      7.375,
+      7.625,
+      7.875,
+      8.125,
+      8.375,
+      8.625,
+      8.875,
+      9.125
+    ],
+    "snr25_equal:radius_re": [
+      0.125,
+      0.375,
+      0.625,
+      0.875,
+      1.125,
+      1.375,
+      1.625,
+      1.875,
+      2.125,
+      2.375
+    ],
+    "snr25_equal:log_sigma_star": [
+      7.125,
+      7.375,
+      7.625,
+      7.875,
+      8.125,
+      8.375,
+      8.625,
+      8.875,
+      9.125
+    ],
+    "uncut_pooled:radius_re": [
+      0.125,
+      0.375,
+      0.625,
+      0.875,
+      1.125,
+      1.375,
+      1.625,
+      1.875,
+      2.125,
+      2.375
+    ],
+    "uncut_pooled:log_sigma_star": [
+      6.875,
+      7.125,
+      7.375,
+      7.625,
+      7.875,
+      8.125,
+      8.375,
+      8.625,
+      8.875,
+      9.125,
+      9.375
+    ],
+    "snr25_pooled:radius_re": [
+      0.125,
+      0.375,
+      0.625,
+      0.875,
+      1.125,
+      1.375,
+      1.625,
+      1.875,
+      2.125,
+      2.375
+    ],
+    "snr25_pooled:log_sigma_star": [
+      7.125,
+      7.375,
+      7.625,
+      7.875,
+      8.125,
+      8.375,
+      8.625,
+      8.875,
+      9.125,
+      9.375
+    ]
+  },
+  "ngc4383_equal_curve_image": "/Users/Igniz/Desktop/ICRAR/further/20260905_stage_SF_fraction_analysis_assets/notebook_equal_curve_NGC4383.png",
+  "ngc4383_map_image": "/Users/Igniz/Desktop/ICRAR/further/20260905_stage_SF_fraction_analysis_assets/notebook_spatial_map_NGC4383.png",
+  "tables": [
+    "annular_contrasts_snr25.csv",
+    "annular_fractions_snr25.csv",
+    "annular_stage_summary_snr25.csv",
+    "bin_counts_snr25.csv",
+    "bin_counts_uncut.csv",
+    "descriptive_profile_models.csv",
+    "ngc4383_leave_one_out.csv",
+    "pairwise_stage_superiority.csv",
+    "per_galaxy_global_fractions_snr25.csv",
+    "radial_contrast_stage_summary_snr25.csv",
+    "radial_edge_metrics.csv",
+    "snr25_category_retention_by_stage.csv",
+    "snr25_retention_by_galaxy.csv",
+    "stage_equal_curves_snr25.csv",
+    "stage_equal_curves_uncut.csv",
+    "stage_global_equal_snr25.csv",
+    "stage_global_equal_uncut.csv",
+    "stage_global_pooled_snr25.csv",
+    "stage_global_pooled_uncut.csv",
+    "stage_pooled_curves_snr25.csv",
+    "stage_pooled_curves_uncut.csv",
+    "whole_galaxy_bootstrap.csv"
+  ]
+}

@@ -1,0 +1,10 @@
+comparison,category,probability,N_pairs
+random pre-peak > random close-to-peak,SF,0.625,40
+random close-to-peak > random post-peak,SF,0.7230769230769231,65
+random pre-peak > random post-peak,SF,1.0,104
+random pre-peak > random close-to-peak,ND,0.225,40
+random close-to-peak > random post-peak,ND,0.2153846153846154,65
+random pre-peak > random post-peak,ND,0.0,104
+random pre-peak > random close-to-peak,NSF,0.7,40
+random close-to-peak > random post-peak,NSF,0.5538461538461539,65
+random pre-peak > random post-peak,NSF,0.6634615384615384,104
