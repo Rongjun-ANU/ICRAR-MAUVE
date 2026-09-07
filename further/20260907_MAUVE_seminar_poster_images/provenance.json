@@ -23,11 +23,22 @@
       "NGC4402",
       "NGC4694"
     ],
+    "STAGE_9_GALAXIES": [
+      "NGC4189",
+      "NGC4383",
+      "NGC4567_8",
+      "NGC4501",
+      "NGC4654",
+      "NGC4522",
+      "NGC4064",
+      "NGC4698",
+      "NGC4569"
+    ],
     "HERO_GALAXIES": [
       "NGC4501",
       "NGC4654"
     ],
-    "SAVE_DPI": 300,
+    "SAVE_DPI": 600,
     "EW_HA_MIN": 6.0,
     "HALPHA_SIGMA_MAX": 45.0,
     "SFH_SNR_POSTFIT_MIN": 25.0,
@@ -754,8 +765,8 @@
         "01_mosaic_curated.pdf"
       ],
       "pixels": [
-        4200,
-        4200
+        8400,
+        8400
       ]
     },
     {
@@ -802,8 +813,54 @@
         "01_mosaic_all_local_fields.png"
       ],
       "pixels": [
-        4200,
-        5400
+        8400,
+        10800
+      ]
+    },
+    {
+      "stem": "01_mosaic_9fields_equal_area",
+      "description": "MAUVE RGB mosaic (compact layout, equal panel area)",
+      "galaxies": [
+        "NGC4189",
+        "NGC4383",
+        "NGC4567_8",
+        "NGC4501",
+        "NGC4654",
+        "NGC4522",
+        "NGC4064",
+        "NGC4698",
+        "NGC4569"
+      ],
+      "files": [
+        "01_mosaic_9fields_equal_area.png",
+        "01_mosaic_9fields_equal_area.pdf"
+      ],
+      "pixels": [
+        8400,
+        8400
+      ]
+    },
+    {
+      "stem": "01_mosaic_9fields_real_size",
+      "description": "MAUVE RGB mosaic (compact layout, uniform physical scale)",
+      "galaxies": [
+        "NGC4189",
+        "NGC4383",
+        "NGC4567_8",
+        "NGC4501",
+        "NGC4654",
+        "NGC4522",
+        "NGC4064",
+        "NGC4698",
+        "NGC4569"
+      ],
+      "files": [
+        "01_mosaic_9fields_real_size.png",
+        "01_mosaic_9fields_real_size.pdf"
+      ],
+      "pixels": [
+        8400,
+        8400
       ]
     },
     {
@@ -817,8 +874,8 @@
         "02_NGC4501_RGB.pdf"
       ],
       "pixels": [
-        3600,
-        3600
+        7200,
+        7200
       ]
     },
     {
@@ -831,8 +888,8 @@
         "02_NGC4654_RGB.png"
       ],
       "pixels": [
-        3600,
-        3600
+        7200,
+        7200
       ]
     },
     {
@@ -846,8 +903,8 @@
         "02_RGB_pair.png"
       ],
       "pixels": [
-        4800,
-        3000
+        9600,
+        6000
       ]
     },
     {
@@ -862,8 +919,8 @@
         "03_SFR_on_stellar_mass_pair.pdf"
       ],
       "pixels": [
-        4800,
-        3000
+        9600,
+        6000
       ]
     },
     {
@@ -876,8 +933,8 @@
         "03_NGC4501_SFR_on_stellar_mass.png"
       ],
       "pixels": [
-        3600,
-        3600
+        7200,
+        7200
       ]
     },
     {
@@ -890,8 +947,8 @@
         "03_NGC4654_SFR_on_stellar_mass.png"
       ],
       "pixels": [
-        3600,
-        3600
+        7200,
+        7200
       ]
     },
     {
@@ -905,8 +962,8 @@
         "04_RGB_mass_SFR_comparison.png"
       ],
       "pixels": [
-        5100,
-        3900
+        10200,
+        7800
       ]
     },
     {
@@ -923,8 +980,31 @@
         "05_NGC4501_with_survey_thumbnails.png"
       ],
       "pixels": [
-        4800,
-        3300
+        9600,
+        6600
+      ]
+    },
+    {
+      "stem": "MAUVE_MUSE_20260907",
+      "description": "A resolved view of Virgo spirals (MAUVE presentation poster)",
+      "galaxies": [
+        "NGC4189",
+        "NGC4383",
+        "NGC4567_8",
+        "NGC4501",
+        "NGC4654",
+        "NGC4522",
+        "NGC4064",
+        "NGC4698",
+        "NGC4569"
+      ],
+      "files": [
+        "MAUVE_MUSE_20260907.png",
+        "MAUVE_MUSE_20260907.pdf"
+      ],
+      "pixels": [
+        8400,
+        8400
       ]
     }
   ],
