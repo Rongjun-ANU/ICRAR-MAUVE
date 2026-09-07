@@ -1,0 +1,936 @@
+{
+  "date": "2026-09-07",
+  "source_chat": "https://chatgpt.com/c/6a9d3c52-9460-83ec-be1d-7023ec6a0ae4",
+  "python": "3.13.3",
+  "matplotlib": "3.10.3",
+  "config": {
+    "RGB_KIND": "observed",
+    "CURATED_GALAXIES": [
+      "NGC4501",
+      "NGC4654",
+      "NGC4567_8",
+      "NGC4383",
+      "NGC4192",
+      "NGC4298",
+      "NGC4380",
+      "NGC4522",
+      "NGC4394",
+      "NGC4457",
+      "NGC4419",
+      "NGC4330",
+      "NGC4064",
+      "NGC4189",
+      "NGC4402",
+      "NGC4694"
+    ],
+    "HERO_GALAXIES": [
+      "NGC4501",
+      "NGC4654"
+    ],
+    "SAVE_DPI": 300,
+    "EW_HA_MIN": 6.0,
+    "HALPHA_SIGMA_MAX": 45.0,
+    "SFH_SNR_POSTFIT_MIN": 25.0,
+    "MASS_LIMITS": [
+      6.5,
+      9.7
+    ],
+    "SFR_LIMITS": [
+      -3.5,
+      -0.5
+    ],
+    "SFR_ALPHA": 0.9,
+    "LOGO_CROP": [
+      35,
+      25,
+      475,
+      425
+    ],
+    "WCS_TOLERANCE_ARCSEC": 0.05
+  },
+  "image_fields": [
+    "IC3392",
+    "NGC4064",
+    "NGC4189",
+    "NGC4192",
+    "NGC4222",
+    "NGC4254",
+    "NGC4293",
+    "NGC4294",
+    "NGC4298",
+    "NGC4302",
+    "NGC4321",
+    "NGC4330",
+    "NGC4351",
+    "NGC4380",
+    "NGC4383",
+    "NGC4388",
+    "NGC4394",
+    "NGC4396",
+    "NGC4402",
+    "NGC4405",
+    "NGC4419",
+    "NGC4424",
+    "NGC4450",
+    "NGC4457",
+    "NGC4501",
+    "NGC4522",
+    "NGC4535",
+    "NGC4567_8",
+    "NGC4569",
+    "NGC4580",
+    "NGC4606",
+    "NGC4607",
+    "NGC4654",
+    "NGC4694",
+    "NGC4698"
+  ],
+  "map_qc": [
+    {
+      "galaxy": "NGC4501",
+      "shape": [
+        1236,
+        1205
+      ],
+      "N_valid_mass": 650576,
+      "N_SF_overlay": 251607,
+      "max_WCS_separation_arcsec": 4.0074988986440314e-11,
+      "N_SF_also_strict_both_BPT_HII": 188222,
+      "pixel_scale_arcsec": 0.2000000000000016,
+      "CUT_SN": 3,
+      "NOISE": 20,
+      "BPTMODE": "both",
+      "BPTLIMIT": "Low-S/N non-Balmer lines use measured fluxes, not limit-aware BPT",
+      "DUSTLAW": "calzetti",
+      "DIST_MPC": 16.5,
+      "mass_display_below": 0,
+      "mass_display_above": 2169,
+      "SFR_display_below": 0,
+      "SFR_display_above": 156
+    },
+    {
+      "galaxy": "NGC4654",
+      "shape": [
+        1013,
+        1278
+      ],
+      "N_valid_mass": 532883,
+      "N_SF_overlay": 320781,
+      "max_WCS_separation_arcsec": 3.434999055980598e-11,
+      "N_SF_also_strict_both_BPT_HII": 262484,
+      "pixel_scale_arcsec": 0.2000000000000016,
+      "CUT_SN": 3,
+      "NOISE": 20,
+      "BPTMODE": "both",
+      "BPTLIMIT": "Low-S/N non-Balmer lines use measured fluxes, not limit-aware BPT",
+      "DUSTLAW": "calzetti",
+      "DIST_MPC": 16.5,
+      "mass_display_below": 0,
+      "mass_display_above": 1,
+      "SFR_display_below": 801,
+      "SFR_display_above": 822
+    }
+  ],
+  "sources": [
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/MAUVE/mauve_newbanner.png",
+      "bytes": 816070,
+      "mtime_ns": 1755758151331280115,
+      "sha256": "03cf6bf2e5a29ab8ce392d30d3585bef3e91d3d7fa87d8e28448ae5fca276d86"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4501_observed_VRI.png",
+      "bytes": 769608,
+      "mtime_ns": 1786109508875592633,
+      "sha256": "242ced092a2a3a455c2e9a444faf5897b68a42ca72ef455eccde1e66e78e6b06"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4654_observed_VRI.png",
+      "bytes": 902434,
+      "mtime_ns": 1786109509315823248,
+      "sha256": "bf1c057a53e6de3dc5d9da1dcce730b22f40f379a8235ad0268f6f18f808e745"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4567_8_observed_VRI.png",
+      "bytes": 648518,
+      "mtime_ns": 1786109508827034751,
+      "sha256": "7a3b6a0e2800bb5a992d82eda34fbf24686559b6475cc26b5938c45fd7ed36d5"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4383_observed_VRI.png",
+      "bytes": 288993,
+      "mtime_ns": 1786109506880198463,
+      "sha256": "fd9838e2c8a3d580d39d0467657d7a72ea4557a6c3dc8ff10faab9daa068d617"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4192_observed_VRI.png",
+      "bytes": 669046,
+      "mtime_ns": 1786109505565129889,
+      "sha256": "a5801252dc3125f84b158e75a51eb8778e5b9f0f2b7337cc734f4ed062f54756"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4298_observed_VRI.png",
+      "bytes": 723029,
+      "mtime_ns": 1786109505105914124,
+      "sha256": "ca8f1d27f9b495a639b98bbc5a0316693c7ecad38cb321e1e4c2c1d20c94a050"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_observed_VRI.png",
+      "bytes": 727212,
+      "mtime_ns": 1786109507247830943,
+      "sha256": "3b2d2f22cd0bac339e1223956e89fd0fe6b1f8f79b596407585be96790ef3a4a"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4522_observed_VRI.png",
+      "bytes": 313233,
+      "mtime_ns": 1786109507814145674,
+      "sha256": "b415d0cb481fb31e2a03038ceaf929e880d46a2c22f5c489917da8473f4275f9"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4394_observed_VRI.png",
+      "bytes": 201784,
+      "mtime_ns": 1786109506889192245,
+      "sha256": "57dc43f848d6c638ed37d11621670650df6d070a93a8b0f847cb2c9d1979d19d"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4457_observed_VRI.png",
+      "bytes": 339700,
+      "mtime_ns": 1786109507721171425,
+      "sha256": "90503ea1e32507df600216a1cb64e561b3ec3aba9f9525811b63a478c1dcf16e"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4419_observed_VRI.png",
+      "bytes": 205000,
+      "mtime_ns": 1786109507271234985,
+      "sha256": "358b1de757d38ef8cd81685c7f84eb16e11b7a44110f2f36ee8e8625d5748fe2"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4330_observed_VRI.png",
+      "bytes": 486587,
+      "mtime_ns": 1786109506949090209,
+      "sha256": "b2d9d98f0367cd245e9b77380c062a29e4810479e7daf7ee16609fad7f1fadbb"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4064_observed_VRI.png",
+      "bytes": 232077,
+      "mtime_ns": 1786109504516191933,
+      "sha256": "f62f1dbd2c1443fd0c16579ccae8b54f4eeda513cea63b2aae8df4ab24f0e083"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4189_observed_VRI.png",
+      "bytes": 233717,
+      "mtime_ns": 1786109504439018699,
+      "sha256": "e32d0c371ca1d7571b9875de8f7b595c5ce819343dfb563a3a3fb2a88da915a8"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4402_observed_VRI.png",
+      "bytes": 517510,
+      "mtime_ns": 1786109507182856753,
+      "sha256": "2dc11068da97d294e33d55cfe5d177ca1889884b882257398c7ae36ff2562c54"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4694_observed_VRI.png",
+      "bytes": 119957,
+      "mtime_ns": 1786109508905638365,
+      "sha256": "bb18909c7ef690f99952fd5b0c3ad483f2a64cc01e2a9a02932085870d7cb7e7"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/IC3392_observed_VRI.png",
+      "bytes": 140299,
+      "mtime_ns": 1786109504356342779,
+      "sha256": "7bdc9db93496804abb143c5483c4799334f98746879ffad469af65301c002925"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4222_observed_VRI.png",
+      "bytes": 514045,
+      "mtime_ns": 1786109504745046001,
+      "sha256": "8d29e065c3f239b577692787f87f13f6cc48eea6e28410a1893e1e62d97d64bf"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4254_observed_VRI.png",
+      "bytes": 1346086,
+      "mtime_ns": 1786109505440083775,
+      "sha256": "2336a8add6a38e14005abb14bfb7c71296c56aa063b881399b0740efa597701f"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4293_observed_VRI.png",
+      "bytes": 314796,
+      "mtime_ns": 1786109504798593567,
+      "sha256": "f3231a156cb45a54a80bb6128c5e4647964a2a0cb0e7073935eeba17f4a3aee3"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4294_observed_VRI.png",
+      "bytes": 275821,
+      "mtime_ns": 1786109504479356218,
+      "sha256": "490e82d8cf5befbd86c93da802a811d55495483d5f883908ef717313b447b95e"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4302_observed_VRI.png",
+      "bytes": 602627,
+      "mtime_ns": 1786109504834396529,
+      "sha256": "9174c66d0fafdea56b9755ea885bbd4f83648db48ab03d66ac983681a9522d80"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4321_observed_VRI.png",
+      "bytes": 1174079,
+      "mtime_ns": 1786109507708065587,
+      "sha256": "f62eb26e7d0b5ad366fce1f03dca04e79c6bf5b2e0ceaeccba2f69f0b485ed4e"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4351_observed_VRI.png",
+      "bytes": 286740,
+      "mtime_ns": 1786109506420007985,
+      "sha256": "454274c09d9fa788f7d69626dcd15f06390fc3c59bde35bcc8dc17f927233930"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4388_observed_VRI.png",
+      "bytes": 318974,
+      "mtime_ns": 1786109506873557606,
+      "sha256": "4c095b92ecaa1594597dd4f2505741c6266e913db70c790234ab55458c3758ff"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4396_observed_VRI.png",
+      "bytes": 476107,
+      "mtime_ns": 1786109507169036203,
+      "sha256": "2074537dc1c66ce576711f7e685dcf64477a6c77320035e15508386d79e5511b"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4405_observed_VRI.png",
+      "bytes": 252206,
+      "mtime_ns": 1786109507188068479,
+      "sha256": "227741aa1c62d6d90e0c52990a720ece998f29bd8375251bd04ed6c3b4147f80"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4424_observed_VRI.png",
+      "bytes": 219825,
+      "mtime_ns": 1786109507431714474,
+      "sha256": "ade008592e117f21b93297a507de19705501b33f1965849fb7b39c7ace928e79"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4450_observed_VRI.png",
+      "bytes": 491120,
+      "mtime_ns": 1786109508010033874,
+      "sha256": "b91b1907490733ad0c571ffa139bf0052c5c0f2059b53e41cdb9ba0fc300f2a3"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4535_observed_VRI.png",
+      "bytes": 685190,
+      "mtime_ns": 1786109508556759660,
+      "sha256": "8a4b6c32e2f3b0791774c220b0359117f7904d6ae9af378b49c81b45d6336249"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4569_observed_VRI.png",
+      "bytes": 668394,
+      "mtime_ns": 1786109508928702156,
+      "sha256": "f0863c35bb83c54cf398663b5135828ef14f157cdb9156d2faf9d067fe0ceb74"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4580_observed_VRI.png",
+      "bytes": 255758,
+      "mtime_ns": 1786109508386175968,
+      "sha256": "88d607876cbc4fe125cfc29017e374e5af31c9cec6c023138a47724a5c6f2a4e"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4606_observed_VRI.png",
+      "bytes": 128238,
+      "mtime_ns": 1786109508454125710,
+      "sha256": "17c1d628f2e60952ab2d1d72797b42126353e9dba926ed3f428571abb2f1e4cd"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4607_observed_VRI.png",
+      "bytes": 313837,
+      "mtime_ns": 1786109508660144405,
+      "sha256": "164fb863b5a9739abfd1416650c59a3d74af31b9a0ab68339d4a268640cc8d4e"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4698_observed_VRI.png",
+      "bytes": 392033,
+      "mtime_ns": 1786109509251146058,
+      "sha256": "6a8f9bb08a67d70f9c8ad7b3cdd153702d89dba333a85eba70fb10d27ff8d7a0"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4501/NGC4501_spatial_binning_maps_further.fits",
+      "bytes": 202648320,
+      "mtime_ns": 1788102721761080554,
+      "loaded_hdus": {
+        "LOGMASS_SURFACE_DENSITY": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": "log(Msol/kpc2)",
+          "COMMENT": "",
+          "float64_array_sha256": "9dc06a0dd13409ea3018bc6b0ef8e81f323658e18d0b97f59cfcc936ff614450",
+          "header_sha256": "8c497334e1136ab450fc014821c20d21d0b93684d7bc9d7d75ae63f8126053b5"
+        },
+        "BINID": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "e6c6b84c8eac13a0055b40f3c00311dced16cbaf35145eccd35b24726c99379b",
+          "header_sha256": "82b7eb3413fb767c928e5d6486ea71839b73e862a7d9739323de6994a3ac4b53"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4501/NGC4501_gas_bin_maps_further.fits",
+      "bytes": 4735474560,
+      "mtime_ns": 1788102579253479208,
+      "loaded_hdus": {
+        "BIN_ID": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "e6c6b84c8eac13a0055b40f3c00311dced16cbaf35145eccd35b24726c99379b",
+          "header_sha256": "52906e258c61f2f3acaf694366ea02aa256877c47b8993c8075446b8ec498686"
+        },
+        "LOGSFR_SURFACE_DENSITY_HII": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": "1",
+          "COMMENT": "log10 SFR surface density in HII regions (M_sun/yr/kpc2)",
+          "float64_array_sha256": "704f334ea035f362cca441032f57dfa1d3225f187287cdb081117719e58a47b0",
+          "header_sha256": "0a0dac1686c035b2f7b5016175df48b60115e8819cfd45388c88a541429da059"
+        },
+        "HA6562_SIGMA": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "604e8dc5fcd9bc8a2f5e1ff47ac199950e62a54db29952ea7ef6e536cf9fee39",
+          "header_sha256": "bdf92feb9a392dc1df16482dfe3c5f3c37f860dc7c49e5872ed50e535a84c850"
+        },
+        "HA6562_SIGMA_CORR": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "22b60c454f4ce2ff60442092396a82507cf33c6bc7ae7af458c322ed6bb20b2b",
+          "header_sha256": "a85285c99c7d4506a47777abfffcc34eb8ecc876ade412c46832af09575aa3e6"
+        },
+        "NII_BPT": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": "1",
+          "COMMENT": "Class map: -1=unknown/non-detection, 0=unclassified, 1=HII, 2=Comp, 3=AG\nN\nUses dust-corrected fluxes; positive classes require stable central +/-1\nsigma class",
+          "float64_array_sha256": "2fade06211d92652f2e8c855bad6e65b31a2ed43aa35c4ce4932af4f27444543",
+          "header_sha256": "0786c22b285388c2db8b7ba646152e853ec2363d63d5f008f072e76f47fc114e"
+        },
+        "SII_BPT": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": "1",
+          "COMMENT": "Class map: -1=unknown/non-detection, 0=unclassified, 1=HII, 2=LINER, 3=S\neyfert\nUses dust-corrected fluxes; positive classes require stable central +/-1\nsigma class",
+          "float64_array_sha256": "4e276382cd8f7ce94d883e6c090bbe6e9c81faff6136dfd8cc57ef6152f8e9f4",
+          "header_sha256": "f9b36e5f3971520a50201ac97a42761ad8b4d3a95ea183a0a6e45af5cf81ef3c"
+        },
+        "HA6562_FLUX": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "b4c077682079d80d2de3a10013fa91adc9003f66cdb34535c9c438fcb94d64f4",
+          "header_sha256": "a19497fca21e4f69c1cd9089dd15ddd56ddc7d2d802cfb19d74e5d1f886259b4"
+        },
+        "HA6562_FLUX_ERR": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "3dfbb5c0e7d8a3af48aea47005780b84168e2804f2cac0f59c1bccb7942ec1e4",
+          "header_sha256": "4ca3f99aa287c0aa15cab81080806667f201f8aff29149d389e3b06f68804b0d"
+        },
+        "HB4861_FLUX": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "80fff4da3886cd068ba8591d194c3c361af2d1d03c366bd0553f8507b88b7685",
+          "header_sha256": "fa01e1d1d6731c9e476fbbf06159d0e6fbb2773787352ba0eca977dad9a572a7"
+        },
+        "HB4861_FLUX_ERR": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "b5bb00a6c7a47a4d42647ab71793fdd43ae87babc6f2ea5e12e3c42b8a44a3b6",
+          "header_sha256": "79d6842212d4dc62b4147b0cea4b631709c181b74ca52c0ee7fac6414ad2e2a8"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4501/NGC4501_proxy_EW_maps_further.fits",
+      "bytes": 74514240,
+      "mtime_ns": 1788102627245984561,
+      "loaded_hdus": {
+        "PROXY_EWHA": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": "Angstrom",
+          "COMMENT": "EW_proxy[A] = F_Ha / bin continuum.\nHalpha passband uses MaNGA DAP vacuum window converted to air.\nContinuum uses bin redshift from galaxy z plus HA6562_VEL.",
+          "float64_array_sha256": "db555aa8d2fe306def04c5f9f90821df29ec9f8fc8dfc9951066f955d8bf3ced",
+          "header_sha256": "d32504c9ab0ab79a8794d0ec38c231e724f260512aefe3fe4599562e717e0b27"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4501/NGC4501_sfh_maps.fits",
+      "bytes": 71524800,
+      "mtime_ns": 1785310785515087771,
+      "loaded_hdus": {
+        "SNR_POSTFIT": {
+          "shape": [
+            1236,
+            1205
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "fee3018d570c06fd33e22f48669e19fddf97382eda4e2d4b3b5980353a17f90e",
+          "header_sha256": "259e9e68131c7808060b5ecddcf63220de633fe199ce8b40fb80c1d4f648afa8"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4501/NGC4501_mask.fits",
+      "bytes": 11923200,
+      "mtime_ns": 1785310670281202431,
+      "mask_array_sha256": "b9df69e594489e1f16acee03bd207dd04b314f6c5e601fbeaf38f29fd4179791"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4654/NGC4654_spatial_binning_maps_further.fits",
+      "bytes": 176160960,
+      "mtime_ns": 1788099248584693463,
+      "loaded_hdus": {
+        "LOGMASS_SURFACE_DENSITY": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": "log(Msol/kpc2)",
+          "COMMENT": "",
+          "float64_array_sha256": "9c3b6cded5d4ae4953354d5154eec0a63bba9df6e3a79e9566ecf508076c2da1",
+          "header_sha256": "41e55939ba66429763efc9034abe6616985c5691547362de71207eba9b30af4b"
+        },
+        "BINID": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "53da4397b1088513527d43adb2971e45eb38c6fd61c4ed59f4ec31b7520b5a84",
+          "header_sha256": "a05b2b9889100e84bedbd578e7b527b5285bdc63e2e29506a0ada4dde8c1b7cc"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4654/NGC4654_gas_bin_maps_further.fits",
+      "bytes": 4116551040,
+      "mtime_ns": 1788098634129647730,
+      "loaded_hdus": {
+        "BIN_ID": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "53da4397b1088513527d43adb2971e45eb38c6fd61c4ed59f4ec31b7520b5a84",
+          "header_sha256": "d75ba8423d2231385f95a9dd3f3dd59693f0d8985704b261ed0797a458bae116"
+        },
+        "LOGSFR_SURFACE_DENSITY_HII": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": "1",
+          "COMMENT": "log10 SFR surface density in HII regions (M_sun/yr/kpc2)",
+          "float64_array_sha256": "467b98e2a6948e7e69fd740728890aef2d7016f9d54c89e52eaff82051cd8794",
+          "header_sha256": "fc3edcd1931b4d497cdbf20b9092183c85d0fff6c160ee4179a961eebfbc90ef"
+        },
+        "HA6562_SIGMA": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "05e62234ecac7f6bb97f2c884bb8ec8eb4586b90f02d945743649579b5aa79fe",
+          "header_sha256": "819b5dd69e13aa4b21ff4260c38c3ddaf40cff91fa685ab6f185d748ccc4bbe4"
+        },
+        "HA6562_SIGMA_CORR": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "5b9b7763f4ddcc8f08d959495b9c4e6513a9ebf98b79c8779e18d4f77b010772",
+          "header_sha256": "c58a9fc6a851ca65a67ed0b1ce74112358443dd1057d7072ea397555a8c52232"
+        },
+        "NII_BPT": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": "1",
+          "COMMENT": "Class map: -1=unknown/non-detection, 0=unclassified, 1=HII, 2=Comp, 3=AG\nN\nUses dust-corrected fluxes; positive classes require stable central +/-1\nsigma class",
+          "float64_array_sha256": "0c43bacb6ebdaef62112164275b503429e6249a3af844e7d470a9a962fc84660",
+          "header_sha256": "cb20f0c471a83aae513c74471121a396b9dd2d9bcd6acb959b4613fa07bc380f"
+        },
+        "SII_BPT": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": "1",
+          "COMMENT": "Class map: -1=unknown/non-detection, 0=unclassified, 1=HII, 2=LINER, 3=S\neyfert\nUses dust-corrected fluxes; positive classes require stable central +/-1\nsigma class",
+          "float64_array_sha256": "8d108deeeb3df7100450bff6d9831027babc40982cabd00b38fa0e0472ba108d",
+          "header_sha256": "dd06d67d5c297d5826757043ee5bc51e50e65717324017564609c76d7cd81f48"
+        },
+        "HA6562_FLUX": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "86081437db3cc4dbb53b0c676d8366ec82d74f8f86079e843242343a7580205f",
+          "header_sha256": "24bda3bfb80acbbd2309debeb07e40ef898eec43c160932050d8f6d5ecba0fc0"
+        },
+        "HA6562_FLUX_ERR": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "c7b94d745ffee4776e5a2edec9631c670699f6a73eb4b81d80c009d43ebede98",
+          "header_sha256": "3fae763b42fe548ac0ee811ed66e41ab7a0b993ce8c6ed9a2adb4e05e1f881a0"
+        },
+        "HB4861_FLUX": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "0cf7ea67935b84a761f21adfb4dd99e61c2ee90c3fa73ae41be9fa5dc55be316",
+          "header_sha256": "03fcea7b528682ef088a60cac3a70f8c1fa414ce7edc6bd3ee815973900bf500"
+        },
+        "HB4861_FLUX_ERR": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "a3699a89fd66d36d65f9f6453a47d55ff0ca11b21435fd8197de129c81a46264",
+          "header_sha256": "46967fb84e00a35f708f5c9edd84005566681cf12ec931e7119c267ab5ce732a"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4654/NGC4654_proxy_EW_maps_further.fits",
+      "bytes": 64776960,
+      "mtime_ns": 1788098798219697219,
+      "loaded_hdus": {
+        "PROXY_EWHA": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": "Angstrom",
+          "COMMENT": "EW_proxy[A] = F_Ha / bin continuum.\nHalpha passband uses MaNGA DAP vacuum window converted to air.\nContinuum uses bin redshift from galaxy z plus HA6562_VEL.",
+          "float64_array_sha256": "45ecb6830022ec33c77c4af1c716aa3aa954b264db8714e8ed0aaab80179fa04",
+          "header_sha256": "11ca606eaf451875104e98e8deecfe51fd5f495032d24b2b04dc9cdf0fd99a6d"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4654/NGC4654_sfh_maps.fits",
+      "bytes": 62176320,
+      "mtime_ns": 1786443616520251484,
+      "loaded_hdus": {
+        "SNR_POSTFIT": {
+          "shape": [
+            1013,
+            1278
+          ],
+          "BUNIT": null,
+          "COMMENT": "",
+          "float64_array_sha256": "33aaf68a3919e65c4db5da7f347a6424ca75f31b812205e0eb5d6489e01ed96c",
+          "header_sha256": "b0928489bc5eafcb6f821064cd24d2641654337d37d7cbc7ca1fedf4799d81dc"
+        }
+      }
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/NGC4654/NGC4654_mask.fits",
+      "bytes": 10365120,
+      "mtime_ns": 1786443527599788113,
+      "mask_array_sha256": "91ae9977068f75f41f3c552c351ab957268aec79b04baa70092c156a63b4fcff"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/20260904_check_combined_SF_fraction_categories_by_stage_SNR_postfit.ipynb",
+      "bytes": 63597390,
+      "mtime_ns": 1788688615362701294,
+      "cell_sources_sha256": "1e08fd8467ce87575ef2e705db565a013daf3b40c689732690cc97581e42bf95"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/Mass.py",
+      "bytes": 73612,
+      "mtime_ns": 1782740356939957918,
+      "sha256": "90ea2c3006ffb5e948d77ac4a2cf41b0fffe3e75b892b8db2c38d5c9785c10d4"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py",
+      "bytes": 347828,
+      "mtime_ns": 1787989157030664371,
+      "sha256": "4d113ebf4e8cc8103b6854e463448126ce54df9b9345ebf36923c56727439413"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/README.md",
+      "bytes": 16744,
+      "mtime_ns": 1786107870641188097,
+      "sha256": "47bdcbe087330a638dffcb498e849b5df996c87b3e0b1a96bdc6238677eab4f9"
+    },
+    {
+      "path": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/v3tk_observed_VRI_image.py",
+      "bytes": 25818,
+      "mtime_ns": 1786107649347832138,
+      "sha256": "0e45e44276737457f141aefcfbab6d0bcebef0ecc8b3bd855e47dd8e1aacbcbe"
+    }
+  ],
+  "products": [
+    {
+      "stem": "01_mosaic_curated",
+      "description": "MAUVE RGB mosaic",
+      "galaxies": [
+        "NGC4501",
+        "NGC4654",
+        "NGC4567_8",
+        "NGC4383",
+        "NGC4192",
+        "NGC4298",
+        "NGC4380",
+        "NGC4522",
+        "NGC4394",
+        "NGC4457",
+        "NGC4419",
+        "NGC4330",
+        "NGC4064",
+        "NGC4189",
+        "NGC4402",
+        "NGC4694"
+      ],
+      "files": [
+        "01_mosaic_curated.png",
+        "01_mosaic_curated.pdf"
+      ],
+      "pixels": [
+        4200,
+        4200
+      ]
+    },
+    {
+      "stem": "01_mosaic_all_local_fields",
+      "description": "MAUVE RGB mosaic",
+      "galaxies": [
+        "IC3392",
+        "NGC4064",
+        "NGC4189",
+        "NGC4192",
+        "NGC4222",
+        "NGC4254",
+        "NGC4293",
+        "NGC4294",
+        "NGC4298",
+        "NGC4302",
+        "NGC4321",
+        "NGC4330",
+        "NGC4351",
+        "NGC4380",
+        "NGC4383",
+        "NGC4388",
+        "NGC4394",
+        "NGC4396",
+        "NGC4402",
+        "NGC4405",
+        "NGC4419",
+        "NGC4424",
+        "NGC4450",
+        "NGC4457",
+        "NGC4501",
+        "NGC4522",
+        "NGC4535",
+        "NGC4567_8",
+        "NGC4569",
+        "NGC4580",
+        "NGC4606",
+        "NGC4607",
+        "NGC4654",
+        "NGC4694",
+        "NGC4698"
+      ],
+      "files": [
+        "01_mosaic_all_local_fields.png"
+      ],
+      "pixels": [
+        4200,
+        5400
+      ]
+    },
+    {
+      "stem": "02_NGC4501_RGB",
+      "description": "NGC4501: MUSE RGB poster image",
+      "galaxies": [
+        "NGC4501"
+      ],
+      "files": [
+        "02_NGC4501_RGB.png",
+        "02_NGC4501_RGB.pdf"
+      ],
+      "pixels": [
+        3600,
+        3600
+      ]
+    },
+    {
+      "stem": "02_NGC4654_RGB",
+      "description": "NGC4654: MUSE RGB poster image",
+      "galaxies": [
+        "NGC4654"
+      ],
+      "files": [
+        "02_NGC4654_RGB.png"
+      ],
+      "pixels": [
+        3600,
+        3600
+      ]
+    },
+    {
+      "stem": "02_RGB_pair",
+      "description": "NGC4501 and NGC4654: paired MUSE RGB images",
+      "galaxies": [
+        "NGC4501",
+        "NGC4654"
+      ],
+      "files": [
+        "02_RGB_pair.png"
+      ],
+      "pixels": [
+        4800,
+        3000
+      ]
+    },
+    {
+      "stem": "03_SFR_on_stellar_mass_pair",
+      "description": "Star formation over stellar mass: NGC4501 and NGC4654",
+      "galaxies": [
+        "NGC4501",
+        "NGC4654"
+      ],
+      "files": [
+        "03_SFR_on_stellar_mass_pair.png",
+        "03_SFR_on_stellar_mass_pair.pdf"
+      ],
+      "pixels": [
+        4800,
+        3000
+      ]
+    },
+    {
+      "stem": "03_NGC4501_SFR_on_stellar_mass",
+      "description": "NGC4501: SFR over stellar mass",
+      "galaxies": [
+        "NGC4501"
+      ],
+      "files": [
+        "03_NGC4501_SFR_on_stellar_mass.png"
+      ],
+      "pixels": [
+        3600,
+        3600
+      ]
+    },
+    {
+      "stem": "03_NGC4654_SFR_on_stellar_mass",
+      "description": "NGC4654: SFR over stellar mass",
+      "galaxies": [
+        "NGC4654"
+      ],
+      "files": [
+        "03_NGC4654_SFR_on_stellar_mass.png"
+      ],
+      "pixels": [
+        3600,
+        3600
+      ]
+    },
+    {
+      "stem": "04_RGB_mass_SFR_comparison",
+      "description": "RGB, stellar mass, and unblended SFR maps",
+      "galaxies": [
+        "NGC4501",
+        "NGC4654"
+      ],
+      "files": [
+        "04_RGB_mass_SFR_comparison.png"
+      ],
+      "pixels": [
+        5100,
+        3900
+      ]
+    },
+    {
+      "stem": "05_NGC4501_with_survey_thumbnails",
+      "description": "NGC4501 RGB hero with four survey thumbnails",
+      "galaxies": [
+        "NGC4501",
+        "NGC4654",
+        "NGC4383",
+        "NGC4522",
+        "NGC4402"
+      ],
+      "files": [
+        "05_NGC4501_with_survey_thumbnails.png"
+      ],
+      "pixels": [
+        4800,
+        3300
+      ]
+    }
+  ],
+  "checks": {
+    "source_sizes_and_mtimes_unchanged": true,
+    "PNG_decode_checks": true,
+    "map_shape_WCS_selection_checks": true
+  }
+}

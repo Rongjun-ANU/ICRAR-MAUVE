@@ -1,0 +1,26 @@
+{
+  "notebook_schema_valid": true,
+  "all_8_code_cells_executed": true,
+  "stored_errors": 0,
+  "stored_stderr": 0,
+  "reference_mask_checks": [
+    {
+      "galaxy": "NGC4501",
+      "valid_mask_bitwise_equals_reference": true,
+      "SF_mask_bitwise_equals_reference": true,
+      "N_valid": 650576,
+      "N_SF": 251607
+    },
+    {
+      "galaxy": "NGC4654",
+      "valid_mask_bitwise_equals_reference": true,
+      "SF_mask_bitwise_equals_reference": true,
+      "N_valid": 532883,
+      "N_SF": 320781
+    }
+  ],
+  "source_file_metadata_unchanged": true,
+  "recorded_full_file_hashes_unchanged": true,
+  "reference_notebook": "/Users/Igniz/Desktop/ICRAR/further/20260904_check_combined_SF_fraction_categories_by_stage_SNR_postfit.ipynb",
+  "geometry_reference": "/Users/Igniz/Desktop/ICRAR/further/MAUVE_effective_radii.csv"
+}
