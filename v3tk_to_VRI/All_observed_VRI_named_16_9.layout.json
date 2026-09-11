@@ -1,0 +1,1622 @@
+{
+  "status": "HEURISTIC_ONLY",
+  "canvas": [
+    5984,
+    3366
+  ],
+  "settings": {
+    "ratio": [
+      16,
+      9
+    ],
+    "angles": [
+      -90,
+      -75,
+      -60,
+      -45,
+      -30,
+      -15,
+      0,
+      15,
+      30,
+      45,
+      60,
+      75,
+      90
+    ],
+    "rotation_limit_degrees": [
+      -90,
+      90
+    ],
+    "rotation_preference": "least absolute angle that fits the tested canvas",
+    "grid_size": 12,
+    "gap": 6,
+    "font_size": 36,
+    "font": "/System/Library/Fonts/Supplemental/Arial.ttf",
+    "label_color": [
+      255,
+      255,
+      0
+    ],
+    "attempts": 4,
+    "seed": 42,
+    "pa_table": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/Brown2021Table1.txt",
+    "pa_table_sha256": "c2931edd6986504c072b61facd42808cc108ebdd4656b430bb66534ce548120f"
+  },
+  "note": "No optimality proof. Only exact black background is free; no brightness threshold or resizing. Angles not divisible by 90 use bicubic interpolation. Positions and boxes are in output pixels; rotated_crop_box is left, top, right, bottom in the expanded rotated source.",
+  "validation": {
+    "overlapping_reserved_pixels": 0,
+    "image_rectangle_overlap_pairs": 49,
+    "reserved_fraction": 0.6317621897649028,
+    "all_placements_inside_canvas": true
+  },
+  "placements": [
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/IC3392_observed_VRI.png",
+      "source_sha256": "7bdc9db93496804abb143c5483c4799334f98746879ffad469af65301c002925",
+      "label": "IC3392",
+      "original_size": [
+        437,
+        438
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        436,
+        438
+      ],
+      "sprite_position": [
+        3148,
+        2877
+      ],
+      "sprite_size": [
+        456,
+        456
+      ],
+      "image_position": [
+        3154,
+        2883
+      ],
+      "label_box": [
+        3430,
+        3267,
+        124,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 219.0,
+        "inclination_deg": 68.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -50.999961783315904,
+        "alignment_angles": [
+          -39.000038,
+          50.999962
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4064_observed_VRI.png",
+      "source_sha256": "f62f1dbd2c1443fd0c16579ccae8b54f4eeda513cea63b2aae8df4ab24f0e083",
+      "label": "NGC4064",
+      "original_size": [
+        566,
+        665
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        565,
+        665
+      ],
+      "sprite_position": [
+        1912,
+        2157
+      ],
+      "sprite_size": [
+        588,
+        684
+      ],
+      "image_position": [
+        1918,
+        2163
+      ],
+      "label_box": [
+        2290,
+        2679,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 150.0,
+        "inclination_deg": 70.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -119.99864464524411,
+        "alignment_angles": [
+          -60.001355,
+          29.998645
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4189_observed_VRI.png",
+      "source_sha256": "e32d0c371ca1d7571b9875de8f7b595c5ce819343dfb563a3a3fb2a88da915a8",
+      "label": "NGC4189",
+      "original_size": [
+        598,
+        319
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        597,
+        319
+      ],
+      "sprite_position": [
+        3520,
+        1221
+      ],
+      "sprite_size": [
+        612,
+        372
+      ],
+      "image_position": [
+        3526,
+        1227
+      ],
+      "label_box": [
+        3742,
+        1551,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 70.0,
+        "inclination_deg": 42.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 160.00183309844013,
+        "alignment_angles": [
+          -70.001833,
+          19.998167
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4192_observed_VRI.png",
+      "source_sha256": "a5801252dc3125f84b158e75a51eb8778e5b9f0f2b7337cc734f4ed062f54756",
+      "label": "NGC4192",
+      "original_size": [
+        1092,
+        1629
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1091,
+        1629
+      ],
+      "sprite_position": [
+        2992,
+        9
+      ],
+      "sprite_size": [
+        1104,
+        1644
+      ],
+      "image_position": [
+        2998,
+        15
+      ],
+      "label_box": [
+        3574,
+        1119,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 333.0,
+        "inclination_deg": 83.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 62.99511386281802,
+        "alignment_angles": [
+          -62.995114,
+          27.004886
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4222_observed_VRI.png",
+      "source_sha256": "8d29e065c3f239b577692787f87f13f6cc48eea6e28410a1893e1e62d97d64bf",
+      "label": "NGC4222",
+      "original_size": [
+        890,
+        748
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        889,
+        748
+      ],
+      "sprite_position": [
+        1252,
+        1701
+      ],
+      "sprite_size": [
+        912,
+        768
+      ],
+      "image_position": [
+        1258,
+        1707
+      ],
+      "label_box": [
+        1522,
+        2271,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 238.0,
+        "inclination_deg": 90.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -31.997056687114597,
+        "alignment_angles": [
+          -58.002943,
+          31.997057
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4254_observed_VRI.png",
+      "source_sha256": "2336a8add6a38e14005abb14bfb7c71296c56aa063b881399b0740efa597701f",
+      "label": "NGC4254",
+      "original_size": [
+        1012,
+        1190
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1011,
+        1190
+      ],
+      "sprite_position": [
+        4,
+        9
+      ],
+      "sprite_size": [
+        1032,
+        1248
+      ],
+      "image_position": [
+        10,
+        15
+      ],
+      "label_box": [
+        430,
+        1210,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 243.0,
+        "inclination_deg": 39.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native_VRI.fits",
+        "major_axis_angle_from_right_deg": -26.999404543921006,
+        "alignment_angles": [
+          -63.000595,
+          26.999405
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4293_observed_VRI.png",
+      "source_sha256": "f3231a156cb45a54a80bb6128c5e4647964a2a0cb0e7073935eeba17f4a3aee3",
+      "label": "NGC4293",
+      "original_size": [
+        923,
+        532
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        922,
+        532
+      ],
+      "sprite_position": [
+        4972,
+        2517
+      ],
+      "sprite_size": [
+        936,
+        552
+      ],
+      "image_position": [
+        4978,
+        2523
+      ],
+      "label_box": [
+        5302,
+        2967,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 239.0,
+        "inclination_deg": 67.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -30.99504828041703,
+        "alignment_angles": [
+          -59.004952,
+          30.995048
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4294_observed_VRI.png",
+      "source_sha256": "490e82d8cf5befbd86c93da802a811d55495483d5f883908ef717313b447b95e",
+      "label": "NGC4294",
+      "original_size": [
+        567,
+        663
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        566,
+        663
+      ],
+      "sprite_position": [
+        2224,
+        2625
+      ],
+      "sprite_size": [
+        588,
+        684
+      ],
+      "image_position": [
+        2230,
+        2631
+      ],
+      "label_box": [
+        2602,
+        3135,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 151.0,
+        "inclination_deg": 74.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -119.00076153623685,
+        "alignment_angles": [
+          -60.999238,
+          29.000762
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4298_observed_VRI.png",
+      "source_sha256": "ca8f1d27f9b495a639b98bbc5a0316693c7ecad38cb321e1e4c2c1d20c94a050",
+      "label": "NGC4298",
+      "original_size": [
+        1042,
+        995
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1041,
+        995
+      ],
+      "sprite_position": [
+        2200,
+        1389
+      ],
+      "sprite_size": [
+        1056,
+        1008
+      ],
+      "image_position": [
+        2206,
+        1395
+      ],
+      "label_box": [
+        2782,
+        2235,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 132.0,
+        "inclination_deg": 52.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -137.99558105702053,
+        "alignment_angles": [
+          -42.004419,
+          47.995581
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4302_observed_VRI.png",
+      "source_sha256": "9174c66d0fafdea56b9755ea885bbd4f83648db48ab03d66ac983681a9522d80",
+      "label": "NGC4302",
+      "original_size": [
+        322,
+        1420
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        321,
+        1420
+      ],
+      "sprite_position": [
+        4,
+        1209
+      ],
+      "sprite_size": [
+        336,
+        1476
+      ],
+      "image_position": [
+        10,
+        1215
+      ],
+      "label_box": [
+        82,
+        2640,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 356.0,
+        "inclination_deg": 90.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 86.0000759433409,
+        "alignment_angles": [
+          -86.000076,
+          3.999924
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4321_observed_VRI.png",
+      "source_sha256": "f62eb26e7d0b5ad366fce1f03dca04e79c6bf5b2e0ceaeccba2f69f0b485ed4e",
+      "label": "NGC4321",
+      "original_size": [
+        1231,
+        999
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1230,
+        999
+      ],
+      "sprite_position": [
+        1036,
+        9
+      ],
+      "sprite_size": [
+        1248,
+        1056
+      ],
+      "image_position": [
+        1042,
+        15
+      ],
+      "label_box": [
+        1570,
+        1019,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 280.0,
+        "inclination_deg": 32.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native_VRI.fits",
+        "major_axis_angle_from_right_deg": 10.002042786356807,
+        "alignment_angles": [
+          -10.002043,
+          79.997957
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4330_observed_VRI.png",
+      "source_sha256": "b2d9d98f0367cd245e9b77380c062a29e4810479e7daf7ee16609fad7f1fadbb",
+      "label": "NGC4330",
+      "original_size": [
+        881,
+        760
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        880,
+        758
+      ],
+      "sprite_position": [
+        1204,
+        2337
+      ],
+      "sprite_size": [
+        900,
+        780
+      ],
+      "image_position": [
+        1210,
+        2343
+      ],
+      "label_box": [
+        1474,
+        2919,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 238.0,
+        "inclination_deg": 90.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -31.99748503268997,
+        "alignment_angles": [
+          -58.002515,
+          31.997485
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4351_observed_VRI.png",
+      "source_sha256": "454274c09d9fa788f7d69626dcd15f06390fc3c59bde35bcc8dc17f927233930",
+      "label": "NGC4351",
+      "original_size": [
+        591,
+        323
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        590,
+        323
+      ],
+      "sprite_position": [
+        3856,
+        2685
+      ],
+      "sprite_size": [
+        612,
+        384
+      ],
+      "image_position": [
+        3862,
+        2691
+      ],
+      "label_box": [
+        4078,
+        3019,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 251.0,
+        "inclination_deg": 48.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -19.001636577767048,
+        "alignment_angles": [
+          -70.998363,
+          19.001637
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_observed_VRI.png",
+      "source_sha256": "3b2d2f22cd0bac339e1223956e89fd0fe6b1f8f79b596407585be96790ef3a4a",
+      "label": "NGC4380",
+      "original_size": [
+        967,
+        1044
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        966,
+        1044
+      ],
+      "sprite_position": [
+        4288,
+        801
+      ],
+      "sprite_size": [
+        984,
+        1056
+      ],
+      "image_position": [
+        4294,
+        807
+      ],
+      "label_box": [
+        4942,
+        1635,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 158.0,
+        "inclination_deg": 61.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -111.99734965284746,
+        "alignment_angles": [
+          -68.00265,
+          21.99735
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4383_observed_VRI.png",
+      "source_sha256": "fd9838e2c8a3d580d39d0467657d7a72ea4557a6c3dc8ff10faab9daa068d617",
+      "label": "NGC4383",
+      "original_size": [
+        633,
+        705
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        632,
+        705
+      ],
+      "sprite_position": [
+        2764,
+        2265
+      ],
+      "sprite_size": [
+        648,
+        720
+      ],
+      "image_position": [
+        2770,
+        2271
+      ],
+      "label_box": [
+        3154,
+        2871,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 17.0,
+        "inclination_deg": 56.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 106.9982922313453,
+        "alignment_angles": [
+          -16.998292,
+          73.001708
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4388_observed_VRI.png",
+      "source_sha256": "4c095b92ecaa1594597dd4f2505741c6266e913db70c790234ab55458c3758ff",
+      "label": "NGC4388",
+      "original_size": [
+        870,
+        323
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        869,
+        323
+      ],
+      "sprite_position": [
+        3076,
+        2013
+      ],
+      "sprite_size": [
+        888,
+        384
+      ],
+      "image_position": [
+        3082,
+        2019
+      ],
+      "label_box": [
+        3430,
+        2347,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 271.0,
+        "inclination_deg": 83.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 1.0034896305835628,
+        "alignment_angles": [
+          -1.00349,
+          88.99651
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4394_observed_VRI.png",
+      "source_sha256": "57dc43f848d6c638ed37d11621670650df6d070a93a8b0f847cb2c9d1979d19d",
+      "label": "NGC4394",
+      "original_size": [
+        624,
+        647
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        623,
+        647
+      ],
+      "sprite_position": [
+        724,
+        2565
+      ],
+      "sprite_size": [
+        636,
+        660
+      ],
+      "image_position": [
+        730,
+        2571
+      ],
+      "label_box": [
+        1114,
+        3063,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 312.0,
+        "inclination_deg": 32.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 41.99842584268977,
+        "alignment_angles": [
+          -41.998426,
+          48.001574
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4396_observed_VRI.png",
+      "source_sha256": "2074537dc1c66ce576711f7e685dcf64477a6c77320035e15508386d79e5511b",
+      "label": "NGC4396",
+      "original_size": [
+        883,
+        755
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        882,
+        754
+      ],
+      "sprite_position": [
+        3880,
+        1917
+      ],
+      "sprite_size": [
+        900,
+        768
+      ],
+      "image_position": [
+        3886,
+        1923
+      ],
+      "label_box": [
+        4330,
+        2499,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 304.0,
+        "inclination_deg": 83.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 34.00354456373925,
+        "alignment_angles": [
+          -34.003545,
+          55.996455
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4402_observed_VRI.png",
+      "source_sha256": "2dc11068da97d294e33d55cfe5d177ca1889884b882257398c7ae36ff2562c54",
+      "label": "NGC4402",
+      "original_size": [
+        1152,
+        318
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1151,
+        318
+      ],
+      "sprite_position": [
+        3292,
+        1641
+      ],
+      "sprite_size": [
+        1164,
+        372
+      ],
+      "image_position": [
+        3298,
+        1647
+      ],
+      "label_box": [
+        3790,
+        1970,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 270.0,
+        "inclination_deg": 80.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 0.005397762691048295,
+        "alignment_angles": [
+          -0.005398,
+          89.994602
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4405_observed_VRI.png",
+      "source_sha256": "227741aa1c62d6d90e0c52990a720ece998f29bd8375251bd04ed6c3b4147f80",
+      "label": "NGC4405",
+      "original_size": [
+        522,
+        663
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        1,
+        1,
+        521,
+        663
+      ],
+      "sprite_position": [
+        340,
+        2229
+      ],
+      "sprite_size": [
+        540,
+        684
+      ],
+      "image_position": [
+        346,
+        2235
+      ],
+      "label_box": [
+        346,
+        2763,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 18.0,
+        "inclination_deg": 46.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 107.99913916916168,
+        "alignment_angles": [
+          -17.999139,
+          72.000861
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4419_observed_VRI.png",
+      "source_sha256": "358b1de757d38ef8cd81685c7f84eb16e11b7a44110f2f36ee8e8625d5748fe2",
+      "label": "NGC4419",
+      "original_size": [
+        629,
+        643
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        628,
+        643
+      ],
+      "sprite_position": [
+        3316,
+        2349
+      ],
+      "sprite_size": [
+        648,
+        660
+      ],
+      "image_position": [
+        3322,
+        2355
+      ],
+      "label_box": [
+        3670,
+        2883,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 131.0,
+        "inclination_deg": 74.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -139.00130797047856,
+        "alignment_angles": [
+          -40.998692,
+          49.001308
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4424_observed_VRI.png",
+      "source_sha256": "ade008592e117f21b93297a507de19705501b33f1965849fb7b39c7ace928e79",
+      "label": "NGC4424",
+      "original_size": [
+        572,
+        335
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        571,
+        335
+      ],
+      "sprite_position": [
+        4468,
+        2877
+      ],
+      "sprite_size": [
+        588,
+        396
+      ],
+      "image_position": [
+        4474,
+        2883
+      ],
+      "label_box": [
+        4678,
+        3223,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 274.0,
+        "inclination_deg": 61.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 4.001184227048019,
+        "alignment_angles": [
+          -4.001184,
+          85.998816
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4450_observed_VRI.png",
+      "source_sha256": "b91b1907490733ad0c571ffa139bf0052c5c0f2059b53e41cdb9ba0fc300f2a3",
+      "label": "NGC4450",
+      "original_size": [
+        602,
+        867
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        601,
+        867
+      ],
+      "sprite_position": [
+        5356,
+        921
+      ],
+      "sprite_size": [
+        624,
+        924
+      ],
+      "image_position": [
+        5362,
+        927
+      ],
+      "label_box": [
+        5578,
+        1799,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 170.0,
+        "inclination_deg": 51.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -100.00229981516564,
+        "alignment_angles": [
+          -79.9977,
+          10.0023
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4457_observed_VRI.png",
+      "source_sha256": "90503ea1e32507df600216a1cb64e561b3ec3aba9f9525811b63a478c1dcf16e",
+      "label": "NGC4457",
+      "original_size": [
+        725,
+        725
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        724,
+        725
+      ],
+      "sprite_position": [
+        5236,
+        1833
+      ],
+      "sprite_size": [
+        744,
+        744
+      ],
+      "image_position": [
+        5242,
+        1839
+      ],
+      "label_box": [
+        5578,
+        2523,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 256.0,
+        "inclination_deg": 37.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -14.000315330088087,
+        "alignment_angles": [
+          -75.999685,
+          14.000315
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4501_observed_VRI.png",
+      "source_sha256": "242ced092a2a3a455c2e9a444faf5897b68a42ca72ef455eccde1e66e78e6b06",
+      "label": "NGC4501",
+      "original_size": [
+        1205,
+        1236
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1204,
+        1236
+      ],
+      "sprite_position": [
+        3736,
+        9
+      ],
+      "sprite_size": [
+        1224,
+        1248
+      ],
+      "image_position": [
+        3742,
+        15
+      ],
+      "label_box": [
+        4438,
+        975,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 320.0,
+        "inclination_deg": 65.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 49.99459273274308,
+        "alignment_angles": [
+          -49.994593,
+          40.005407
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4522_observed_VRI.png",
+      "source_sha256": "b415d0cb481fb31e2a03038ceaf929e880d46a2c22f5c489917da8473f4275f9",
+      "label": "NGC4522",
+      "original_size": [
+        590,
+        659
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        589,
+        659
+      ],
+      "sprite_position": [
+        700,
+        1929
+      ],
+      "sprite_size": [
+        612,
+        672
+      ],
+      "image_position": [
+        706,
+        1935
+      ],
+      "label_box": [
+        766,
+        2451,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 35.0,
+        "inclination_deg": 82.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 125.00072986090218,
+        "alignment_angles": [
+          -35.00073,
+          54.99927
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4535_observed_VRI.png",
+      "source_sha256": "8a4b6c32e2f3b0791774c220b0359117f7904d6ae9af378b49c81b45d6336249",
+      "label": "NGC4535",
+      "original_size": [
+        610,
+        898
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        609,
+        898
+      ],
+      "sprite_position": [
+        4960,
+        9
+      ],
+      "sprite_size": [
+        624,
+        960
+      ],
+      "image_position": [
+        4966,
+        15
+      ],
+      "label_box": [
+        5182,
+        918,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 12.0,
+        "inclination_deg": 48.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native_VRI.fits",
+        "major_axis_angle_from_right_deg": 101.9988338927624,
+        "alignment_angles": [
+          -11.998834,
+          78.001166
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4567_8_observed_VRI.png",
+      "source_sha256": "7a3b6a0e2800bb5a992d82eda34fbf24686559b6475cc26b5938c45fd7ed36d5",
+      "label": "NGC4567_8",
+      "original_size": [
+        971,
+        1059
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        970,
+        1059
+      ],
+      "sprite_position": [
+        1516,
+        957
+      ],
+      "sprite_size": [
+        984,
+        1080
+      ],
+      "image_position": [
+        1522,
+        963
+      ],
+      "label_box": [
+        2122,
+        1635,
+        208,
+        41
+      ],
+      "catalogue_alignment": {
+        "status": "no_unique_catalogue_entry"
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4569_observed_VRI.png",
+      "source_sha256": "f0863c35bb83c54cf398663b5135828ef14f157cdb9156d2faf9d067fe0ceb74",
+      "label": "NGC4569",
+      "original_size": [
+        888,
+        1260
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        887,
+        1260
+      ],
+      "sprite_position": [
+        2284,
+        9
+      ],
+      "sprite_size": [
+        900,
+        1272
+      ],
+      "image_position": [
+        2290,
+        15
+      ],
+      "label_box": [
+        2338,
+        915,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 203.0,
+        "inclination_deg": 69.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": -67.00016856581085,
+        "alignment_angles": [
+          -22.999831,
+          67.000169
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4580_observed_VRI.png",
+      "source_sha256": "88d607876cbc4fe125cfc29017e374e5af31c9cec6c023138a47724a5c6f2a4e",
+      "label": "NGC4580",
+      "original_size": [
+        647,
+        619
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        646,
+        619
+      ],
+      "sprite_position": [
+        2980,
+        9
+      ],
+      "sprite_size": [
+        660,
+        636
+      ],
+      "image_position": [
+        2986,
+        15
+      ],
+      "label_box": [
+        3310,
+        543,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 337.0,
+        "inclination_deg": 46.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 67.00055849564161,
+        "alignment_angles": [
+          -67.000558,
+          22.999442
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4606_observed_VRI.png",
+      "source_sha256": "17c1d628f2e60952ab2d1d72797b42126353e9dba926ed3f428571abb2f1e4cd",
+      "label": "NGC4606",
+      "original_size": [
+        434,
+        435
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        433,
+        435
+      ],
+      "sprite_position": [
+        4,
+        2709
+      ],
+      "sprite_size": [
+        456,
+        492
+      ],
+      "image_position": [
+        10,
+        2715
+      ],
+      "label_box": [
+        142,
+        3155,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 38.0,
+        "inclination_deg": 69.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 128.0000478310966,
+        "alignment_angles": [
+          -38.000048,
+          51.999952
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4607_observed_VRI.png",
+      "source_sha256": "164fb863b5a9739abfd1416650c59a3d74af31b9a0ab68339d4a268640cc8d4e",
+      "label": "NGC4607",
+      "original_size": [
+        315,
+        598
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        314,
+        598
+      ],
+      "sprite_position": [
+        5584,
+        9
+      ],
+      "sprite_size": [
+        336,
+        660
+      ],
+      "image_position": [
+        5590,
+        15
+      ],
+      "label_box": [
+        5662,
+        618,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 2.0,
+        "inclination_deg": 90.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 92.00000889825277,
+        "alignment_angles": [
+          -2.000009,
+          87.999991
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4654_observed_VRI.png",
+      "source_sha256": "bf1c057a53e6de3dc5d9da1dcce730b22f40f379a8235ad0268f6f18f808e745",
+      "label": "NGC4654",
+      "original_size": [
+        1278,
+        1013
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1277,
+        1013
+      ],
+      "sprite_position": [
+        340,
+        1053
+      ],
+      "sprite_size": [
+        1296,
+        1032
+      ],
+      "image_position": [
+        346,
+        1059
+      ],
+      "label_box": [
+        982,
+        1899,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 300.0,
+        "inclination_deg": 61.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 30.005632515571136,
+        "alignment_angles": [
+          -30.005633,
+          59.994367
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4694_observed_VRI.png",
+      "source_sha256": "bb18909c7ef690f99952fd5b0c3ad483f2a64cc01e2a9a02932085870d7cb7e7",
+      "label": "NGC4694",
+      "original_size": [
+        439,
+        441
+      ],
+      "angle_degrees": -15,
+      "rotated_crop_box": [
+        56,
+        58,
+        483,
+        484
+      ],
+      "sprite_position": [
+        352,
+        2913
+      ],
+      "sprite_size": [
+        444,
+        444
+      ],
+      "image_position": [
+        358,
+        2919
+      ],
+      "label_box": [
+        586,
+        3315,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 323.0,
+        "inclination_deg": 62.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 53.00002276888001,
+        "alignment_angles": [
+          -53.000023,
+          36.999977
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4698_observed_VRI.png",
+      "source_sha256": "6a8f9bb08a67d70f9c8ad7b3cdd153702d89dba333a85eba70fb10d27ff8d7a0",
+      "label": "NGC4698",
+      "original_size": [
+        608,
+        1189
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        607,
+        1189
+      ],
+      "sprite_position": [
+        4624,
+        1677
+      ],
+      "sprite_size": [
+        624,
+        1200
+      ],
+      "image_position": [
+        4630,
+        1683
+      ],
+      "label_box": [
+        5050,
+        2475,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 347.0,
+        "inclination_deg": 66.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 77.00092769065184,
+        "alignment_angles": [
+          -77.000928,
+          12.999072
+        ]
+      }
+    }
+  ]
+}

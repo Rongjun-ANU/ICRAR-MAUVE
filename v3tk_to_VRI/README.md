@@ -25,6 +25,7 @@ At the time this README was written, the folder contains 26 VRI FITS products an
 | `v3tk_combined_VRI_image.py` | Combines the observed VRI rendering with the reprojected Legacy image, using valid MUSE pixels where available and Legacy pixels outside the MUSE footprint. It also accepts compressed VRI FITS products. |
 | `v3tk_VRI_image.sh` | Top-level image pipeline wrapper for Legacy reprojection, Legacy-aware observed rendering, and combined image generation. |
 | `auto_arrange_and_combine.py` | Packs many per-galaxy image panels into one fixed-ratio mosaic. Uses OR-Tools when available for proof-aware layouts and can fall back to fast heuristic layouts. |
+| `auto_arrange_and_combine_named.py` | Packs observed-only footprints with horizontal yellow galaxy names. Allows rotation and overlapping black corners, and uses Brown catalogue PA plus matching VRI FITS headers to add horizontal/vertical alignment candidates. |
 | `cp_to_masking.sh` | Copies the mosaic arranger, per-galaxy VRI FITS/combined PNG products, and the standard labeled and unlabeled 16:9 mosaics/reports into `../v3tk_masking_VRI`. |
 | `v3tk_observed_R_image.py`, `v3tk_combined_R_image.py`, `v3tk_R_image.sh` | Older or parallel R-band-only workflow files. |
 | `20260521_*_documentation.md` | Detailed notes for the VRI image pipeline and the mosaic arranger. |
@@ -334,6 +335,99 @@ python auto_arrange_and_combine.py --proof-file VRI_16_9_arrangement_report.txt 
 ```
 
 The arranger skips existing all-galaxy outputs beginning with `ALL_`, `All_`, or `All`, so previous mosaics are not accidentally used as input panels.
+
+### 4. Pack observed images with yellow names and overlapping black corners
+
+```bash
+python auto_arrange_and_combine_named.py
+python auto_arrange_and_combine_named.py extended
+```
+
+This separate arranger accepts only individual `*_observed_VRI.png` images.
+Combined images and existing `All_` mosaics are excluded even when a broad glob
+matches them. Labels are always enabled, derived from the filename, and drawn
+horizontally in yellow. `NGC4567_8` retains its joint name. The original arranger
+and its existing mosaics/reports are not changed. With no positional arguments,
+it selects every available observed galaxy, defaults to 16:9, and writes:
+
+```text
+All_observed_VRI_named__16_9.png
+All_observed_VRI_named__16_9.layout.json
+```
+
+The `extended` argument selects exactly these 14 galaxies and writes
+`14_observed_VRI_named_16_9.png` plus its matching `.layout.json` report:
+
+```text
+IC3392   NGC4064  NGC4192  NGC4293  NGC4298  NGC4330  NGC4383
+NGC4396  NGC4419  NGC4457  NGC4501  NGC4522  NGC4694  NGC4698
+```
+
+The command stops and lists missing files if any member of the 14-galaxy set is
+unavailable. Explicit image paths or globs retain the custom-selection behavior,
+including an optional trailing aspect ratio such as
+`'*_observed_VRI.png' 16 9`. `--output NAME.png` and
+`--report-file NAME.layout.json` select different output paths; rerunning a
+command replaces its selected mosaic and report.
+
+Only exactly black pixels count as free space. The search reserves all nonblack
+pixels, including faint ones, plus a padded rectangle for every label. It tries
+to place labels in the image's black corners; a black footer is available when
+the observed footprint fills its frame. Image rectangles can overlap, but visible
+content and labels cannot. No image is resized or stretched. The default search
+tries rotations from -90 to +90 degrees in 15-degree steps, a 12-pixel
+conservative occupancy grid, four seeded packing orders, and a 6-pixel clearance
+radius around each footprint and label. At each tested canvas size, it prefers
+the rotation closest to the original PNG orientation and rotates farther only
+when lower-angle variants cannot fit without a protected-pixel collision.
+Every grid cell containing an occupied pixel is protected, and the final output
+is checked at full pixel resolution before saving.
+
+When `Brown2021Table1.txt` is present beside the script, the arranger also tries
+the least rotations needed to align each catalogued major axis horizontally or
+vertically. PA-guided and general rotations always remain within -90 to +90
+degrees of the original PNG orientation. The table supplies PA and inclination
+`i`, not measured `a/b`; inclination is recorded
+as metadata and is never used to stretch or deproject an image. The matching
+`*_v3tk_VRI.fits[.gz]` or `*_PHANGS_DATACUBE_native_VRI.fits[.gz]` `V_FLUX` header
+provides the sky-to-pixel orientation. The conversion accounts for the vertical
+flip used by `v3tk_observed_VRI_image.py`. Only headers are read from FITS; PNGs
+remain the image inputs. Missing catalogue entries, unavailable Astropy, missing
+headers, or differing FITS/PNG dimensions fall back to the general rotation
+search and are identified in the report. The joint `NGC4567_8` image has no unique
+catalogue PA and uses the general search. Use `--pa-table PATH` for another copy
+of the same table format, or `--no-pa-alignment` to disable catalogue candidates.
+
+Non-quarter-turn rotations use bicubic interpolation. To preserve source pixel
+values exactly while still rotating and sharing black corners:
+
+```bash
+python auto_arrange_and_combine_named.py '*_observed_VRI.png' 16 9 \
+  --rotation-step 90 --no-pa-alignment
+```
+
+Use `--no-rotate` to keep all original orientations. For a more detailed, slower
+search, reduce the grid/angle steps and increase the number of packing orders:
+
+```bash
+python auto_arrange_and_combine_named.py '*_observed_VRI.png' 16 9 \
+  --grid-size 6 --rotation-step 5 --attempts 8 --font-size 42
+```
+
+`--font-size` controls readability, `--gap` controls clearance, `--font` accepts a
+TrueType/OpenType font, and `--seed` controls reproducible ordering. The arranger
+requires NumPy, Pillow and SciPy; Astropy enables catalogue/WCS alignment. It does
+not require OR-Tools. Its JSON report records source hashes, catalogue provenance,
+rotations, crop boxes, placements, label rectangles, and full-resolution collision
+validation. Status is always `HEURISTIC_ONLY`: tighter packing is searched for,
+but a globally smallest canvas is not proven. The original rectangle-packing
+proof reports do not apply to these rotated, overlapping image rectangles.
+
+Focused regression checks:
+
+```bash
+python -m unittest test_auto_arrange_and_combine_named -v
+```
 
 ## Mosaic Proof Reports
 
