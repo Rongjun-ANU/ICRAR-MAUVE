@@ -1,0 +1,178 @@
+{
+  "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260911_Physical_Scenario_for_Remaining_SF_and_Increasing_NSF.pdf",
+  "sha256": "9be9739ea5b23a18c8e8ca0802f256107a67b5cb41475237f1386cab5def0793",
+  "pages": 27,
+  "outline_entries": 48,
+  "link_counts": {
+    "internal": 53,
+    "external": 77
+  },
+  "invalid_links": [],
+  "out_of_page_words": [],
+  "replacement_character_pages": [],
+  "short_pages_under_250_chars": [],
+  "page_text_summaries": [
+    {
+      "page": 1,
+      "characters": 651,
+      "start": "MAUVE / ICRAR - DEEP RESEARCH Remaining SF and Rising NSF An observational audit and an analytical physical scenario Outside-in gas loss, fading young stars, and continued ionization of the gas that remains. A framework ",
+      "end": "tical fitting programme 11 SEPTEMBER 2026 Prepared for Rongjun | MAUVE observational framework An explanatory model with numerical checks; physical parameters have not been fitted."
+    },
+    {
+      "page": 2,
+      "characters": 2272,
+      "start": "Contents 1. Executive answer 1.1 What was examined and recalculated 2. What the plots actually measure 2.1 Sample, masks and support 2.2 SF, NSF and ND are operational classes 2.3 Separate occupancy, surviving intensity ",
+      "end": "n package 11. References and prioritized reading REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 2 / 27"
+    },
+    {
+      "page": 3,
+      "characters": 3963,
+      "start": "1. Executive answer The most economical working scenario is outside-in gas removal combined with fading of the surviving young-star component, while some inner gas remains detectable under a changing mixture of ionizing ",
+      "end": "h the same system draws retained across bins and REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 3 / 27"
+    },
+    {
+      "page": 4,
+      "characters": 3482,
+      "start": "metrics. The full source notebooks, fitting pipeline and all original plotting cells were not rerun. Provenance, the scope of execution and the independent numerical checks appear in Section 10. The literature search was",
+      "end": "7 \u2264log\u206110( \u03a3\u22c6 \ud835\udc40\u2299kpc\u22122 ) < 9.5, 0 \u2264\ud835\udc45/\ud835\udc45\ud835\udc52< 2.5. (1) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 4 / 27"
+    },
+    {
+      "page": 5,
+      "characters": 2485,
+      "start": "aware classification. ND comprises pixels for which both Balmer lines are not jointly detected. NSF comprises pixels with both Balmer lines detected that fail the SF selection. Thus NSF can contain low-EW gas, broad gas,",
+      "end": "\ud835\udc50= \u27e8 \u2211\ud835\udc56\u2208\ud835\udc50, \ud835\udc54\u2112\ud835\udefc, \ud835\udc56 \ud835\udc41\ud835\udc48, \ud835\udc54 \u27e9 \ud835\udc54 = \u27e8\ud835\udc53\ud835\udc50, \ud835\udc54\ud835\udc3c\ud835\udc50, \ud835\udc54\u27e9\ud835\udc54. (6) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 5 / 27"
+    },
+    {
+      "page": 6,
+      "characters": 2007,
+      "start": "\ud835\udc3d\ud835\udc50 measures the category\u2019s absolute H-alpha contribution per usable area. In general, Even on identical support, covariance between fraction and intensity prevents factorization; here the conditional- support requirement",
+      "end": "g\u206110\u03a3SFR \u2212log\u206110\ud835\udc36SFR, \ud835\udc36SFR \u22434.98358 \u00d7 10\u221242, (8) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 6 / 27"
+    },
+    {
+      "page": 7,
+      "characters": 2183,
+      "start": "Figure 1. Live equal-system SF, NSF and ND fractions under the strict post-fit S/N cut. Bands are pointwise 16th-84th percentiles from 10,000 whole-system resamples. Open markers denote fewer than three contributing syst",
+      "end": "crease. Survivor selection can preserve only the REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 7 / 27"
+    },
+    {
+      "page": 8,
+      "characters": 2287,
+      "start": "bright tail after extensive removal. Thus neither uniform fading nor uniform intensity preservation is an adequate global description. Figure 2. Fresh post/pre and close/pre logarithmic contrasts for SF occupancy, select",
+      "end": "d merely by a declining class-average intensity. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 8 / 27"
+    },
+    {
+      "page": 9,
+      "characters": 2455,
+      "start": "3.4 Excitation needs a qualified, line-specific interpretation The common-support line profiles require both Balmer lines, [O III], [N II] and both [S II] lines to pass the raw detections. Within each category they use t",
+      "end": "27.5% of the pre-, close- and post-peak samples. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 9 / 27"
+    },
+    {
+      "page": 10,
+      "characters": 3890,
+      "start": "This justification is therefore incorrect. However, directly using H-beta on the exact common-line, luminosity- weighted support changes the plotted NSF stage contrasts by less than 0.0096 dex across the finite bins chec",
+      "end": "ions. Fossati et al. 2016, Tomicic et al. 2021b REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 10 / 27"
+    },
+    {
+      "page": 11,
+      "characters": 3724,
+      "start": "Projection, rotation and beam smearing can also broaden profiles. Joint excitation and kinematic decomposition is more informative than a width threshold alone. JO201 and spatial decomposition work in NGC1068 show why mu",
+      "end": "g a different global mechanism for every point. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 11 / 27"
+    },
+    {
+      "page": 12,
+      "characters": 1835,
+      "start": "5.3 After substantial gas loss With reduced replenishment, molecular reservoirs can decline and the young-star ionizing luminosity falls. If efficiency also falls, fading can be faster than gas depletion alone predicts. ",
+      "end": "al gas radiates forever. \ud835\udc61rec = 1 \ud835\udefc\ud835\udc35(\ud835\udc47)\ud835\udc5b\ud835\udc52 . (9) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 12 / 27"
+    },
+    {
+      "page": 13,
+      "characters": 2027,
+      "start": "6. Analytical model: from gas to the observed classes 6.1 Gas retention and an outside-in boundary The incident ram pressure is A useful local restoring-pressure approximation is The second form assumes an approximately ",
+      "end": "\ud835\udc54, crit \u2212\ud835\udf07\ud835\udc54 \ud835\udc60\ud835\udc54 ), \u03a3\ud835\udc54, crit = \ud835\udc43peak 2\ud835\udf0b\ud835\udc3a\u03a3\u22c6 . (14) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 13 / 27"
+    },
+    {
+      "page": 14,
+      "characters": 2034,
+      "start": "Here \ud835\udf13 is the actual young-star SFR surface density in the model. Recycling is returned instantaneously to the tracked molecular reservoir as a simplifying closure; explicit dissociation and reverse phase exchange are om",
+      "end": "og\u2061\ud835\udc61\ud835\udc51. (20) \ud835\udc34(\ud835\udc61) = \ud835\udc36\ud835\udefc\u222b 0 \u221e \ud835\udf13(\ud835\udc61\u2212\ud835\udc62)\ud835\udc3e\ud835\udefc(\ud835\udc62) \ud835\udc51\ud835\udc62. (21) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 14 / 27"
+    },
+    {
+      "page": 15,
+      "characters": 2471,
+      "start": "This reduces to the long-timescale SF decline after the short response transient. At equal timescales the limit is (1 + \ud835\udc61/\ud835\udf0f\ud835\udc5e)\ud835\udc52\u2212\ud835\udc61/\ud835\udf0f\ud835\udc5e. A few-Myr illustrative kernel does not assign a stellar age to an infall stage; populat",
+      "end": "3, \ud835\udc37\u2212\ud835\udc5f3, \ud835\udc34) \ud835\udc35\ud835\udc37 \ud835\udc35\ud835\udc34+ \ud835\udc35\ud835\udc37 . (26) \ud835\udc4a\ud835\udefc= \ud835\udc34+ \ud835\udc37 \ud835\udc36\ud835\udf06 . (27) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 15 / 27"
+    },
+    {
+      "page": 16,
+      "characters": 1578,
+      "start": "For two intrinsic Gaussian line components with widths \ud835\udf0e\ud835\udc34, \ud835\udf0e\ud835\udc37 and centroid separation \u0394\ud835\udc63, the second central moment is Changing component weights can broaden the total line even when neither component becomes more turbul",
+      "end": " \ud835\udc64\ud835\udf0e\ud835\udc37 2 + \ud835\udc64(1 \u2212\ud835\udc64)(\u0394\ud835\udc63)2. (28) ln\u2061\ud835\udc34\u223c\ud835\udca9(\ud835\udf07, \ud835\udc602), (29) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 16 / 27"
+    },
+    {
+      "page": 17,
+      "characters": 2086,
+      "start": "In a noiseless approximation with a fixed observed Balmer decrement \ud835\udc4f, joint Balmer detection implies an effective H-alpha threshold For this illustrative calculation only, suppose the BPT and width conditions can be rep",
+      "end": "(\ud835\udc34\ud835\udc51, \ud835\udc34\ud835\udc60) \ud835\udc5dNSF + \ud835\udc37, \ud835\udc3cSF = \ud835\udc40(\ud835\udc34\ud835\udc60, \u221e) \ud835\udc5dSF + \ud835\udc37. (36) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 17 / 27"
+    },
+    {
+      "page": 18,
+      "characters": 989,
+      "start": "If the aim is the true young-star SFR, only the young-star component belongs in its calibration; the residual contribution in \ud835\udc3cSF is potential contamination. Finally, these local predictions must be aggregated using the ",
+      "end": "a calibrated BPT model. \ud835\udc47SF = \ud835\udc36SFR \ud835\udc5dSF\ud835\udc3cSF. (37) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 18 / 27"
+    },
+    {
+      "page": 19,
+      "characters": 2209,
+      "start": "Figure 6. Analytical gas-reservoir histories and an illustrative soft gas-column retention boundary. Reservoir transfer can briefly raise molecular gas before later fading, even as gas is removed. The right-hand retentio",
+      "end": "ter histories A common timeline for all systems REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 19 / 27"
+    },
+    {
+      "page": 20,
+      "characters": 3362,
+      "start": "The model explains the logical compatibility of the trends with a small set of physical processes. It has not been optimized to the measured curves, and no goodness of fit, posterior parameter constraint or model-selecti",
+      "end": " 3 \ud835\udc34intercept, \ud835\udc3f\ud835\udefc, shock \u2264\ud835\udf16\ud835\udefc, shock \u0307\ud835\udc38inc. (39) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 20 / 27"
+    },
+    {
+      "page": 21,
+      "characters": 3435,
+      "start": "This order matters. Thresholding before convolution, assuming an ND surrogate is a flux limit, or fitting ratios without common line support would generate a different observable. The forward model should initially repro",
+      "end": "hem merely because they complicate the average. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 21 / 27"
+    },
+    {
+      "page": 22,
+      "characters": 3302,
+      "start": "ND should enter through raw flux/error information or calibrated injection-and-recovery completeness. Its true flux can be positive below detection. Model-based censoring is preferable to assigning a physical upper limit",
+      "end": "ur refinements. \ud835\udc64\ud835\udc57= \ud835\udc45\ud835\udc57\u2212\ud835\udc5f\ud835\udc57, \ud835\udc34 \ud835\udc5f\ud835\udc57, \ud835\udc37\u2212\ud835\udc5f\ud835\udc57, \ud835\udc34 , (40) REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 22 / 27"
+    },
+    {
+      "page": 23,
+      "characters": 3407,
+      "start": "First, the all-usable-area selected SF term is a decomposition statistic. It combines occupancy and intensity and is useful for bookkeeping, but it is not automatically a bound on total true SFR. Second, NSF is a detecte",
+      "end": " line support, J, shares and paired diagnostics REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 23 / 27"
+    },
+    {
+      "page": 24,
+      "characters": 3102,
+      "start": "ID Source and inspection scope P1 /Users/Igniz/Desktop/ICRAR/further/SFR+Z.py; attenuation, line-detection and luminosity conventions P2 /Users/Igniz/Desktop/ICRAR/further/mauve_master_wiki_newclass.fits and /Users/Igniz",
+      "end": " explicitly labelled analytical demonstrations. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 24 / 27"
+    },
+    {
+      "page": 25,
+      "characters": 1360,
+      "start": "10.4 Reproduction package The persistent asset directory is /Users/Igniz/Desktop/ICRAR/MAUVE/assets/20260911_sf_nsf_physical_model/. It contains the input fingerprints; sample QC; per-system SF and H-alpha scalar tables;",
+      "end": "inst current local inputs or the cited sources. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 25 / 27"
+    },
+    {
+      "page": 26,
+      "characters": 3981,
+      "start": "11. References and prioritized reading The first papers to read for this specific problem are Brown et al. (gas content and efficiency), Tomicic et al. 2021a (area versus luminosity), Belfiore et al. 2022 (mixed DIG ioni",
+      "end": "ot imply a larger integrated DIG flux fraction. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 26 / 27"
+    },
+    {
+      "page": 27,
+      "characters": 4040,
+      "start": "12. Tomicic, N. et al. (2021b). GASP. XXXV. Characteristics of the diffuse ionized gas in gas-stripped galaxies. ApJ, 922, 131. Author manuscript; DOI. F. Tail excitation and [O I] excess motivate extra heating in approp",
+      "end": "fects on star formation as well as gas removal. REMAINING SF AND RISING NSF MAUVE / ICRAR | 11 SEP 2026 Observations - gas reservoirs - ionization - falsifiable predictions 27 / 27"
+    }
+  ]
+}

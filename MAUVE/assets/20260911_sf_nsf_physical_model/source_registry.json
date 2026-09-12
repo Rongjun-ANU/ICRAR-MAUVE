@@ -1,0 +1,263 @@
+{
+  "search_date": "2026-09-11",
+  "review_type": "targeted deep literature review, not systematic",
+  "access_key": {
+    "F": "relevant full-text sections inspected",
+    "A": "primary abstract/record",
+    "E": "abstract and indexed full-text excerpts"
+  },
+  "sources": [
+    {
+      "id": 1,
+      "authors_year": "Koppen, J., Jachym, P., Taylor, R. & Palous, J. (2018).",
+      "record": "*Ram Pressure Stripping Made Easy: An Analytical Approach.* MNRAS, 479, 4367. [Author manuscript](https://arxiv.org/abs/1806.05887); [DOI](https://doi.org/10.1093/mnras/sty1610). **F.** Analytical restoring-force and impulse regimes; the basis for distinguishing pressure amplitude from encounter duration.",
+      "urls": [
+        "https://arxiv.org/abs/1806.05887",
+        "https://doi.org/10.1093/mnras/sty1610"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 2,
+      "authors_year": "Lilly, S. J. et al. (2013).",
+      "record": "*Gas-regulation of galaxies: the evolution of the cosmic specific star formation rate, the metallicity-mass-star-formation rate relation and the stellar content of halos.* ApJ, 772, 119. [Author manuscript](https://arxiv.org/abs/1303.5059); [DOI](https://doi.org/10.1088/0004-637X/772/2/119). **A.** Conservation framework used as motivation for the simplified local reservoir closure.",
+      "urls": [
+        "https://arxiv.org/abs/1303.5059",
+        "https://doi.org/10.1088/0004-637X/772/2/119"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 3,
+      "authors_year": "Brown, T. et al. (2023).",
+      "record": "*VERTICO VII: Environmental quenching caused by suppression of molecular gas content and star formation efficiency in Virgo cluster galaxies.* [Author manuscript](https://arxiv.org/abs/2308.10943). **F.** Closest resolved Virgo comparison for interpreting lower SFR through both molecular content and efficiency.",
+      "urls": [
+        "https://arxiv.org/abs/2308.10943"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 4,
+      "authors_year": "Watts, A. B. et al. (2023).",
+      "record": "*VERTICO V: The environmentally driven evolution of the inner cold gas discs of Virgo cluster galaxies.* PASA. [Author manuscript](https://arxiv.org/abs/2303.07549); [DOI](https://doi.org/10.1017/pasa.2023.14). **A.** Inner gas changes and preferential depletion of low-surface-density molecular material.",
+      "urls": [
+        "https://arxiv.org/abs/2303.07549",
+        "https://doi.org/10.1017/pasa.2023.14"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 5,
+      "authors_year": "Fossati, M. et al. (2018).",
+      "record": "*A Virgo Environmental Survey Tracing Ionised Gas Emission (VESTIGE). II. Constraining the quenching time in the stripped galaxy NGC4330.* A&A, 614, A57. [Author manuscript](https://arxiv.org/abs/1801.09685); [DOI](https://doi.org/10.1051/0004-6361/201732373). **A.** An individual-galaxy example of spatially resolved quenching chronology.",
+      "urls": [
+        "https://arxiv.org/abs/1801.09685",
+        "https://doi.org/10.1051/0004-6361/201732373"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 6,
+      "authors_year": "Belfiore, F. et al. (2022).",
+      "record": "*A tale of two DIGs: The relative role of H II regions and low-mass hot evolved stars in powering the diffuse ionised gas (DIG) in PHANGS-MUSE galaxies.* A&A, 659, A26. [Author manuscript](https://arxiv.org/abs/2111.14876); [DOI](https://doi.org/10.1051/0004-6361/202141859). **E.** Leakage and evolved-star contributions are spatially dependent; useful for residual-component templates.",
+      "urls": [
+        "https://arxiv.org/abs/2111.14876",
+        "https://doi.org/10.1051/0004-6361/202141859"
+      ],
+      "access_depth": "E"
+    },
+    {
+      "id": 7,
+      "authors_year": "Belfiore, F. et al. (2016).",
+      "record": "*SDSS IV MaNGA - spatially resolved diagnostic diagrams: a proof that many galaxies are LIERs.* MNRAS, 461, 3111. [DOI](https://doi.org/10.1093/mnras/stw1234). **F.** Resolved low-EW emission and its relation to older stellar populations.",
+      "urls": [
+        "https://doi.org/10.1093/mnras/stw1234"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 8,
+      "authors_year": "Cid Fernandes, R., Stasinska, G., Mateus, A. & Vale Asari, N. (2011).",
+      "record": "*A comprehensive classification of galaxies in the Sloan Digital Sky Survey: how to tell true from fake AGN?* MNRAS, 413, 1687. [DOI](https://doi.org/10.1111/j.1365-2966.2011.18244.x). **A.** EW-based classification and the distinction between weak AGN-like ratios and retired stellar populations.",
+      "urls": [
+        "https://doi.org/10.1111/j.1365-2966.2011.18244.x"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 9,
+      "authors_year": "Zhang, K. et al. (2017).",
+      "record": "*SDSS-IV MaNGA: the impact of diffuse ionized gas on emission-line ratios, interpretation of diagnostic diagrams and gas metallicity measurements.* MNRAS, 466, 3217. [Author manuscript](https://arxiv.org/abs/1612.02000); [DOI](https://doi.org/10.1093/mnras/stw3308). **A.** DIG changes line diagnostics and abundance inferences.",
+      "urls": [
+        "https://arxiv.org/abs/1612.02000",
+        "https://doi.org/10.1093/mnras/stw3308"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 10,
+      "authors_year": "Lacerda, E. A. D. et al. (2018).",
+      "record": "*Diffuse ionized gas in galaxies across the Hubble sequence at the CALIFA resolution.* MNRAS, 474, 3727. [DOI](https://doi.org/10.1093/mnras/stx3022). **F.** Resolved EW regimes and mixed emission; thresholds depend on the observational setting.",
+      "urls": [
+        "https://doi.org/10.1093/mnras/stx3022"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 11,
+      "authors_year": "Tomicic, N. et al. (2021a).",
+      "record": "*GASP. XXXII. Measuring the diffuse ionized gas fraction in ram-pressure stripped galaxies.* [Author manuscript](https://arxiv.org/abs/2011.08869); [DOI](https://doi.org/10.3847/1538-4357/abca93). **F.** Particularly useful evidence that greater DIG-dominated area need not imply a larger integrated DIG flux fraction.",
+      "urls": [
+        "https://arxiv.org/abs/2011.08869",
+        "https://doi.org/10.3847/1538-4357/abca93"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 12,
+      "authors_year": "Tomicic, N. et al. (2021b).",
+      "record": "*GASP. XXXV. Characteristics of the diffuse ionized gas in gas-stripped galaxies.* ApJ, 922, 131. [Author manuscript](https://arxiv.org/abs/2108.12433); [DOI](https://doi.org/10.3847/1538-4357/ac230e). **F.** Tail excitation and [O I] excess motivate extra heating in appropriate regions.",
+      "urls": [
+        "https://arxiv.org/abs/2108.12433",
+        "https://doi.org/10.3847/1538-4357/ac230e"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 13,
+      "authors_year": "Fossati, M. et al. (2016).",
+      "record": "*MUSE sneaks a peek at extreme ram-pressure stripping events - II. The physical properties of the gas tail of ESO137-001.* MNRAS, 455, 2028. [DOI](https://doi.org/10.1093/mnras/stv2400). **F.** Photoionized knots and additional excitation in a stripped tail.",
+      "urls": [
+        "https://doi.org/10.1093/mnras/stv2400"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 14,
+      "authors_year": "Bellhouse, C. et al. (2019).",
+      "record": "*GASP. XV. A MUSE view of extreme ram-pressure stripping along the line of sight: physical properties of the jellyfish galaxy JO201.* MNRAS, 485, 1157. [Author manuscript](https://arxiv.org/abs/1902.04486); [DOI](https://doi.org/10.1093/mnras/stz460). **F.** Projection, excitation and multiple kinematic components.",
+      "urls": [
+        "https://arxiv.org/abs/1902.04486",
+        "https://doi.org/10.1093/mnras/stz460"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 15,
+      "authors_year": "D'Agostino, J. J. et al. (2019).",
+      "record": "*Separating line emission from star formation, shocks, and AGN ionization in NGC 1068.* MNRAS, 487, 4153. [Author manuscript](https://arxiv.org/abs/1906.07907); [DOI](https://doi.org/10.1093/mnras/stz1611). **F.** Joint spatial, kinematic and line-ratio decomposition; a methodological reference rather than a Virgo analogue.",
+      "urls": [
+        "https://arxiv.org/abs/1906.07907",
+        "https://doi.org/10.1093/mnras/stz1611"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 16,
+      "authors_year": "Citro, A. et al. (2017).",
+      "record": "*A methodology to select galaxies just after the quenching of star formation.* MNRAS, 469, 3108. [Author manuscript](https://arxiv.org/abs/1704.05462); [DOI](https://doi.org/10.1093/mnras/stx932). **F.** A direct counterexample to the claim that [O III] generically fades more slowly than Balmer emission.",
+      "urls": [
+        "https://arxiv.org/abs/1704.05462",
+        "https://doi.org/10.1093/mnras/stx932"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 17,
+      "authors_year": "Tacchella, S. et al. (2022).",
+      "record": "*H-alpha emission in local galaxies: star formation, time variability, and the diffuse ionized gas.* MNRAS, 513, 2904. [DOI](https://doi.org/10.1093/mnras/stac818). **F.** Radiative transfer and time variability complicate the H-alpha-to-SFR mapping.",
+      "urls": [
+        "https://doi.org/10.1093/mnras/stac818"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 18,
+      "authors_year": "Attwater, A. et al. (2025).",
+      "record": "*MAUVE-MUSE: A star formation-driven outflow caught in the act of quenching the stripped Virgo galaxy NGC4064.* Accepted ApJL manuscript. [Author manuscript](https://arxiv.org/abs/2512.10574). **F.** A directly relevant MAUVE case requiring consideration of an outflow during quenching.",
+      "urls": [
+        "https://arxiv.org/abs/2512.10574"
+      ],
+      "access_depth": "F"
+    },
+    {
+      "id": 19,
+      "authors_year": "Zhu, J., Tonnesen, S. & Bryan, G. L. (2024).",
+      "record": "*When and How Ram Pressure Stripping of Low-mass Satellite Galaxies Enhances Star Formation.* ApJ, 960, 54. [Author manuscript](https://arxiv.org/abs/2309.07037); [DOI](https://doi.org/10.3847/1538-4357/acfe6f). **A.** Pressure-driven redistribution can transiently enhance central SF in simulations.",
+      "urls": [
+        "https://arxiv.org/abs/2309.07037",
+        "https://doi.org/10.3847/1538-4357/acfe6f"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 20,
+      "authors_year": "Goller, J. et al. (2023).",
+      "record": "*Jellyfish galaxies in the IllustrisTNG simulations: no enhanced population-wide star formation according to TNG50.* MNRAS, 525, 3551. [Author manuscript](https://arxiv.org/abs/2304.09199); [DOI](https://doi.org/10.1093/mnras/stad2551). **A.** Population selection and individual bursts need not produce the same average trend.",
+      "urls": [
+        "https://arxiv.org/abs/2304.09199",
+        "https://doi.org/10.1093/mnras/stad2551"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 21,
+      "authors_year": "George, K. et al. (2025).",
+      "record": "*Star formation at different stages of ram-pressure stripping as seen in far-ultraviolet imaging of 13 GASP galaxies.* A&A, 700, A38. [Author manuscript](https://arxiv.org/abs/2505.15066); [DOI](https://doi.org/10.1051/0004-6361/202554945). **A.** UV/H-alpha comparisons provide additional constraints without a universal extent ordering.",
+      "urls": [
+        "https://arxiv.org/abs/2505.15066",
+        "https://doi.org/10.1051/0004-6361/202554945"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 22,
+      "authors_year": "Lora, V. et al. (2026).",
+      "record": "*From blue to red spirals: Slow galaxy transformation via ram pressure stripping in TNG-50.* Accepted ApJ manuscript. [Author manuscript](https://arxiv.org/abs/2608.11336). **A.** A recent example of gradual transformation; not a calibration of Virgo stage ages.",
+      "urls": [
+        "https://arxiv.org/abs/2608.11336"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 23,
+      "authors_year": "Kennicutt, R. C., Jr. & Evans, N. J., II (2012).",
+      "record": "*Star Formation in the Milky Way and Nearby Galaxies.* ARA&A, 50, 531. [Author manuscript](https://arxiv.org/abs/1204.3552); [DOI](https://doi.org/10.1146/annurev-astro-081811-125610). **E.** Author review of SFR tracers and their response assumptions.",
+      "urls": [
+        "https://arxiv.org/abs/1204.3552",
+        "https://doi.org/10.1146/annurev-astro-081811-125610"
+      ],
+      "access_depth": "E"
+    },
+    {
+      "id": 24,
+      "authors_year": "Kruijssen, J. M. D. & Longmore, S. N. (2014).",
+      "record": "*An uncertainty principle for star formation - I. Why galactic star formation relations break down below a certain spatial scale.* MNRAS, 439, 3239. [Author manuscript](https://arxiv.org/abs/1401.4459); [DOI](https://doi.org/10.1093/mnras/stu098). **A.** Small apertures sample different gas and young-star evolutionary phases.",
+      "urls": [
+        "https://arxiv.org/abs/1401.4459",
+        "https://doi.org/10.1093/mnras/stu098"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 25,
+      "authors_year": "Vulcani, B. et al. (2020).",
+      "record": "*GASP. XXX. The spatially resolved SFR-mass relation in stripping galaxies in the local universe.* ApJ, 899, 98. [Author manuscript](https://arxiv.org/abs/2007.04996); [DOI](https://doi.org/10.3847/1538-4357/aba4ae). **A.** An observed enhancement case that limits a universal suppression narrative.",
+      "urls": [
+        "https://arxiv.org/abs/2007.04996",
+        "https://doi.org/10.3847/1538-4357/aba4ae"
+      ],
+      "access_depth": "A"
+    },
+    {
+      "id": 26,
+      "authors_year": "Fujita, Y. & Nagashima, M. (1999).",
+      "record": "*Effects of Ram Pressure from the Intracluster Medium on the Star Formation Rate of Disk Galaxies in Clusters of Galaxies.* ApJ, 516, 619. [Author manuscript](https://arxiv.org/abs/astro-ph/9812378); [DOI](https://doi.org/10.1086/307139). **A.** Early analytical treatment of pressure effects on star formation as well as gas removal.",
+      "urls": [
+        "https://arxiv.org/abs/astro-ph/9812378",
+        "https://doi.org/10.1086/307139"
+      ],
+      "access_depth": "A"
+    }
+  ]
+}

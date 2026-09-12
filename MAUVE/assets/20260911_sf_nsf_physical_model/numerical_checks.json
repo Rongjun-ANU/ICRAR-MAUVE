@@ -1,0 +1,12 @@
+{
+  "reservoir_ode_max_abs_error": 3.998579245489964e-11,
+  "gas_mass_budget_max_abs_residual": 1.734723475976807e-17,
+  "lognormal_NSF_intensity_quadrature_abs_error": 1.1046719095020308e-14,
+  "probability_partition_max_error": 1.1102230246251565e-16,
+  "live_T_OI_max_abs_error": 8.716985466783456e-17,
+  "all_demo_line_amplitudes_decline": true,
+  "demo_NII_Ha_ratio_increases": true,
+  "bootstrap_draws": 10000,
+  "random_seed": 20260911,
+  "model_scope": "Analytic/toy verification and fresh bootstrap of scalar data; no physical parameter fit."
+}

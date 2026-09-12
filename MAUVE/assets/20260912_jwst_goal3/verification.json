@@ -1,0 +1,34 @@
+{
+  "checks": [
+    {
+      "file": "20260912_MAUVE_JWST_Cycle6_revised_proposal.pdf",
+      "pages": 10,
+      "words_md": 4554,
+      "references": 18,
+      "link_annotations": 18,
+      "pdf_sha256": "f99fbdcd8f092bac1fabf211624e8e597815fc93a91a1469d8807773c986c215",
+      "md_sha256": "a01ed9becf1d296d084f8dde0c0c084e7e7353b0fb4ee92dd6fa1afffa28be4a",
+      "headings_assets_glyphs_geometry_citations": "passed"
+    },
+    {
+      "file": "20260912_MAUVE_JWST_Goal3_scientific_justification.pdf",
+      "pages": 14,
+      "words_md": 5453,
+      "references": 24,
+      "link_annotations": 30,
+      "pdf_sha256": "c7bb6ebb777118d7810b04e1001b3a0e666685096f1762e5c8ef4d9c66c467e0",
+      "md_sha256": "9e08dc254d1a0609a4c48df3a52f15c3d2f3c076eae5c04a70bcf314a0c1ab27",
+      "headings_assets_glyphs_geometry_citations": "passed"
+    }
+  ],
+  "source_pdf_unchanged": true,
+  "parent_sample_unique_names": 40,
+  "figures_are_illustrative": true,
+  "not_performed": [
+    "ETC",
+    "APT validation",
+    "artificial-source recovery",
+    "MAUVE image analysis"
+  ],
+  "visual_review": "All 24 pages rendered with PyMuPDF and Poppler. All pages checked in contact sheets; equations, key tables, revised paragraphs and the proposal figure inspected at readable size."
+}
