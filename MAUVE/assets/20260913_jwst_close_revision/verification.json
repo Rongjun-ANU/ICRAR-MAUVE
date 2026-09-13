@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "pages": 12,
+  "source_unchanged_sha256": "56e70bc06e450fb448fbd934f577f20f88e689dd61b041adca51440a31ae91ee",
+  "original_figures_preserved_byte_for_byte": 3,
+  "matching_md_pdf_content": true,
+  "text_colors": [
+    "0x0",
+    "0x147d3b"
+  ],
+  "green_text_spans": 122,
+  "margin_overflows": 0,
+  "references": 87,
+  "overlap": [
+    "NGC 4294",
+    "NGC 4351",
+    "NGC 4388",
+    "NGC 4402",
+    "NGC 4548",
+    "NGC 4569",
+    "NGC 4579",
+    "NGC 4606"
+  ],
+  "goal_1_opening_original_words_retained_fraction": 1.0,
+  "goal_2_opening_original_words_retained_fraction": 0.9781,
+  "output_sha256": {
+    "md": "221e8dbb74a679ba07f312bfd6887f8146fb33a53f47e103a9a9e8fcccfa08f2",
+    "pdf": "40edd04d60cef61042fa1cf3c0ab9453c9efa0546e3cc23896463f6c002359c3"
+  },
+  "limits": "Close editorial revision. No new ETC/APT, footprint validation, or scientific re-audit of unchanged Cycle 5 claims."
+}
