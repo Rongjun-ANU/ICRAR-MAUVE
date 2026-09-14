@@ -1,0 +1,11 @@
+{
+  "strict_snr": true,
+  "category_partition_max_residual": 1.1102230246251565e-16,
+  "sample_by_stage": {
+    "close-to-peak": 5,
+    "post-peak": 13,
+    "pre-peak": 8
+  },
+  "notebook_sha256": "6cceb82881b9ced60fad75aaec2e66f4bf14fdf1678fab86f11f6213bf93fc4f",
+  "scope": "Selected data cells and central estimator functions; extra direct Hbeta diagnostic; no bootstrap rerun or notebook edits."
+}

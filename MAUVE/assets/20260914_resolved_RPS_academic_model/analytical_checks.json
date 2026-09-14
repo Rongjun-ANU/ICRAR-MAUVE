@@ -1,0 +1,39 @@
+{
+  "max_relative_ODE_solution_error": 5.576275673945605e-09,
+  "truncated_moment_relative_error": 5.485877786129804e-16,
+  "category_partition_max_error": 0.0,
+  "parameters": {
+    "inner": {
+      "HI0": 2.4,
+      "H20": 8.0,
+      "tau_conv": 1000.0,
+      "tau_HI": 160.0,
+      "tau_H2": 650.0,
+      "tau_dep": 2000.0,
+      "Lcont0": 2.0,
+      "tau_cont": 1200.0,
+      "continuum": 1.2
+    },
+    "outer": {
+      "HI0": 8.0,
+      "H20": 4.0,
+      "tau_conv": 6666.666666666667,
+      "tau_HI": 80.0,
+      "tau_H2": 180.0,
+      "tau_dep": 2000.0,
+      "Lcont0": 0.05,
+      "tau_cont": 100.0,
+      "continuum": 0.05
+    }
+  },
+  "Lref_erg_s_kpc2": 1e+38,
+  "C_Halpha": 4.983582e-42,
+  "tau_ion_Myr": 5.0,
+  "lognormal_sigma_ln": 1.1,
+  "w_BPT_proxy": 0.45,
+  "w_sigma": 0.42483660130718953,
+  "w_limit": 0.42483660130718953,
+  "Halpha_detection_Lref": 0.8,
+  "return_fraction": 0.4,
+  "physical_parameters_fitted": false
+}

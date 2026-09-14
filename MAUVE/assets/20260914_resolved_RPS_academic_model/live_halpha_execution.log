@@ -1,0 +1,59 @@
+Project root: /Users/Igniz/Desktop/ICRAR/further
+Scope: corrected Halpha luminosity surface density across SF, NSF, and ND in all three infall stages
+No additional inclination correction is applied to either surface-density map.
+        GALID  ...                                            QC_flag
+0     NGC4298  ...                                                 OK
+1     NGC4424  ...                                                 OK
+2     NGC4501  ...                                                 OK
+3     NGC4654  ...                                                 OK
+4     NGC4694  ...                                                 OK
+5      IC3392  ...                                                 OK
+6     NGC4064  ...                                                 OK
+7     NGC4293  ...                                                 OK
+8     NGC4380  ...                                                 OK
+9     NGC4394  ...                                                 OK
+10    NGC4405  ...                                                 OK
+11    NGC4419  ...                                                 OK
+12    NGC4450  ...                                                 OK
+13    NGC4457  ...                                                 OK
+14    NGC4548  ...  missing_mass_product;missing_sfr_product;missi...
+15    NGC4569  ...                                                 OK
+16    NGC4579  ...  missing_mass_product;missing_sfr_product;missi...
+17    NGC4580  ...                                                 OK
+18    NGC4606  ...                                                 OK
+19    NGC4689  ...  missing_mass_product;missing_sfr_product;missi...
+20    NGC4698  ...                                                 OK
+21    NGC4189  ...                                                 OK
+22    NGC4254  ...                                                 OK
+23    NGC4294  ...                                                 OK
+24    NGC4321  ...                                                 OK
+25    NGC4351  ...                                                 OK
+26    NGC4383  ...                                                 OK
+27    NGC4535  ...                                                 OK
+28  NGC4567_8  ...                                                 OK
+
+[29 rows x 12 columns]
+stage          QC_flag                                                                                             
+close-to-peak  OK                                                                                                       5
+post-peak      OK                                                                                                      13
+               missing_mass_product;missing_sfr_product;missing_ew_product;missing_mask_product;missing_sfh_product     3
+pre-peak       OK                                                                                                       8
+Name: N_galaxies, dtype: int64
+Pre-peak: 8/8 products pass QC
+Close-to-peak: 5/5 products pass QC
+Post-peak: 13/16 products pass QC
+Total passing products: 26/29
+Loaded 41 persisted galaxy colours.
+Strict-S/N retained sample by stage
+               N_galaxies  N_usable     N_SF   N_NSF     N_ND
+stage                                                        
+pre-peak                8   2703316  1420915  929104   353297
+close-to-peak           5   1643790   720842  488865   434083
+post-peak              13   2825159   222427  815887  1786845
+  category        variable  fixed_min  fixed_max
+0       SF  log_sigma_star        7.0        9.5
+1       SF       radius_re        0.0        2.5
+2      NSF  log_sigma_star        7.0        9.5
+3      NSF       radius_re        0.0        2.5
+4       ND  log_sigma_star        7.0        9.5
+5       ND       radius_re        0.0        2.5

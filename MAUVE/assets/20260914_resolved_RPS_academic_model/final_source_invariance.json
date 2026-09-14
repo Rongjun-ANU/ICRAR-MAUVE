@@ -1,0 +1,37 @@
+[
+  {
+    "path": "/Users/Igniz/Desktop/ICRAR/further/20260909_check_combined_SF_fraction_categories_by_stage_SNR_postfit.ipynb",
+    "sha256": "8cc50ebc4083fd038b2edd07e5713e1ba60d8e5b3c3f6f6d599b48fd116b8ec4",
+    "unchanged_since_extraction": true
+  },
+  {
+    "path": "/Users/Igniz/Desktop/ICRAR/further/20260909_check_Sigma_SFR_intensity_by_stage.ipynb",
+    "sha256": "fe73414addbdf91e55675aa219ddd079c1dedf8cd26e8946d7522f36eec0bba7",
+    "unchanged_since_extraction": true
+  },
+  {
+    "path": "/Users/Igniz/Desktop/ICRAR/further/20260909_check_corrected_Halpha_surface_density_SF_NSF_ND_by_stage.ipynb",
+    "sha256": "6cceb82881b9ced60fad75aaec2e66f4bf14fdf1678fab86f11f6213bf93fc4f",
+    "unchanged_since_extraction": true
+  },
+  {
+    "path": "/Users/Igniz/Desktop/ICRAR/further/SFR+Z.py",
+    "sha256": "4d113ebf4e8cc8103b6854e463448126ce54df9b9345ebf36923c56727439413",
+    "unchanged_since_extraction": true
+  },
+  {
+    "path": "/Users/Igniz/Desktop/ICRAR/further/mauve_master_wiki_newclass.fits",
+    "sha256": "05fbc2ba45b6cde2b02e67b6a06f646491b642c009186f0cd5176b9dc6e5af0c",
+    "unchanged_since_extraction": true
+  },
+  {
+    "path": "/Users/Igniz/Desktop/ICRAR/further/MAUVE_effective_radii.csv",
+    "sha256": "e7f0300c43376fbc0d35977b4512a57b84169b8472b3febaba7bf67851d60111",
+    "unchanged_since_extraction": true
+  },
+  {
+    "path": "/Users/Igniz/Desktop/ICRAR/further/20260914_check_SF_gradient_scan_VIVA.ipynb",
+    "sha256": "6d6c16b7901f559396d909592316dea6fdd2e8cd4e94af348411ba49eb92cfb7",
+    "unchanged_since_extraction": true
+  }
+]

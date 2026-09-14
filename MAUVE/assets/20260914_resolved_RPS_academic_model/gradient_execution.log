@@ -1,0 +1,337 @@
+EXECUTING 3
+Project root: /Users/Igniz/Desktop/ICRAR/further
+Data root: /Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8
+Outputs: /Users/Igniz/Desktop/ICRAR/further/outputs/paper2_Q4_gradient_scan_VIVA (disabled unless SAVE_OUTPUTS=True)
+No additional inclination correction will be applied to either surface-density map.
+SF selection: finite HII/SF map + PROXY_EWHA>6 Angstrom + intrinsic Halpha sigma<45 km/s
+EXECUTING 5
+EXECUTING 9
+        GALID       components  ... mask_exists  manual_exclusion_reason
+0      IC3392           IC3392  ...        True                         
+1     NGC4064          NGC4064  ...        True                         
+2     NGC4189          NGC4189  ...        True                         
+3     NGC4192          NGC4192  ...        True                         
+4     NGC4216          NGC4216  ...       False                         
+5     NGC4222          NGC4222  ...        True                         
+6     NGC4254          NGC4254  ...        True                         
+7     NGC4293          NGC4293  ...        True                         
+8     NGC4294          NGC4294  ...        True                         
+9     NGC4298          NGC4298  ...        True                         
+10    NGC4302          NGC4302  ...        True                         
+11    NGC4321          NGC4321  ...        True                         
+12    NGC4330          NGC4330  ...        True                         
+13    NGC4351          NGC4351  ...        True                         
+14    NGC4380          NGC4380  ...        True                         
+15    NGC4383          NGC4383  ...        True                         
+16    NGC4388          NGC4388  ...        True                         
+17    NGC4394          NGC4394  ...        True                         
+18    NGC4396          NGC4396  ...        True                         
+19    NGC4402          NGC4402  ...        True                         
+20    NGC4405          NGC4405  ...        True                         
+21    NGC4419          NGC4419  ...        True                         
+22    NGC4424          NGC4424  ...        True                         
+23    NGC4450          NGC4450  ...        True                         
+24    NGC4457          NGC4457  ...        True                         
+25    NGC4501          NGC4501  ...        True                         
+26    NGC4522          NGC4522  ...        True                         
+27    NGC4535          NGC4535  ...        True                         
+28    NGC4548          NGC4548  ...       False                         
+29  NGC4567_8  NGC4567,NGC4568  ...        True                         
+30    NGC4569          NGC4569  ...        True                         
+31    NGC4579          NGC4579  ...       False                         
+32    NGC4580          NGC4580  ...        True                         
+33    NGC4606          NGC4606  ...        True                         
+34    NGC4607          NGC4607  ...        True                         
+35    NGC4654          NGC4654  ...        True                         
+36    NGC4689          NGC4689  ...       False                         
+37    NGC4694          NGC4694  ...        True                         
+38    NGC4698          NGC4698  ...        True                         
+
+[39 rows x 10 columns]
+Inventory stage counts: {'close-to-peak': 10, 'post-peak': 18, 'pre-peak': 11}
+EXECUTING 11
+        GALID  ...                                            QC_flag
+0      IC3392  ...                                                 OK
+1     NGC4064  ...                                                 OK
+2     NGC4189  ...                                                 OK
+3     NGC4192  ...                                                 OK
+4     NGC4216  ...  missing_mass_product;missing_sfr_product;missi...
+5     NGC4222  ...                                                 OK
+6     NGC4254  ...                                                 OK
+7     NGC4293  ...                                                 OK
+8     NGC4294  ...                                                 OK
+9     NGC4298  ...                                                 OK
+10    NGC4302  ...                                                 OK
+11    NGC4321  ...                                                 OK
+12    NGC4330  ...                                                 OK
+13    NGC4351  ...                                                 OK
+14    NGC4380  ...                                                 OK
+15    NGC4383  ...                                                 OK
+16    NGC4388  ...                                                 OK
+17    NGC4394  ...                                                 OK
+18    NGC4396  ...                                                 OK
+19    NGC4402  ...                                                 OK
+20    NGC4405  ...                                                 OK
+21    NGC4419  ...                                                 OK
+22    NGC4424  ...                                                 OK
+23    NGC4450  ...                                                 OK
+24    NGC4457  ...                                                 OK
+25    NGC4501  ...                                                 OK
+26    NGC4522  ...                                                 OK
+27    NGC4535  ...                                                 OK
+28    NGC4548  ...  missing_mass_product;missing_sfr_product;missi...
+29  NGC4567_8  ...                                                 OK
+30    NGC4569  ...                                                 OK
+31    NGC4579  ...  missing_mass_product;missing_sfr_product;missi...
+32    NGC4580  ...                                                 OK
+33    NGC4606  ...                                                 OK
+34    NGC4607  ...                                                 OK
+35    NGC4654  ...                                                 OK
+36    NGC4689  ...  missing_mass_product;missing_sfr_product;missi...
+37    NGC4694  ...                                                 OK
+38    NGC4698  ...                                                 OK
+
+[39 rows x 16 columns]
+Primary i < 80 deg sample: 26 products
+{'pre-peak': 8, 'close-to-peak': 5, 'post-peak': 13}
+EXECUTING 13
+    sigma_bin  sigma_center  reference  galaxy_p16  galaxy_p84  Ngal  supported
+0           0      6.166667        NaN         NaN         NaN     0      False
+1           1      6.500000  -2.754313   -3.347243   -2.413425     3       True
+2           2      6.833333  -3.065042   -3.098908   -2.712723     3       True
+3           3      7.166667  -2.849044   -3.086835   -2.570242     7       True
+4           4      7.500000  -2.555174   -2.635979   -2.400502     8       True
+5           5      7.833333  -2.212694   -2.379245   -2.035480     8       True
+6           6      8.166667  -1.955101   -2.083862   -1.709616     8       True
+7           7      8.500000  -1.608874   -1.952430   -1.415935     8       True
+8           8      8.833333  -1.199692   -1.870747   -0.796550     7       True
+9           9      9.166667  -0.784183   -1.053963   -0.458818     5       True
+10         10      9.500000  -0.539215   -0.690617   -0.456310     4       True
+11         11      9.833333  -0.500053   -0.554533   -0.107095     3       True
+    sigma_bin  ...                                contributing_GALIDs
+0           0  ...                                                   
+1           1  ...                            NGC4254,NGC4294,NGC4383
+2           2  ...                            NGC4254,NGC4294,NGC4383
+3           3  ...  NGC4189,NGC4254,NGC4294,NGC4321,NGC4351,NGC438...
+4           4  ...  NGC4189,NGC4254,NGC4294,NGC4321,NGC4351,NGC438...
+5           5  ...  NGC4189,NGC4254,NGC4294,NGC4321,NGC4351,NGC438...
+6           6  ...  NGC4189,NGC4254,NGC4294,NGC4321,NGC4351,NGC438...
+7           7  ...  NGC4189,NGC4254,NGC4294,NGC4321,NGC4351,NGC438...
+8           8  ...  NGC4189,NGC4254,NGC4321,NGC4351,NGC4383,NGC453...
+9           9  ...          NGC4254,NGC4321,NGC4383,NGC4535,NGC4567_8
+10         10  ...                  NGC4254,NGC4321,NGC4535,NGC4567_8
+11         11  ...                                  NGC4254,NGC4567_8
+
+[12 rows x 8 columns]
+        GALID          stage  N_delta  ...    A_tail    S_asym  eligible_primary
+6     NGC4298  close-to-peak   144157  ... -0.075640  0.151764              True
+14    NGC4424  close-to-peak     8994  ...  0.034690  0.194117              True
+17    NGC4501  close-to-peak   251936  ... -0.189866  0.094174              True
+23    NGC4654  close-to-peak   342929  ...  0.042691  0.173132              True
+24    NGC4694  close-to-peak     1058  ... -0.104915  0.138388              True
+0      IC3392      post-peak    13897  ... -0.054472  0.110114              True
+1     NGC4064      post-peak     3273  ...  0.094409  0.025120              True
+4     NGC4293      post-peak      471  ... -0.380042  0.400015              True
+9     NGC4380      post-peak    64097  ... -0.598109  0.167385              True
+11    NGC4394      post-peak    31915  ... -0.558609  0.219870              True
+12    NGC4405      post-peak    13569  ...  0.034564  0.047765              True
+13    NGC4419      post-peak     5763  ... -0.234079  0.085386              True
+15    NGC4450      post-peak    17186  ... -0.456185  0.204970              True
+16    NGC4457      post-peak     5604  ...  0.081727  0.059490              True
+20    NGC4569      post-peak    45477  ... -0.039141  0.099515              True
+21    NGC4580      post-peak    22438  ... -0.205945  0.071217              True
+22    NGC4606      post-peak     1752  ... -0.014269  0.126154              True
+25    NGC4698      post-peak     6744  ... -0.730130  0.241590              True
+2     NGC4189       pre-peak    96364  ...  0.079604  0.107953              True
+3     NGC4254       pre-peak   658991  ...  0.319873  0.096467              True
+5     NGC4294       pre-peak    68833  ...  0.165662  0.136823              True
+7     NGC4321       pre-peak   454129  ...  0.059869  0.148439              True
+8     NGC4351       pre-peak    30711  ... -0.156133  0.101907              True
+10    NGC4383       pre-peak    25212  ...  0.124033  0.292484              True
+18    NGC4535       pre-peak   187113  ... -0.163111  0.144332              True
+19  NGC4567_8       pre-peak   222475  ...  0.036426  0.076735              True
+
+[26 rows x 16 columns]
+Eligible primary stage counts: {'pre-peak': 8, 'close-to-peak': 5, 'post-peak': 13}
+Current close-to-peak map targets: ['NGC4298', 'NGC4424', 'NGC4501', 'NGC4654', 'NGC4694']
+EXECUTING 16
+        GALID          stage  ...  N_env_colour_clipped  N_local_colour_clipped
+0      IC3392      post-peak  ...                    99                     143
+1     NGC4064      post-peak  ...                   396                     287
+2     NGC4189       pre-peak  ...                  4539                    4823
+3     NGC4254       pre-peak  ...                 96842                   52759
+4     NGC4293      post-peak  ...                     4                      11
+5     NGC4294       pre-peak  ...                  3982                    2476
+6     NGC4298  close-to-peak  ...                  4504                    5808
+7     NGC4321       pre-peak  ...                 33236                   34168
+8     NGC4351       pre-peak  ...                   552                     320
+9     NGC4380      post-peak  ...                  9723                    1436
+10    NGC4383       pre-peak  ...                  1525                     375
+11    NGC4394      post-peak  ...                  3503                     918
+12    NGC4405      post-peak  ...                   458                     406
+13    NGC4419      post-peak  ...                   266                     148
+14    NGC4424  close-to-peak  ...                   904                     777
+15    NGC4450      post-peak  ...                  2443                     712
+16    NGC4457      post-peak  ...                   239                     156
+17    NGC4501  close-to-peak  ...                 10659                    8513
+18    NGC4535       pre-peak  ...                 17951                   17938
+19  NGC4567_8       pre-peak  ...                  8816                    8942
+20    NGC4569      post-peak  ...                  3463                    3289
+21    NGC4580      post-peak  ...                   888                     364
+22    NGC4606      post-peak  ...                    81                      89
+23    NGC4654  close-to-peak  ...                 21154                   22056
+24    NGC4694  close-to-peak  ...                    30                       9
+25    NGC4698      post-peak  ...                  1711                      97
+
+[26 rows x 12 columns]
+Q3 vector-to-map identity verified for every eligible product.
+EXECUTING 20
+IC3392: 13,868 joint pixels; 100% of hemisphere splits supported
+NGC4064: 3,213 joint pixels; 100% of hemisphere splits supported
+NGC4189: 96,357 joint pixels; 100% of hemisphere splits supported
+NGC4254: 658,873 joint pixels; 100% of hemisphere splits supported
+NGC4293: 310 joint pixels; 96% of hemisphere splits supported
+NGC4294: 68,798 joint pixels; 100% of hemisphere splits supported
+NGC4298: 144,120 joint pixels; 100% of hemisphere splits supported
+NGC4321: 454,110 joint pixels; 100% of hemisphere splits supported
+NGC4351: 30,613 joint pixels; 100% of hemisphere splits supported
+NGC4380: 61,825 joint pixels; 100% of hemisphere splits supported
+NGC4383: 25,074 joint pixels; 100% of hemisphere splits supported
+NGC4394: 31,915 joint pixels; 100% of hemisphere splits supported
+NGC4405: 13,489 joint pixels; 100% of hemisphere splits supported
+NGC4419: 5,556 joint pixels; 100% of hemisphere splits supported
+NGC4424: 8,868 joint pixels; 100% of hemisphere splits supported
+NGC4450: 17,186 joint pixels; 100% of hemisphere splits supported
+NGC4457: 5,530 joint pixels; 100% of hemisphere splits supported
+NGC4501: 251,898 joint pixels; 100% of hemisphere splits supported
+NGC4535: 186,716 joint pixels; 100% of hemisphere splits supported
+NGC4569: 45,320 joint pixels; 100% of hemisphere splits supported
+NGC4580: 22,429 joint pixels; 100% of hemisphere splits supported
+NGC4606: 1,694 joint pixels; 100% of hemisphere splits supported
+NGC4654: 342,926 joint pixels; 100% of hemisphere splits supported
+NGC4694: 963 joint pixels; 100% of hemisphere splits supported
+NGC4698: 6,690 joint pixels; 100% of hemisphere splits supported
+       GALID                                       reason
+0  NGC4567_8  multiple physical centres in one Q3 product
+      GALID          stage  ... distance_mpc                     unit
+0    IC3392      post-peak  ...         16.5                  dex/kpc
+1    IC3392      post-peak  ...         16.5                  dex/kpc
+2    IC3392      post-peak  ...         16.5  control-width units/kpc
+3   NGC4064      post-peak  ...         16.5                  dex/kpc
+4   NGC4064      post-peak  ...         16.5                  dex/kpc
+..      ...            ...  ...          ...                      ...
+70  NGC4694  close-to-peak  ...         16.5                  dex/kpc
+71  NGC4694  close-to-peak  ...         16.5  control-width units/kpc
+72  NGC4698      post-peak  ...         16.5                  dex/kpc
+73  NGC4698      post-peak  ...         16.5                  dex/kpc
+74  NGC4698      post-peak  ...         16.5  control-width units/kpc
+
+[75 rows x 21 columns]
+      GALID          stage  ...     theta_z  delta_local_z_deg
+0    IC3392      post-peak  ...  119.008042           9.297551
+1   NGC4064      post-peak  ...  242.707918          26.319404
+2   NGC4189       pre-peak  ...   96.588900          49.115752
+3   NGC4254       pre-peak  ...   63.910326          10.150381
+4   NGC4293      post-peak  ...  161.584349           2.018178
+5   NGC4294       pre-peak  ...  274.553096           7.019330
+6   NGC4298  close-to-peak  ...  157.749775          49.309215
+7   NGC4321       pre-peak  ...  192.013410           1.559055
+8   NGC4351       pre-peak  ...   33.255580           4.038177
+9   NGC4380      post-peak  ...   65.257955           5.136803
+10  NGC4383       pre-peak  ...  259.280702         100.067609
+11  NGC4394      post-peak  ...  230.687955          18.434373
+12  NGC4405      post-peak  ...  251.568863           6.662309
+13  NGC4419      post-peak  ...   78.849909           4.597686
+14  NGC4424  close-to-peak  ...   43.320375          20.526418
+15  NGC4450      post-peak  ...  264.881609          17.426573
+16  NGC4457      post-peak  ...  192.704328          15.488360
+17  NGC4501  close-to-peak  ...  238.017498          13.254699
+18  NGC4535       pre-peak  ...  312.593897           7.572266
+19  NGC4569      post-peak  ...   82.837389           7.721450
+20  NGC4580      post-peak  ...  280.055715          22.584257
+21  NGC4606      post-peak  ...  123.007431           1.277321
+22  NGC4654  close-to-peak  ...  321.529791           2.198641
+23  NGC4694  close-to-peak  ...   27.862316          19.607560
+24  NGC4698      post-peak  ...   56.351479           6.536847
+
+[25 rows x 8 columns]
+      GALID          stage    theta_SF  ...  enh_plus  enh_minus  A_enh_at_SF
+0    IC3392      post-peak  128.305593  ...  0.067617   0.043784     0.023833
+1   NGC4064      post-peak  216.388514  ...  0.249175   0.159140     0.090035
+2   NGC4189       pre-peak  145.704652  ...  0.211784   0.155983     0.055802
+3   NGC4254       pre-peak   74.060706  ...  0.391144   0.298957     0.092187
+4   NGC4293      post-peak  159.566171  ...       NaN        NaN          NaN
+5   NGC4294       pre-peak  267.533766  ...  0.324252   0.174640     0.149612
+6   NGC4298  close-to-peak  108.440560  ...  0.116406   0.078718     0.037688
+7   NGC4321       pre-peak  193.572465  ...  0.211967   0.161059     0.050908
+8   NGC4351       pre-peak   29.217403  ...  0.087349   0.049848     0.037500
+9   NGC4380      post-peak   70.394758  ...  0.010432   0.010005     0.000427
+10  NGC4383       pre-peak  359.348311  ...  0.123542   0.250063    -0.126521
+11  NGC4394      post-peak  212.253581  ...  0.030749   0.003762     0.026987
+12  NGC4405      post-peak  244.906554  ...  0.165217   0.035124     0.130093
+13  NGC4419      post-peak   83.447595  ...  0.020254   0.033808    -0.013554
+14  NGC4424  close-to-peak   22.793956  ...  0.239204   0.122828     0.116376
+15  NGC4450      post-peak  282.308182  ...  0.042769   0.000000     0.042769
+16  NGC4457      post-peak  208.192688  ...  0.171242   0.059012     0.112229
+17  NGC4501  close-to-peak  224.762799  ...  0.060334   0.045951     0.014382
+18  NGC4535       pre-peak  320.166163  ...  0.160606   0.123501     0.037106
+19  NGC4569      post-peak   75.115939  ...  0.219268   0.084005     0.135263
+20  NGC4580      post-peak  302.639972  ...  0.042678   0.019731     0.022946
+21  NGC4606      post-peak  121.730110  ...  0.225064   0.018640     0.206424
+22  NGC4654  close-to-peak  319.331150  ...  0.228284   0.140645     0.087639
+23  NGC4694  close-to-peak    8.254755  ...  0.069307   0.010917     0.058390
+24  NGC4698      post-peak   62.888326  ...  0.000000   0.000000     0.000000
+
+[25 rows x 25 columns]
+Primary estimator: local plane gradient; no H I angles consumed.
+EXECUTING 28
+     GALID  ...                                          reference
+0  NGC4298  ...  Chung et al. 2009 Appendix A; https://arxiv.or...
+1  NGC4424  ...  Chung et al. 2009 Appendix A; https://arxiv.or...
+2  NGC4501  ...  Chung et al. 2009 Appendix A; https://arxiv.or...
+3  NGC4654  ...  Chung et al. 2009 Appendix A; https://arxiv.or...
+
+[4 rows x 8 columns]
+Frozen VIVA metadata checksum: 96fb9d474cfd582b9720c06db6996b86286b7a0fa6d34c1eba56c3a7f7700790
+EXECUTING 30
+      GALID  ...                     exclusion_reason
+0    IC3392  ...  no independent coarse H I direction
+1   NGC4064  ...  no independent coarse H I direction
+2   NGC4189  ...  no independent coarse H I direction
+3   NGC4254  ...  no independent coarse H I direction
+4   NGC4293  ...  no independent coarse H I direction
+5   NGC4294  ...  no independent coarse H I direction
+6   NGC4298  ...                                     
+7   NGC4321  ...  no independent coarse H I direction
+8   NGC4351  ...  no independent coarse H I direction
+9   NGC4380  ...  no independent coarse H I direction
+10  NGC4383  ...  no independent coarse H I direction
+11  NGC4394  ...  no independent coarse H I direction
+12  NGC4405  ...  no independent coarse H I direction
+13  NGC4419  ...  no independent coarse H I direction
+14  NGC4424  ...                                     
+15  NGC4450  ...  no independent coarse H I direction
+16  NGC4457  ...  no independent coarse H I direction
+17  NGC4501  ...                                     
+18  NGC4535  ...  no independent coarse H I direction
+19  NGC4569  ...  no independent coarse H I direction
+20  NGC4580  ...  no independent coarse H I direction
+21  NGC4606  ...  no independent coarse H I direction
+22  NGC4654  ...                                     
+23  NGC4694  ...  no independent coarse H I direction
+24  NGC4698  ...  no independent coarse H I direction
+
+[25 rows x 17 columns]
+      GALID metric   theta_deg  gradient_magnitude  delta_theta_deg fit_status
+18  NGC4298  local  108.440560            0.015217        26.559440         OK
+19  NGC4298    env  160.766190            0.020139        25.766190         OK
+20  NGC4298      z  157.749775            0.046415        22.749775         OK
+42  NGC4424  local   22.793956            0.190696        22.793956         OK
+43  NGC4424    env   43.508551            0.126474        43.508551         OK
+44  NGC4424      z   43.320375            0.269124        43.320375         OK
+51  NGC4501  local  224.762799            0.016714         0.237201         OK
+52  NGC4501    env  241.090496            0.015187        16.090496         OK
+53  NGC4501      z  238.017498            0.034618        13.017498         OK
+66  NGC4654  local  319.331150            0.021338         4.331150         OK
+67  NGC4654    env  319.223080            0.020953         4.223080         OK
+68  NGC4654      z  321.529791            0.053664         6.529791         OK

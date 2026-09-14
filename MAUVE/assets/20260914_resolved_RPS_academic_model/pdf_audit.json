@@ -1,0 +1,226 @@
+{
+  "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260914_Resolved_Gas_Loss_Star_Formation_and_Ionization_Model.pdf",
+  "sha256": "01fcbbe7e9117fd10b9141dba15a5faa70878ab516253ccfff10c63d66f7482e",
+  "pages": 35,
+  "outline_entries": 39,
+  "link_counts": {
+    "internal": 88,
+    "external": 60
+  },
+  "invalid_links": [],
+  "out_of_page_words": [],
+  "replacement_character_pages": [],
+  "short_pages_under_250_chars": [],
+  "page_text_summaries": [
+    {
+      "page": 1,
+      "characters": 474,
+      "start": "MAUVE-MUSE / ICRAR Resolved gas loss, star formation, and continuing ionization in Virgo galaxies Observational constraints, analytical derivation, and a partial fit to MAUVE-MUSE Research report 14 September 2026 Prepar",
+      "end": " research figures | 26 literature references Physical notation follows the local molecular-gas regulator. Observations, model assumptions, and fitted constraints are distinguished."
+    },
+    {
+      "page": 2,
+      "characters": 2133,
+      "start": "1. What the current spatially resolved observations establish 1.1 Sample, class definitions, and the control assumption 1.2 Area occupancy and intensity are different observables 1.3 The robust pattern is spatial redistr",
+      "end": "e and reproducibility Appendix B. Equation attribution and numerical verification References RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 2 / 35"
+    },
+    {
+      "page": 3,
+      "characters": 4297,
+      "start": "1. What the current spatially resolved observations establish This report develops a physical interpretation of the changing distribution of star-forming (SF), non-SF-classified but Balmer-detected (NSF), and Balmer-nond",
+      "end": " baseline gas/SF state, rather than a consequence of the stage label. Residual environmental RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 3 / 35"
+    },
+    {
+      "page": 4,
+      "characters": 2676,
+      "start": "processing, morphology, stellar populations, and the particular eight-system composition remain possible systematic offsets. The calculations retain NGC4383 in this stage analysis; no exclusion from another scientific br",
+      "end": " \ud835\udc3c\ud835\udefc, NSF, \ud835\udc60, \ud835\udc4f= \u27e8\ud835\udc3c\ud835\udefc, NSF, \ud835\udc54, \ud835\udc4f\u27e9 supported \ud835\udc54, \ud835\udc3d\ud835\udefc, NSF, \ud835\udc60, \ud835\udc4f= \u27e8\ud835\udc53NSF, \ud835\udc54, \ud835\udc4f\ud835\udc3c\ud835\udefc, NSF, \ud835\udc54, \ud835\udc4f\u27e9 \ud835\udc54. (4) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 4 / 35"
+    },
+    {
+      "page": 5,
+      "characters": 1788,
+      "start": "1.3 The robust pattern is spatial redistribution plus suppression The observations support two distinct changes: a marked loss of SF occupancy in the outskirts/low-\u03a3* domain, and a lower intensity in much of the remainin",
+      "end": "5 [\u22120.213, 0.345] The sparse outer survivors do not establish uniform intensity suppression. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 5 / 35"
+    },
+    {
+      "page": 6,
+      "characters": 2225,
+      "start": "Surface-density coordinates in this and subsequent tables use \ud835\udc40\u2299kpc\u22122. At log10\u03a3* = 7.625, equation (3) gives \u0394log\u206110\ud835\udc47= \u22121.440, combining the approximately 1.01-dex occupancy decline with the 0.43-dex intensity decline. ",
+      "end": "ominator \ud835\udc35, the following identity is exact: \ud835\udc51 \ud835\udc51\ud835\udc61ln\u2061( \u2112\u2113 \u2112\ud835\udc35 ) = 1 \u2112\u2113 \ud835\udc51\u2112\u2113 \ud835\udc51\ud835\udc61\u22121 \u2112\ud835\udc35 \ud835\udc51\u2112\ud835\udc35 \ud835\udc51\ud835\udc61. (5) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 6 / 35"
+    },
+    {
+      "page": 7,
+      "characters": 2179,
+      "start": "Here \u2112\u2113 is luminosity per area. A ratio rises if its numerator declines more slowly in fractional terms than its denominator; the numerator can itself become fainter. However, comparing different galaxies, different clas",
+      "end": "ebooks unchanged. This correction does not create a universal positive [O III]/H-beta trend. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 7 / 35"
+    },
+    {
+      "page": 8,
+      "characters": 2777,
+      "start": "A more defensible statement of the third finding is: the evolving NSF population shows line-dependent excitation changes and declining H-alpha intensity in several important inner bins; these motivate a model in which th",
+      "end": "nificance. \ud835\udefflocal(\ud835\udc38, \ud835\udc41) = \ud835\udefd0 + \ud835\udefd\ud835\udc38\ud835\udc38+ \ud835\udefd\ud835\udc41\ud835\udc41, \ud835\udc3aSF = (\ud835\udefd\ud835\udc38 2 + \ud835\udefd\ud835\udc41 2 ) 1/2, \ud835\udf03SF = atan2\u2061(\ud835\udefd\ud835\udc38, \ud835\udefd\ud835\udc41). (6) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 8 / 35"
+    },
+    {
+      "page": 9,
+      "characters": 2862,
+      "start": "Figure 4. NGC4654 on the freshly reconstructed joint SF mask. The two maps show within-galaxy and environmental residuals, with north upward and east to the left. Cyan denotes the inferred gradient direction and amber th",
+      "end": "ation-history model. It cannot be transferred automatically to the three MAUVE stage labels. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 9 / 35"
+    },
+    {
+      "page": 10,
+      "characters": 4110,
+      "start": "Koppen et al. (2018) distinguish a long-duration stripping regime controlled by restoring forces from a short-pulse regime controlled by momentum transfer. Singh et al. (2019) derive stripping-radius and stripped-mass es",
+      "end": "tes shocks as a possible component, not a compulsory explanation for every inner NSF pixel. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 10 / 35"
+    },
+    {
+      "page": 11,
+      "characters": 3478,
+      "start": "An essential counterexample to generic forbidden-line persistence is Citro et al. (2017): in their quenching photoionization models, high-ionization emission can decline rapidly as the ionizing spectrum softens. Thus a m",
+      "end": "ution of gas structure, inclination, orbital history, baseline SF, and disturbance strength RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 11 / 35"
+    },
+    {
+      "page": 12,
+      "characters": 3009,
+      "start": "Two additional requirements follow from this list. First, a retained-gas model needs an ionizing-energy budget: retaining atoms alone does not sustain optical emission. Second, an explanation of SF-to-NSF transitions mus",
+      "end": " potential per unit mass and Newton\u2019s constant; \u03a6grav is distinct from the supply symbol \u03a3\u03a6 RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 12 / 35"
+    },
+    {
+      "page": 13,
+      "characters": 2766,
+      "start": "Symbol Definition and units \u2112\u2113 Luminosity in emission line \u2113 per area; erg s\u22121 kpc\u22122 in observational comparisons \ud835\udc9e\ud835\udf06, \ud835\udefc Stellar continuum luminosity density per area at H-alpha; erg s\u22121 kpc\u22122 Angstrom\u22121 \ud835\udc3e\ud835\udefc(\ud835\udc4e), \ud835\udf0fion Norma",
+      "end": "l idealized ram-pressure description, [\u03a3\u03a6] = mass area time, \ud835\udf0f\u03a6 = \u03a3H2 \u03a3\u03a6 , [\ud835\udf0f\u03a6] = time. (7) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 13 / 35"
+    },
+    {
+      "page": 14,
+      "characters": 2623,
+      "start": "This pressure scale is used in the analytical stripping treatments of Koppen et al. (2018) and Singh et al. (2019). It is not automatically the isotropic pressure confining a molecular cloud. The relevant wind stress dep",
+      "end": "\u22121 + \u210egas \u22121 . (11) \ud835\udc51\ud835\udc63\ud835\udc67 \ud835\udc51\ud835\udc61= \ud835\udc43\u27c2(\ud835\udc61) \u03a3gas \u2212\ud835\udc54\ud835\udc67, \u0394\ud835\udc63\ud835\udc67\u2243 1 \u03a3gas \u222b\ud835\udc43\u27c2(\ud835\udc61) \ud835\udc51\ud835\udc61 (short-pulse limit). (12) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 14 / 35"
+    },
+    {
+      "page": 15,
+      "characters": 2744,
+      "start": "4.3 Molecular conservation and the meaning of supply Step 1: define the aperture budget. For a fixed disc-plane aperture of area \ud835\udc9c, the vertically integrated continuity equation has the integral form The overbar denotes ",
+      "end": "\u03a3out, \u03a3SFR = \u03a3H2 \ud835\udf0fdep. (15) \ud835\udc51ln\u2061\u03a3SFR \ud835\udc51\ud835\udc61 = \u03a3\u03a6 \u03a3H2 \u22121 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep \u2212\ud835\udc58H2 \u2212 1 \ud835\udf0fdep \ud835\udc51\ud835\udf0fdep \ud835\udc51\ud835\udc61. (16) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 15 / 35"
+    },
+    {
+      "page": 16,
+      "characters": 2120,
+      "start": "\u0393SFR has units inverse time and \u2130 is dimensionless. A temporary enhancement corresponds to a negative contribution to \u2130. Equation (17) is an exact integral identity under equation (16); it does not assign a clock to the ",
+      "end": " \ud835\udf0fconv \ud835\udc52(\ud835\udf06H2 \u2212\ud835\udf05HI)\ud835\udc61. (21) \u03a3H2(\ud835\udc61) = \u03a3H2, 0\ud835\udc52\u2212\ud835\udf06H2\ud835\udc61+ \u03a3HI, 0 \ud835\udf0fconv \ud835\udc52\u2212\ud835\udf05HI\ud835\udc61\u2212\ud835\udc52\u2212\ud835\udf06H2\ud835\udc61 \ud835\udf06H2 \u2212\ud835\udf05HI . (22) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 16 / 35"
+    },
+    {
+      "page": 17,
+      "characters": 2466,
+      "start": "The second term is the surviving contribution from material supplied after \ud835\udc61= 0. Its numerator and denominator have the same sign, so this supply contribution is nonnegative. Step 4: handle the coincident-timescale limit",
+      "end": "+ \u222b 0 \ud835\udc61 \u03a3\u03a6(\ud835\udc61\u2032)\ud835\udc52\u2212\ud835\udf06H2(\ud835\udc61\u2212\ud835\udc61\u2032) \ud835\udc51\ud835\udc61\u2032. (25) \u03a3SFR(\ud835\udc61) \u03a3SFR(0) = \ud835\udc53\u03a6 + (1 \u2212\ud835\udc53\u03a6)\ud835\udc52\u2212\ud835\udc61/\ud835\udf0fq, \ud835\udf0fq = \ud835\udf06H2 \u22121. (26) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 17 / 35"
+    },
+    {
+      "page": 18,
+      "characters": 3384,
+      "start": "A decreasing depletion time contributes negatively to the right-hand side. Therefore compression can temporarily raise SF by increasing molecular supply, increasing molecular content through transport, or reducing \ud835\udf0fdep, ",
+      "end": "eutral + \u0394ln\u2061\ud835\udc53H2 \u2212\u0394ln\u2061\ud835\udf0fdep. (28) \u211bmol = \u03a3H2 \u03a3HI = (\ud835\udc43hyd \ud835\udc430 ) \ud835\udefc , \ud835\udc53H2 = \u211bmol 1 + \u211bmol . (29) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 18 / 35"
+    },
+    {
+      "page": 19,
+      "characters": 3188,
+      "start": "\ud835\udc36\ud835\udefc refers to the adopted fully absorbed, dust-corrected calibration; \ud835\udc53abs, HII specifies the fraction assigned to the HII component. The report calculations use \ud835\udc36\ud835\udefc= 4.983582 \u00d7 10\u221242 \ud835\udc40\u2299yr\u22121/(erg s\u22121), matching the live pr",
+      "end": "\u2212\ud835\udf0fion\ud835\udc52\u2212\ud835\udc61/\ud835\udf0fion \ud835\udf0fq \u2212\ud835\udf0fion . (32) \u2112\u2113= \u2112\u2113 HII + \u2112\u2113 DIG, young + \u2112\u2113 old + \u2112\u2113 shock + \u2112\u2113 AGN. (33) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 19 / 35"
+    },
+    {
+      "page": 20,
+      "characters": 3084,
+      "start": "This follows by multiplying absorbed ionizations by H-alpha energy emitted per recombination. Case-B hydrogenic recombination calculations are supplied by Hummer & Storey (1987); the source fractions and stellar spectrum",
+      "end": "cont. (36) \ud835\udc64\ud835\udefd= \ud835\udc64\ud835\udefc/\ud835\udc35cont (1 \u2212\ud835\udc64\ud835\udefc)/\ud835\udc35HII + \ud835\udc64\ud835\udefc/\ud835\udc35cont , \u211b\u2113/\ud835\udefd= (1 \u2212\ud835\udc64\ud835\udefd)\u211b\u2113/\ud835\udefd HII + \ud835\udc64\ud835\udefd\u211b\u2113/\ud835\udefd cont. (37) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 20 / 35"
+    },
+    {
+      "page": 21,
+      "characters": 2745,
+      "start": "Step 3: differentiate the mixture weight. For locally exponential H-alpha components with positive fading times \ud835\udf0f\ud835\udefc, HII and \ud835\udf0f\ud835\udefc, cont, where \ud835\udc57 labels HII or continuing emission. To obtain the second expression, differenti",
+      "end": "\ud835\udefc) = \u2112\ud835\udefc HII + \u2112\ud835\udefc cont \ud835\udc9e\ud835\udf06, \ud835\udefc . (40) \ud835\udf0e\ud835\udefc 2 = (1 \u2212\ud835\udc64\ud835\udefc)\ud835\udf0eHII 2 + \ud835\udc64\ud835\udefc\ud835\udf0econt 2 + \ud835\udc64\ud835\udefc(1 \u2212\ud835\udc64\ud835\udefc)(\u0394\ud835\udc63) 2. (41) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 21 / 35"
+    },
+    {
+      "page": 22,
+      "characters": 2778,
+      "start": "\ud835\udfcf is an indicator equal to one when its condition is satisfied. \ud835\udc39\u2113 is observed, attenuated flux per native observing element, not the dust-corrected luminosity density. With physical emitting area \ud835\udc34pix, distance \ud835\udc51, and a",
+      "end": "(44) \ud835\udc62\ud835\udefc\u2261ln\u2061(\u2112\ud835\udefc HII \u2112ref ) \u223c\ud835\udca9(\ud835\udf07\ud835\udefc, \ud835\udc60\ud835\udefc 2). (45) \u2112young, det = max\u2061(0, \u2112\ud835\udefc, det \u2212\u2112\ud835\udefc cont ). (46) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 22 / 35"
+    },
+    {
+      "page": 23,
+      "characters": 2913,
+      "start": "For analytic purposes, replace the line-ratio and width selection with an allowed continuing fraction \ud835\udc64\ud835\udefc< \ud835\udc64lim, where 0 < \ud835\udc64lim < 1. This value must eventually be determined by actual line templates and the pipeline bound",
+      "end": "ef) \ud835\udc60\ud835\udefc ). (49) \ud835\udc3cSF app = \ud835\udc36\ud835\udefc \u2133\ud835\udefc, SF + \u2112\ud835\udefc cont\ud835\udc39SF \ud835\udc39SF , \ud835\udc3d\ud835\udefc, NSF = \u2133\ud835\udefc, NSF + \u2112\ud835\udefc cont\ud835\udc39NSF. (50) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 23 / 35"
+    },
+    {
+      "page": 24,
+      "characters": 2208,
+      "start": "5. Numerical predictions and their relation to the observations The calculations in this section evaluate the analytical equations with declared parameters. They are illustrative forward predictions, separate from the ob",
+      "end": "s make the example analytically transparent while limiting its quantitative interpretation. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 24 / 35"
+    },
+    {
+      "page": 25,
+      "characters": 1431,
+      "start": "Figure 5. Exact two-reservoir solutions propagated through the exponential young-star response and the analytical class operator. The top row represents the inner example and the bottom row the outer example. Time is ill",
+      "end": "st \u22120.138 dex Undefined Increasing inner NSF area can coexist with declining NSF intensity. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 25 / 35"
+    },
+    {
+      "page": 26,
+      "characters": 2523,
+      "start": "The example reproduces the directions of outer ND growth, inner NSF growth, and lower selected-SF intensity. Its class fractions, times, and amplitudes are not a fit. It does not reproduce the observed approximately \u22120.4",
+      "end": "ry is imposed in this experiment. \ud835\udc51ln\u2061\ud835\udc3d\ud835\udefc, NSF \ud835\udc51\ud835\udc61 < 0 \u21d4 \ud835\udc51ln\u2061\ud835\udc3c\ud835\udefc, NSF \ud835\udc51\ud835\udc61 < \u2212\ud835\udc51ln\u2061\ud835\udc39NSF \ud835\udc51\ud835\udc61 . (51) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 26 / 35"
+    },
+    {
+      "page": 27,
+      "characters": 3221,
+      "start": "At 600 Myr, total H-alpha decreases from 10 to approximately 1.247\u2112ref. The continuing fraction rises from 0.20 to approximately 0.681. The three ratios change from 0.400 to 0.760, from 0.274 to 0.500, and from 0.540 to ",
+      "end": "0[ \ud835\udc3cSF, \ud835\udc60, \ud835\udc4f \ud835\udc3cSF, pre, \ud835\udc4f ], \ud835\udc3cSF, \ud835\udc60, \ud835\udc4f model = \ud835\udc3cSF, pre, \ud835\udc4f10\ud835\udc4e\ud835\udc60. (52) \u2130\ud835\udc60 app = \u2212\ud835\udc4e\ud835\udc60ln\u206110. (53) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 27 / 35"
+    },
+    {
+      "page": 28,
+      "characters": 2439,
+      "start": "The fitted quantity is identifiable as a profile normalization; the individual physical terms in equation (16) are not. 6.2 Derivation of the estimator and uncertainty procedure Let \ud835\udc60\ud835\udc60, \ud835\udc4f be the standard deviation of the",
+      "end": "54) \u0302\ud835\udc4e\ud835\udc60= \u2211\ud835\udc4f\ud835\udc64\ud835\udc60, \ud835\udc4f\ud835\udc66\ud835\udc60, \ud835\udc4f \u2211\ud835\udc4f\ud835\udc64\ud835\udc60, \ud835\udc4f . (55) \ud835\udc66\ud835\udc60, \ud835\udc4f= \ud835\udc4e\ud835\udc60, 0 + \ud835\udc4e\ud835\udc60, 1(\ud835\udc65\ud835\udc4f\u22128.5), \u0302\ud835\udc82\ud835\udc60= (\ud835\udc4b\ud835\uddb3\ud835\udc4a\ud835\udc4b)\u22121\ud835\udc4b\ud835\uddb3\ud835\udc4a\ud835\udc9a\ud835\udc60, (56) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 28 / 35"
+    },
+    {
+      "page": 29,
+      "characters": 2291,
+      "start": "6.3 Fit results Figure 7. New fits to the resolved surviving-SF intensity contrasts. Points show observed stage contrasts and whole-galaxy bootstrap intervals. Solid lines are fitted multiplicative attenuations of the pr",
+      "end": "lity, formal model-selection preference, or out-of-sample predictive validation is claimed. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 29 / 35"
+    },
+    {
+      "page": 30,
+      "characters": 3519,
+      "start": "6.4 What physical inference is and is not justified The fitted post-peak factor of 0.407 can be produced by different regulator histories. For complete supply interruption with fixed depletion time, equation (26) gives \ud835\udc61",
+      "end": "ranch independently of occupancy loss. \ud835\udc61 \ud835\udf0fq = \u2212ln\u2061(\ud835\udc34SFR \u2212\ud835\udc53\u03a6 1 \u2212\ud835\udc53\u03a6 ), 0 \u2264\ud835\udc53\u03a6 < \ud835\udc34SFR < 1. (57) RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 30 / 35"
+    },
+    {
+      "page": 31,
+      "characters": 4404,
+      "start": "This interpretation requires neither universal NSF brightening nor a universal upward BPT motion. Line mixing can increase low-ionization ratios while all line luminosities decline, and [O III]/H-beta can respond differe",
+      "end": "is descriptive, with residual spatial structure, and has not undergone external validation. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 31 / 35"
+    },
+    {
+      "page": 32,
+      "characters": 3241,
+      "start": "NGC4654\u2019s PA alignment has no calibrated significance, and its gradient mask differs from the stage-intensity mask. Incomplete quantitative reproduction. The representative forward realization reproduces several qualitat",
+      "end": "able masks produced expected nonfinite values; retained diagnostic selections exclude them. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 32 / 35"
+    },
+    {
+      "page": 33,
+      "characters": 2737,
+      "start": "The fitting script records all seven bin contrasts, fixed weights, constant and linear predictions, bootstrap counts, parameter intervals, and leave-one-galaxy fits. Every reported fit parameter was recomputed in this re",
+      "end": "se checks verify implementation of the equations, not empirical validity of their closures. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 33 / 35"
+    },
+    {
+      "page": 34,
+      "characters": 3671,
+      "start": "References Huang, R., et al. (2026). MAUVE-MUSE: When Metallicity Follows or Fights Star Formation\u2013A Mass- Dependent Inversion in Virgo Galaxies. User-specified published DOI; full author manuscript, arXiv:2605.31412v1. ",
+      "end": "; DOI:10.1093/mnrasl/slz053. Pressure, cloud- efficiency, and gas-loss assumptions checked. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 34 / 35"
+    },
+    {
+      "page": 35,
+      "characters": 3233,
+      "start": "Lee, J., Kimm, T., Katz, H., Rosdahl, J., Devriendt, J., & Slyz, A. (2020). Dual Effects of Ram Pressure on Star Formation in Multiphase Disk Galaxies with Strong Stellar Feedback. ApJ, 905, 31. DOI:10.3847/1538- 4357/ab",
+      "end": "uthor record. Citation for the theoretical BPT boundaries implemented in the live pipeline. RESOLVED GAS LOSS, STAR FORMATION, AND IONIZATION 14 SEP 2026 MAUVE-MUSE / ICRAR 35 / 35"
+    }
+  ]
+}

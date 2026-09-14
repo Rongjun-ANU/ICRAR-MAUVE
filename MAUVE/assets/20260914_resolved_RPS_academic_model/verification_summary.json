@@ -1,0 +1,44 @@
+{
+  "status": "REPORT_DELIVERY_VERIFIED",
+  "date": "2026-09-14",
+  "report_md": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260914_Resolved_Gas_Loss_Star_Formation_and_Ionization_Model.md",
+  "report_pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260914_Resolved_Gas_Loss_Star_Formation_and_Ionization_Model.pdf",
+  "md_sha256": "cb4eeb0ba517e93d898d76dcf623783cc4645262edb926a6f5e65d5de8bc4cef",
+  "pdf_sha256": "01fcbbe7e9117fd10b9141dba15a5faa70878ab516253ccfff10c63d66f7482e",
+  "pdf_pages": 35,
+  "numbered_equations": 57,
+  "inline_math": 350,
+  "figures": 7,
+  "tables": 11,
+  "cited_references": 26,
+  "outline_entries": 39,
+  "links": {
+    "internal": 88,
+    "external": 60
+  },
+  "canonical_markdown_rendered": true,
+  "pandoc_fail_if_warnings_passed": true,
+  "all_equation_labels_in_final_pdf": true,
+  "all_figure_captions_in_final_pdf": true,
+  "no_broken_anchors_images_math_or_overflow": true,
+  "all_final_pages_rendered_with_poppler": true,
+  "visual_review": "All 35 pages inspected through full-resolution contact sheets; equation-dense pages and final appendix inspected individually. No clipping, collisions, missing maths, or isolated near-empty body page remained.",
+  "source_fingerprints_unchanged": 7,
+  "observational_scope": "Fresh selected data-cell extraction and whole-galaxy bootstrap; exact cells in report Appendix A. Full notebooks and plotting galleries not rerun. Large individual FITS maps not all fingerprinted.",
+  "numerical_ODE_max_relative_error": 5.576275673945605e-09,
+  "numerical_moment_relative_error": 5.485877786129804e-16,
+  "category_partition_max_error": 0.0,
+  "fit_scope": "Seven stellar-density bins; constant profile attenuation; 10000 whole-galaxy draws, complete-vector conditioning, linear-density and leave-one-galaxy sensitivity.",
+  "scientific_limits": [
+    "Pre-peak field equivalence is an explicit working assumption.",
+    "Infall stages are not a calibrated clock.",
+    "Intensity attenuation is the fitted component; gas-loss rates and ionizing sources are not uniquely inferred.",
+    "The illustrative forward realization fails some NSF-contribution and inner-intensity amplitudes.",
+    "NGC4654 is a potential localized signal; no calibrated PA or gradient significance was computed."
+  ],
+  "delegation": {
+    "worker": "/root/academic_sources",
+    "role": "Bounded primary-source retrieval and read-only citation review",
+    "main_agent_owned": "Scientific model, data masks, units, derivations, fitting, uncertainty and acceptance"
+  }
+}
