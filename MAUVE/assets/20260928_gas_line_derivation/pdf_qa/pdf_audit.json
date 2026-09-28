@@ -1,0 +1,166 @@
+{
+  "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260928_Derivation_and_MAUVE_Anchored_Gas_Line_Predictions.pdf",
+  "sha256": "6767ff4db8e01ef747638f0e94a60bdf6b37eaf89374b787bdbaa643b3572999",
+  "pages": 25,
+  "outline_entries": 27,
+  "link_counts": {
+    "internal": 103,
+    "external": 26
+  },
+  "invalid_links": [],
+  "out_of_page_words": [],
+  "replacement_character_pages": [],
+  "short_pages_under_250_chars": [],
+  "page_text_summaries": [
+    {
+      "page": 1,
+      "characters": 460,
+      "start": "MAUVE-MUSE / ICRAR Resolved gas reservoirs and fading emission lines: a worked MAUVE model Step-by-step derivation, photon accounting, and data-scaled numerical predictions Research report 28 September 2026 Prepared for ",
+      "end": "es Complete symbol dictionary | 16 literature references The numerical endpoint is an illustrative calibration. Observed classes and physical emission components are kept distinct."
+    },
+    {
+      "page": 2,
+      "characters": 1455,
+      "start": "Purpose and scope 1. Empirical scales and relevant literature 1.1 What the numerical example is anchored to 1.2 What previous work justifies, and what it does not 2. Two neutral reservoirs: definitions, solution, and que",
+      "end": "e of every model symbol Appendix B. Numerical audit and source-to-equation ledger References RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 2 / 25"
+    },
+    {
+      "page": 3,
+      "characters": 3071,
+      "start": "Purpose and scope This report narrows the 14 September physical-scenario report to four linked calculations: atomic-to-molecular supply and environmental loss; a possible local increase in star-formation efficiency; the ",
+      "end": "Post-peak SF 12 7.58 \u00d7 1039 0.319 0.228 0.210 Post-peak NSF 13 1.11 \u00d7 1039 0.566 0.417 0.753 RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 3 / 25"
+    },
+    {
+      "page": 4,
+      "characters": 3998,
+      "start": "Here SF and NSF are the observational classes defined by the pipeline, not pure physical H II and non-H II emission components. SF additionally requires the pipeline\u2019s H II selection, H-alpha equivalent width above 6 Ang",
+      "end": "n identified source and gas- absorption history, or be stated as a conditional model result. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 4 / 25"
+    },
+    {
+      "page": 5,
+      "characters": 2778,
+      "start": "2. Two neutral reservoirs: definitions, solution, and quenching 2.1 The physical aperture and a restricted closure Let \u03a3HI and \u03a3H2 be local atomic-associated and molecular-associated gas surface densities in \ud835\udc40\u2299pc\u22122, unde",
+      "end": "> 0). (1) \u03a3SFR = \u03a3H2 \ud835\udf0fdep , \ud835\udf0fdep = \u03a3H2 \u03a3SFR (\u03a3SFR > 0), (2) \ud835\udc43ram(\ud835\udc61) = \ud835\udf0cICM(\ud835\udc61)\ud835\udc63rel 2 (\ud835\udc61). (3) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 5 / 25"
+    },
+    {
+      "page": 6,
+      "characters": 2221,
+      "start": "The transfer term enters once as an H I loss and once as an H2 gain. The stellar and feedback term applies once to H2. Environmental stripping is separate from feedback and can differ by phase. These are new restricted s",
+      "end": "\ud835\udc61 \u2212 1 \ud835\udf0f\u03a6, \u2130(\ud835\udc61) \u2261\u222b0 \ud835\udc61\u0393SFR(\ud835\udc61\u2032) \ud835\udc51\ud835\udc61\u2032 = ln\u2061[ \u03a3SFR(0) \u03a3SFR(\ud835\udc61) ]. (7) \u03a3SFR(\ud835\udc61) \u03a3SFR(0) = \ud835\udc52\u2212\u2130(\ud835\udc61). (8) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 6 / 25"
+    },
+    {
+      "page": 7,
+      "characters": 2438,
+      "start": "Reversing the inequality gives instantaneous enhancement; equality is instantaneous stationarity. For constant \ud835\udf0fdep, the final term vanishes. An increasing depletion time suppresses SFR even if molecular mass stays nonze",
+      "end": "H2(\ud835\udc61) = \u03a3H2, 0\ud835\udc52\u2212\ud835\udefeloss, H2\ud835\udc61+ \u03a3HI, 0 \ud835\udf0fconv \ud835\udc52\u2212\ud835\udefeloss, HI\ud835\udc61\u2212\ud835\udc52\u2212\ud835\udefeloss, H2\ud835\udc61 \ud835\udefeloss, H2 \u2212\ud835\udefeloss, HI (14) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 7 / 25"
+    },
+    {
+      "page": 8,
+      "characters": 2684,
+      "start": "This is the familiar repeated-rate limit, not a physical divergence. When computing near it, use equation (15) or a stable exponential-difference function. Step 5: check mass conservation. Add the original phase balances",
+      "end": "(\ud835\udc62)\ud835\udc52\u2212[\ud835\udca2H2(\ud835\udc61) \u2212\ud835\udca2H2(\ud835\udc62)] \ud835\udc51\ud835\udc62. (17) \u03a3HI, 0 \ud835\udf0fconv = [1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep(0) + \ud835\udefestrip, H2(0\u2212)]\u03a3H2, 0. (18) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 8 / 25"
+    },
+    {
+      "page": 9,
+      "characters": 2804,
+      "start": "shows directly why higher SFR alone cannot distinguish the two. Equation (9) states exactly how an increase in \u03a3\u03a6/\u03a3H2, a reduction in direct removal, or a decrease in \ud835\udf0fdep could reverse the local sign of \ud835\udc51\u03a3SFR/\ud835\udc51\ud835\udc61. For on",
+      "end": "\ud835\udc61) \ud835\udc51\ud835\udc54 \ud835\udc51\ud835\udc61. (21) \ud835\udc44H, y(\ud835\udc61) = \u222b 0 \u221e \ud835\udc5eH, y(\ud835\udc4e)\u03a3SFR(\ud835\udc61\u2212\ud835\udc4e) \ud835\udc51\ud835\udc4e, \ud835\udc3e\ud835\udefc(\ud835\udc4e) = \ud835\udc5eH, y(\ud835\udc4e) \u222b0 \u221e\ud835\udc5eH, y(\ud835\udc62) \ud835\udc51\ud835\udc62. (22) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 9 / 25"
+    },
+    {
+      "page": 10,
+      "characters": 3250,
+      "start": "contributing age near 3 Myr and 90% of their adopted signal from ages below approximately 10 Myr, under their population-model assumptions. That age information motivates a short response; it is not evidence for a specif",
+      "end": " \ud835\udc42(\ud835\udf0fion 2 \ud835\udc512\u03a3SFR/\ud835\udc51\ud835\udc612). (25) \ud835\udc57\ud835\udefc= \u210e\ud835\udf08\ud835\udefc\ud835\udefc\ud835\udefc eff\ud835\udc5b\ud835\udc52\ud835\udc5b\ud835\udc5d, \ud835\udc44H, abs = \ud835\udc34kpc\ud835\udefc\ud835\udc35\u222b\ud835\udc5b\ud835\udc52\ud835\udc5b\ud835\udc5d\ud835\udc51\ud835\udc67, \ud835\udc5d\ud835\udefc\u2261\ud835\udefc\ud835\udefc eff \ud835\udefc\ud835\udc35 . (26) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 10 / 25"
+    },
+    {
+      "page": 11,
+      "characters": 3100,
+      "start": "The two forms are photon-budget and emission-measure forms of the same recombination relation. Their atomic coefficients and validity limits come from Hummer & Storey (1987) and Storey & Hummer (1995). This is direct rec",
+      "end": " non \u2212HII, y + \u2112\ud835\udefc old + \u2112\ud835\udefc mech + \u2112\ud835\udefc AGN. (30) \u2112\ud835\udefc, old max \u22434.02 \u00d7 1037 erg s\u22121 kpc\u22122, (31) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 11 / 25"
+    },
+    {
+      "page": 12,
+      "characters": 2982,
+      "start": "approximately 3.6% of Table 1\u2019s post-peak NSF mean H-alpha at the same mass bin. This is a conditional ceiling under the adopted old-population ionizing yield, not a theorem about every evolved population or an upper bou",
+      "end": "n\u2061\u00af\u03a3SFR, \u03b1 \ud835\udc51\ud835\udc61 + \ud835\udc51ln\u2061\ud835\udc53HII \ud835\udc51\ud835\udc61 , \ud835\udc51ln\u2061\u2112\ud835\udefc non \u2212HII, y \ud835\udc51\ud835\udc61 = \ud835\udc51ln\u2061\u00af\u03a3SFR, \u03b1 \ud835\udc51\ud835\udc61 + \ud835\udc51ln\u2061\ud835\udc53leak \ud835\udc51\ud835\udc61 . (33) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 12 / 25"
+    },
+    {
+      "page": 13,
+      "characters": 2710,
+      "start": "This is luminosity conservation for the chosen decomposition, not a relation imported from a photoionization grid. Belfiore et al. (2022) and Zhang et al. (2017) motivate why physically distinct emission can occupy the s",
+      "end": "n\u2061\u2112\ud835\udefc non \u2212HII \ud835\udc51\ud835\udc61 \u2212\ud835\udc51ln\u2061\u2112\ud835\udefc HII \ud835\udc51\ud835\udc61 ]. (37) \ud835\udc51\ud835\udc64\ud835\udefc \ud835\udc51\ud835\udc61= \ud835\udc64\ud835\udefc(1 \u2212\ud835\udc64\ud835\udefc)[\ud835\udc51ln\u2061\ud835\udc53leak \ud835\udc51\ud835\udc61 \u2212\ud835\udc51ln\u2061\ud835\udc53HII \ud835\udc51\ud835\udc61 ]. (38) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 13 / 25"
+    },
+    {
+      "page": 14,
+      "characters": 3329,
+      "start": "The H-beta-normalized version substitutes \ud835\udc64\ud835\udefd. The first term is a changing mixture; the latter two are evolving intrinsic spectra caused, for example, by ionization parameter, stellar age, density, abundance, or shocks. ",
+      "end": "\ud835\udefc \ud835\udc51\u211b\u2113/\ud835\udefc non \u2212HII \ud835\udc51\ud835\udc61 . (39) \ud835\udc51\u2112\u2113 \ud835\udc51\ud835\udc61= \u211b\u2113/\ud835\udc35 HII\ud835\udc51\u2112\ud835\udc35 HII \ud835\udc51\ud835\udc61 + \u211b\u2113/\ud835\udc35 non \u2212HII\ud835\udc51\u2112\ud835\udc35 non \u2212HII \ud835\udc51\ud835\udc61 . (40) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 14 / 25"
+    },
+    {
+      "page": 15,
+      "characters": 3190,
+      "start": "The factor 103 only converts area and time units. The final line enforces pre-perturbation molecular balance from equation (18) with zero pre-perturbation stripping. At \ud835\udc61= 0+, the chosen environmental removal turns on. T",
+      "end": ", 0[\ud835\udc40\u2299yr\u22121kpc\u22122] = 163.82 \ud835\udc40\u2299pc\u22122, \ud835\udf0fconv = \u03a3HI, 0 (1 \u2212\ud835\udc45+ \ud835\udf02)\u03a3H2, 0/\ud835\udf0fdep, 0 = 0.2035 Gyr. (41) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 15 / 25"
+    },
+    {
+      "page": 16,
+      "characters": 2048,
+      "start": "Figure 1. Gas columns, no-pulse and pulse SFRs, and the pulse branch\u2019s instantaneous \u0393SFR and accumulated \u2130. Time is an illustrative local model coordinate, not an inferred orbital clock. The gas columns shown for the ma",
+      "end": "0\ud835\udc53leak), \u2112[S II] = \ud835\udcab(0.20\ud835\udc53HII + 0.45\ud835\udc53leak), \u2112[O III] = \ud835\udcab 2.86 (0.57\ud835\udc53HII + 0.77\ud835\udc53leak ). (42) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 16 / 25"
+    },
+    {
+      "page": 17,
+      "characters": 1972,
+      "start": "partition, an evolving intrinsic spectrum, a distinct non-H II power source, or gas absorption and radiative-transfer physics. Table 3. No-pulse H-alpha components. Luminosities are in erg s\u22121 kpc\u22122, and \ud835\udc64\ud835\udefc is dimensionl",
+      "end": " [S II] doublet, and [O III] luminosities in Tables 3\u20134 all end below their initial values. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 17 / 25"
+    },
+    {
+      "page": 18,
+      "characters": 2308,
+      "start": "There is a further gas-capacity requirement, not guaranteed by the two neutral reservoirs. Equation (27) applied to the model\u2019s final non-H II H-alpha, 1.023 \u00d7 1039 erg s\u22121 kpc\u22122, with \u210e\ud835\udf08\ud835\udefc= 3.027 \u00d7 10\u221212 erg, \ud835\udc5d\ud835\udefc= 0.45, a",
+      "end": ") \u2112[N II] \u2112\ud835\udefc = 0.22 + 0.38\ud835\udc64\ud835\udefc, \u2112[S II] \u2112\ud835\udefc = 0.20 + 0.25\ud835\udc64\ud835\udefc, \u2112[O III] \u2112\ud835\udefd = 0.57 + 0.20\ud835\udc64\ud835\udefc. (44) RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 18 / 25"
+    },
+    {
+      "page": 19,
+      "characters": 4002,
+      "start": "6.4 Which observations are reproduced, and which are not The modeled end-point H-alpha 1.125 \u00d7 1039 erg s\u22121 kpc\u22122 is close to Table 1\u2019s post-peak NSF mean 1.111 \u00d7 1039 , and its final ratios (0.566, 0.427, 0.752) are clo",
+      "end": "t \ud835\udefe over the example is a solvable exposure, not an orbital-pressure measurement. Molecular RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 19 / 25"
+    },
+    {
+      "page": 20,
+      "characters": 3865,
+      "start": "abundance is especially degenerate with \ud835\udf0fdep in optical-only data. A physical RPS model would compute \ud835\udf0cICM(\ud835\udc61), \ud835\udc63rel(\ud835\udc61), orientation, restoring force, and gas response before assigning a local loss rate. The illustrative ",
+      "end": "ight distance (cm inside recombination integrals). No stage-to-time conversion is inferred. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 20 / 25"
+    },
+    {
+      "page": 21,
+      "characters": 2709,
+      "start": "Symbol Detailed definition, units, and status \u03a3HI, \u03a3H2 Local atomic-associated and molecular-associated neutral gas columns, \ud835\udc40\u2299pc\u22122, on one helium convention. H2 denotes molecular gas associated with the modelled SFR; ne",
+      "end": "below the initial SFR. They are diagnostic definitions, not new environmental coefficients. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 21 / 25"
+    },
+    {
+      "page": 22,
+      "characters": 2902,
+      "start": "Symbol Detailed definition, units, and status \ud835\udc54(\ud835\udc61), \ud835\udc34\ud835\udf16, \ud835\udc61pk, \ud835\udc5a Dimensionless time profile of a chosen molecular-efficiency pulse, its dimensionless peak amplitude, peak time, and positive dimensionless shape index; all d",
+      "end": "sure inputs, not measured escape fractions. The initial leaked fraction follows from unity. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 22 / 25"
+    },
+    {
+      "page": 23,
+      "characters": 2853,
+      "start": "Symbol Detailed definition, units, and status \ud835\udc5eH, old, \ud835\udc53abs, old Old-stellar ionizing photon rate per unit present stellar mass, photons s\u22121\ud835\udc40\u2299 \u22121, and fraction of that independent budget absorbed by gas. The old-star num",
+      "end": "gradient run. Table B1. Verification checks from the saved no-pulse and pulse calculations. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 23 / 25"
+    },
+    {
+      "page": 24,
+      "characters": 2655,
+      "start": "Check Computed result Interpretation Exact two-reservoir solution versus tight- tolerance ODE maximum relative error 2.24 \u00d7 10\u221212 Confirms equations (11) and (14) were implemented as written. Three young-photon fractions",
+      "end": "UVE-scale numerical templates. The fixed ratios were chosen, not derived from those papers. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 24 / 25"
+    },
+    {
+      "page": 25,
+      "characters": 3012,
+      "start": "References Huang, R., et al. (2026), MAUVE-MUSE: When Metallicity Follows or Fights Star Formation\u2014A Mass- Dependent Inversion in Virgo Galaxies. Published DOI; author manuscript. Equations cited above refer to the manus",
+      "end": "to select galaxies just after the quenching of star formation, MNRAS. DOI; author preprint. RESOLVED GAS RESERVOIRS AND FADING EMISSION LINES 28 SEP 2026 MAUVE-MUSE / ICRAR 25 / 25"
+    }
+  ]
+}

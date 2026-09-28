@@ -1,0 +1,23 @@
+{
+  "analytic_vs_ODE_max_relative_error": 2.2394519047775085e-12,
+  "gas_partition_max_error": 1.1102230246251565e-16,
+  "lha_additivity_max_relative_error": 0.0,
+  "first_rising_time_Myr": 22.0,
+  "pulse_peak_time_Myr": 56.0,
+  "pulse_peak_relative_to_control": 1.095271512625475,
+  "pulse_peak_relative_to_no_pulse": 1.2432472161119816,
+  "pulse_peak_Gamma_SFR_per_Gyr": 0.26736712600587076,
+  "pulse_peak_exposure": -0.09100228926786726,
+  "end_H2_ratio": 0.08491373788495438,
+  "end_SFR_ratio": 0.08491373788495436,
+  "end_Ha_ratio": 0.07205566138303847,
+  "end_HII_Ha_ratio": 0.00726523949114813,
+  "end_non_HII_Ha_ratio": 0.6551694584100521,
+  "end_non_HII_weight": 0.9092546592935375,
+  "end_instantaneous_vs_kernel_relative": 0.007613592093314397,
+  "old_star_caseB_Lha_ceiling": 4.0208972450167033e+37,
+  "old_ceiling_over_post_NSF_Ha": 0.036204373258268044,
+  "final_non_HII_emission_measure_pc_cm6": 98.31571674513192,
+  "uniform_ionized_column_200pc_Msun_pc2": 3.467366137868627,
+  "uniform_ionized_column_1000pc_Msun_pc2": 7.753266387155158
+}
