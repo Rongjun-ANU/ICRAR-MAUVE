@@ -1,0 +1,202 @@
+{
+  "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260929_Detailed_Resolved_Gas_and_Emission_Line_Derivation.pdf",
+  "sha256": "d6d4d77a264073d6d8570adeb854c612954b55d58ae2cae720c42647e97bec4b",
+  "pages": 31,
+  "outline_entries": 28,
+  "link_counts": {
+    "internal": 97,
+    "external": 27
+  },
+  "invalid_links": [],
+  "out_of_page_words": [],
+  "replacement_character_pages": [],
+  "short_pages_under_250_chars": [],
+  "page_text_summaries": [
+    {
+      "page": 1,
+      "characters": 1691,
+      "start": "The local response of gas, star formation, and emission lines during Virgo infall A spatially resolved derivation and worked MAUVE-scale example MAUVE-MUSE / ICRAR research note 29 September 2026 Setup of our spatially r",
+      "end": "bol Appendix B. Numerical audit and source-to-equation ledger References MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 1 / 31"
+    },
+    {
+      "page": 2,
+      "characters": 3130,
+      "start": "Setup of our spatially resolved model Here we want to understand whether one local gas-regulator calculation can accommodate three features seen in MAUVE: reduced star formation in the surviving SF regions, a possible sm",
+      "end": " \u00d7 1039 0.319 0.228 0.210 Post-peak NSF 13 1.11 \u00d7 1039 0.566 0.417 0.753 MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 2 / 31"
+    },
+    {
+      "page": 3,
+      "characters": 4018,
+      "start": "Here SF and NSF are the observational classes defined by the pipeline, not pure physical H II and non-H II emission components. SF additionally requires the pipeline\u2019s H II selection, H-alpha equivalent width above 6 Ang",
+      "end": " and gas-absorption history, or be stated as a conditional model result. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 3 / 31"
+    },
+    {
+      "page": 4,
+      "characters": 2938,
+      "start": "2. Two neutral reservoirs: definitions, solution, and quenching 2.1 The physical aperture and a restricted closure Let \u03a3HI and \u03a3H2 be local atomic-associated and molecular-associated gas surface densities in \ud835\udc40\u2299pc\u22122, unde",
+      "end": " \ud835\udf0fdep , \ud835\udf0fdep = \u03a3H2 \u03a3SFR (\u03a3SFR > 0), (2) \ud835\udc43ram(\ud835\udc61) = \ud835\udf0cICM(\ud835\udc61)\ud835\udc63rel 2 (\ud835\udc61). (3) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 4 / 31"
+    },
+    {
+      "page": 5,
+      "characters": 2051,
+      "start": "The transfer term enters once as an H I loss and once as an H2 gain. The stellar and feedback term applies once to H2. Environmental stripping is separate from feedback and can differ by phase. These are new restricted s",
+      "end": "\u0393SFR(\ud835\udc61\u2032) \ud835\udc51\ud835\udc61\u2032 = ln\u2061[ \u03a3SFR(0) \u03a3SFR(\ud835\udc61) ]. (7) \u03a3SFR(\ud835\udc61) \u03a3SFR(0) = \ud835\udc52\u2212\u2130(\ud835\udc61). (8) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 5 / 31"
+    },
+    {
+      "page": 6,
+      "characters": 2505,
+      "start": "Thus \u0393SFR > 0 means SFR is falling now, \u0393SFR < 0 means it is rising now, while \u2130> 0 means it is below its value at \ud835\udc61= 0 and \u2130< 0 means it remains above that value. A region can have \u0393SFR > 0 but \u2130< 0: it is already decli",
+      "end": " \u2212\ud835\udefeloss, H2\u03a3H2 \u21d4 \ud835\udc51\u03a3H2 \ud835\udc51\ud835\udc61+ \ud835\udefeloss, H2\u03a3H2 = \u03a3HI, 0 \ud835\udf0fconv \ud835\udc52\u2212\ud835\udefeloss, HI\ud835\udc61. (12) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 6 / 31"
+    },
+    {
+      "page": 7,
+      "characters": 2067,
+      "start": "The third line is a linear inhomogeneous ODE: the surviving H I supplies H2, while the existing H2 disappears at its own composite loss rate. We seek a factor \ud835\udc3c(\ud835\udc61) for which \ud835\udc3c\ud835\udc51\u03a3H2/\ud835\udc51\ud835\udc61+ \ud835\udc3c\ud835\udefeloss, H2\u03a3H2 is the derivative of o",
+      "end": "s, H2\ud835\udc61+ \u03a3HI, 0 \ud835\udf0fconv \ud835\udc52\u2212\ud835\udefeloss, HI\ud835\udc61\u2212\ud835\udc52\u2212\ud835\udefeloss, H2\ud835\udc61 \ud835\udefeloss, H2 \u2212\ud835\udefeloss, HI (14) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 7 / 31"
+    },
+    {
+      "page": 8,
+      "characters": 2551,
+      "start": "Equation (14a) is written in one internally consistent area/time unit system. If the gas columns are printed in \ud835\udc40\u2299pc\u22122 and time in Gyr, then its right-hand side is initially in \ud835\udc40\u2299pc\u22122 Gyr\u22121; multiply the resulting number",
+      "end": "SFR \u2212\ud835\udefestrip, H2\u03a3H2] = \u2212(1 \u2212\ud835\udc45+ \ud835\udf02)\u03a3SFR \u2212\ud835\udefestrip, HI\u03a3HI \u2212\ud835\udefestrip, H2\u03a3H2. (16) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 8 / 31"
+    },
+    {
+      "page": 9,
+      "characters": 2526,
+      "start": "not these particular fitted coefficients. 2.4 When loss rates vary through the orbit We should not turn the special solution above into a claim that ram pressure stays constant. For time-dependent coefficients, define th",
+      "end": "\ud835\udc51\ud835\udc62]. (17a) \u03a3HI, 0 \ud835\udf0fconv = [1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep(0) + \ud835\udefestrip, H2(0\u2212)]\u03a3H2, 0. (18) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 9 / 31"
+    },
+    {
+      "page": 10,
+      "characters": 2610,
+      "start": "\ud835\udc51ln\u2061\u03a3SFR \ud835\udc51\ud835\udc61 | 0+ = \u03a3HI, 0 \ud835\udf0fconv\u03a3H2, 0 \u2212 1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep \u2212\ud835\udefestrip, H2 = 1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep \u2212 1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep \u2212\ud835\udefestrip, H2 = \u2212\ud835\udefestrip, H2. The second equality uses only equation (18) with zero pre-perturbation stripping. Thus in this spe",
+      "end": ". (20) \ud835\udc51\ud835\udc54 \ud835\udc51\ud835\udc61= \ud835\udc5a\ud835\udc54(\ud835\udc61)(1 \ud835\udc61\u22121 \ud835\udc61pk ), \ud835\udc51ln\u2061\ud835\udf0fdep \ud835\udc51\ud835\udc61 = \u2212 1 1 + \ud835\udc54(\ud835\udc61) \ud835\udc51\ud835\udc54 \ud835\udc51\ud835\udc61. (21) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 10 / 31"
+    },
+    {
+      "page": 11,
+      "characters": 2478,
+      "start": "\ud835\udca2H2 pulse(\ud835\udc61) = \u222b0 \ud835\udc61[ 1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep(\ud835\udc62) + \ud835\udefestrip, H2]\ud835\udc51\ud835\udc62 = [ 1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep, 0 + \ud835\udefestrip, H2]\ud835\udc61+ 1 \u2212\ud835\udc45+ \ud835\udf02 \ud835\udf0fdep, 0 \u222b0 \ud835\udc61\ud835\udc54(\ud835\udc62) \ud835\udc51\ud835\udc62. The first part is the no-pulse molecular exposure; the integral is the additional molecular consumptio",
+      "end": "\u2212\ud835\udca2H2 pulse(\ud835\udc62)] \ud835\udc51\ud835\udc62, \u03a3SFR pulse(\ud835\udc61) = 1 + \ud835\udc54(\ud835\udc61) \ud835\udf0fdep, 0 \u03a3H2 pulse(\ud835\udc61). (21a) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 11 / 31"
+    },
+    {
+      "page": 12,
+      "characters": 2526,
+      "start": "\ud835\udc44H, y is the young-star ionizing-photon production rate per area, not an H-alpha luminosity; the age and SFR time units must match. \ud835\udc3e\ud835\udefc is a nonnegative, unit-normalized response with units inverse time. Equation (22) is ",
+      "end": " \u03b1 = \u03a3SFR(\ud835\udc61), \u00af\u03a3SFR, \u03b1(0) = \u03a3SFR(0) if the earlier SFR was steady. (24) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 12 / 31"
+    },
+    {
+      "page": 13,
+      "characters": 3199,
+      "start": "\u03a3SFR(\ud835\udc61\u2212\ud835\udc4e) = \u03a3SFR(\ud835\udc61) \u2212\ud835\udc4e\ud835\udc51\u03a3SFR/\ud835\udc51\ud835\udc61+ (\ud835\udc4e2/2) \ud835\udc512\u03a3SFR/\ud835\udc51\ud835\udc612 + \u22ef. The chosen normalized kernel has \u222b0 \u221e\ud835\udc4e\ud835\udc3e\ud835\udefc(\ud835\udc4e)\ud835\udc51\ud835\udc4e= \ud835\udf0fion and \u222b0 \u221e\ud835\udc4e2\ud835\udc3e\ud835\udefc(\ud835\udc4e)\ud835\udc51\ud835\udc4e= 2\ud835\udf0fion 2 . Inserting the series term by term into equation (23) gives The kernel is therefore n",
+      "end": "kpc\u210e\ud835\udf08\ud835\udefc\ud835\udefc\ud835\udefc eff \u222b\ud835\udc5b\ud835\udc52\ud835\udc5b\ud835\udc5d\ud835\udc51\ud835\udc67 = \u210e\ud835\udf08\ud835\udefc \ud835\udefc\ud835\udefceff \ud835\udefc\ud835\udc35(\ud835\udc34kpc\ud835\udefc\ud835\udc35\u222b\ud835\udc5b\ud835\udc52\ud835\udc5b\ud835\udc5d\ud835\udc51\ud835\udc67) = \u210e\ud835\udf08\ud835\udefc\ud835\udc5d\ud835\udefc\ud835\udc44H, abs. (27) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 13 / 31"
+    },
+    {
+      "page": 14,
+      "characters": 3092,
+      "start": "produced inside the chosen aperture either are absorbed there or enter \ud835\udc53unabs; it does not add photons produced in neighbouring apertures. A resolved diffuse-gas model would need to transport leaked photons between posit",
+      "end": ", old\u03a3*, \u2112\ud835\udefc non \u2212HII = \u2112\ud835\udefc non \u2212HII, y + \u2112\ud835\udefc old + \u2112\ud835\udefc mech + \u2112\ud835\udefc AGN. (30) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 14 / 31"
+    },
+    {
+      "page": 15,
+      "characters": 2980,
+      "start": "approximately 3.6% of Table 1\u2019s post-peak NSF mean H-alpha at the same mass bin. This is a conditional ceiling under the adopted old-population ionizing yield, not a theorem about every evolved population or an upper bou",
+      "end": "\ud835\udc53HII \ud835\udc51\ud835\udc61 , \ud835\udc51ln\u2061\u2112\ud835\udefc non \u2212HII, y \ud835\udc51\ud835\udc61 = \ud835\udc51ln\u2061\u00af\u03a3SFR, \u03b1 \ud835\udc51\ud835\udc61 + \ud835\udc51ln\u2061\ud835\udc53leak \ud835\udc51\ud835\udc61 . (33) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 15 / 31"
+    },
+    {
+      "page": 16,
+      "characters": 2605,
+      "start": "5. Individual forbidden lines and BPT ratios 5.1 Add physical line luminosities before taking ratios For each physical emission component \ud835\udc57\u2208{HII, non \u2212HII}, let \u2112\u2113 \ud835\udc57 be the luminosity surface density in line \u2113, and let \u211b",
+      "end": "on \u2212HII\u2112\ud835\udc35 non \u2212HII. (34) \ud835\udc35HII = \ud835\udc35non \u2212HII = 2.86, \u2112\ud835\udefd \ud835\udc57= \u2112\ud835\udefc \ud835\udc57 2.86. (35) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 16 / 31"
+    },
+    {
+      "page": 17,
+      "characters": 2202,
+      "start": "For a nontrivial mixture with 0 < \ud835\udc64\ud835\udefc< 1, equality \ud835\udc64\ud835\udefd= \ud835\udc64\ud835\udefc requires equal component decrements \ud835\udc35HII = \ud835\udc35non \u2212HII, as chosen in equation (35). A pure single-component endpoint has equal weights trivially. A ratio is mixed li",
+      "end": "n\u2061\u2112\ud835\udefc HII \ud835\udc51\ud835\udc61 ]. (37) \ud835\udc51\ud835\udc64\ud835\udefc \ud835\udc51\ud835\udc61= \ud835\udc64\ud835\udefc(1 \u2212\ud835\udc64\ud835\udefc)[\ud835\udc51ln\u2061\ud835\udc53leak \ud835\udc51\ud835\udc61 \u2212\ud835\udc51ln\u2061\ud835\udc53HII \ud835\udc51\ud835\udc61 ]. (38) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 17 / 31"
+    },
+    {
+      "page": 18,
+      "characters": 3349,
+      "start": "The H-beta-normalized version substitutes \ud835\udc64\ud835\udefd. The first term is a changing mixture; the latter two are evolving intrinsic spectra caused, for example, by ionization parameter, stellar age, density, abundance, or shocks. ",
+      "end": ". (39) \ud835\udc51\u2112\u2113 \ud835\udc51\ud835\udc61= \u211b\u2113/\ud835\udc35 HII\ud835\udc51\u2112\ud835\udc35 HII \ud835\udc51\ud835\udc61 + \u211b\u2113/\ud835\udc35 non \u2212HII\ud835\udc51\u2112\ud835\udc35 non \u2212HII \ud835\udc51\ud835\udc61 . (40) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 18 / 31"
+    },
+    {
+      "page": 19,
+      "characters": 3084,
+      "start": "The factor 103 only converts area and time units. The final line enforces pre-perturbation molecular balance from equation (18) with zero pre-perturbation stripping. At \ud835\udc61= 0+, the chosen environmental removal turns on. T",
+      "end": "63.82 \ud835\udc40\u2299pc\u22122, \ud835\udf0fconv = \u03a3HI, 0 (1 \u2212\ud835\udc45+ \ud835\udf02)\u03a3H2, 0/\ud835\udf0fdep, 0 = 0.2035 Gyr. (41) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 19 / 31"
+    },
+    {
+      "page": 20,
+      "characters": 1585,
+      "start": "\u03a3HI(1) = 10\ud835\udc52\u22127.9146 = 0.003654 \ud835\udc40\u2299pc\u22122, \u03a3H2(1) = 163.820\ud835\udc52\u22122.52 + 10 0.203475 \ud835\udc52\u22127.9146 \u2212\ud835\udc52\u22122.52 2.52 \u22127.9146 = 13.911 \ud835\udc40\u2299pc\u22122, \u03a3SFR(1) = 10\u22123 13.911 2.0 = 0.006955 \ud835\udc40\u2299yr\u22121 kpc\u22122. The first term in the molecular line is surviv",
+      "end": " Gyr, \u03a3SFR pulse(0.056) = 10\u22123 144.1393 1.60666 = 0.08971 \ud835\udc40\u2299yr\u22121 kpc\u22122. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 20 / 31"
+    },
+    {
+      "page": 21,
+      "characters": 3132,
+      "start": "The pulse has left slightly less molecular gas than the simultaneous no-pulse branch (144.1393 versus 144.3217 \ud835\udc40\u2299pc\u22122) because higher efficiency also consumes gas. Nevertheless its SFR is 1.0953 times its initial value (",
+      "end": "(0.20\ud835\udc53HII + 0.45\ud835\udc53leak), \u2112[O III] = \ud835\udcab 2.86 (0.57\ud835\udc53HII + 0.77\ud835\udc53leak ). (42) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 21 / 31"
+    },
+    {
+      "page": 22,
+      "characters": 2038,
+      "start": "\ud835\udc61 (Gyr) \u2112\ud835\udefc \u2112\ud835\udefc HII \u2112\ud835\udefc non \u2212HII \ud835\udc64\ud835\udefc 0.6 3.082 \u00d7 1039 7.637 \u00d7 1038 2.318 \u00d7 1039 0.752 1.0 1.125 \u00d7 1039 1.021 \u00d7 1038 1.023 \u00d7 1039 0.909 Table 4. The other four absolute line luminosities from the same calculation, in erg s\u22121 ",
+      "end": "HII \u2261\u222b\ud835\udc5b\ud835\udc52\ud835\udc5b\ud835\udc5d\ud835\udc51\ud835\udc67= \u2112\ud835\udefc non \u2212HII \ud835\udc34kpc\u210e\ud835\udf08\ud835\udefc\ud835\udefc\ud835\udefceff \u224398 pc cm\u22126, \ud835\udefc\ud835\udefc eff = \ud835\udc5d\ud835\udefc\ud835\udefc\ud835\udc35. (43) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 22 / 31"
+    },
+    {
+      "page": 23,
+      "characters": 2411,
+      "start": "For a uniform, fully ionized hydrogen layer of depth 200 pc or 1 kpc, this corresponds respectively to \ud835\udc5b\ud835\udc52\u22430.70 or 0.31 cm\u22123, and ionized-hydrogen columns of about 3.5 or 7.7 \ud835\udc40\u2299pc\u22122. Clumping, filling factor, helium, and ",
+      "end": "+ 0.38\ud835\udc64\ud835\udefc, \u2112[S II] \u2112\ud835\udefc = 0.20 + 0.25\ud835\udc64\ud835\udefc, \u2112[O III] \u2112\ud835\udefd = 0.57 + 0.20\ud835\udc64\ud835\udefc. (44) MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 23 / 31"
+    },
+    {
+      "page": 24,
+      "characters": 3988,
+      "start": "initial H-alpha, the approximate final H-alpha through the chosen loss coefficient, and both line-ratio templates were set with these data in view. In particular, the near equality of final [N II]/H-alpha is not new evid",
+      "end": "loss rate. The illustrative 1 Gyr is not dated by the three stage bins. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 24 / 31"
+    },
+    {
+      "page": 25,
+      "characters": 3666,
+      "start": "Second, a high line ratio cannot alone identify HOLMES, leakage, shocks, or AGN. The numerical line model omits old and mechanical sources and uses a gas-dependent compact/diffuse partition without solving radiative tran",
+      "end": "side recombination integrals). No stage-to-time conversion is inferred. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 25 / 31"
+    },
+    {
+      "page": 26,
+      "characters": 2758,
+      "start": "Symbol Detailed definition, units, and status \u03a3HI, \u03a3H2 Local atomic-associated and molecular-associated neutral gas columns, \ud835\udc40\u2299pc\u22122, on one helium convention. H2 denotes molecular gas associated with the modelled SFR; ne",
+      "end": "ormed stellar mass; its exact phase return is a declared approximation. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 26 / 31"
+    },
+    {
+      "page": 27,
+      "characters": 2869,
+      "start": "Symbol Detailed definition, units, and status \u0393SFR, \u2130 Instantaneous negative logarithmic SFR derivative, Gyr\u22121, and its dimensionless time integral. Positive \u0393SFR means falling at that instant; positive \u2130 means below the",
+      "end": "ical gas-capacity requirement, not solved by the neutral-reservoir ODE. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 27 / 31"
+    },
+    {
+      "page": 28,
+      "characters": 2612,
+      "start": "Symbol Detailed definition, units, and status \ud835\udc53HII, \ud835\udc53leak, \ud835\udc53unabs Mutually exclusive fractions of young-star photons produced inside the modelled aperture: compact H II absorption there, absorption in diffuse non-H II ga",
+      "end": "g photon destinations. This is a derived quantity, not a new reservoir. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 28 / 31"
+    },
+    {
+      "page": 29,
+      "characters": 3130,
+      "start": "Appendix B. Numerical audit and source-to-equation ledger The reproducible calculation is model_predictions.py, with complete model parameters, 1-Myr model trajectories, MAUVE anchor values, and numerical checks. It read",
+      "end": "citly illustrative exponential response, and data-scale initialization. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 29 / 31"
+    },
+    {
+      "page": 30,
+      "characters": 828,
+      "start": "Equations Basis in the literature What this report adds (26)\u2013(31), (43) Case-B emissivities and coefficients from Hummer & Storey (1987) and Storey & Hummer (1995); diffuse and evolved-star source models from Belfiore et",
+      "end": "templates. The fixed ratios were chosen, not derived from those papers. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 30 / 31"
+    },
+    {
+      "page": 31,
+      "characters": 3032,
+      "start": "References Huang, R., et al. (2026), MAUVE-MUSE: When Metallicity Follows or Fights Star Formation\u2014A Mass- Dependent Inversion in Virgo Galaxies. Published DOI; author manuscript. Equations cited above refer to the manus",
+      "end": "ust after the quenching of star formation, MNRAS. DOI; author preprint. MAUVE-MUSE / local gas and emission-line response 29 September 2026 Derivation and numerical example 31 / 31"
+    }
+  ]
+}

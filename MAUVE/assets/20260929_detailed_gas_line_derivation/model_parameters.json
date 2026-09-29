@@ -1,0 +1,53 @@
+{
+  "data_anchor": {
+    "log10_Sigma_star_center": 8.625,
+    "source_csv": "/Users/Igniz/Desktop/ICRAR/MAUVE/assets/20260914_resolved_RPS_academic_model/stage_bpt_line_profiles_with_hbeta.csv",
+    "exact_source_hashes_match": true
+  },
+  "gas": {
+    "Sigma_HI0_Msun_pc2": 10.0,
+    "Sigma_H20_Msun_pc2": 163.8201166189988,
+    "Sigma_SFR0_Msun_yr_kpc2": 0.0819100583094994,
+    "tau_conv_Gyr": 0.20347521428554244,
+    "tau_dep_Gyr": 2.0,
+    "gamma_strip_HI_per_Gyr": 3.0,
+    "gamma_strip_H2_per_Gyr": 2.22,
+    "gamma_loss_HI_per_Gyr": 7.9146034985699645,
+    "gamma_loss_H2_per_Gyr": 2.52,
+    "return_fraction": 0.4,
+    "feedback_loading": 0.0
+  },
+  "line_model": {
+    "C_Halpha": 4.983582089552239e-42,
+    "tau_ion_Myr": 3.0,
+    "caseB_balmer": 2.86,
+    "f_HII_initial": 0.855,
+    "f_unabs_initial": 0.05,
+    "f_unabs_limit": 0.2,
+    "q_old_per_msun": 7e+40,
+    "hnu_Halpha_erg": 3.027e-12,
+    "p_Halpha": 0.45,
+    "alpha_B_caseB_cm3_s": 2.6e-13,
+    "templates": {
+      "NII_Ha": {
+        "HII": 0.22,
+        "non_HII": 0.6
+      },
+      "SII_Ha": {
+        "HII": 0.2,
+        "non_HII": 0.45
+      },
+      "OIII_Hb": {
+        "HII": 0.57,
+        "non_HII": 0.77
+      }
+    }
+  },
+  "pulse": {
+    "peak_efficiency_amplitude": 0.25,
+    "center_Myr": 60.0,
+    "shape_exponent": 9
+  },
+  "illustrative_duration_Gyr": 1.0,
+  "fitted_physical_parameters": false
+}
