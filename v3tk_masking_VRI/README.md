@@ -181,6 +181,7 @@ Important implementation details:
 - For NGC4405, six user-selected Legacy sources are manually added at the catalog positions nearest the supplied coordinates. Four `REX` sources use circular radii of 1.20–1.25 arcsec, one `PSF` source uses the 1.20 arcsec unresolved-source radius, and `SER` source `ls_id=9906627523969457` uses `a=2.224`, `b=1.200` arcsec with catalog PA `65.7` degrees converted by the shared Legacy/WCS convention to sampler angle `24.3` degrees.
 - For NGC4424, its single foreground star (Gaia DR3 `3903814389447489664`) has a 2.0x radius scale, from 1.20 to 2.40 arcsec.
 - For NGC4654, Legacy `SER` source `ls_id=9906626428669580` at `(190.957342, 13.125274)` degrees is manually added as a circle. Its radius is 2.5x the padded catalog major axis, `2.5 x 2.208261 = 5.520653` arcsec; the catalog minor axis and PA are intentionally ignored. The source has `shape_r=2.008`, `e1=-0.3848`, `e2=0.0895`, and `z_phot_mean=0.1947` with 95% bounds `0.0901–0.2649`.
+- For NGC4689, the lower-right red foreground star (Gaia DR3 `3929107378839736832`) has a 1.5x radius scale, from 1.20 to 1.80 arcsec.
 - For NGC4694, its single foreground star (Gaia DR3 `3927389155697596800`) has a 2.0x radius scale, from 1.20 to 2.40 arcsec.
 - Background-galaxy masks use 1.2 arcsec minimum fallback/floor values, 5.0 arcsec maximum fallback/Legacy semi-axis caps, and diagnostic overlay contours are drawn with thinner 0.6 line widths.
 - Legacy DR9 background-galaxy masking uses morphology and photo-z information where available.

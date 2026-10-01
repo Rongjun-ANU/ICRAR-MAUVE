@@ -1,0 +1,66 @@
+{
+  "c_alpha": 4.983582089552239e-42,
+  "hi0": 10.0,
+  "h20": 163.8201166189988,
+  "sfr0": 0.0819100583094994,
+  "tau_dep_gyr": 2.0,
+  "tau_conv_gyr": 0.20347521428554244,
+  "return_fraction": 0.4,
+  "eta": 0.0,
+  "gamma_strip_hi": 3.0,
+  "gamma_strip_h2": 0.0,
+  "gamma_loss_hi": 7.9146034985699645,
+  "gamma_cons_h2": 0.3,
+  "tau_ion_gyr": 0.003,
+  "f_capture": 0.95,
+  "w_non_null": 0.1,
+  "templates": {
+    "nii_ha": [
+      0.22,
+      0.6
+    ],
+    "sii_ha": [
+      0.2,
+      0.45
+    ],
+    "oiii_hb": [
+      0.57,
+      0.77
+    ]
+  },
+  "sfr_fraction_1gyr": 0.7699905676893605,
+  "sfr_dex_1gyr": -0.11351459486070319,
+  "closed_control_fraction_1gyr": 0.7885024644407271,
+  "rps_to_closed_control_1gyr": 0.9765227154178943,
+  "zero_supply_bound_1gyr": 0.7408182206817179,
+  "lower_time_for_survivor_factor": 2.996473645131807,
+  "upper_tau_dep_for_survivor_factor_1gyr": 0.6674512232901768,
+  "ha_null_fraction_1gyr": 0.7706838463224349,
+  "nsf_ha_factor": 0.31218050796119373,
+  "nsf_w0": 0.402788750626938,
+  "nsf_w1": 0.9113345022510085,
+  "effective_gamma_ha_hii": 3.0715737729146184,
+  "effective_gamma_ha_non_hii": 0.34767592856795376,
+  "nsf_hii_ha_factor": 0.0463481559581633,
+  "nsf_non_hii_ha_factor": 0.7063277397704326,
+  "nsf_sii_line_factor": 0.44417215735162824,
+  "nsf_oiii_line_factor": 0.36098726524996955,
+  "required_photon_fractions_initial": [
+    0.5673506869044089,
+    0.3826493130955911,
+    0.04999999999999999
+  ],
+  "required_photon_fractions_final": [
+    0.03411990305116007,
+    0.3506961067540539,
+    0.615183990194786
+  ],
+  "required_photon_fraction_minimum": 0.03411990305116007,
+  "ode_relative_error": 6.7330277643724024e-12,
+  "degenerate_ode_relative_error": 1.5294479495738802e-15,
+  "initial_sfr_derivative": 0.0,
+  "initial_sfr_second_derivative": -0.19448569021933013,
+  "synthetic_weight_recovery_error": 0.0,
+  "unequal_balmer_identity_error": 1.1102230246251565e-16,
+  "scalar_export_sha256": "0ea8484b2b6cd9da475f8e05395557daa0caf8c1c3cffebea96b5e5e86ddf341"
+}

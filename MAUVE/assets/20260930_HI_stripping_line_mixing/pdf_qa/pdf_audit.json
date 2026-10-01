@@ -1,0 +1,220 @@
+{
+  "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20260930_HI_Stripping_and_HII_DIG_Line_Ratio_Model.pdf",
+  "sha256": "81dd65c517e53d6a3fce8190fa2c70afea69e69383a8a290579bc07b575df667",
+  "pages": 34,
+  "outline_entries": 56,
+  "link_counts": {
+    "internal": 57,
+    "external": 50
+  },
+  "invalid_links": [],
+  "out_of_page_words": [],
+  "replacement_character_pages": [],
+  "short_pages_under_250_chars": [],
+  "page_text_summaries": [
+    {
+      "page": 1,
+      "characters": 3217,
+      "start": "H I stripping, delayed star formation, and H II\u2013DIG line mixing Detailed analytical derivation and conditional numerical tests for MAUVE Research report for Rongjun Huang 30 September 2026 1. What we want this revision t",
+      "end": "1 Source-to-equation ledger E.2 Local inputs and reproducibility References MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 1 / 34"
+    },
+    {
+      "page": 2,
+      "characters": 3200,
+      "start": "1. What we want this revision to establish Here we want to examine a simpler physical chain: ram-pressure stripping (RPS) removes atomic gas, the local molecular reservoir receives less replenishment, and star formation ",
+      "end": "s check does not constitute a fresh reduction of the large input FITS maps. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 2 / 34"
+    },
+    {
+      "page": 3,
+      "characters": 2937,
+      "start": "Table 1. Representative MAUVE scales. \u2112\ud835\udefc is in 1039 erg s\u22121 kpc\u22122; ratios are linear, dimensionless values. Stage Category Galaxies \u2112\ud835\udefc [N II]/H\u03b1 [S II]/H\u03b1 [O III]/H\u03b2 Pre-peak SF 7 15.614 0.254 0.222 0.596 Close-to-peak S",
+      "end": " of this report, rather than attributed to a paper that did not publish it. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 3 / 34"
+    },
+    {
+      "page": 4,
+      "characters": 3213,
+      "start": "2. Definitions and the restricted two-reservoir setup 2.1 Local quantities, units, and the meaning of gas supply Consider a patch at disc position \ud835\udc99= (\ud835\udc5f, \ud835\udf11), where \ud835\udc5f and \ud835\udf11 are galactocentric radius and azimuth. All quant",
+      "end": ". (1) \u03a3\u03a6(\ud835\udc61) \u2261\u03a3HI(\ud835\udc61) \ud835\udf0fconv , \ud835\udf0f\u03a6(\ud835\udc61) \u2261 \u03a3H2(\ud835\udc61) \u03a3\u03a6(\ud835\udc61) = \ud835\udf0fconv \u03a3H2(\ud835\udc61) \u03a3HI(\ud835\udc61). (2) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 4 / 34"
+    },
+    {
+      "page": 5,
+      "characters": 1924,
+      "start": "Equation (3) is our two-phase extension of regulator continuity with a declared linear stripping sink. The literature motivates indirect molecular depletion after substantial inner-disc H I loss (Fumagalli et al. 2009); ",
+      "end": "\u03a3HI = \u2212\ud835\udefeHI \u222b0 \ud835\udc61\ud835\udc51\ud835\udc62, ln\u2061[ \u03a3HI(\ud835\udc61) \u03a3HI, 0 ] = \u2212\ud835\udefeHI\ud835\udc61, \u03a3HI(\ud835\udc61) = \u03a3HI, 0\ud835\udc52\u2212\ud835\udefeHI\ud835\udc61. (6) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 5 / 34"
+    },
+    {
+      "page": 6,
+      "characters": 1792,
+      "start": "3.2 Substitute this supply into the molecular balance Using equation (1) in the molecular sink, and then equation (7) in its source, gives We now solve this first-order inhomogeneous equation. Its integrating factor is \ud835\udc52",
+      "end": "\u2212\ud835\udefeH2\ud835\udc61 \ud835\udefeH2 \u2212\ud835\udefeHI . (11) \u03a3H2(\ud835\udc61) = \u03a3H2, 0\ud835\udc52\u2212\ud835\udefeH2\ud835\udc61+ \u222b 0 \ud835\udc61 \u03a3\u03a6(\ud835\udc62)\ud835\udc52\u2212\ud835\udefeH2(\ud835\udc61\u2212\ud835\udc62) \ud835\udc51\ud835\udc62. (12) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 6 / 34"
+    },
+    {
+      "page": 7,
+      "characters": 1535,
+      "start": "3.3 Write the SFR solution explicitly Because \ud835\udf0fdep is constant in this solution, equation (1) permits us to divide both terms of equation (11) by the same depletion time: The initial SFR is \u03a3SFR, 0 = \u03a3H2, 0/\ud835\udf0fdep. Dividin",
+      "end": "2 \u2212\ud835\udefeHI = \ud835\udefeH2\ud835\udc52\u2212\ud835\udefeHI\ud835\udc61\u2212\ud835\udefeHI\ud835\udc52\u2212\ud835\udefeH2\ud835\udc61 \ud835\udefeH2 \u2212\ud835\udefeHI = \ud835\udefeHI\ud835\udc52\u2212\ud835\udefeH2\ud835\udc61\u2212\ud835\udefeH2\ud835\udc52\u2212\ud835\udefeHI\ud835\udc61 \ud835\udefeHI \u2212\ud835\udefeH2 . (17) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 7 / 34"
+    },
+    {
+      "page": 8,
+      "characters": 2587,
+      "start": "For \ud835\udefeHI > \ud835\udefeH2 > 0, the parenthesis in the first line is negative at \ud835\udc61> 0, while its prefactor is positive. Reversing the rate ordering reverses both signs, leaving the derivative negative. For equal positive rates, diffe",
+      "end": "). (20) \u03a3SFR(\ud835\udc61) \u03a3SFR, 0 = \ud835\udc52\u2212\ud835\udefeH2\ud835\udc61[1 + \ud835\udefeH2 \ud835\udefeHI \u2212\ud835\udefeH2 (1 \u2212\ud835\udc52\u2212(\ud835\udefeHI \u2212\ud835\udefeH2)\ud835\udc61)]. (21) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 8 / 34"
+    },
+    {
+      "page": 9,
+      "characters": 2272,
+      "start": "1/\ud835\udf0fconv in equation (17). This isolates the additional attenuation associated with the linear stripping term within the same closed-system assumptions. For example, subtracting the two initial curvatures from equation (1",
+      "end": "dep \u2264(1 \u2212\ud835\udc45+ \ud835\udf06)\ud835\udc61 \u2212ln\u2061\ud835\udc53SFR . (24) \ud835\udc44H, y(\ud835\udc61) = \u222b 0 \u221e \ud835\udc5eH, y(\ud835\udc4e)\u03a3SFR(\ud835\udc61\u2212\ud835\udc4e) \ud835\udc51\ud835\udc4e. (25) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 9 / 34"
+    },
+    {
+      "page": 10,
+      "characters": 2914,
+      "start": "Use a common time unit for \ud835\udc4e, \ud835\udc61, and the mass-formation rate in this integral. For the printed \ud835\udc40\u2299yr\u22121 kpc\u22122 SFR, integration over ages in years yields photons s\u22121 kpc\u22122. The population-synthesis response depends on stell",
+      "end": "\ud835\udefc young, max(\ud835\udc61), \u2112\ud835\udefc(\ud835\udc61) = \ud835\udc53cap(\ud835\udc61)\u2112\ud835\udefc young, max(\ud835\udc61), \ud835\udc53cap \u2261\ud835\udc53HII + \ud835\udc53leak. (28) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 10 / 34"
+    },
+    {
+      "page": 11,
+      "characters": 2518,
+      "start": "This exponential kernel with \ud835\udf0fion = 3 Myr is an explicitly illustrative smoothing function, not a population- synthesis prediction. The pre-interval SFR is taken constant to initialize \u03a3SFR ion (0) = \u03a3SFR, 0. Differentia",
+      "end": "\ud835\udc51 \ud835\udc51\ud835\udc61ln\u2061( \ud835\udc64non \u2212HII, \ud835\udefc 1 \u2212\ud835\udc64non \u2212HII, \ud835\udefc ) = \ud835\udc51ln\u2061\ud835\udc53leak \ud835\udc51\ud835\udc61 \u2212\ud835\udc51ln\u2061\ud835\udc53HII \ud835\udc51\ud835\udc61 . (31) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 11 / 34"
+    },
+    {
+      "page": 12,
+      "characters": 3032,
+      "start": "The H II weight is \ud835\udc64HII, \ud835\udefc= 1 \u2212\ud835\udc64non \u2212HII, \ud835\udefc; their sum is one because both divide by the same positive total H\u03b1 luminosity. They are Balmer-luminosity fractions, not gas-mass, area, or numbers-of-region fractions. Equati",
+      "end": " \ud835\udc45OIII obs = (1 \u2212\ud835\udc64non \u2212HII, \ud835\udefd)\ud835\udc45OIII HII + \ud835\udc64non \u2212HII, \ud835\udefd\ud835\udc45OIII non \u2212HII. (34) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 12 / 34"
+    },
+    {
+      "page": 13,
+      "characters": 2032,
+      "start": "If the non-H II endpoint is higher and its weight grows, the ratio rises. The forbidden line still fades if the fractional H\u03b1 decline exceeds the fractional ratio increase. For two comparison endpoints 0 and 1, this is t",
+      "end": "\ud835\udefe\ud835\udefc, HII \u2212\ud835\udefe\ud835\udefc, non \u2212HII)\ud835\udc61] \u22121 , \ud835\udc51\ud835\udc64 \ud835\udc51\ud835\udc61 = (\ud835\udefe\ud835\udefc, HII \u2212\ud835\udefe\ud835\udefc, non \u2212HII)\ud835\udc64(1 \u2212\ud835\udc64). (39) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 13 / 34"
+    },
+    {
+      "page": 14,
+      "characters": 3272,
+      "start": "For an OB-only DIG interpretation, equation (38) must still satisfy equation (28). Over the modeled interval, compute \ud835\udc53HII = \u2112\ud835\udefc HII/\u2112\ud835\udefc young, max and \ud835\udc53leak = \u2112\ud835\udefc non \u2212HII/\u2112\ud835\udefc young, max, require a sum no larger than one, a",
+      "end": "\u0394\ud835\udc45\ud835\udc58 obs = (\u203e\ud835\udc45\ud835\udc58 non \u2212HII \u2212\u203e\ud835\udc45\ud835\udc58 HII)\u0394\ud835\udc64+ (1 \u2212\u203e\ud835\udc64)\u0394\ud835\udc45\ud835\udc58 HII + \u203e\ud835\udc64\u0394\ud835\udc45\ud835\udc58 non \u2212HII. (41) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 14 / 34"
+    },
+    {
+      "page": 15,
+      "characters": 3388,
+      "start": "A useful test is to construct an H II-dominated comparison using information as independent of the tested BPT ratio as feasible: compact H\u03b1 morphology with PSF-aware segmentation, high H\u03b1 surface brightness, high EW(H\u03b1),",
+      "end": " \u2212HII \u2212\ud835\udc79HII ), 0 \u2264\ud835\udc64\u22641. (43) \u0302 \ud835\udc64\ud835\udc58= \ud835\udc45\ud835\udc58 obs \u2212\ud835\udc45\ud835\udc58 HII \ud835\udc45\ud835\udc58 non \u2212HII \u2212\ud835\udc45\ud835\udc58 HII. (44) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 15 / 34"
+    },
+    {
+      "page": 16,
+      "characters": 2647,
+      "start": "For a covariance-weighted joint estimate, let \ud835\udc85= \ud835\udc79non \u2212HII \u2212\ud835\udc79HII and let \ud835\udc6a be the covariance matrix of measured linear ratios. Minimize Differentiating the quadratic with respect to \ud835\udc64 gives For fixed spectra and a positi",
+      "end": "\ud835\udc85\ud835\udc47\ud835\udc6a\u22121 (\ud835\udc79obs \u2212\ud835\udc79HII \u2212\ud835\udc64\ud835\udc85), \u0302 \ud835\udc64unconstrained = \ud835\udc85\ud835\udc47\ud835\udc6a\u22121(\ud835\udc79obs \u2212\ud835\udc79HII) \ud835\udc85\ud835\udc47\ud835\udc6a\u22121\ud835\udc85 . (46) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 16 / 34"
+    },
+    {
+      "page": 17,
+      "characters": 1893,
+      "start": "Quantity Value Origin or role \ud835\udf0fdep 2 Gyr Constant normal-disc illustration \u03a3H2, 0 163.820 1000\ud835\udf0fdep\u03a3SFR, 0; inferred under assumed law, not CO \u03a3HI, 0 10 Illustrative column, not a MAUVE H I measurement \ud835\udc45, \ud835\udf06 0.4, 0 Effecti",
+      "end": " depletion is real but modest here At one Gyr, the H I-only solution gives MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 17 / 34"
+    },
+    {
+      "page": 18,
+      "characters": 2743,
+      "start": "The almost exhausted atomic reservoir does not imply an almost exhausted molecular reservoir. Most of the retained molecular gas survives on its 3.33-Gyr net-consumption timescale 1/\ud835\udefeH2. This reproduces the direction of ",
+      "end": "0.113515. (47) \ud835\udc45NII obs = 0.258, \ud835\udc45SII obs = 0.225, \ud835\udc45OIII obs = 0.590. (48) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 18 / 34"
+    },
+    {
+      "page": 19,
+      "characters": 2130,
+      "start": "These ratios remain constant at all modeled times. Their initial scales are close to the pre-peak SF bin, partly because the templates were guided by the observed range. The unchanged ratios are the actual null predictio",
+      "end": "7 Gyr\u22121, \ud835\udefe\ud835\udefc, non \u2212HII = \u2212 1 \ud835\udc47ln\u2061[ \ud835\udc641\u2112\ud835\udefc, 1 \ud835\udc640\u2112\ud835\udefc, 0 ] = 0.347676 Gyr\u22121. (50) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 19 / 34"
+    },
+    {
+      "page": 20,
+      "characters": 2510,
+      "start": "Figure 2. Fixed partition and conditional differential fading. Left: the H I-only gas solution makes total, compact, and diffuse H\u03b1 decline together; the curves coincide when normalized by their own initial luminosity. R",
+      "end": "of Table 3 rather than further adjustable fits. Their endpoint values are: MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 20 / 34"
+    },
+    {
+      "page": 21,
+      "characters": 1998,
+      "start": "Table 4. Conditional interpolation compared with NSF means. Residual is \ud835\udc45pred/\ud835\udc45data \u22121. It is not an error- normalized significance. Stage Ratio Data Predicted Residual Pre-peak N2 0.373060 0.373060 0% by construction Po",
+      "end": "merator and denominator luminosities, as well as ratios, must be compared. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 21 / 34"
+    },
+    {
+      "page": 22,
+      "characters": 3004,
+      "start": "8.6 Direct single-ratio inversions across all six means Table 5. Equation (44) applied separately to Table 1 with Table 3 spectra. O3 entries are H\u03b2 weights; under the imposed equal decrements they should equal the H\u03b1 we",
+      "end": "on criteria. The model does not identify \ud835\udc64 with an NSF occupancy fraction. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 22 / 34"
+    },
+    {
+      "page": 23,
+      "characters": 3484,
+      "start": "9.2 What is not yet a self-contained quantitative explanation Two links remain open. First, the assumed normal-disc depletion time gives a weak one-Gyr SFR decline after direct H2 stripping is removed. Second, the reserv",
+      "end": "HI \ud835\udc51\ud835\udc61+ \ud835\udefeHI(\ud835\udc61)\u03a3HI = \u03a3acc, HI(\ud835\udc61), \ud835\udc51\u03a3H2 \ud835\udc51\ud835\udc61+ \ud835\udefeH2(\ud835\udc61)\u03a3H2 = \u03a3HI(\ud835\udc61) \ud835\udf0fconv(\ud835\udc61). (51) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 23 / 34"
+    },
+    {
+      "page": 24,
+      "characters": 2304,
+      "start": "Define the reservoir survival factor between arrival time \ud835\udc62 and observation time \ud835\udc61, with \ud835\udc61\u2265\ud835\udc62, by The factor is dimensionless; \ud835\udc62 and \ud835\udc63 are time-integration variables. To see the integrating-factor solution explicitly, mul",
+      "end": "\u03a3H2, 0 \u2212\u03a3H2, \u221e)\ud835\udc52\u2212\ud835\udefeH2\ud835\udc61 + \u03a3HI, 0 \u2212\u03a3HI, \u221e \ud835\udf0fconv \ud835\udc52\u2212\ud835\udefeHI\ud835\udc61\u2212\ud835\udc52\u2212\ud835\udefeH2\ud835\udc61 \ud835\udefeH2 \u2212\ud835\udefeHI . (57) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 24 / 34"
+    },
+    {
+      "page": 25,
+      "characters": 2578,
+      "start": "For a system initially maintained without stripping, choose \u03a3acc, HI = \u03a3HI, 0/\ud835\udf0fconv and the molecular balance in equation (16). If this external supply continues unchanged after switching on atomic stripping, equations (",
+      "end": "59) \ud835\udc45\ud835\udc58 \ud835\udc57(\ud835\udc61) = \u211b\ud835\udc58 \ud835\udc57[\ud835\udc4d(\ud835\udc61), \ud835\udc48\ud835\udc57(\ud835\udc61), \ud835\udc5b\ud835\udc52, \ud835\udc57(\ud835\udc61), \ud835\udc47\ud835\udc52, \ud835\udc57(\ud835\udc61), SED\ud835\udc57(\ud835\udc61), N/O(\ud835\udc61)]. (60) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 25 / 34"
+    },
+    {
+      "page": 26,
+      "characters": 2919,
+      "start": "For example, define the dimensionless ionization parameter \ud835\udc48\ud835\udc57= \u03a6H, \ud835\udc57/(\ud835\udc5bH, \ud835\udc57\ud835\udc50), where \u03a6H, \ud835\udc57 is incident ionizing photon flux, \ud835\udc5bH, \ud835\udc57 is hydrogen density, and \ud835\udc50 is the speed of light. If geometry, density, and spectral shap",
+      "end": " \u2212HII \u2212\ud835\udc45\ud835\udc58 HII)\ud835\udc51\ud835\udc64 \ud835\udc51\ud835\udc61 |. (62) \u2112\u2113 meas = \u2211 \ud835\udc57 \u2112\u2113 \ud835\udc57, intrinsic10\u22120.4\ud835\udc34\u2113 \ud835\udc57 . (63) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 26 / 34"
+    },
+    {
+      "page": 27,
+      "characters": 2766,
+      "start": "B.3 Retained gas is not automatically a persistent emitter If the source disappears, recombining gas changes its ionization state. The characteristic hydrogen recombination time under specified density and temperature is",
+      "end": " ) , \ud835\udc7a= (\ud835\udc94HII, \ud835\udc94non \u2212HII). (65) \ud835\udc9amodel = \ud835\udc7a\u2112\ud835\udefc, \u2112\ud835\udefc HII, \u2112\ud835\udefc non \u2212HII \u22650. (66) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 27 / 34"
+    },
+    {
+      "page": 28,
+      "characters": 2695,
+      "start": "C.2 Derive the unconstrained amplitudes and assess residuals Let \ud835\udc6a\ud835\udc3f be the five-line measurement covariance matrix. The residual quadratic is Set its gradient with respect to the two amplitudes to zero: The last line ass",
+      "end": "\ud835\udc47\ud835\udc6a\ud835\udc3f \u22121(\ud835\udc9a\u2212\ud835\udc7a\u2112\ud835\udefc) = \ud835\udfce, \ud835\udc7a\ud835\udc47\ud835\udc6a\ud835\udc3f \u22121\ud835\udc7a\u2112\ud835\udefc = \ud835\udc7a\ud835\udc47\ud835\udc6a\ud835\udc3f \u22121\ud835\udc9a, \u0302\u2112\ud835\udefc = (\ud835\udc7a\ud835\udc47\ud835\udc6a\ud835\udc3f \u22121\ud835\udc7a)\u22121\ud835\udc7a\ud835\udc47\ud835\udc6a\ud835\udc3f \u22121\ud835\udc9a. (68) MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 28 / 34"
+    },
+    {
+      "page": 29,
+      "characters": 2308,
+      "start": "Symbol Definition and units Subscripts 0, 1, \u221e Initial state, comparison endpoint, and asymptotic state where defined. Endpoint 1 in line interpolation is a population mean, not the same patch observed again. \u03a3SFR True f",
+      "end": "ionizing production per projected area; photons s \u22121 kpc\u22122, equation (25). MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 29 / 34"
+    },
+    {
+      "page": 30,
+      "characters": 2229,
+      "start": "Symbol Definition and units \ud835\udc44abs \ud835\udc57 Photons absorbed by hydrogen per second in component volume \ud835\udc57, before division by projected area in equation (26). \ud835\udc5b\ud835\udc52, \ud835\udc5b\ud835\udc5d, \ud835\udc5bH Electron, proton, and total hydrogen number densities; cm\u22123",
+      "end": "-absorption kernel per receiving area; constrained by photon conservation. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 30 / 34"
+    },
+    {
+      "page": 31,
+      "characters": 2276,
+      "start": "Table D3. Ratios, weights, and possible spectral evolution. Symbol Definition and units \ud835\udc45\ud835\udc58 \ud835\udc57, \ud835\udc45\ud835\udc58 obs Dimensionless linear component and mixture ratios; \ud835\udc58 denotes N2=[N II]6583/H\u03b1, S2=[S II] sum/H\u03b1, or O3=[O III]5007/H\u03b2. ",
+      "end": "nd matrix inverse; \ud835\udc47 here does not denote the interpolation time interval. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 31 / 34"
+    },
+    {
+      "page": 32,
+      "characters": 2304,
+      "start": "Symbol Definition and role SF, NSF, ND; DIG Observational classes versus a diffuse ionized gas component. NSF occupancy is not \ud835\udc64. RPS, OB, IMF, PSF, AGN, BPT Ram-pressure stripping; O- and B-type stars; initial mass func",
+      "end": "and numerical evaluations; not a claimed pre-existing unique RPS solution. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 32 / 34"
+    },
+    {
+      "page": 33,
+      "characters": 2694,
+      "start": "E.2 Local inputs and reproducibility The source table is assets/20260914_resolved_RPS_academic_model/stage_bpt_line_profiles_with_hbeta.csv. The matched-profile attenuation summary is assets/20260914_resolved_RPS_academi",
+      "end": "ICRAR/MAUVE/assets/20260930_HI_stripping_line_mixing/model_pr edictions.py MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 33 / 34"
+    },
+    {
+      "page": 34,
+      "characters": 2900,
+      "start": "PDF verification uses offline Pandoc MathML conversion, rendered-equation/DOM checks, PDF text and link audits, and visual inspection of all page contact sheets plus selected equation and figure pages. The saved verifica",
+      "end": "s metallicity measurements. MNRAS, 466, 3217\u20133243. DOI; author manuscript. MAUVE-MUSE / H I stripping and H II-DIG mixing 30 September 2026 Derivation and numerical example 34 / 34"
+    }
+  ]
+}

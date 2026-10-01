@@ -527,6 +527,13 @@ MANUAL_MASK_FIXES = {
             "radius_arcsec": 5.520653,
         },
     ],
+    "NGC4689": [
+        {
+            "action": "scale_gaia_star_radius",
+            "source_id": "3929107378839736832",
+            "factor": 1.5,
+        },
+    ],
     "NGC4694": [
         {
             "action": "scale_gaia_star_radius",
