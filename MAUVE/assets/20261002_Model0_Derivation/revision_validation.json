@@ -1,0 +1,13 @@
+{
+  "equal_rate_kernel_max_abs": [
+    4.3867132148989185e-12,
+    1.5543122344752192e-15
+  ],
+  "numbered_equations": 77,
+  "reference_anchors": 13,
+  "md_sha256": "26e656f9475a584b452c8975349680ca5a3179bc23313bccf38519c8a8d33b17",
+  "old_md_sha256": "52f2a1a0673e966d06922bf4537c66c128e84cfc91faf9566882374b098f70db",
+  "old_pdf_sha256": "1af447a2db69b1241b38ab6d4c4b03ca13653675c8b8d62886ae3ed4b366bd4c",
+  "structural_checks": "passed",
+  "classification": "checks of stated equations; no new data fit"
+}

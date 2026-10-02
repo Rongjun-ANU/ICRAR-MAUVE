@@ -1,0 +1,226 @@
+{
+  "pdf": "/Users/Igniz/Desktop/ICRAR/MAUVE/20261002_Model0_Gas_Fading_and_HOLMES_Derivation.pdf",
+  "sha256": "9c7056fcc394a38e5313ef836c70e7c0b1b7c9dd5d7c341bd6434df74d825ac8",
+  "pages": 35,
+  "outline_entries": 41,
+  "link_counts": {
+    "internal": 65,
+    "external": 25
+  },
+  "invalid_links": [],
+  "out_of_page_words": [],
+  "replacement_character_pages": [],
+  "short_pages_under_250_chars": [],
+  "page_text_summaries": [
+    {
+      "page": 1,
+      "characters": 2418,
+      "start": "From HI stripping to fading young-star emission and HOLMES line ratios Model 0: explicit derivation, spatial enhancement, and numerical limits Research report prepared for Rongjun Huang 2 October 2026 1. Physical picture",
+      "end": "edger Appendix H. Provenance, revision coverage, and verification References MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 1 / 35"
+    },
+    {
+      "page": 2,
+      "characters": 3708,
+      "start": "1. Physical picture and scope We consider a local region in which ram-pressure stripping removes atomic gas but does not directly remove molecular gas. The loss of HI reduces the subsequent molecular supply. The retained",
+      "end": "in \ud835\udc40\u2299pc\u22122, times in Gyr, and observed SFR surface densities in \ud835\udc40\u2299yr\u22121 kpc\u22122. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 2 / 35"
+    },
+    {
+      "page": 3,
+      "characters": 2756,
+      "start": "Following the resolved regulator notation in Huang et al. (2026), section 4, we define Here \ud835\udf0fdep is the molecular depletion time defined relative to the total rate of star formation. The gas supply-rate surface density \u03a3",
+      "end": " \ud835\udf06)\u03a3SFR(\ud835\udc61). (3) \ud835\udc51 \ud835\udc51\ud835\udc61(\u03a3HI(\ud835\udc61) + \u03a3H2(\ud835\udc61)) = \u2212\ud835\udefestrip\u03a3HI(\ud835\udc61) \u2212(1 \u2212\ud835\udc45+ \ud835\udf06)\u03a3SFR(\ud835\udc61). (4) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 3 / 35"
+    },
+    {
+      "page": 4,
+      "characters": 1793,
+      "start": "Thus conversion does not destroy gas. The total cold reservoir declines through stripping and net stellar/feedback consumption. We define two physically labelled response rates, The first is the total fractional removal ",
+      "end": "= \u03a3HI, 0 \ud835\udf0fconv \ud835\udc52\u2212\ud835\udefeHI\ud835\udc61. (8) \ud835\udc51\u03a3H2(\ud835\udc61) \ud835\udc51\ud835\udc61 + \ud835\udefeH2\u03a3H2(\ud835\udc61) = \u03a3HI, 0 \ud835\udf0fconv \ud835\udc52\u2212\ud835\udefeHI\ud835\udc61. (9) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 4 / 35"
+    },
+    {
+      "page": 5,
+      "characters": 1542,
+      "start": "Multiplication by \ud835\udc52\ud835\udefeH2\ud835\udc61 makes the left-hand side a product derivative. To see this explicitly, Integrating the product derivative from 0 to \ud835\udc61 gives For \ud835\udefeHI \u2260\ud835\udefeH2, the integral is Now add the initial column, multiply by \ud835\udc52\u2212",
+      "end": "SFR(\ud835\udc61) = \u03a3H2, 0 \ud835\udf0fdep \ud835\udc52\u2212\ud835\udefeH2\ud835\udc61 + \u03a3HI, 0 \ud835\udf0fconv\ud835\udf0fdep \ud835\udc52\u2212\ud835\udefeHI\ud835\udc61\u2212\ud835\udc52\u2212\ud835\udefeH2\ud835\udc61 \ud835\udefeH2 \u2212\ud835\udefeHI . (14) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 5 / 35"
+    },
+    {
+      "page": 6,
+      "characters": 1415,
+      "start": "3.3 What determines whether the SFR initially rises or falls? Define the initial replenishment time \ud835\udf0f\u03a6, 0 = \u03a3H2, 0/\u03a3\u03a6, 0 and the dimensionless remaining-SFR fraction \ud835\udc39SFR(\ud835\udc61) = \u03a3SFR(\ud835\udc61)/\u03a3SFR, 0. Equation (14) becomes More ",
+      "end": "\ud835\udefeH2 (\ud835\udc52\u2212\ud835\udefeHI\ud835\udc61\u2212\ud835\udc52\u2212\ud835\udefeH2\ud835\udc61) < 0 (\ud835\udc61> 0). (19) \ud835\udc39SFR(\ud835\udc61) = 1 \u2212 \ud835\udefeHI\ud835\udefeH2 2 \ud835\udc612 + \ud835\udc42(\ud835\udc613). (20) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 6 / 35"
+    },
+    {
+      "page": 7,
+      "characters": 1927,
+      "start": "At late times the slower exponential usually dominates. In the common regime \ud835\udefeHI > \ud835\udefeH2, the molecular response approaches an exponential with timescale 1/\ud835\udefeH2 = \ud835\udf0fdep/(1 \u2212\ud835\udc45+ \ud835\udf06). It is therefore exponential-like, but genera",
+      "end": "= \u2212\ud835\udefeHI\u03a3\u03a6(\ud835\udc61) \u2212\ud835\udefeH2 \ud835\udc51\u03a3H2(\ud835\udc61) \ud835\udc51\ud835\udc61 , \ud835\udc512\u03a3H2(\ud835\udc61) \ud835\udc51\ud835\udc612 | \ud835\udc61peak = \u2212\ud835\udefeHI\u03a3\u03a6(\ud835\udc61peak) < 0. (25) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 7 / 35"
+    },
+    {
+      "page": 8,
+      "characters": 3278,
+      "start": "3.5 A spatial SFR excess is not a positive temporal derivative The observable motivated by the NGC4654 gradient discussion is a spatial excess relative to another region or a reference relation. We define that comparison",
+      "end": "eading \u03a3SFR, 0 reference = \ud835\udc50H2, \ud835\udf0f\u03a6, 0 leading = \ud835\udc50H2 \ud835\udc50HI\ud835\udf0f\u03a6, 0 reference. (27) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 8 / 35"
+    },
+    {
+      "page": 9,
+      "characters": 3008,
+      "start": "The conversion from SFR to an ionizing population normally averages the recent star formation history over the lifetimes of massive stars (Kennicutt & Evans 2012). For gas evolution much slower than that stellar response",
+      "end": "ES = \ud835\udf16\ud835\udefc\ud835\udc53abs, HOLMES\ud835\udc5eH, HOLMES\u03a3* old, \ud835\udf16\ud835\udefc \u2261\u210eP\ud835\udf08\ud835\udefc\ud835\udc5d\ud835\udefc, \ud835\udc5d\ud835\udefc\u2261 \ud835\udefc\ud835\udefceff \ud835\udefc\ud835\udc35\u2243 1 2.206. (30) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 9 / 35"
+    },
+    {
+      "page": 10,
+      "characters": 2631,
+      "start": "conversion is explicitly given in Cid Fernandes et al. (2011), equation 2. Appendix F derives the same relation by eliminating the volume emission measure. That paper\u2019s population normalization uses formed mass, whereas ",
+      "end": "LMES(\ud835\udc61) \u2261 \u2112\ud835\udefc HOLMES \u2112\ud835\udefc young(\ud835\udc61) + \u2112\ud835\udefcHOLMES, \ud835\udc64young(\ud835\udc61) = 1 \u2212\ud835\udc64HOLMES(\ud835\udc61). (31) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 10 / 35"
+    },
+    {
+      "page": 11,
+      "characters": 2325,
+      "start": "For fixed positive HOLMES luminosity, the quotient rule gives The second line uses constant \ud835\udc53young and \ud835\udc36\ud835\udefc; the third uses equation (17). This connects the gas balance directly to the changing source weight. Molecular con",
+      "end": "LMES(\ud835\udc61)\ud835\udc45\u2113/\ud835\udc35 HOLMES = \ud835\udc45\u2113/\ud835\udc35 young + (\ud835\udc45\u2113/\ud835\udc35 HOLMES \u2212\ud835\udc45\u2113/\ud835\udc35 young)\ud835\udc64HOLMES(\ud835\udc61). (35) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 11 / 35"
+    },
+    {
+      "page": 12,
+      "characters": 2980,
+      "start": "When young emission fades, the sign of the ratio change is the sign of the spectral contrast. Harder ionization alone does not require every ratio to increase; temperature, ionic fractions, metallicity, N/O, and ionizati",
+      "end": "ung + (\ud835\udc45\u2113/\ud835\udc35 HOLMES \u2212\ud835\udc45\u2113/\ud835\udc35 young) \ud835\udf16\ud835\udefc\ud835\udc53abs, HOLMES\ud835\udc5eH, HOLMES\u03a3* old \u2112\ud835\udefc(\ud835\udc61) . (37) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 12 / 35"
+    },
+    {
+      "page": 13,
+      "characters": 2538,
+      "start": "Table 1. NSF observational anchors. Surface luminosities are in erg s\u22121 kpc\u22122. These cross-sectional galaxy samples are not a temporal sequence of identical patches. Stage Galaxies on common support \u2112\ud835\udefc \u2112\ud835\udefd N2 S2 O3 Pre-pe",
+      "end": " (1.3721 \u00d7 10\u221212)(7 \u00d7 1040)(4.217 \u00d7 108) = 4.050 \u00d7 1037 erg s\u22121 kpc\u22122. (38) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 13 / 35"
+    },
+    {
+      "page": 14,
+      "characters": 2178,
+      "start": "This is a luminosity-scaled numerical example, not a measurement of local SFR or molecular mass in NSF. Nonlocal leaked photons would invalidate that local interpretation. A future gas fit should use independently measur",
+      "end": "volves the accumulated gas but does not calculate the accumulation process. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 14 / 35"
+    },
+    {
+      "page": 15,
+      "characters": 1897,
+      "start": "Figure 1. Model 0 at fixed conversion and depletion times. Left: SFR in units of the uncompressed initial reference; the orange curve begins with both gas columns multiplied by 1.5 and subsequently declines. Right: norma",
+      "end": "n approximation. \ud835\udc39SFR = \ud835\udc64HOLMES, 0[1 \u2212\ud835\udc64target] \ud835\udc64target[1 \u2212\ud835\udc64HOLMES, 0]. (39) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 15 / 35"
+    },
+    {
+      "page": 16,
+      "characters": 1879,
+      "start": "Figure 2. Effective young-star plus HOLMES fading at the bright NSF scale and a hypothetical faint scale. Left: increasing HOLMES Halpha weight. Middle: increasing N2 as total Halpha decreases. Right: [N II] still declin",
+      "end": "oints. \ud835\udc45\u2113/\ud835\udc35 young = \ud835\udc45\u2113/\ud835\udc35, 0 obs \u2212\ud835\udc64HOLMES, 0\ud835\udc45\u2113/\ud835\udc35 HOLMES 1 \u2212\ud835\udc64HOLMES, 0 . (40) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 16 / 35"
+    },
+    {
+      "page": 17,
+      "characters": 2037,
+      "start": "Figure 3. Conditional fixed-HOLMES predictions compared with the exported NSF mean ratios. The initial young ratio is calibrated to the pre- peak point. Post-peak Halpha luminosities are supplied from the data. The diffe",
+      "end": "ed = \ud835\udc45\u2113/\ud835\udc35, 1 \u2212\ud835\udc45\u2113/\ud835\udc35, 0 (\ud835\udc45\u2113/\ud835\udc35 HOLMES \u2212\ud835\udc45\u2113/\ud835\udc35 young)(\u2112\ud835\udefc, 1 \u22121 \u2212\u2112\ud835\udefc, 0 \u22121 ) . (44) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 17 / 35"
+    },
+    {
+      "page": 18,
+      "characters": 2292,
+      "start": "For N2HOLMES = 1.5, the required Halpha luminosity is 2.57 \u00d7 1038, about 6.34 times the fiducial local budget. For S2HOLMES = 1.0, it is 9.97 \u00d7 1037, about 2.46 times that budget. These two required amplitudes also disag",
+      "end": "(46) \ud835\udefeH2 \u2265\u2212ln\u2061\ud835\udc39required 1 Gyr \u21d2 \ud835\udf0fdep \u2264(1 \u2212\ud835\udc45+ \ud835\udf06)(1 Gyr) \u2212ln\u2061\ud835\udc39required . (47) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 18 / 35"
+    },
+    {
+      "page": 19,
+      "characters": 3249,
+      "start": "Line Post-peak / pre-peak luminosity Halpha 0.3122 Hbeta 0.3128 [N II]6583 0.4739 [S II] doublet 0.3449 [O III]5007 0.2623 [N II] fades more slowly than Halpha, [S II] only slightly more slowly, and [O III] faster than H",
+      "end": "against \u2112\ud835\udefc/\u03a3* old within matched stellar-density/radius support; and assess MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 19 / 35"
+    },
+    {
+      "page": 20,
+      "characters": 509,
+      "start": "leakage from nearby HII regions. Galaxy-level uncertainty and spatial support must accompany any comparison among stages. A successful spectral extension should predict N2, S2, O3 and Balmer emission with one consistent ",
+      "end": " it does not claim a fit to MAUVE occupancy fractions or the full data set. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 20 / 35"
+    },
+    {
+      "page": 21,
+      "characters": 2261,
+      "start": "Appendix A. The finite Halpha response and its short-timescale limit Halpha traces the ionizing photons supplied by short-lived massive stars, not an infinitely instantaneous SFR. A stellar population produces an age-dep",
+      "end": ", \ud835\udefc(\ud835\udc61) \u03a3SFR, 0 = \u2131\ud835\udefc(\ud835\udc61; \ud835\udefeH2) + \u2131\ud835\udefc(\ud835\udc61; \ud835\udefeHI) \u2212\u2131\ud835\udefc(\ud835\udc61; \ud835\udefeH2) \ud835\udf0f\u03a6, 0(\ud835\udefeH2 \u2212\ud835\udefeHI) . (51) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 21 / 35"
+    },
+    {
+      "page": 22,
+      "characters": 2079,
+      "start": "The boundary term comes from the upper limit; differentiating the exponential gives the second term. Normalization ensures that constant SFR is preserved. The exponential kernel is not a 10-Myr top-hat: for \ud835\udf0fion = 3 Myr ",
+      "end": " \ud835\udf0fion + \ud835\udc612 2\ud835\udf0fion\ud835\udf0f\u03a6, 0 ]. (55) \u00af\u03a3SFR, \ud835\udefc(\ud835\udc61) \u2243\u03a3SFR(\ud835\udc61) \u2212\ud835\udf0fion \ud835\udc51\u03a3SFR(\ud835\udc61) \ud835\udc51\ud835\udc61 . (56) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 22 / 35"
+    },
+    {
+      "page": 23,
+      "characters": 2620,
+      "start": "The product-rule steps are identical to equations (10)\u2013(11), but the exponent contains an integral of the rate. This quadrature solution remains exact for specified time-dependent coefficients, provided the system stays ",
+      "end": " post \u22121). (59) \u03a3H2(\ud835\udc61) \u2264\u03a3H2, 0 + \u03a3HI, 0 \u21d2 \ud835\udc39SFR(\ud835\udc61) \u22641 + \u03a3HI, 0 \u03a3H2, 0 . (60) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 23 / 35"
+    },
+    {
+      "page": 24,
+      "characters": 2809,
+      "start": "For the illustrative columns this bound is 1.2853, or 0.1090 dex. It limits conversion of the existing local gas, not compression supplied by mass convergence, and not models with changing efficiency. It must not be used",
+      "end": "\ud835\udc35\u2261 \u2112\ud835\udc35 HII \u2112\ud835\udc35 HII + \u2112\ud835\udc35 leak, \ud835\udc45\u2113/\ud835\udc35 young \u2261\ud835\udf02\ud835\udc35\ud835\udc45\u2113/\ud835\udc35 HII + (1 \u2212\ud835\udf02\ud835\udc35)\ud835\udc45\u2113/\ud835\udc35 leak. (63) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 24 / 35"
+    },
+    {
+      "page": 25,
+      "characters": 2579,
+      "start": "Appendix D. Unequal Balmer decrements and the actual Hbeta audit Let \u212c\ud835\udc57= \u2112\ud835\udefc \ud835\udc57/\u2112\ud835\udefd \ud835\udc57 be the component Balmer decrement. From \u2112\ud835\udefd \ud835\udc57= \u2112\ud835\udefc \ud835\udc57/\u212c\ud835\udc57, Only equal decrements make \ud835\udc64\ud835\udc57, \ud835\udefd= \ud835\udc64\ud835\udc57, \ud835\udefc. We use intrinsic/de-reddened luminosities",
+      "end": " \u2212\ud835\udf35\u22c5(\u03a3HI\ud835\udc97HI) \u2212\u03a3\u03a6 \u2212\ud835\udefestrip\u03a3HI, \ud835\udf15\u03a3H2 \ud835\udf15\ud835\udc61= \u2212\ud835\udf35\u22c5(\u03a3H2\ud835\udc97H2) + \u03a3\u03a6 \u2212(1 \u2212\ud835\udc45+ \ud835\udf06)\u03a3SFR. (66) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 25 / 35"
+    },
+    {
+      "page": 26,
+      "characters": 3095,
+      "start": "Every field in this display depends on (\ud835\udc99, \ud835\udc61); only here the arguments are suppressed to keep the spatial conservation equations readable. Any vertical removal represented by \ud835\udefestrip is already included in that sink and m",
+      "end": ") \ud835\udc51\ud835\udc34\u2032. (67) \ud835\udc45\u2113/\ud835\udc35= \u211b\u2113/\ud835\udc35(SEDOB + SEDHOLMES, \ud835\udc48, \ud835\udc4d, N/O, \ud835\udc5bH, \u2026), \ud835\udc48\u2261\u03a6H \ud835\udc5bH\ud835\udc50. (68) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 26 / 35"
+    },
+    {
+      "page": 27,
+      "characters": 2521,
+      "start": "Here \ud835\udc5b\ud835\udc52 and \ud835\udc5b\ud835\udc5d are electron and proton densities, \ud835\udefc\ud835\udc35 is the recombination coefficient excluding direct recombinations to the ground state, and \ud835\udc49reg is the emitting volume. The area and volume must be converted to a consi",
+      "end": ". (71) \u2112\u2113(\ud835\udc61) = \ud835\udc45\u2113/\ud835\udc35 young\u2112\ud835\udc35, 0 young\ud835\udc39SFR(\ud835\udc61) + \ud835\udc45\u2113/\ud835\udc35 HOLMES\u2112\ud835\udc35, 0 HOLMES. (72) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 27 / 35"
+    },
+    {
+      "page": 28,
+      "characters": 1915,
+      "start": "For the higher-ratio HOLMES branch, the last slope lies between \u22121 and 0. This supplies a directly testable ratio\u2013surface-brightness relation at fixed old stellar density and fixed templates. It also clarifies what diffe",
+      "end": "\ud835\udc35 \ud835\udc51\ud835\udc45\u2113/\ud835\udc35 HII \ud835\udc51\ud835\udc61 + (1 \u2212\ud835\udf02\ud835\udc35) \ud835\udc51\ud835\udc45\u2113/\ud835\udc35 leak \ud835\udc51\ud835\udc61 + (\ud835\udc45\u2113/\ud835\udc35 HII \u2212\ud835\udc45\u2113/\ud835\udc35 leak) \ud835\udc51\ud835\udf02\ud835\udc35 \ud835\udc51\ud835\udc61. (77) MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 28 / 35"
+    },
+    {
+      "page": 29,
+      "characters": 479,
+      "start": "These equations separate three effects: changing old-versus-young luminosity weights, changing intrinsic spectra, and changing compact-versus-diffuse allocation of young photons. The fixed-spectrum baseline is useful bec",
+      "end": "onal physical terms might matter, but do not determine them from one ratio. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 29 / 35"
+    },
+    {
+      "page": 30,
+      "characters": 1597,
+      "start": "Appendix G. Complete notation and parameter ledger Table G1. Gas and temporal quantities. Initial values carry subscript 0; pre/post on conversion times refer to the imposed change at model onset, not directly to observe",
+      "end": "cumulated rate \u222b0 \ud835\udc61\ud835\udefe\ud835\udc56(\ud835\udc62)\ud835\udc51\ud835\udc62, used only in the evolving-coefficient appendix. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 30 / 35"
+    },
+    {
+      "page": 31,
+      "characters": 1629,
+      "start": "Table G2. Ionizing populations and line emission. A calligraphic luminosity is per adopted area; ordinary \ud835\udc3f is an integrated luminosity. Symbol Definition and units \ud835\udc3e\ud835\udefc(\ud835\udc4e), \ud835\udf0fion Normalized young-ionizing response kernel, ",
+      "end": "eta, the relevant Balmer denominator, and a chosen forbidden emission line. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 31 / 35"
+    },
+    {
+      "page": 32,
+      "characters": 2115,
+      "start": "Table G3. Recombination and spectral quantities. Symbol Definition and units \u210eP, \ud835\udc50, \ud835\udf08\ud835\udefc, \ud835\udf06\ud835\udefc Planck\u2019s constant; speed of light; Halpha frequency; Halpha wavelength, 6562.8 Angstrom in the calculation. \ud835\udefc\ud835\udc35, \ud835\udefc\ud835\udefceff Total Case-",
+      "end": "l prediction, and an algebraic value required under the stated assumptions. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 32 / 35"
+    },
+    {
+      "page": 33,
+      "characters": 2327,
+      "start": "Table G5. Additional quantities made explicit in this revision. Symbol Definition and units \ud835\udc50HI, \ud835\udc50H2 Initial gas-column factors relative to a reference, dimensionless; the spatial example uses 1.5 for each. \u0394spatiallog\u20611",
+      "end": "ests Sections 8.5\u20138.8 and 9 Keep extensions separate Appendices B, E, and F MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 33 / 35"
+    },
+    {
+      "page": 34,
+      "characters": 2899,
+      "start": "Literature provenance is explicit at the point of use. The regulator bookkeeping and \u03a3\u03a6 notation follow Lilly et al. and Huang et al.; the linear atomic transfer law and the closed two-reservoir solution are assumptions ",
+      "end": "/Desktop/ICRAR/MAUVE/assets/20261002_Model0_Derivation/model_predictions.py MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 34 / 35"
+    },
+    {
+      "page": 35,
+      "characters": 2708,
+      "start": "References Belfiore, F., et al. (2022). A tale of two DIGs: The relative role of H II regions and low-mass hot evolved stars in powering the diffuse ionised gas in PHANGS-MUSE galaxies. A&A, 659, A26. DOI; primary full t",
+      "end": "; the phase-specific sources and sinks are added explicitly in this report. MAUVE-MUSE / H I stripping and HOLMES ionization 2 October 2026 Derivation and numerical example 35 / 35"
+    }
+  ]
+}
