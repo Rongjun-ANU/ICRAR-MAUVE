@@ -1,0 +1,43 @@
+{
+  "scope_check": "PASS: only section 3.5 plus subsequent equation numbers/references",
+  "assets_unchanged": true,
+  "equation_count": 90,
+  "ode_cases": [
+    {
+      "gamma_HI": 4.05,
+      "gamma_H2": 0.3,
+      "tau_conv": 2.0,
+      "factors": [
+        0.5,
+        1.0,
+        1.5
+      ]
+    },
+    {
+      "gamma_HI": 0.2,
+      "gamma_H2": 0.8,
+      "tau_conv": 10.0,
+      "factors": [
+        0.5,
+        1.0,
+        1.5
+      ]
+    },
+    {
+      "gamma_HI": 0.5,
+      "gamma_H2": 0.5,
+      "tau_conv": 4.0,
+      "factors": [
+        0.5,
+        1.0,
+        1.5
+      ]
+    }
+  ],
+  "maximum_ODE_error_in_initial_H2_units": 2.5504043321689096e-12,
+  "maximum_integral_error_in_initial_H2_units": 8.881784197001253e-17,
+  "equal_initial_SFR_and_strict_later_ordering": true,
+  "balanced_initial_slope_and_peak_checks": true,
+  "spatial_excess_with_temporal_decline_check": true,
+  "limitations": "Formula checks only; no new observation extraction, fit, or full science pipeline run."
+}

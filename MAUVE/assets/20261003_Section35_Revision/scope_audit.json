@@ -1,0 +1,407 @@
+{
+  "report": "/Users/Igniz/Desktop/ICRAR/MAUVE/20261002_Model0_Gas_Fading_and_HOLMES_Derivation.md",
+  "before_md_sha256": "9afd0e7153c358496bef890a4500c33608dedcdc32969ff4a46e8d155f57a870",
+  "after_md_sha256": "f48e3cdc7ada4ec35a4b5a8cd594576bd29058efbc882b50a59b341debcd8261",
+  "prefix_unchanged": true,
+  "suffix_unchanged_except_equation_numbering": true,
+  "new_section_equations": [
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40
+  ],
+  "final_equation_count": 90,
+  "renumbering_delta": 13,
+  "changes": [
+    {
+      "type": "tag",
+      "before": "\\tag{28}",
+      "after": "\\tag{41}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{29}",
+      "after": "\\tag{42}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{30}",
+      "after": "\\tag{43}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{31}",
+      "after": "\\tag{44}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{32}",
+      "after": "\\tag{45}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{33}",
+      "after": "\\tag{46}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{34}",
+      "after": "\\tag{47}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{35}",
+      "after": "\\tag{48}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{36}",
+      "after": "\\tag{49}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{37}",
+      "after": "\\tag{50}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{38}",
+      "after": "\\tag{51}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{39}",
+      "after": "\\tag{52}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{40}",
+      "after": "\\tag{53}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{41}",
+      "after": "\\tag{54}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{42}",
+      "after": "\\tag{55}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{43}",
+      "after": "\\tag{56}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{44}",
+      "after": "\\tag{57}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{45}",
+      "after": "\\tag{58}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{46}",
+      "after": "\\tag{59}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{47}",
+      "after": "\\tag{60}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{48}",
+      "after": "\\tag{61}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{49}",
+      "after": "\\tag{62}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{50}",
+      "after": "\\tag{63}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{51}",
+      "after": "\\tag{64}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{52}",
+      "after": "\\tag{65}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{53}",
+      "after": "\\tag{66}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{54}",
+      "after": "\\tag{67}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{55}",
+      "after": "\\tag{68}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{56}",
+      "after": "\\tag{69}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{57}",
+      "after": "\\tag{70}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{58}",
+      "after": "\\tag{71}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{59}",
+      "after": "\\tag{72}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{60}",
+      "after": "\\tag{73}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{61}",
+      "after": "\\tag{74}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{62}",
+      "after": "\\tag{75}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{63}",
+      "after": "\\tag{76}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{64}",
+      "after": "\\tag{77}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{65}",
+      "after": "\\tag{78}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{66}",
+      "after": "\\tag{79}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{67}",
+      "after": "\\tag{80}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{68}",
+      "after": "\\tag{81}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{69}",
+      "after": "\\tag{82}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{70}",
+      "after": "\\tag{83}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{71}",
+      "after": "\\tag{84}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{72}",
+      "after": "\\tag{85}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{73}",
+      "after": "\\tag{86}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{74}",
+      "after": "\\tag{87}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{75}",
+      "after": "\\tag{88}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{76}",
+      "after": "\\tag{89}"
+    },
+    {
+      "type": "tag",
+      "before": "\\tag{77}",
+      "after": "\\tag{90}"
+    },
+    {
+      "type": "reference",
+      "before": "equation (28)",
+      "after": "equation (41)"
+    },
+    {
+      "type": "reference",
+      "before": "Equation (28)",
+      "after": "Equation (41)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (28)",
+      "after": "equation (41)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (35)",
+      "after": "equation (48)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (34)",
+      "after": "equation (47)"
+    },
+    {
+      "type": "reference",
+      "before": "Equation (30)",
+      "after": "Equation (43)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (32)",
+      "after": "equation (45)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (35)",
+      "after": "equation (48)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (35)",
+      "after": "equation (48)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (48)",
+      "after": "equation (61)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (49)",
+      "after": "equation (62)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (48)",
+      "after": "equation (61)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (53)",
+      "after": "equation (66)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (61)",
+      "after": "equation (74)"
+    },
+    {
+      "type": "reference",
+      "before": "Equations (69) and (70)",
+      "after": "Equations (82) and (83)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (30)",
+      "after": "equation (43)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (30)",
+      "after": "equation (43)"
+    },
+    {
+      "type": "reference",
+      "before": "Equation (69)",
+      "after": "Equation (82)"
+    },
+    {
+      "type": "reference",
+      "before": "equation (72)",
+      "after": "equation (85)"
+    },
+    {
+      "type": "reference",
+      "before": "equations (76)--(77)",
+      "after": "equations (89)--(90)"
+    }
+  ],
+  "unchanged_asset_hashes": {
+    "validate_revision.py": "1e2fcdb8059c63c1670e1a5e3789c34bdbbc07f60ad86211d68b5044b21a086a",
+    "young_HOLMES_fading.csv": "a4d3cdc806b3632fd6c6cb456863a77fdec849737131deed04c8bbc6a1ff732d",
+    "equation_label_map.json": "f3fa721a850b30806cc541eb7b43e6920b9faa2b42dbb04dfc0e418ed30f2724",
+    "revision_validation.json": "61f83fe487e42d48c2648ff416bda4952b0c459ebe1feca6dc5ee3750c42d2c6",
+    "equation_numbers.lua": "461ee1a94f3bd93e9ca9df960be9f65a4a24c44b22276f3a955556674a48092c",
+    "render_report.cjs": "ffb89effdb1f86a1eff32588aefc8aa5fe53ccea720c7f0e133f7534f70bdbdc",
+    "line_budget_constraints.csv": "52e90914651c9ef4dd53ac516e46aaef105047a97ba998e1d9dffadb3a7d0122",
+    "mauve_anchor_table.csv": "06a9632da446e0b6da64808f2e6a2cf9f7e2bd4a8d51687cb1a8ebd837a76ed2",
+    "figure02_fading_and_ratio.png": "e426a6fcd70306b9eda52bcb151b61d272f607c0a3ac01a777f7fd307bdc5520",
+    "line_budget_actual_denominator.csv": "4908bfdd801aa77f7fc4a33ad1f244e74c38fb0c39913f2f239edb16d935ae90",
+    "dom_audit.json": "38950e4afa92d184430d251f2785acf97ad755a549c76da1b031a34ae1c78039",
+    "numerical_audit.json": "91599489d8a18cece1b95f0be30064b58d206f2af5e65d4970823b48906976ea",
+    "assemble_pdf.py": "d397c4cc4430404fa59a321fafe61b63acbaea1c0ec92470fd7fb055ae34138d",
+    "qa_report.py": "4ad5cc2312dac7cb56f98e75eae995a799f0513e2958406aebeefa8de84cc0c5",
+    "build_report.py": "7aeab35ecb6dee33f51ec0017cab9a009d45f426699271530ff05c9404326bce",
+    "figure02_fading_and_ratio.pdf": "67e8bd51f11397150b753447b1af9014add281b61fefcb4517643655fee9a8dc",
+    "model_predictions.py": "4c235c0589932469bc435ed63486fa5a6ac1c84deab513b7a4be235a63cb44d7",
+    "gas_and_connected_Halpha.csv": "1a49ab5c2658427e30d1e8ee20f06b671c6b2f4adfd1d7a303533771b227c473",
+    "figure03_MAUVE_budget_test.png": "3aa2b83b1623ce018d2e4057ae8385a9286f1a9faa4baf3562a842d6b1a29c0e",
+    "figure01_SFR_response.png": "fa83142edcbd7be138c7ccd760c3f7c4970e79ea342874ad35e6fac21220c51c",
+    "figure01_SFR_response.pdf": "9deb3ebc8acc5522368e95cc35d669e64018d93d7ed5f3130ca938180b483ad1",
+    "figure03_MAUVE_budget_test.pdf": "c811e3f305c14d76460fba5cc60c46c486722b7ee0d01270ed2cc04b68e47438",
+    "report.css": "1fbd910794e7071053139e5fa374f26629376910e0da855b46169c92787526d0",
+    "verification_summary.md": "29cb47f7e75ffe99648d062329ca8d532265cf3812ff8e83650b4b50b86dcaa1",
+    "report.html": "494fa90cdfafbc2bf5a703b18c6ac9aec8015b2ac9003a32ccc4852c245c2aae",
+    "spatial_excess_at_fixed_efficiency.csv": "05c3d13e1dcd6b6d0e23776ab4b2c5a20b2a4a7ae1ca08c811bd1ddecebd0435",
+    "source_fingerprints.json": "00c77b6608ba01c9aa7455bd85c23eea34ff0c13aed4544cff5341963acde907"
+  }
+}

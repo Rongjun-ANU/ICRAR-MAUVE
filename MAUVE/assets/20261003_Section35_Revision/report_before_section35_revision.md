@@ -372,82 +372,38 @@ Every stationary point has negative curvature. Therefore a solution starting wit
 
 
 
-## 3.5 Atomic-gas asymmetry and the leading/trailing SFR contrast
+## 3.5 A spatial SFR excess is not a positive temporal derivative
 
-We now compare positions $x$ with different initial atomic columns, but the same initial molecular column $\Sigma_{\mathrm{H_2},0}$ and the same $\tau_{\mathrm{conv}}$, $\tau_{\mathrm{dep}}$, $R$, $\lambda$, and $\gamma_{\mathrm{strip}}$. Here $x$ denotes a spatial position, written without boldface for this local comparison. The rates in equation (5) are therefore common to all positions. We define $c_{\mathrm{HI}}(x)\equiv\Sigma_{\mathrm{HI}}(x,0)/\Sigma_{\mathrm{HI},0}>0$, where $\Sigma_{\mathrm{HI},0}$ is the reference initial atomic column and $c_{\mathrm{HI}}(x_{\mathrm{reference}})=1$.
-
-This factor represents an atomic excess or deficit established before model onset. Applying the perturbation only to HI is motivated by the greater susceptibility of diffuse gas than dense molecular clouds to ram pressure ([Boselli et al. 2014](#ref-boselli); [Lee et al. 2017](#ref-lee); [Cramer et al. 2020](#ref-cramer)). It is an initial-condition approximation; the physical qualifications are discussed in Appendix I. Equation (8) and the unchanged supply law immediately give
+The observable motivated by the NGC4654 gradient discussion is a spatial excess relative to another region or a reference relation. We define that comparison explicitly:
 
 $$
-\begin{aligned}
-\Sigma_{\mathrm{HI}}(x,t)
-&=c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}e^{-\gamma_{\mathrm{HI}}t},\\
-\Sigma_\Phi(x,t)
-&=\frac{c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}}{\tau_{\mathrm{conv}}}
-e^{-\gamma_{\mathrm{HI}}t}.
-\end{aligned}
+\Delta_{\mathrm{spatial}}\log_{10}\Sigma_{\mathrm{SFR}}(t)
+\equiv\log_{10}\frac{\Sigma_{\mathrm{SFR}}^{\mathrm{leading}}(t)}
+{\Sigma_{\mathrm{SFR}}^{\mathrm{reference}}(t)}.
 \tag{26}
 $$
 
-The molecular equation remains $d\Sigma_{\mathrm{H_2}}(x,t)/dt=\Sigma_\Phi(x,t)-\gamma_{\mathrm{H_2}}\Sigma_{\mathrm{H_2}}(x,t)$. Relative to section 3.2, only the supply amplitude is multiplied by the constant $c_{\mathrm{HI}}(x)$. The integrating-factor solution in equation (13) therefore becomes
+A positive value does not determine the sign of $d\Sigma_{\mathrm{SFR}}^{\mathrm{leading}}/dt$. A region can already be declining and still lie above its reference. Moreover, a facing-to-opposite contrast can arise from suppression on the opposite side. The potential NGC4654 signal is motivation, not a fitted constraint or a freshly established detection in this report.
+
+Our working interpretation is that compression and/or gas transport can first establish elevated local columns. Model 0 begins after that unresolved phase and predicts the subsequent evolution. For a short idealized accumulation episode, let $c_{\mathrm{HI}}$ and $c_{\mathrm{H_2}}$ be the ratios of the post-episode initial columns to reference initial columns. They are dimensionless initial-condition factors, not changes in conversion efficiency:
 
 $$
 \begin{aligned}
-\Sigma_{\mathrm{H_2}}(x,t)
-&=\Sigma_{\mathrm{H_2},0}e^{-\gamma_{\mathrm{H_2}}t}\\
-&\quad+\frac{c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}}{\tau_{\mathrm{conv}}}
-\frac{e^{-\gamma_{\mathrm{HI}}t}-e^{-\gamma_{\mathrm{H_2}}t}}
-{\gamma_{\mathrm{H_2}}-\gamma_{\mathrm{HI}}}.
+\Sigma_{\mathrm{HI},0}^{\mathrm{leading}}&=c_{\mathrm{HI}}\Sigma_{\mathrm{HI},0}^{\mathrm{reference}},\\
+\Sigma_{\mathrm{H_2},0}^{\mathrm{leading}}&=c_{\mathrm{H_2}}\Sigma_{\mathrm{H_2},0}^{\mathrm{reference}},\\
+\frac{\Sigma_{\mathrm{SFR},0}^{\mathrm{leading}}}{\Sigma_{\mathrm{SFR},0}^{\mathrm{reference}}}
+&=c_{\mathrm{H_2}},\qquad
+\tau_{\Phi,0}^{\mathrm{leading}}
+=\frac{c_{\mathrm{H_2}}}{c_{\mathrm{HI}}}\tau_{\Phi,0}^{\mathrm{reference}}.
 \end{aligned}
 \tag{27}
 $$
 
-Only the supplied term is multiplied by $c_{\mathrm{HI}}(x)$; the initial molecular term is common. Dividing by the common depletion time gives
+The last two relations assume identical $\tau_{\mathrm{dep}}$ and $\tau_{\mathrm{conv}}$ in the comparison. Thus $c_{\mathrm{H_2}}>1$ produces an elevated initial SFR. If both phases increase by the same factor, the replenishment time and the initial fractional SFR slope are unchanged. If the reference was initially balanced, continuing temporal growth requires $c_{\mathrm{HI}}>c_{\mathrm{H_2}}$; an elevated SFR level does not. Adding these columns to a fixed patch requires transport or a change in its physical area; the initial-condition prescription does not create mass within the closed evolution equations.
 
-$$
-\begin{aligned}
-\Sigma_{\mathrm{SFR}}(x,t)
-&=\frac{\Sigma_{\mathrm{H_2},0}}{\tau_{\mathrm{dep}}}e^{-\gamma_{\mathrm{H_2}}t}\\
-&\quad+\frac{c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}}
-{\tau_{\mathrm{conv}}\tau_{\mathrm{dep}}}
-\frac{e^{-\gamma_{\mathrm{HI}}t}-e^{-\gamma_{\mathrm{H_2}}t}}
-{\gamma_{\mathrm{H_2}}-\gamma_{\mathrm{HI}}}.
-\end{aligned}
-\tag{28}
-$$
+This separation is consistent with the early-stage interpretation in [Brown et al. (2023), section 3.3 and Figure 5](#ref-brown): enhanced outer-disc SFR is associated with greater molecular gas surface density at fixed stellar density, while molecular SFE is consistent with the field. Their early-RPS subset contains four galaxies, and their later-stage results also show lower SFE. These observations motivate a fixed-efficiency baseline; they do not establish constant efficiency for every MAUVE region. Nor do they determine the compression history or prove that $\tau_{\mathrm{conv}}$ decreases. Turbulence and compression can affect several processes, so we impose neither sign of its environmental response here.
 
-These expressions use consistent physical units, with the numerical conversion in equation (6). For equal response rates, replace the exponential quotient by $t e^{-\gamma_{\mathrm{H_2}}t}$, as in equation (15).
-
-Let $\Sigma_{\mathrm{H_2}}^{\mathrm{reference}}(t)$ be equation (27) evaluated at $c_{\mathrm{HI}}=1$. Subtracting the solutions at any two positions $x_1$ and $x_2$ cancels the common initial term:
-
-$$
-\begin{aligned}
-&\Sigma_{\mathrm{H_2}}(x_1,t)-\Sigma_{\mathrm{H_2}}(x_2,t)\\
-&\quad=[c_{\mathrm{HI}}(x_1)-c_{\mathrm{HI}}(x_2)]
-\left[\Sigma_{\mathrm{H_2}}^{\mathrm{reference}}(t)
--\Sigma_{\mathrm{H_2},0}e^{-\gamma_{\mathrm{H_2}}t}\right].
-\end{aligned}
-\tag{29}
-$$
-
-The second bracket is the surviving molecular gas supplied after $t=0$. It is strictly positive for every finite $t>0$, since the numerator and denominator of the exponential quotient have the same sign; its equal-rate limit is also positive. It is not the full reference molecular column: that would incorrectly predict a nonzero difference at $t=0$. Consequently, the molecular difference, and the SFR difference obtained by dividing by $\tau_{\mathrm{dep}}>0$, have the sign of $c_{\mathrm{HI}}(x_1)-c_{\mathrm{HI}}(x_2)$.
-
-If the proposed geometry establishes $c_{\mathrm{HI}}(x_{\mathrm{leading}})>1>c_{\mathrm{HI}}(x_{\mathrm{trailing}})>0$, then
-
-$$
-\boxed{
-\begin{aligned}
-\Sigma_{\mathrm{H_2}}^{\mathrm{leading}}(t)
-&>\Sigma_{\mathrm{H_2}}^{\mathrm{reference}}(t)
->\Sigma_{\mathrm{H_2}}^{\mathrm{trailing}}(t),\\
-\Sigma_{\mathrm{SFR}}^{\mathrm{leading}}(t)
-&>\Sigma_{\mathrm{SFR}}^{\mathrm{reference}}(t)
->\Sigma_{\mathrm{SFR}}^{\mathrm{trailing}}(t),\qquad t>0.
-\end{aligned}}
-\tag{30}
-$$
-
-The superscripts denote evaluation at the corresponding position. All three SFRs are equal at $t=0$; their differences develop through the atomic supply. The reference has the same stripping coefficient as the other positions. This is a spatial ordering, not a statement that the leading SFR is increasing with time or that every RPS geometry has the assumed atomic pattern. Appendix I develops those qualifications; section 8.3 evaluates this atomic-only family numerically.
+The omitted transport contribution has the sign $-\boldsymbol{\nabla}\cdot(\Sigma_i\boldsymbol v_i)$ on the right-hand side of the continuity equation. A negative mass-flux divergence contributes positively to the local gas column. Appendix E writes the complete balances. The main model does not solve for a velocity field or the accumulation episode.
 
 # 4. From instantaneous SFR to young-star Halpha emission
 
@@ -459,14 +415,14 @@ $$
 \boxed{\mathcal L_\alpha^{\mathrm{young}}(t)
 \simeq\frac{f_{\mathrm{young}}}{C_\alpha}\Sigma_{\mathrm{SFR}}(t)
 =\mathcal L_{\alpha,0}^{\mathrm{young}}F_{\mathrm{SFR}}(t).}
-\tag{31}
+\tag{28}
 $$
 
 Here $f_{\mathrm{young}}$ is the constant fraction of the young ionizing photon budget absorbed by hydrogen in the modeled region, with $0<f_{\mathrm{young}}\leq1$ in this local approximation. $C_\alpha$ is the fully absorbed Halpha-to-SFR calibration, not its inverse. We use the existing MAUVE value $C_\alpha=4.9835821\times10^{-42}\ M_\odot\,\mathrm{yr^{-1}}/(\mathrm{erg\,s^{-1}})$; division converts $M_\odot\,\mathrm{yr^{-1}\,kpc^{-2}}$ to $\mathrm{erg\,s^{-1}\,kpc^{-2}}$. The numerical benchmark sets $f_{\mathrm{young}}=1$. The calibration depends on the stellar population and IMF and is not universal.
 
-Appendix A derives the normalized response kernel and its exact exponential solution. For the illustrative 3-Myr response and the reference gas history, the normalized one-Gyr response is 0.79937, compared with instantaneous $F_{\mathrm{SFR}}=0.79867$: a relative correction of 0.0881%. This supports equation (31) for the smooth Model 0 history. It does not justify an instantaneous Halpha jump at a sudden SFR discontinuity. If the initial gas accumulation was recent on a few-Myr timescale, the actual prehistory must enter the response calculation.
+Appendix A derives the normalized response kernel and its exact exponential solution. For the illustrative 3-Myr response and the present gas coefficients, the normalized one-Gyr response is 0.79937, compared with instantaneous $F_{\mathrm{SFR}}=0.79867$: a relative correction of 0.0881%. This supports equation (28) for the smooth Model 0 history. It does not justify an instantaneous Halpha jump at a sudden SFR discontinuity. If the initial gas accumulation was recent on a few-Myr timescale, the actual prehistory must enter the response calculation.
 
-There is also a spatial condition: young emission in an NSF patch may be powered by photons from neighbouring star-forming regions. In that case a local Halpha luminosity need not trace the local SFR. Equation (31) is then a coarse-grained or local-absorption approximation. This limitation is especially relevant to the illustrative gas normalization in section 8; Appendix E gives the nonlocal form.
+There is also a spatial condition: young emission in an NSF patch may be powered by photons from neighbouring star-forming regions. In that case a local Halpha luminosity need not trace the local SFR. Equation (28) is then a coarse-grained or local-absorption approximation. This limitation is especially relevant to the illustrative gas normalization in section 8; Appendix E gives the nonlocal form.
 
 # 5. A compact, physically normalized HOLMES contribution
 
@@ -477,7 +433,7 @@ $$
 \mathcal Q_{\mathrm{HOLMES}}&=q_{\mathrm{H,HOLMES}}\Sigma_*^{\mathrm{old}},\\
 \mathcal Q_{\mathrm{abs,HOLMES}}&=f_{\mathrm{abs,HOLMES}}\mathcal Q_{\mathrm{HOLMES}}.
 \end{aligned}
-\tag{32}
+\tag{29}
 $$
 
 The units are $(\mathrm{s^{-1}}M_\odot^{-1})(M_\odot\,\mathrm{kpc^{-2}})=\mathrm{s^{-1}\,kpc^{-2}}$. In ionization equilibrium, one absorbed ionizing photon balances a Case-B recombination. The probability that such a recombination produces Halpha is $p_\alpha=\alpha_\alpha^{\mathrm{eff}}/\alpha_B$. Each emitted Halpha photon carries energy $h_{\mathrm P}\nu_\alpha$. Therefore
@@ -491,7 +447,7 @@ q_{\mathrm{H,HOLMES}}\Sigma_*^{\mathrm{old}}},\\
 \epsilon_\alpha&\equiv h_{\mathrm P}\nu_\alpha p_\alpha,\qquad
 p_\alpha\equiv\frac{\alpha_\alpha^{\mathrm{eff}}}{\alpha_B}\simeq\frac{1}{2.206}.
 \end{aligned}
-\tag{33}
+\tag{30}
 $$
 
 $\alpha_B$ excludes recombinations directly to the hydrogen ground state; $\alpha_\alpha^{\mathrm{eff}}$ counts recombinations yielding Halpha. Both have units $\mathrm{cm^3\,s^{-1}}$, so $p_\alpha$ is dimensionless. With $\lambda_\alpha=6562.8$ Angstrom, $\epsilon_\alpha=1.3721\times10^{-12}$ erg per absorbed photon. The recombination framework comes from [Hummer & Storey (1987)](#ref-hs); the adopted numerical conversion is explicitly given in [Cid Fernandes et al. (2011), equation 2](#ref-cid). Appendix F derives the same relation by eliminating the volume emission measure. That paper's population normalization uses formed mass, whereas our $q$ and $\Sigma_*^{\mathrm{old}}$ consistently use current mass.
@@ -523,16 +479,16 @@ w_{\mathrm{HOLMES}}(t)&\equiv
 {\mathcal L_\alpha^{\mathrm{young}}(t)+\mathcal L_\alpha^{\mathrm{HOLMES}}},\qquad
 w_{\mathrm{young}}(t)=1-w_{\mathrm{HOLMES}}(t).
 \end{aligned}
-\tag{34}
+\tag{31}
 $$
 
-These are light fractions, not fractions of area or gas mass. Write $w_{\mathrm{HOLMES},0}=w_{\mathrm{HOLMES}}(0)$. Dividing numerator and denominator by the initial total Halpha luminosity and using equation (31) gives
+These are light fractions, not fractions of area or gas mass. Write $w_{\mathrm{HOLMES},0}=w_{\mathrm{HOLMES}}(0)$. Dividing numerator and denominator by the initial total Halpha luminosity and using equation (28) gives
 
 $$
 \boxed{w_{\mathrm{HOLMES}}(t)=
 \frac{w_{\mathrm{HOLMES},0}}
 {w_{\mathrm{HOLMES},0}+(1-w_{\mathrm{HOLMES},0})F_{\mathrm{SFR}}(t)}.}
-\tag{35}
+\tag{32}
 $$
 
 For fixed positive HOLMES luminosity, the quotient rule gives
@@ -547,7 +503,7 @@ $$
 &=w_{\mathrm{HOLMES}}(t)[1-w_{\mathrm{HOLMES}}(t)]
 \left[\gamma_{\mathrm{H_2}}-\frac{1}{\tau_\Phi(t)}\right].
 \end{aligned}
-\tag{36}
+\tag{33}
 $$
 
 The second line uses constant $f_{\mathrm{young}}$ and $C_\alpha$; the third uses equation (17). This connects the gas balance directly to the changing source weight. Molecular consumption exceeding replenishment makes SFR decline and the HOLMES fraction rise. An initially over-supplied region has the opposite response until its SFR maximum. Proportional fading of two young components alone would leave their mutual weight unchanged; the independently supplied HOLMES term is what changes this conclusion.
@@ -562,7 +518,7 @@ $$
 \frac{\mathcal L_\beta^{\mathrm{HOLMES}}}{\mathcal L_\beta}
 =\frac{\mathcal L_\alpha^{\mathrm{HOLMES}}/2.86}{\mathcal L_\alpha/2.86}
 =w_{\mathrm{HOLMES}}.
-\tag{37}
+\tag{34}
 $$
 
 The common intrinsic decrement is an approximation consistent with the Case-B convention used for the observational dust correction ([Hummer & Storey 1987](#ref-hs)). It is not an assertion that every exported corrected Halpha/Hbeta measurement is exactly 2.86; Appendix D preserves the actual Hbeta values and quantifies the small numerical difference.
@@ -580,18 +536,18 @@ R_{\ell/B}(t)
 &=\boxed{R_{\ell/B}^{\mathrm{young}}+
 (R_{\ell/B}^{\mathrm{HOLMES}}-R_{\ell/B}^{\mathrm{young}})w_{\mathrm{HOLMES}}(t)}.
 \end{aligned}
-\tag{38}
+\tag{35}
 $$
 
 This luminosity-weighted identity has an HII/DIG antecedent in [Blanc et al. (2009), equations 7--8](#ref-blanc). Their numerical [S II] template is for a single line and is not imported for our doublet sum. Ratios mix linearly; logarithmic BPT coordinates are taken only after addition.
 
-For constant component spectra, differentiate equation (38):
+For constant component spectra, differentiate equation (35):
 
 $$
 \frac{dR_{\ell/B}(t)}{dt}
 =(R_{\ell/B}^{\mathrm{HOLMES}}-R_{\ell/B}^{\mathrm{young}})
 \frac{dw_{\mathrm{HOLMES}}(t)}{dt}.
-\tag{39}
+\tag{36}
 $$
 
 When young emission fades, the sign of the ratio change is the sign of the spectral contrast. Harder ionization alone does not require every ratio to increase; temperature, ionic fractions, metallicity, N/O, and ionization parameter also matter ([Byler et al. 2019](#ref-byler)). N2, S2, and O3 must be tested separately. Both Balmer and forbidden-line luminosities can decline while their ratio rises because the Balmer line fades faster; Appendix F gives the explicit luminosity algebra.
@@ -609,10 +565,10 @@ R_{\ell/B}(t)
 \frac{\epsilon_\alpha f_{\mathrm{abs,HOLMES}}q_{\mathrm{H,HOLMES}}\Sigma_*^{\mathrm{old}}}
 {\mathcal L_\alpha(t)}.
 \end{aligned}}
-\tag{40}
+\tag{37}
 $$
 
-Here $F_{\mathrm{SFR}}(t)$ is explicitly given by equation (16), or by its equal-rate limit from equation (15). The second line applies to Hbeta ratios as well because of equation (37). All luminosity factors and rate coefficients are defined; no arbitrary residual luminosity function is introduced. In the restricted model, Halpha is the observable connection between declining molecular supply and evolving line-ratio weights.
+Here $F_{\mathrm{SFR}}(t)$ is explicitly given by equation (16), or by its equal-rate limit from equation (15). The second line applies to Hbeta ratios as well because of equation (34). All luminosity factors and rate coefficients are defined; no arbitrary residual luminosity function is introduced. In the restricted model, Halpha is the observable connection between declining molecular supply and evolving line-ratio weights.
 
 Only after deriving that relation should we identify its observational scope. SF and NSF are selections, not ionizing sources. SF in the source analysis requires a finite HII-selected SFR product, Halpha EW greater than 6 Angstrom, and intrinsic Halpha dispersion below $45\ \mathrm{km\,s^{-1}}$. ND is the joint Balmer non-detection category; NSF is the remaining Balmer-detected category outside SF. Neither component is switched off merely because a region is called SF or NSF. NSF is not synonymous with DIG, LIER, or HOLMES domination, and NSF occupancy is not $w_{\mathrm{HOLMES}}$.
 
@@ -639,7 +595,7 @@ Pre-peak Virgo galaxies can serve as an operational, relatively less-processed r
 
 ## 8.2 Normalize the HOLMES term before selecting line ratios
 
-Take the bin center as a representative $\Sigma_*=10^{8.625}=4.217\times10^8\ M_\odot\,\mathrm{kpc}^{-2}$. For a deliberately generous **local benchmark**, assume all this mass is old, its mass convention matches current stars plus remnants, and all available HOLMES photons ionize the retained hydrogen. Equation (33) gives
+Take the bin center as a representative $\Sigma_*=10^{8.625}=4.217\times10^8\ M_\odot\,\mathrm{kpc}^{-2}$. For a deliberately generous **local benchmark**, assume all this mass is old, its mass convention matches current stars plus remnants, and all available HOLMES photons ionize the retained hydrogen. Equation (30) gives
 
 $$
 \begin{aligned}
@@ -647,7 +603,7 @@ $$
 &=(1.3721\times10^{-12})(7\times10^{40})(4.217\times10^8)\\
 &=4.050\times10^{37}\ \mathrm{erg\,s^{-1}\,kpc^{-2}}.
 \end{aligned}
-\tag{41}
+\tag{38}
 $$
 
 The corresponding pre-peak and post-peak NSF Halpha weights are 0.01138 and 0.03647. With the FSPS comparison normalization they would be smaller by $5/7$. A younger mass fraction or incomplete absorption also reduces them. The bin-center approximation, population uncertainty, mass-convention compatibility, and nonlocal photon transport prevent treating this as an absolute universal ceiling. It is the maximum **within the specified local fiducial population model**.
@@ -656,7 +612,7 @@ This numerical result is essential: a spatially broad HOLMES component may be re
 
 
 
-## 8.3 The gas response and atomic-only spatial asymmetry
+## 8.3 The gas response and an elevated initial spatial state
 
 For comparability with the previous report, subtract the fiducial HOLMES luminosity from the pre-peak NSF Halpha scale and apply $C_\alpha$ with $f_{\mathrm{young}}=1$. The resulting effective young SFR is $0.01753\ M_\odot\,\mathrm{yr^{-1}\,kpc^{-2}}$. With $\tau_{\mathrm{dep}}=2$ Gyr, equation (6) assigns $\Sigma_{\mathrm{H_2},0}=35.055\ M_\odot\,\mathrm{pc^{-2}}$.
 
@@ -676,35 +632,22 @@ This is a **luminosity-scaled numerical example**, not a measurement of local SF
 
 Equation (19) yields $F_{\mathrm{SFR}}(1\ \mathrm{Gyr})=0.79867$, or a 0.0976-dex decline. The initial slope is zero and subsequent slopes are negative. The HI reservoir declines rapidly, but H2 buffers the SFR. The closed comparison with $\gamma_{\mathrm{strip}}=0$, all other quantities unchanged, gives 0.89706. Relative to that declining comparison the extra suppression is 0.0505 dex. The comparison is closed and has no fresh external supply; it is not a permanently maintained field equilibrium.
 
-We now evaluate the atomic-only spatial model in section 3.5. Choose $c_{\mathrm{HI}}=1.5$, 1, and 0.5 for the leading, reference, and trailing positions, respectively. Their initial atomic columns are therefore 15, 10, and $5\ M_\odot\,\mathrm{pc^{-2}}$, while all three retain the same initial H2 column, SFR, and coefficients in Table 2. In particular, all three have $\gamma_{\mathrm{strip}}=3\ \mathrm{Gyr^{-1}}$. The matched spatial reference is therefore different from the no-stripping comparison in the preceding paragraph.
+Now raise both initial gas columns by 1.5 without changing $\tau_{\mathrm{conv}}$, $\tau_{\mathrm{dep}}$, or the stripping coefficient. Linearity makes the entire stripped SFR curve 1.5 times the baseline stripped curve. Its initial SFR is 0.1761 dex above the uncompressed initial reference, but it has the same zero initial fractional slope and subsequent decline. At one Gyr its SFR is $1.5\times0.79867=1.1980$ in units of the original reference SFR, and it remains 0.1256 dex above the contemporaneous closed no-RPS reference, 0.89706.
 
-Define the local remaining-SFR fraction as $F_{\mathrm{SFR}}(x,t)\equiv\Sigma_{\mathrm{SFR}}(x,t)/\Sigma_{\mathrm{SFR},0}$ and the contemporaneous spatial offset as $\Delta_{\mathrm{spatial}}\log_{10}\Sigma_{\mathrm{SFR}}(x,t)\equiv\log_{10}[\Sigma_{\mathrm{SFR}}(x,t)/\Sigma_{\mathrm{SFR}}^{\mathrm{reference}}(t)]$. Equation (28) gives the following predictions.
+This example makes the distinction explicit: an elevated spatial SFR and a negative temporal derivative coexist. The factor 1.5 is a chosen initial-condition illustration, not a fitted compression amplitude for NGC4654. The model evolves the accumulated gas but does not calculate the accumulation process.
 
-**Table 2b. Atomic-only spatial predictions.** The time of the maximum is measured in Gyr; $t_{\mathrm{peak}}=0$ denotes a maximum at the initial boundary, not a later peak. All SFR fractions use the common initial SFR; offsets are in dex relative to the contemporaneous stripped reference.
+![Figure 1. Model 0 at fixed conversion and depletion times. Left: SFR in units of the uncompressed initial reference; the orange curve begins with both gas columns multiplied by 1.5 and subsequently declines. Right: normalized atomic columns for the stripped and closed no-stripping cases. The orange atomic fraction coincides with the blue stripped fraction and is omitted. The elevated orange SFR is a spatial-level example, not a burst generated by switching on the HI sink.](assets/20261002_Model0_Derivation/figure01_SFR_response.png)
 
-| Position | $c_{\mathrm{HI}}$ | $t_{\mathrm{peak}}$ | Maximum $F_{\mathrm{SFR}}$ | $F_{\mathrm{SFR}}(1\ \mathrm{Gyr})$ | Spatial offset at 1 Gyr |
-|:--|--:|--:|--:|--:|--:|
-| Leading | 1.5 | 0.09839 | 1.00686 | 0.82759 | +0.01545 |
-| Reference | 1.0 | 0 | 1.00000 | 0.79867 | 0 |
-| Trailing | 0.5 | 0 | 1.00000 | 0.76974 | -0.01602 |
-
-At onset, all three have $F_{\mathrm{SFR}}=1$. Their initial fractional SFR slopes are $+0.15$, 0, and $-0.15\ \mathrm{Gyr^{-1}}$, respectively, as derived in Appendix I. The leading SFR rises by only 0.686% before its maximum at about 98 Myr, then declines. Its initial 50% atomic excess does not imply a 50% SFR excess: the identical pre-existing H2 reservoir dominates the early SFR, and only the subsequently supplied molecular term differs.
-
-At one Gyr the leading and trailing SFRs are $0.01451$ and $0.01349\ M_\odot\,\mathrm{yr^{-1}\,kpc^{-2}}$, compared with $0.01400$ for the reference. Their spatial offsets have the predicted signs, yet all three SFRs are below their common initial value and are declining. The leading-to-trailing contrast is 0.03147 dex. For these parameters, the model therefore produces a modest spatial asymmetry and a very small initial temporal increase, not a strong burst.
-
-The chosen atomic factors are not fitted compression amplitudes for NGC4654 or another MAUVE galaxy. The calculation demonstrates the sign and size of the response under the specified conditions; comparison with an observed amplitude requires measured gas columns and matched spatial support. The emission-line tests in sections 8.4--8.8 retain the unchanged $c_{\mathrm{HI}}=1$ reference normalization.
-
-![Figure 1. Atomic-only initial asymmetry at fixed conversion, depletion, and stripping coefficients. All positions start with identical H2 and SFR. Left: SFR histories normalized by the common initial value; the inset resolves the small leading-side increase before decline. Right: logarithmic SFR offsets relative to the contemporaneous reference with the same HI stripping rate. The leading and trailing factors are 1.5 and 0.5. Curves are illustrative predictions, not fits to MAUVE.](assets/20261003_Atomic_Spatial_Response/figure01_atomic_spatial_response.png)
 
 ## 8.4 How much fading is required for the HOLMES fraction to matter?
 
-Solving equation (35) for the remaining young fraction at a target HOLMES weight $w_{\mathrm{target}}$ gives
+Solving equation (32) for the remaining young fraction at a target HOLMES weight $w_{\mathrm{target}}$ gives
 
 $$
 F_{\mathrm{SFR}}
 =\frac{w_{\mathrm{HOLMES},0}[1-w_{\mathrm{target}}]}
 {w_{\mathrm{target}}[1-w_{\mathrm{HOLMES},0}]}.
-\tag{42}
+\tag{39}
 $$
 
 For the bright pre-peak NSF anchor, reaching a 10% HOLMES Halpha weight requires $F_{\mathrm{SFR}}\simeq0.104$, and reaching 50% requires $F_{\mathrm{SFR}}\simeq0.0115$. A large change in the mixture therefore requires substantial fading when the initial old-star contribution is only about 1%.
@@ -717,14 +660,14 @@ Figure 2 uses only the effective young N2 ratio 0.35 and HOLMES N2 ratio 1.5. Th
 
 ## 8.5 Test the amplitude against the NSF anchors
 
-For each diagnostic, choose an illustrative fixed HOLMES ratio, normalize the effective young ratio to the pre-peak NSF mean, and then predict the post-peak ratio using its **observed Halpha luminosity** to calculate the common Model 0 weight and the fixed photon-budget term. The initial normalization follows by rearranging equation (38):
+For each diagnostic, choose an illustrative fixed HOLMES ratio, normalize the effective young ratio to the pre-peak NSF mean, and then predict the post-peak ratio using its **observed Halpha luminosity** to calculate the common Model 0 weight and the fixed photon-budget term. The initial normalization follows by rearranging equation (35):
 
 $$
 R_{\ell/B}^{\mathrm{young}}
 =\frac{R_{\ell/B,0}^{\mathrm{obs}}
 -w_{\mathrm{HOLMES},0}R_{\ell/B}^{\mathrm{HOLMES}}}
 {1-w_{\mathrm{HOLMES},0}}.
-\tag{43}
+\tag{40}
 $$
 
 This is one-point calibration, not an independent prediction of the initial spectrum. The endmember ratios 1.5, 1.0, and 3.0 below are sensitivity choices, not values extracted from Belfiore, a CLOUDY grid, or the MAUVE spectra. We subsequently invert the equations so the conclusion does not rest only on those choices.
@@ -743,11 +686,11 @@ The N2 prediction has the desired sign but insufficient amplitude. The O3 predic
 
 ## 8.6 Invert the required spectrum or photon budget
 
-Using the common weight, write equation (38) as a function of total Halpha luminosity:
+Using the common weight, write equation (35) as a function of total Halpha luminosity:
 
 $$
 R_{\ell/B}=R_{\ell/B}^{\mathrm{young}}+\frac{(R_{\ell/B}^{\mathrm{HOLMES}}-R_{\ell/B}^{\mathrm{young}})\mathcal L_\alpha^{\mathrm{HOLMES}}}{\mathcal L_\alpha}.
-\tag{44}
+\tag{41}
 $$
 
 Evaluate it at two observed points indexed by 0 and 1. Subtracting the ratios removes the effective young ratio:
@@ -762,7 +705,7 @@ R_{\ell/B}^{\mathrm{young}}
 &=\frac{R_{\ell/B,0}\mathcal L_{\alpha,0}-R_{\ell/B,1}\mathcal L_{\alpha,1}}
 {\mathcal L_{\alpha,0}-\mathcal L_{\alpha,1}}.
 \end{aligned}
-\tag{45}
+\tag{42}
 $$
 
 The second line follows by subtracting the ratio-times-Halpha quantities (the actual forbidden luminosity for N2 and S2, and 2.86 times that luminosity for the idealized O3 model), whose constant intercept cancels. Substituting it into either point gives the required HOLMES ratio at a specified old-star Balmer luminosity:
@@ -772,7 +715,7 @@ R_{\ell/B}^{\mathrm{HOLMES,required}}
 =R_{\ell/B}^{\mathrm{young}}
 +\frac{R_{\ell/B,1}-R_{\ell/B,0}}
 {\mathcal L_\alpha^{\mathrm{HOLMES}}(\mathcal L_{\alpha,1}^{-1}-\mathcal L_{\alpha,0}^{-1})}.
-\tag{46}
+\tag{43}
 $$
 
 At the fiducial HOLMES budget, the two NSF endpoints require N2$_{\mathrm{HOLMES}}=7.99$, S2$_{\mathrm{HOLMES}}=1.94$, and O3$_{\mathrm{HOLMES}}=-4.82$. The negative O3 value is unphysical for a positive emitting component. The extreme required N2 value is not an adopted spectrum; it quantifies the burden placed on the simple mixture and should be checked against a self-consistent photoionization grid rather than accepted as a free fitting coefficient.
@@ -784,7 +727,7 @@ $$
 =\frac{R_{\ell/B,1}-R_{\ell/B,0}}
 {(R_{\ell/B}^{\mathrm{HOLMES}}-R_{\ell/B}^{\mathrm{young}})
 (\mathcal L_{\alpha,1}^{-1}-\mathcal L_{\alpha,0}^{-1})}.
-\tag{47}
+\tag{44}
 $$
 
 For N2$_{\mathrm{HOLMES}}=1.5$, the required Halpha luminosity is $2.57\times10^{38}$, about 6.34 times the fiducial local budget. For S2$_{\mathrm{HOLMES}}=1.0$, it is $9.97\times10^{37}$, about 2.46 times that budget. These two required amplitudes also disagree with one another. Enlarging the old-star component arbitrarily is therefore not a self-consistent simultaneous solution.
@@ -800,7 +743,7 @@ F_{\alpha,\mathrm{required}}
 =\frac{\mathcal L_{\alpha,1}-\mathcal L_\alpha^{\mathrm{HOLMES}}}
 {\mathcal L_{\alpha,0}-\mathcal L_\alpha^{\mathrm{HOLMES}}}
 =0.30426.
-\tag{48}
+\tag{45}
 $$
 
 Under the instantaneous Model 0 approximation, define $F_{\mathrm{required}}\equiv F_{\alpha,\mathrm{required}}$ as the target value of $F_{\mathrm{SFR}}(t)$. Because the supplied molecular contribution is nonnegative, equation (21) bounds the instantaneous decline. Taking logarithms at the time when that target is reached gives the minimum time step by step:
@@ -809,7 +752,7 @@ $$
 F_{\mathrm{SFR}}(t)\geq e^{-\gamma_{\mathrm{H_2}}t},\qquad
 \ln F_{\mathrm{required}}\geq-\gamma_{\mathrm{H_2}}t,
 \qquad t\geq\frac{-\ln F_{\mathrm{required}}}{\gamma_{\mathrm{H_2}}}.
-\tag{49}
+\tag{46}
 $$
 
 For $F_{\mathrm{required}}=0.30426$ and $\gamma_{\mathrm{H_2}}=0.3\ \mathrm{Gyr^{-1}}$, the no-supply minimum is 3.966 Gyr. Solving the full balanced **instantaneous** Model 0 gives 4.223 Gyr; retaining the Appendix A stellar response gives 4.226 Gyr. The approximation in section 4 therefore leaves the physical tension unchanged. These long extrapolations are diagnostics of the assumed consumption rate, not inferred infall times, and extend beyond the intended 1--2 Gyr fixed-population interval.
@@ -820,7 +763,7 @@ $$
 \gamma_{\mathrm{H_2}}\geq-\frac{\ln F_{\mathrm{required}}}{1\ \mathrm{Gyr}}
 \quad\Longrightarrow\quad
 \tau_{\mathrm{dep}}\leq\frac{(1-R+\lambda)(1\ \mathrm{Gyr})}{-\ln F_{\mathrm{required}}}.
-\tag{50}
+\tag{47}
 $$
 
 With $R=0.4$ and $\lambda=0$, this is $\tau_{\mathrm{dep}}\lesssim0.504$ Gyr; positive replenishment makes the requirement stricter. This is a conditional bound, not evidence that the observed stage separation is one Gyr or that the actual depletion time has this value.
@@ -844,7 +787,7 @@ Multiplying the exported ratios by their actual denominators gives the following
 
 Model 0 establishes a self-consistent conditional sequence. Atomic stripping reduces the future molecular supply; existing H2 buffers the SFR decline; young-star Halpha subsequently fades; and a retained old-star photon budget can become a larger fraction of the remaining Balmer emission. Fixed positive spectra can then produce a rising forbidden-to-Balmer ratio while both lines fade. No changing HII-to-leakage partition is needed for that mechanism.
 
-The spatial calculation starts with different atomic columns and identical molecular columns. The resulting supply differences generate molecular and SFR differences at fixed efficiency. A leading-side spatial excess can persist while its SFR declines; an initial temporal increase additionally requires supply to exceed consumption. The closed solution does not generate the compression or transport that established the atomic asymmetry. Switching on the HI sink alone does not generate an enhancement from molecular balance.
+The model also separates two statements that should not be conflated. A spatially enhanced molecular column produces an elevated SFR at fixed efficiency. Its subsequent derivative can already be negative. The closed reservoir solution predicts that subsequent evolution but does not generate the compression or transport that supplied the initial column. Switching on the HI sink alone does not generate an enhancement from molecular balance.
 
 Its numerical limitations are substantive. The chosen 2-Gyr depletion time cannot yield the required fading within one Gyr even after replenishment stops. The fiducial local HOLMES budget gives only about 1.14% and 3.65% of the pre/post NSF Halpha means. With the assumed spectra the N2 increase is too small and O3 changes in the wrong direction. Allowing freely chosen but fixed spectra still demands a negative O3 HOLMES contribution at this photon budget. Lowering the absorbed fraction does not repair these particular amplitude tests.
 
@@ -861,7 +804,7 @@ $$
 \overline\Sigma_{\mathrm{SFR},\alpha}(t)
 =\int_0^\infty K_\alpha(a)\Sigma_{\mathrm{SFR}}(t-a)\,da,
 \qquad \int_0^\infty K_\alpha(a)\,da=1.
-\tag{51}
+\tag{48}
 $$
 
 The overbar denotes this Halpha response average. For transparent analytic calculations we assume
@@ -871,12 +814,12 @@ K_\alpha(a)=\frac{1}{\tau_{\mathrm{ion}}}e^{-a/\tau_{\mathrm{ion}}},
 \qquad
 \tau_{\mathrm{ion}}\frac{d\overline\Sigma_{\mathrm{SFR},\alpha}}{dt}
 +\overline\Sigma_{\mathrm{SFR},\alpha}=\Sigma_{\mathrm{SFR}}.
-\tag{52}
+\tag{49}
 $$
 
-The exponential kernel and numerical choice $\tau_{\mathrm{ion}}=3$ Myr are our approximations, not a fitted stellar-population model. For the continuous-onset gas solutions we assume a constant pre-onset SFR, so $\overline\Sigma_{\mathrm{SFR},\alpha}(0)=\Sigma_{\mathrm{SFR},0}$. An instantaneous depletion-time change instead requires the actual pre-change stellar history in equation (51); its filtered initial value need not equal the new instantaneous SFR.
+The exponential kernel and numerical choice $\tau_{\mathrm{ion}}=3$ Myr are our approximations, not a fitted stellar-population model. For the continuous-onset gas solutions we assume a constant pre-onset SFR, so $\overline\Sigma_{\mathrm{SFR},\alpha}(0)=\Sigma_{\mathrm{SFR},0}$. An instantaneous depletion-time change instead requires the actual pre-change stellar history in equation (48); its filtered initial value need not equal the new instantaneous SFR.
 
-To show the algebra, consider a unit-amplitude input $e^{-\gamma t}$ with initial filtered value one. Multiplication of equation (52) by $e^{t/\tau_{\mathrm{ion}}}$ and integration gives
+To show the algebra, consider a unit-amplitude input $e^{-\gamma t}$ with initial filtered value one. Multiplication of equation (49) by $e^{t/\tau_{\mathrm{ion}}}$ and integration gives
 
 $$
 \begin{aligned}
@@ -889,7 +832,7 @@ e^{t/\tau_{\mathrm{ion}}}\mathcal F_\alpha(t;\gamma)-1
 &=\frac{e^{-\gamma t}-\gamma\tau_{\mathrm{ion}}e^{-t/\tau_{\mathrm{ion}}}}
 {1-\gamma\tau_{\mathrm{ion}}}.
 \end{aligned}
-\tag{53}
+\tag{50}
 $$
 
 Here $\mathcal F_\alpha$ is the dimensionless filtered response to one exponential mode, not a new emitting component. At $\gamma\tau_{\mathrm{ion}}=1$, direct integration gives $(1+t/\tau_{\mathrm{ion}})e^{-t/\tau_{\mathrm{ion}}}$.
@@ -905,10 +848,10 @@ F_\alpha(t)&\equiv
 -\mathcal F_\alpha(t;\gamma_{\mathrm{H_2}})}
 {\tau_{\Phi,0}(\gamma_{\mathrm{H_2}}-\gamma_{\mathrm{HI}})}.
 \end{aligned}
-\tag{54}
+\tag{51}
 $$
 
-The coefficients add to unity, satisfying the specified initial value. The equal-gas-rate case can be evaluated from equation (51), avoiding a numerically singular difference. On Gyr-scale gas evolution, the 3-Myr smoothing is small, but it prevents an unphysical instantaneous Halpha response to a sharp SFR change.
+The coefficients add to unity, satisfying the specified initial value. The equal-gas-rate case can be evaluated from equation (48), avoiding a numerically singular difference. On Gyr-scale gas evolution, the 3-Myr smoothing is small, but it prevents an unphysical instantaneous Halpha response to a sharp SFR change.
 
 
 
@@ -923,7 +866,7 @@ e^{-(t-u)/\tau_{\mathrm{ion}}}\Sigma_{\mathrm{SFR}}(u)\,du,\\
 &=\frac{\Sigma_{\mathrm{SFR}}(t)}{\tau_{\mathrm{ion}}}
 -\frac{\overline\Sigma_{\mathrm{SFR},\alpha}(t)}{\tau_{\mathrm{ion}}}.
 \end{aligned}
-\tag{55}
+\tag{52}
 $$
 
 The boundary term comes from the upper limit; differentiating the exponential gives the second term. Normalization ensures that constant SFR is preserved. The exponential kernel is not a 10-Myr top-hat: for $\tau_{\mathrm{ion}}=3$ Myr it assigns $1-e^{-A/\tau_{\mathrm{ion}}}$ of the weight to ages below $A$, giving 90% below 6.91 Myr and 95% below 8.99 Myr.
@@ -935,7 +878,7 @@ F_\alpha(t)=e^{-t/\tau_{\mathrm{ion}}}
 \left[1+\frac{1}{\tau_{\mathrm{ion}}}
 \int_0^t e^{(\tau_{\mathrm{ion}}^{-1}-\gamma)u}
 \left(1+\frac{u}{\tau_{\Phi,0}}\right)du\right].
-\tag{56}
+\tag{53}
 $$
 
 The integral of $u e^{(\tau_{\mathrm{ion}}^{-1}-\gamma)u}$ follows by integration by parts. Writing the result without an additional physical parameter,
@@ -946,16 +889,16 @@ $$
 &=\frac{t e^{(\tau_{\mathrm{ion}}^{-1}-\gamma)t}}{\tau_{\mathrm{ion}}^{-1}-\gamma}
 -\frac{e^{(\tau_{\mathrm{ion}}^{-1}-\gamma)t}-1}{(\tau_{\mathrm{ion}}^{-1}-\gamma)^2}.
 \end{aligned}
-\tag{57}
+\tag{54}
 $$
 
-If also $\gamma=\tau_{\mathrm{ion}}^{-1}$, the integrand in equation (56) is simply $1+u/\tau_{\Phi,0}$, giving
+If also $\gamma=\tau_{\mathrm{ion}}^{-1}$, the integrand in equation (53) is simply $1+u/\tau_{\Phi,0}$, giving
 
 $$
 F_\alpha(t)=e^{-t/\tau_{\mathrm{ion}}}
 \left[1+\frac{t}{\tau_{\mathrm{ion}}}
 +\frac{t^2}{2\tau_{\mathrm{ion}}\tau_{\Phi,0}}\right].
-\tag{58}
+\tag{55}
 $$
 
 For smooth SFR evolution, rearranging the ODE and substituting its leading approximation on the derivative side gives
@@ -964,7 +907,7 @@ $$
 \overline\Sigma_{\mathrm{SFR},\alpha}(t)
 \simeq\Sigma_{\mathrm{SFR}}(t)
 -\tau_{\mathrm{ion}}\frac{d\Sigma_{\mathrm{SFR}}(t)}{dt}.
-\tag{59}
+\tag{56}
 $$
 
 The leading fractional correction is $-\tau_{\mathrm{ion}}\,d\ln\Sigma_{\mathrm{SFR}}/dt$. It is small when all relevant variation timescales exceed the response time and the prehistory has relaxed. A small first derivative at a single instant is insufficient if higher derivatives or an unresolved jump are large. For the present coefficients, $\gamma_{\mathrm{HI}}\tau_{\mathrm{ion}}=0.0122$ and $\gamma_{\mathrm{H_2}}\tau_{\mathrm{ion}}=0.0009$, and the exact calculation verifies the small one-Gyr correction.
@@ -988,7 +931,7 @@ $$
 \frac{\Sigma_{\mathrm{HI}}(u)}{\tau_{\mathrm{conv}}(u)}\,du\right],\\
 \Sigma_{\mathrm{SFR}}(t)&=\frac{\Sigma_{\mathrm{H_2}}(t)}{\tau_{\mathrm{dep}}(t)}.
 \end{aligned}
-\tag{60}
+\tag{57}
 $$
 
 The product-rule steps are identical to equations (10)--(11), but the exponent contains an integral of the rate. This quadrature solution remains exact for specified time-dependent coefficients, provided the system stays linear. The simple two-exponential form does not.
@@ -1008,7 +951,7 @@ $$
 &=\frac{1}{\tau_\Phi(t)}-\frac{1-R+\lambda}{\tau_{\mathrm{dep}}(t)}
 -\frac{d\ln\tau_{\mathrm{dep}}(t)}{dt}.
 \end{aligned}
-\tag{61}
+\tag{58}
 $$
 
 For piecewise-constant coefficients, solve each interval with its own constants and carry the terminal gas columns into the next interval as initial values. Gas masses remain continuous unless an explicit transport or removal impulse is imposed. If $\tau_{\mathrm{dep}}$ jumps, instantaneous SFR can jump even at continuous gas mass; Halpha must still use the stellar response in Appendix A.
@@ -1021,7 +964,7 @@ $$
 \frac{1}{\Sigma_{\mathrm{SFR},0}}\left.\frac{d\Sigma_{\mathrm{SFR}}(t)}{dt}\right|_{0^+}
 =\gamma_{\mathrm{H_2}}
 \left(\frac{\tau_{\mathrm{conv,pre}}}{\tau_{\mathrm{conv,post}}}-1\right).
-\tag{62}
+\tag{59}
 $$
 
 This follows by substituting the pre-change balance into equation (17). The labels pre/post in this equation refer to an imposed coefficient change, not the observational infall categories. Reducing the example conversion time by four gives a peak at 0.18368 Gyr with $F_{\mathrm{SFR}}=1.06458$, only 0.0272 dex. This is an alternative mathematical experiment, not one of the main Figure 1 curves.
@@ -1032,10 +975,10 @@ $$
 \Sigma_{\mathrm{H_2}}(t)\leq\Sigma_{\mathrm{H_2},0}+\Sigma_{\mathrm{HI},0}
 \quad\Longrightarrow\quad
 F_{\mathrm{SFR}}(t)\leq1+\frac{\Sigma_{\mathrm{HI},0}}{\Sigma_{\mathrm{H_2},0}}.
-\tag{63}
+\tag{60}
 $$
 
-For the illustrative reference columns this bound is 1.2853, or 0.1090 dex. It limits conversion of the existing local gas, not compression supplied by mass convergence, and not models with changing efficiency. It must not be used to rule out all RPS-induced spatial enhancement.
+For the illustrative columns this bound is 1.2853, or 0.1090 dex. It limits conversion of the existing local gas, not compression supplied by mass convergence, and not models with changing efficiency. It must not be used to rule out all RPS-induced spatial enhancement.
 
 # Appendix C. Separating compact HII and leaked-OB emission
 
@@ -1051,7 +994,7 @@ $$
 \mathcal L_\alpha^{\mathrm{leak}}
 &=\epsilon_\alpha f_{\mathrm{leak}}\mathcal Q_{\mathrm{OB}}.
 \end{aligned}
-\tag{64}
+\tag{61}
 $$
 
 $\mathcal L$ denotes luminosity per adopted area, in $\mathrm{erg\,s^{-1}\,kpc^{-2}}$. The photon-to-Halpha energy factor $\epsilon_\alpha$ is defined in section 5. Leaked photons are a redistribution of the young photon budget, not a second independent supply of OB photons. Radiation transport can make leakage nonlocal; Appendix E states the corresponding limitation.
@@ -1063,7 +1006,7 @@ $$
 \equiv\mathcal L_\alpha^{\mathrm{HII}}+\mathcal L_\alpha^{\mathrm{leak}}
 =\frac{f_{\mathrm{young}}}{C_\alpha}
 \overline\Sigma_{\mathrm{SFR},\alpha}(t).
-\tag{65}
+\tag{62}
 $$
 
 Our numerical value, $C_\alpha=4.9835821\times10^{-42}\ M_\odot\,\mathrm{yr^{-1}}/(\mathrm{erg\,s^{-1}})$, follows the existing MAUVE pipeline convention checked by its saved source fingerprint. It is not assumed universal across IMFs or stellar populations. If $f_{\mathrm{young}}$ is constant, the remaining young-Halpha fraction is exactly $F_\alpha(t)$.
@@ -1080,10 +1023,10 @@ $$
 R_{\ell/B}^{\mathrm{young}}
 \equiv\eta_B R_{\ell/B}^{\mathrm{HII}}
 +(1-\eta_B)R_{\ell/B}^{\mathrm{leak}}.
-\tag{66}
+\tag{63}
 $$
 
-For constant component decrements and photon allocation, $\eta_B$ is constant. It is $f_{\mathrm{HII}}/f_{\mathrm{young}}$ for Halpha under equation (64). Both young components then fade in the same proportion, leaving their combined ratio constant. It is unnecessary to assume that their individual ratios are equal.
+For constant component decrements and photon allocation, $\eta_B$ is constant. It is $f_{\mathrm{HII}}/f_{\mathrm{young}}$ for Halpha under equation (61). Both young components then fade in the same proportion, leaving their combined ratio constant. It is unnecessary to assume that their individual ratios are equal.
 
 
 
@@ -1098,7 +1041,7 @@ $$
 w_{j,\beta}
 =\frac{w_{j,\alpha}/\mathcal B_j}
 {\sum_iw_{i,\alpha}/\mathcal B_i}.
-\tag{67}
+\tag{64}
 $$
 
 Only equal decrements make $w_{j,\beta}=w_{j,\alpha}$. We use intrinsic/de-reddened luminosities and equal $\mathcal B_j=2.86$ in the illustrative curves, consistent with a standard low-density, approximately $10^4$ K Case-B approximation. The secondary numerical test in this appendix uses the actual exported Hbeta denominator.
@@ -1121,7 +1064,7 @@ $$
 \frac{\partial\Sigma_i(\boldsymbol{x},t)}{\partial t}
 +\boldsymbol\nabla\cdot[\Sigma_i(\boldsymbol{x},t)\boldsymbol v_i(\boldsymbol{x},t)]
 =\mathcal S_i(\boldsymbol{x},t)-\mathcal D_i(\boldsymbol{x},t).
-\tag{68}
+\tag{65}
 $$
 
 $\boldsymbol v_i$ is the in-plane phase velocity, and $\mathcal S_i$ and $\mathcal D_i$ are local surface source and sink rates. Inserting the phase transfers and losses used in section 2 yields
@@ -1135,7 +1078,7 @@ $$
 &=-\boldsymbol\nabla\cdot(\Sigma_{\mathrm{H_2}}\boldsymbol v_{\mathrm{H_2}})
 +\Sigma_\Phi-(1-R+\lambda)\Sigma_{\mathrm{SFR}}.
 \end{aligned}
-\tag{69}
+\tag{66}
 $$
 
 Every field in this display depends on $(\boldsymbol{x},t)$; only here the arguments are suppressed to keep the spatial conservation equations readable. Any vertical removal represented by $\gamma_{\mathrm{strip}}$ is already included in that sink and must not be counted again as a boundary loss. The transport term has a minus sign on the right. It adds column where the divergence of the mass flux is negative. Velocity convergence alone is not identical to this condition, since $\boldsymbol\nabla\cdot(\Sigma_i\boldsymbol v_i)=\boldsymbol v_i\cdot\boldsymbol\nabla\Sigma_i+\Sigma_i\boldsymbol\nabla\cdot\boldsymbol v_i$.
@@ -1151,7 +1094,7 @@ $$
 \mathcal Q_{\mathrm{abs,leak}}(\boldsymbol{x},t)
 =\int \mathcal T_{\mathrm{leak}}(\boldsymbol{x},\boldsymbol{x}')
 \mathcal Q_{\mathrm{OB}}(\boldsymbol{x}',t)\,dA'.
-\tag{70}
+\tag{67}
 $$
 
 Its area integral must respect the available escaped-photon fraction. Neighbouring young populations can maintain diffuse emission while a local patch fades, breaking the assumption of a common local $F_\alpha$. Similarly, old-star photons can propagate away from their birth positions. The local photon benchmark in section 8 excludes these transfers.
@@ -1163,7 +1106,7 @@ R_{\ell/B}=\mathscr R_{\ell/B}
 \left(\mathrm{SED}_{\mathrm{OB}}+\mathrm{SED}_{\mathrm{HOLMES}},
 U,Z,\mathrm{N/O},n_{\mathrm H},\ldots\right),
 \qquad U\equiv\frac{\Phi_{\mathrm H}}{n_{\mathrm H}c}.
-\tag{71}
+\tag{68}
 $$
 
 $\mathscr R$ denotes the result of a photoionization calculation, not a fitted analytic function in this report; the SEDs include their radiation normalizations. $\Phi_{\mathrm H}$ is incident ionizing photon flux, $n_{\mathrm H}$ hydrogen density, and $U$ the dimensionless ionization parameter. Metallicity $Z$, abundance ratio N/O, gas density, geometry, and dust also affect the result. Holding every intrinsic line ratio constant is a controlled approximation to be tested, especially as the radiation field fades. It should not be defended as an exact consequence of a fixed stellar spectrum.
@@ -1180,7 +1123,7 @@ In photoionization equilibrium, the absorbed hydrogen-ionizing photon rate equal
 $$
 f_{\mathrm{abs,HOLMES}}\mathcal Q_{\mathrm{HOLMES}}A_{\mathrm{reg}}
 =\alpha_B\int_{V_{\mathrm{reg}}}n_e n_p\,dV.
-\tag{72}
+\tag{69}
 $$
 
 Here $n_e$ and $n_p$ are electron and proton densities, $\alpha_B$ is the recombination coefficient excluding direct recombinations to the ground state, and $V_{\mathrm{reg}}$ is the emitting volume. The area and volume must be converted to a consistent unit system. The emitted Halpha luminosity is
@@ -1189,15 +1132,15 @@ $$
 L_\alpha^{\mathrm{HOLMES}}
 =h_{\mathrm P}\nu_\alpha\alpha_\alpha^{\mathrm{eff}}
 \int_{V_{\mathrm{reg}}}n_e n_p\,dV,
-\tag{73}
+\tag{70}
 $$
 
 where $h_{\mathrm P}$ is Planck's constant, $\nu_\alpha=c/\lambda_\alpha$ is the line frequency, and $\alpha_\alpha^{\mathrm{eff}}$ counts recombinations that generate Halpha photons. Case-B coefficients depend on temperature and density ([Hummer & Storey 1987](#ref-hs)). 
 
-Equations (72) and (73) contain the same volume integral. Solving the former for that integral, substituting into the latter, and dividing by $A_{\mathrm{reg}}$ gives equation (33). The area must have the same units on both sides before converting to kpc squared.
+Equations (69) and (70) contain the same volume integral. Solving the former for that integral, substituting into the latter, and dividing by $A_{\mathrm{reg}}$ gives equation (30). The area must have the same units on both sides before converting to kpc squared.
 
 
-Taking the logarithmic derivative of equation (33) exposes all conditions:
+Taking the logarithmic derivative of equation (30) exposes all conditions:
 
 $$
 \frac{d\ln\mathcal L_\alpha^{\mathrm{HOLMES}}}{dt}
@@ -1205,12 +1148,12 @@ $$
 +\frac{d\ln f_{\mathrm{abs,HOLMES}}}{dt}
 +\frac{d\ln q_{\mathrm{H,HOLMES}}}{dt}
 +\frac{d\ln\Sigma_*^{\mathrm{old}}}{dt}.
-\tag{74}
+\tag{71}
 $$
 
 For a short interval relative to the age of an old population, its mass and specific photon output may vary slowly. We additionally assume nearly fixed absorption and recombination conditions in the retained inner gas. Only with these assumptions do we set $\mathcal L_\alpha^{\mathrm{HOLMES}}(t)\simeq\mathcal L_{\alpha,0}^{\mathrm{HOLMES}}$.
 
-The gas must also be able to absorb the available photons. Equation (72) implies a necessary emission measure. For example, if a maximum available ionized column is specified, its recombination capacity cannot be exceeded merely by increasing $q\Sigma_*^{\mathrm{old}}$. Gas removal can reduce the covering fraction and capacity, causing the HOLMES-powered emission to fall. The recombination time is approximately $\tau_{\mathrm{rec}}=(\alpha_B n_e)^{-1}$ at fixed density; sustained emission over longer intervals requires sustained ionization, not a remnant afterglow.
+The gas must also be able to absorb the available photons. Equation (69) implies a necessary emission measure. For example, if a maximum available ionized column is specified, its recombination capacity cannot be exceeded merely by increasing $q\Sigma_*^{\mathrm{old}}$. Gas removal can reduce the covering fraction and capacity, causing the HOLMES-powered emission to fall. The recombination time is approximately $\tau_{\mathrm{rec}}=(\alpha_B n_e)^{-1}$ at fixed density; sustained emission over longer intervals requires sustained ionization, not a remnant afterglow.
 
 The constant term is therefore particularly relevant to **retained inner gas**. It is not a reason to predict a permanent Halpha floor in a completely stripped outer region.
 
@@ -1224,10 +1167,10 @@ $$
 \mathcal L_\ell(t)
 =R_{\ell/B}^{\mathrm{young}}\mathcal L_{B,0}^{\mathrm{young}}F_{\mathrm{SFR}}(t)
 +R_{\ell/B}^{\mathrm{HOLMES}}\mathcal L_{B,0}^{\mathrm{HOLMES}}.
-\tag{75}
+\tag{72}
 $$
 
-For positive ratios, its derivative is $R_{\ell/B}^{\mathrm{young}}\mathcal L_{B,0}^{\mathrm{young}}\,dF_{\mathrm{SFR}}/dt<0$. Its fractional fading is smaller in magnitude than the Balmer fractional fading if its HOLMES-to-young ratio contrast is larger. Eliminating $F_{\mathrm{SFR}}$ between the total Balmer luminosity and equation (75) gives
+For positive ratios, its derivative is $R_{\ell/B}^{\mathrm{young}}\mathcal L_{B,0}^{\mathrm{young}}\,dF_{\mathrm{SFR}}/dt<0$. Its fractional fading is smaller in magnitude than the Balmer fractional fading if its HOLMES-to-young ratio contrast is larger. Eliminating $F_{\mathrm{SFR}}$ between the total Balmer luminosity and equation (72) gives
 
 $$
 \begin{aligned}
@@ -1242,7 +1185,7 @@ R_{\ell/B}
 \frac{d\ln R_{\ell/B}}{d\ln\mathcal L_B}
 &=-\frac{R_{\ell/B}-R_{\ell/B}^{\mathrm{young}}}{R_{\ell/B}}.
 \end{aligned}
-\tag{76}
+\tag{73}
 $$
 
 For the higher-ratio HOLMES branch, the last slope lies between $-1$ and $0$. This supplies a directly testable ratio--surface-brightness relation at fixed old stellar density and fixed templates. It also clarifies what differential fading means here: the distinct components fade differently; each component's internal line ratios are held constant.
@@ -1254,7 +1197,7 @@ $$
 =\frac{w_{\mathrm{HOLMES},B}R_{\ell/B}^{\mathrm{HOLMES}}}
 {(1-w_{\mathrm{HOLMES},B})R_{\ell/B}^{\mathrm{young}}
 +w_{\mathrm{HOLMES},B}R_{\ell/B}^{\mathrm{HOLMES}}}.
-\tag{77}
+\tag{74}
 $$
 
 At a Balmer fraction of 0.02, a forbidden-line ratio contrast greater than 49 would make the HOLMES component dominate that line. This is our algebraic illustration, not an extraction of a contrast from Belfiore. In a shared gas volume, even this source-by-source attribution of forbidden-line cooling is not unique; the mixed incident spectrum changes the gas state jointly.
@@ -1272,7 +1215,7 @@ $$
 \frac{d\ln\mathcal L_B^{\mathrm{HOLMES}}}{dt}
 -\frac{d\ln\mathcal L_B^{\mathrm{young}}}{dt}
 \right].
-\tag{78}
+\tag{75}
 $$
 
 Thus the relevant condition is **slower fractional fading** of HOLMES-powered emission. Strict constancy is sufficient but unnecessary. If absorbing gas disappears and the HOLMES term fades faster, the proposed weight increase may fail.
@@ -1287,7 +1230,7 @@ $$
 &\quad +(1-w_{\mathrm{HOLMES},B})\frac{dR_{\ell/B}^{\mathrm{young}}}{dt}
 +w_{\mathrm{HOLMES},B}\frac{dR_{\ell/B}^{\mathrm{HOLMES}}}{dt}.
 \end{aligned}
-\tag{79}
+\tag{76}
 $$
 
 Furthermore,
@@ -1300,10 +1243,10 @@ $$
 &\quad +(R_{\ell/B}^{\mathrm{HII}}-R_{\ell/B}^{\mathrm{leak}})
 \frac{d\eta_B}{dt}.
 \end{aligned}
-\tag{80}
+\tag{77}
 $$
 
-These equations separate three effects: changing old-versus-young luminosity weights, changing intrinsic spectra, and changing compact-versus-diffuse allocation of young photons. The fixed-spectrum baseline is useful because it isolates the first. If it fails, equations (79)--(80) show which additional physical terms might matter, but do not determine them from one ratio.
+These equations separate three effects: changing old-versus-young luminosity weights, changing intrinsic spectra, and changing compact-versus-diffuse allocation of young photons. The fixed-spectrum baseline is useful because it isolates the first. If it fails, equations (76)--(77) show which additional physical terms might matter, but do not determine them from one ratio.
 
 
 # Appendix G. Complete notation and parameter ledger
@@ -1312,7 +1255,7 @@ These equations separate three effects: changing old-versus-young luminosity wei
 
 | Symbol | Definition and units |
 |:--|:--|
-| $\boldsymbol{x}$, $x$, $x_1$, $x_2$, $t$, $u$, $a$ | Projected location; $x$ is its unbolded notation in the spatial comparison, and $x_1,x_2$ are two positions. $t$: elapsed model time; $u$: integration time; $a$: stellar age. Times are consistently converted between Gyr and yr. |
+| $\boldsymbol{x}$, $t$, $u$, $a$ | Projected location; elapsed model time; dummy time variable; stellar age. Times are consistently converted between Gyr and yr. |
 | $\Sigma_{\mathrm{HI}}$, $\Sigma_{\mathrm{H_2}}$ | Atomic/molecular phase mass per adopted area; include associated helium in the numerical model; quoted in $M_\odot\,\mathrm{pc^{-2}}$. |
 | $\Sigma_{\mathrm{SFR}}$ | Total star formation rate per adopted area, usually quoted in $M_\odot\,\mathrm{yr^{-1}\,kpc^{-2}}$. |
 | $\Sigma_\Phi$, $\Sigma_{\mathrm{in}}$ | Internal atomic-to-molecular supply rate and external supply to HI, respectively; mass per area per time. |
@@ -1321,7 +1264,7 @@ These equations separate three effects: changing old-versus-young luminosity wei
 | $R$, $\lambda$ | Prompt stellar mass return fraction and feedback mass-loading factor; dimensionless. They do not denote line ratios or wavelength here. |
 | $\gamma_{\mathrm{strip}}$ | Direct atomic stripping coefficient, $\mathrm{Gyr^{-1}}$; no direct H2 stripping term. |
 | $\gamma_{\mathrm{HI}}$, $\gamma_{\mathrm{H_2}}$ | Total HI fractional loss including conversion; net H2 consumption rate, both $\mathrm{Gyr^{-1}}$. |
-| $F_{\mathrm{SFR}}$, $t_{\mathrm{peak}}$ | Remaining SFR relative to its initial value; time of the SFR maximum. In Table 2b, zero denotes a maximum at the initial boundary. |
+| $F_{\mathrm{SFR}}$, $t_{\mathrm{peak}}$ | Remaining SFR relative to its initial value; time of the positive-time enhancement maximum. |
 | $G_i(t)$ | Dimensionless accumulated rate $\int_0^t\gamma_i(u)du$, used only in the evolving-coefficient appendix. |
 
 **Table G2. Ionizing populations and line emission.** A calligraphic luminosity is per adopted area; ordinary $L$ is an integrated luminosity.
@@ -1374,10 +1317,8 @@ These equations separate three effects: changing old-versus-young luminosity wei
 
 | Symbol | Definition and units |
 |:--|:--|
-| $c_{\mathrm{HI}}(x)$, $c_{\mathrm{H_2}}(x)$ | Initial gas-column ratios to reference values, dimensionless. The main spatial example uses atomic factors 0.5, 1, and 1.5 with common initial H2. $c_{\mathrm{H_2}}$ is used only for the Appendix I extension. |
-| $\Delta_{\mathrm{spatial}}\log_{10}\Sigma_{\mathrm{SFR}}(x,t)$ | Base-ten logarithm of the ratio of local SFR to the contemporaneous reference SFR, in dex. The reference has the same stripping coefficient. This is not a temporal derivative. |
-| $\Sigma_{\mathrm{H_2}}^{\mathrm{reference}}(t)$, $\Sigma_{\mathrm{SFR}}^{\mathrm{reference}}(t)$ | Full molecular column and SFR of the $c_{\mathrm{HI}}=1$ reference. The molecular column includes both surviving initial gas and later supply. |
-| $\tau_\Phi(x,0)$ | Initial local molecular replenishment time, equal to $\tau_{\Phi,0}/c_{\mathrm{HI}}(x)$ under the atomic-only initial conditions. |
+| $c_{\mathrm{HI}}$, $c_{\mathrm{H_2}}$ | Initial gas-column factors relative to a reference, dimensionless; the spatial example uses 1.5 for each. |
+| $\Delta_{\mathrm{spatial}}\log_{10}\Sigma_{\mathrm{SFR}}$ | Logarithmic spatial SFR excess, in dex, not a temporal derivative. |
 | $w_{\mathrm{HOLMES}}$, $w_{\mathrm{young}}$ | Common Halpha/Hbeta weights in Model 0; the former is $w_{\mathrm{HOLMES},B}$ when both component decrements equal 2.86. |
 | $\mathcal Q_{\mathrm{abs,HOLMES}}$ | HOLMES photons absorbed by hydrogen per second per adopted area. |
 | $\boldsymbol v_i$, $\mathcal S_i$, $\mathcal D_i$ | Phase velocity; surface source and sink rates. Velocity units must match the chosen length/time units. |
@@ -1388,7 +1329,7 @@ These equations separate three effects: changing old-versus-young luminosity wei
 
 # Appendix H. Provenance, revision coverage, and verification
 
-The source report is `20261001_Connected_HI_Stripping_and_HOLMES_Line_Ratio_Model.md`. The revision uses its existing analytical derivations and the saved observational export, not a fresh extraction from line maps. The [linked discussion](https://chatgpt.com/c/6abef07c-81f4-83ec-852a-a4e180a312ba) was read from its opening PDF-review request through the final 24-point revision summary: ten user/assistant exchanges. The first retrieval contained only the latest five exchanges; the earlier turns and the full final summary were subsequently read in the browser before this revision was written. The later [atomic-asymmetry discussion](https://chatgpt.com/c/6ac08e5c-92e8-83ec-ae97-2165f6c44730) motivated the HI-only spatial initial condition. The subsequent revision uses $x$, shortens section 3.5 by reusing section 3.2, moves temporal and physical details to Appendix I, and replaces the two-phase numerical example with the same atomic-only family.
+The source report is `20261001_Connected_HI_Stripping_and_HOLMES_Line_Ratio_Model.md`. The revision uses its existing analytical derivations and the saved observational export, not a fresh extraction from line maps. The [linked discussion](https://chatgpt.com/c/6abef07c-81f4-83ec-852a-a4e180a312ba) was read from its opening PDF-review request through the final 24-point revision summary: ten user/assistant exchanges. The first retrieval contained only the latest five exchanges; the earlier turns and the full final summary were subsequently read in the browser before this revision was written.
 
 **Table H1. Where the requested changes are implemented.**
 
@@ -1396,112 +1337,31 @@ The source report is `20261001_Connected_HI_Stripping_and_HOLMES_Line_Ratio_Mode
 |:--|:--|
 | Explicit time dependence and constant Model 0 parameters | Section 2 and the gas derivation |
 | Detailed HI-to-H2-to-SFR algebra, including equal rates | Sections 3.1--3.4 |
-| Atomic-only spatial asymmetry with common initial H2 | Section 3.5; updated Figure 1 and section 8.3; temporal and physical details in Appendix I |
+| Spatial enhancement from initial gas accumulation | Section 3.5; new Figure 1 and section 8.3 |
 | Direct Halpha conversion in the main text | Section 4; response derivation in Appendix A |
 | Compact, normalized HOLMES term and absorption conditions | Section 5; emission-measure details in Appendix F |
 | Young + HOLMES and common Balmer weights | Sections 6--7; HII/leak and unequal decrements in Appendices C--D |
 | Preserve the quantitative failure tests | Sections 8.5--8.8 and 9 |
-| Keep extensions separate | Appendices B, E, F, and I |
+| Keep extensions separate | Appendices B, E, and F |
 
-Literature provenance is explicit at the point of use. The regulator bookkeeping and $\Sigma_\Phi$ notation follow Lilly et al. and Huang et al.; the linear atomic transfer law and the closed two-reservoir solution are assumptions and derivations of this report. Halpha calibration physics follows Kennicutt & Evans; the adopted numerical coefficient follows the MAUVE pipeline. Case B, the $1/2.206$ conversion, and the fiducial current-mass HOLMES photon yield have separate references. Linear luminosity mixing is algebra, with Blanc et al. as a related empirical construction. The Brown citation was checked against the primary paper, including the size and definition of its early-stage subset. Lee and Cramer support differential ram-pressure coupling and its molecular-gas caveats; their primary sources were checked for the spatial revision and are included in the final reference list. Belfiore section 3.2/footnote 5 and Cid Fernandes equation 2 were freshly checked for this revision; the remaining reference framework is retained from the source report, without claiming a new full literature audit.
+Literature provenance is explicit at the point of use. The regulator bookkeeping and $\Sigma_\Phi$ notation follow Lilly et al. and Huang et al.; the linear atomic transfer law and the closed two-reservoir solution are assumptions and derivations of this report. Halpha calibration physics follows Kennicutt & Evans; the adopted numerical coefficient follows the MAUVE pipeline. Case B, the $1/2.206$ conversion, and the fiducial current-mass HOLMES photon yield have separate references. Linear luminosity mixing is algebra, with Blanc et al. as a related empirical construction. The new Brown citation was checked against the primary paper, including the size and definition of its early-stage subset. Belfiore section 3.2/footnote 5 and Cid Fernandes equation 2 were freshly checked for this revision; the remaining reference framework is retained from the source report, without claiming a new full literature audit.
 
-The retained `assets/20261002_Model0_Derivation/model_predictions.py` and its audit provide the reference gas history, saved observational anchors, and spectral calculations. Its older simultaneous-HI/H2 spatial example is superseded here. The current spatial calculation is `assets/20261003_Atomic_Spatial_Response/spatial_predictions.py`. It reads and fingerprints the saved reference normalization, changes only the initial atomic factor, checks the analytical solutions against independent ODE integration, and writes the current Figure 1, spatial CSVs, and audit. Run it with:
+The numerical script is `assets/20261002_Model0_Derivation/model_predictions.py`. It rebuilds the same equal-galaxy observational anchors, checks the saved source fingerprints, independently integrates the gas and response equations, evaluates the new spatial initial-state example, and calculates both common-weight and actual-Hbeta inversions. It writes the numerical audit, CSVs, and three figures. Run it with:
 
 ```bash
-MPLCONFIGDIR=/private/tmp/mauve_atomic_revision_20261003/mpl \
+MPLCONFIGDIR=/private/tmp/mauve_20261002/mpl \
 /opt/miniconda3/envs/ICRAR/bin/python \
-  /Users/Igniz/Desktop/ICRAR/MAUVE/assets/20261003_Atomic_Spatial_Response/spatial_predictions.py
+  /Users/Igniz/Desktop/ICRAR/MAUVE/assets/20261002_Model0_Derivation/model_predictions.py
 ```
 
-The current spatial ODE check has maximum absolute difference $2.55\times10^{-12}$ in units of the common initial H2 column. Equal-rate and reversed-rate-order cases, common initial SFR, subsequent spatial ordering, the corrected reference-subtraction identity, and the leading temporal maximum were checked. The retained earlier reference/spectral audit records a maximum gas relative error of $7.68\times10^{-14}$ and response absolute normalized error of $3.33\times10^{-11}$; those unaffected calculations were not rerun for this spatial revision. These checks validate the implemented algebra, not the physical assumptions.
 
-The observational input is `assets/20260914_resolved_RPS_academic_model/stage_bpt_line_profiles_with_hbeta.csv`. Its fingerprint and the six recorded source fingerprints were checked and saved in the October 2 asset directory. The spatial revision reuses that normalization and records the source-audit fingerprint; it does not repeat the observational extraction. This validates reuse of that extraction record, not the present contents of every large FITS map. No full map pipeline, bootstrap, fitted stellar population, new CO/HI analysis, radiation transport calculation, or photoionization grid was executed. No significance is assigned to the cross-sectional amplitude tests. Figure colors identify model cases, not galaxies.
+The executed gas-versus-ODE checks have maximum relative difference 7.68e-14; the filtered-response check has maximum absolute normalized difference 3.33e-11. The equal-gas-rate check differs by 2.44e-15; the scaled-initial-state ODE check differs by 2e-15. Peak, positive-supply, total-mass, and unequal-Balmer-weight identities pass for the implemented examples. These numerical tolerances test the equations, not the physical assumptions.
+
+
+The observational input is `assets/20260914_resolved_RPS_academic_model/stage_bpt_line_profiles_with_hbeta.csv`. Its fingerprint and the six recorded source fingerprints are checked and saved in the new asset directory. This validates reuse of that extraction record, not the present contents of every large FITS map. No full map pipeline, bootstrap, fitted stellar population, new CO/HI analysis, radiation transport calculation, or photoionization grid was executed. No significance is assigned to the cross-sectional amplitude tests. Figure colors identify model cases, not galaxies.
 
 The PDF is generated from the same Markdown and checked for equation numbering, internal links, text boundaries, and page rendering. Detailed acceptance evidence and the revision checklist are saved with the assets. The source report and other user files are preserved.
 
-
-# Appendix I. Temporal behaviour and physical limits of the atomic spatial model
-
-## I.1 Equal rates and the condition for an initial SFR increase
-
-Section 3.5 compares positions at a common elapsed time. Its spatial ordering does not by itself fix the temporal derivative at any position. For completeness, if $\gamma_{\mathrm{HI}}=\gamma_{\mathrm{H_2}}\equiv\gamma$, the exponential integrand in section 3.2 is unity. Its time integral is $t$, giving the finite solutions
-
-$$
-\begin{aligned}
-\Sigma_{\mathrm{H_2}}(x,t)
-&=\left[\Sigma_{\mathrm{H_2},0}
-+\frac{c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}}{\tau_{\mathrm{conv}}}t\right]e^{-\gamma t},\\
-\Sigma_{\mathrm{SFR}}(x,t)
-&=\left[\frac{\Sigma_{\mathrm{H_2},0}}{\tau_{\mathrm{dep}}}
-+\frac{c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}}
-{\tau_{\mathrm{conv}}\tau_{\mathrm{dep}}}t\right]e^{-\gamma t}.
-\end{aligned}
-\tag{81}
-$$
-
-For either rate ordering, the initial replenishment time is the common molecular column divided by the local initial supply. With $\tau_{\Phi,0}$ denoting the reference value and $\Sigma_{\mathrm{SFR},0}=\Sigma_{\mathrm{H_2},0}/\tau_{\mathrm{dep}}$, the molecular balance gives
-
-$$
-\begin{aligned}
-\tau_\Phi(x,0)
-&=\frac{\Sigma_{\mathrm{H_2},0}}
-{c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}/\tau_{\mathrm{conv}}}
-=\frac{\tau_{\Phi,0}}{c_{\mathrm{HI}}(x)},\\
-\left.\frac{d\Sigma_{\mathrm{SFR}}(x,t)}{dt}\right|_{t=0}
-&=\frac{1}{\tau_{\mathrm{dep}}}
-\left[\frac{c_{\mathrm{HI}}(x)\Sigma_{\mathrm{HI},0}}{\tau_{\mathrm{conv}}}
--\gamma_{\mathrm{H_2}}\Sigma_{\mathrm{H_2},0}\right]\\
-&=\Sigma_{\mathrm{SFR},0}
-\left[\frac{c_{\mathrm{HI}}(x)}{\tau_{\Phi,0}}-\gamma_{\mathrm{H_2}}\right].
-\end{aligned}
-\tag{82}
-$$
-
-An atomic excess shortens the replenishment time through a larger available supply, while $\tau_{\mathrm{conv}}$ is unchanged. Initial temporal growth requires $c_{\mathrm{HI}}(x)/\tau_{\Phi,0}>\gamma_{\mathrm{H_2}}$. The weaker condition $c_{\mathrm{HI}}(x)>1$ guarantees only a spatial excess over the matched reference at $t>0$.
-
-If the reference is initially balanced, the result simplifies to
-
-$$
-\begin{aligned}
-\frac{\Sigma_{\mathrm{HI},0}}{\tau_{\mathrm{conv}}}
-&=\gamma_{\mathrm{H_2}}\Sigma_{\mathrm{H_2},0},
-\qquad \tau_{\Phi,0}^{-1}=\gamma_{\mathrm{H_2}},\\
-\left.\frac{d\Sigma_{\mathrm{SFR}}(x,t)}{dt}\right|_{t=0}
-&=[c_{\mathrm{HI}}(x)-1]\gamma_{\mathrm{H_2}}\Sigma_{\mathrm{SFR},0}.
-\end{aligned}
-\tag{83}
-$$
-
-The leading case then initially rises, the reference has zero initial slope followed by decline, and the trailing case initially declines. Section 3.4 proves that any initially rising solution has one maximum and subsequently declines. Its peak time follows from equation (24) after replacing $\tau_{\Phi,0}$ by $\tau_{\Phi,0}/c_{\mathrm{HI}}(x)$; the same substitution applies to the equal-rate limit given there.
-
-With positive response rates and finite positive atomic factors, every gas and SFR solution approaches zero at late times. All regions eventually decline, while the spatial ordering in equation (30) persists at every finite $t>0$. Absolute SFR differences approach zero, although their ratios need not approach unity. Thus a leading-side spatial excess can remain after that region has passed its temporal SFR maximum.
-
-## I.2 Physical interpretation and an additional molecular response
-
-The atomic factors specify local initial conditions, not a prediction of the wind pressure or how the asymmetry formed. A higher surface density requires accumulation in the adopted patch or a reduction of its physical area; vertical compression alone need not increase the mass per disc area. The transport contribution $-\boldsymbol{\nabla}\cdot(\Sigma_i\boldsymbol v_i)$ in Appendix E can establish local column changes. Model 0 begins after that unresolved episode. It neither creates mass during the subsequent closed evolution nor enforces a global redistribution budget. Common initial H2 is an idealization isolating the atomic pathway, not a necessary outcome of a finite compression episode.
-
-The density dependence of ram-pressure coupling motivates this choice of perturbed phase. A lower mass per exposed area is more easily accelerated at fixed incident momentum flux, while gravity, shielding, and geometry also matter. The relevant column is along the incident wind and can differ from an observed projected column ([Cramer et al. 2020, section 6.1](#ref-cramer)). Holding $\gamma_{\mathrm{strip}}$ fixed across the comparison isolates the initial-column effect; it does not solve for the possible column dependence of that coefficient. Likewise, a leading atomic excess and trailing deficit are testable assumptions, not a universal consequence of wind geometry. Downstream transport can instead accumulate gas in a trailing region.
-
-Molecular gas is not immune. [Lee et al. (2017), sections 5.2--5.3](#ref-lee), find disturbed CO morphology and kinematics and upstream enhancements in NGC4330, NGC4402, and NGC4522, despite no clear molecular-stripping signature at their sensitivity. [Cramer et al. (2020), sections 5.2 and 6.1--6.3](#ref-cramer), identify compressed and displaced molecular gas in NGC4402. Their interpretation distinguishes initially resistant dense clouds from diffuse molecular gas, while allowing cloud disruption and effective removal; the phase history of stripped material is uncertain. These observations support differential coupling, not the exact initial conditions imposed here.
-
-An additional initial molecular response can be represented by $c_{\mathrm{H_2}}(x)\equiv\Sigma_{\mathrm{H_2}}(x,0)/\Sigma_{\mathrm{H_2},0}$. Keeping all subsequent coefficients fixed, subtracting the atomic-only solution from this extended solution leaves only the change in the surviving initial molecular term:
-
-$$
-\begin{aligned}
-\Sigma_{\mathrm{H_2}}^{\mathrm{extended}}(x,t)
--\Sigma_{\mathrm{H_2}}^{\mathrm{atomic\ only}}(x,t)
-&=[c_{\mathrm{H_2}}(x)-1]\Sigma_{\mathrm{H_2},0}e^{-\gamma_{\mathrm{H_2}}t},\\
-\Sigma_{\mathrm{SFR}}^{\mathrm{extended}}(x,t)
--\Sigma_{\mathrm{SFR}}^{\mathrm{atomic\ only}}(x,t)
-&=\frac{[c_{\mathrm{H_2}}(x)-1]\Sigma_{\mathrm{H_2},0}}
-{\tau_{\mathrm{dep}}}e^{-\gamma_{\mathrm{H_2}}t}.
-\end{aligned}
-\tag{84}
-$$
-
-The main calculation and Figure 1 set $c_{\mathrm{H_2}}(x)=1$. An additional molecular excess on the leading side or deficit on the trailing side would amplify the corresponding SFR offset. Amplification requires the molecular response to have the same spatial sign as the atomic response. Displacement, changing depletion times, or continuing transport need not do so and require a different extension.
-
-[Brown et al. (2023), section 3.3 and Figure 5](#ref-brown), find enhanced outer-disc SFR associated with larger molecular columns at fixed stellar density in their four early-stage RPS galaxies, with molecular SFE consistent with the field. This motivates the fixed-efficiency comparison but does not distinguish atomic conversion from molecular transport or establish constant efficiency for every MAUVE region. The potential NGC4654 gradient likewise motivates a test; the factors in section 8.3 are illustrative and are not fitted to that galaxy.
 
 # References
 
@@ -1532,9 +1392,6 @@ The main calculation and Figure 1 set $c_{\mathrm{H_2}}(x)=1$. An additional mol
 **Cid Fernandes, R., Stasinska, G., Mateus, A., & Vale Asari, N. (2011).** *A comprehensive classification of galaxies in the Sloan Digital Sky Survey: how to tell true from fake AGN?* MNRAS, 413, 1687--1699. [DOI](https://doi.org/10.1111/j.1365-2966.2011.18244.x); [primary paper](https://minerva.ufsc.br/starlight/files/papers/j.1365-2966.2011.18244.x.pdf).
 
 
-<span id="ref-cramer"></span>
-**Cramer, W. J., et al. (2020).** *ALMA evidence for ram pressure compression and stripping of molecular gas in the Virgo cluster galaxy NGC 4402.* ApJ, 901. [DOI](https://doi.org/10.3847/1538-4357/abaf54); [primary manuscript](https://arxiv.org/pdf/1910.14082).
-
 <span id="ref-fumagalli"></span>
 **Fumagalli, M., Krumholz, M. R., Prochaska, J. X., Gavazzi, G., & Boselli, A. (2009).** *Molecular hydrogen deficiency in HI-poor galaxies and its implications for star formation.* ApJ, 697, 1811--1821. [DOI](https://doi.org/10.1088/0004-637X/697/2/1811); [primary manuscript](https://arxiv.org/abs/0903.3950).
 
@@ -1550,11 +1407,9 @@ The main calculation and Figure 1 set $c_{\mathrm{H_2}}(x)=1$. An additional mol
 <span id="ref-ke"></span>
 **Kennicutt, R. C., Jr., & Evans, N. J. II (2012).** *Star Formation in the Milky Way and Nearby Galaxies.* ARA&A, 50, 531--608. [DOI](https://doi.org/10.1146/annurev-astro-081811-125610); [primary manuscript](https://arxiv.org/abs/1204.3552).
 
-<span id="ref-lee"></span>
-**Lee, B., et al. (2017).** *The effect of ram pressure on the molecular gas of galaxies: three case studies in the Virgo cluster.* MNRAS, 466, 1382--1398. [DOI](https://doi.org/10.1093/mnras/stw3162); [primary manuscript](https://arxiv.org/pdf/1701.02750).
-
 <span id="ref-leroy"></span>
 **Leroy, A. K., et al. (2013).** *Molecular Gas and Star Formation in Nearby Disk Galaxies.* AJ, 146, 19. [DOI](https://doi.org/10.1088/0004-6256/146/2/19); [primary manuscript](https://arxiv.org/pdf/1301.2328).
 
 <span id="ref-lilly"></span>
 **Lilly, S. J., Carollo, C. M., Pipino, A., Renzini, A., & Peng, Y. (2013).** *Gas Regulation of Galaxies: The Evolution of the Cosmic Specific Star Formation Rate, the Metallicity-Mass-Star-formation Rate Relation, and the Stellar Content of Halos.* ApJ, 772, 119. [DOI](https://doi.org/10.1088/0004-637X/772/2/119); [primary manuscript](https://arxiv.org/abs/1303.5059).
+

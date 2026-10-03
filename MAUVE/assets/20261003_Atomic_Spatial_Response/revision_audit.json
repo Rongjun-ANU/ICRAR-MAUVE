@@ -1,0 +1,25 @@
+{
+  "before_md_sha256": "f48e3cdc7ada4ec35a4b5a8cd594576bd29058efbc882b50a59b341debcd8261",
+  "after_md_sha256": "976ec25279640259b4f3b2abba57ad94e03babd26d72cff0a0025af46b3de4ba",
+  "old_section_lines": 266,
+  "new_section_lines": 77,
+  "old_section_equations": 15,
+  "new_section_equations": 5,
+  "total_equations": 84,
+  "unchanged_before_section35": true,
+  "changed_sections": [
+    "3.5",
+    "8.3 and Figure 1",
+    "reference-history qualifier in section 4",
+    "spatial summary in 9",
+    "reference-column qualifier in Appendix B",
+    "notation ledger G",
+    "provenance H",
+    "new Appendix I",
+    "Lee/Cramer references"
+  ],
+  "subsequent_equation_shift": -10,
+  "pdf_sha256": "daa9a9238bb4b8ea93b37d6ec9defc60606d3286e9a36bdd7f57bee772f566fc",
+  "pdf_pages": 35,
+  "pdf_visual_review": "All 35 final pages reviewed; changed sections additionally inspected at full-page scale."
+}

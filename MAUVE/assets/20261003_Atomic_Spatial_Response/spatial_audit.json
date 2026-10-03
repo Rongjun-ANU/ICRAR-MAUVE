@@ -1,0 +1,74 @@
+{
+  "source": "/Users/Igniz/Desktop/ICRAR/MAUVE/assets/20261002_Model0_Derivation/numerical_audit.json",
+  "source_sha256": "91599489d8a18cece1b95f0be30064b58d206f2af5e65d4970823b48906976ea",
+  "constants": {
+    "hi0": 10.0,
+    "h20": 35.055411582995255,
+    "tau_conv": 0.9508755375590207,
+    "tau_dep": 2.0,
+    "gamma_HI": 4.051662347489858,
+    "gamma_H2": 0.3,
+    "sfr0": 0.01752770579149763
+  },
+  "cases": [
+    {
+      "region": "leading",
+      "c_HI": 1.5,
+      "initial_HI": 15.0,
+      "initial_H2": 35.055411582995255,
+      "initial_SFR": 0.01752770579149763,
+      "tau_phi_initial": 2.2222222222222223,
+      "initial_fractional_SFR_slope": 0.15,
+      "t_peak_gyr": 0.09838628399650154,
+      "peak_fraction": 1.0068605320965591,
+      "sfr_fraction_1gyr": 0.8275907291481394,
+      "offset_dex_1gyr": 0.015450116149673607,
+      "sfr_1gyr": 0.014505766816279587,
+      "h2_1gyr": 29.011533632559175,
+      "offset_dex_2gyr": 0.015779989032280582
+    },
+    {
+      "region": "reference",
+      "c_HI": 1.0,
+      "initial_HI": 10.0,
+      "initial_H2": 35.055411582995255,
+      "initial_SFR": 0.01752770579149763,
+      "tau_phi_initial": 3.3333333333333335,
+      "initial_fractional_SFR_slope": 0.0,
+      "t_peak_gyr": 0.0,
+      "peak_fraction": 1.0,
+      "sfr_fraction_1gyr": 0.7986665596593322,
+      "offset_dex_1gyr": 0.0,
+      "sfr_1gyr": 0.013998792483216364,
+      "h2_1gyr": 27.997584966432726,
+      "offset_dex_2gyr": 0.0
+    },
+    {
+      "region": "trailing",
+      "c_HI": 0.5,
+      "initial_HI": 5.0,
+      "initial_H2": 35.055411582995255,
+      "initial_SFR": 0.01752770579149763,
+      "tau_phi_initial": 6.666666666666667,
+      "initial_fractional_SFR_slope": -0.15,
+      "t_peak_gyr": 0.0,
+      "peak_fraction": 1.0,
+      "sfr_fraction_1gyr": 0.769742390170525,
+      "offset_dex_1gyr": -0.01602009673668075,
+      "sfr_1gyr": 0.013491818150153139,
+      "h2_1gyr": 26.983636300306276,
+      "offset_dex_2gyr": -0.01637504024286627
+    }
+  ],
+  "maximum_reference_normalized_H2_ODE_error": 2.547627097352602e-12,
+  "checks": {
+    "initial_equality": true,
+    "strict_spatial_ordering": true,
+    "corrected_difference_identity": true,
+    "equal_rate_limit": true,
+    "reversed_rate_ordering": true,
+    "peak": true,
+    "positive_supply_integral": true
+  },
+  "classification": "Illustrative atomic factors; saved MAUVE luminosity normalization; not a fit"
+}

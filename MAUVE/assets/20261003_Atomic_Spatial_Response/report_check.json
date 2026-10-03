@@ -1,0 +1,18 @@
+{
+  "unchanged_before_section35": true,
+  "unchanged_except_renumbering": [
+    "# 5. through before # 8.",
+    "## 8.1  through before ## 8.3 ",
+    "## 8.4  through before # 9.",
+    "# Appendix A. through before # Appendix B.",
+    "# Appendix C. through before # Appendix G."
+  ],
+  "existing_assets_unchanged": true,
+  "section35_equations": 5,
+  "total_equations": 84,
+  "local_j_absent": true,
+  "subsubsections_removed": true,
+  "references_moved": true,
+  "figure_and_numeric_table_match_audit": true,
+  "md_sha256": "976ec25279640259b4f3b2abba57ad94e03babd26d72cff0a0025af46b3de4ba"
+}
