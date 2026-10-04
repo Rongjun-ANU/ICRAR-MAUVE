@@ -4,7 +4,7 @@
 
 We consider a local region in which RPS removes atomic gas but does not directly remove molecular gas. The loss of HI reduces the subsequent molecular supply. The retained H$_2$ reservoir then supports star formation while it is gradually consumed. Young-star H$\alpha$ emission follows this declining SFR. When old stars and absorbing gas remain, hot low-mass evolved stars (HOLMES) can provide a more slowly varying ionizing contribution, whose fraction of the total Balmer emission increases. A forbidden-line-to-Balmer ratio rises if the HOLMES-powered emitting component has the larger intrinsic ratio.
 
-For simplicity, we set up a restricted spatially resolved analytical model. Its conversion time, molecular depletion time, recycling fraction, feedback loading, and HI stripping coefficient are constant in time at a specified location. The H$\alpha$ budget combines compact HII emission and leaked-OB-powered emission into one effective young-star component, with a constant HOLMES component and adopts the same intrinsic H$\alpha$/H$\beta$ ratio, 2.86, for both. Time $t=0$ denotes the onset of the imposed environmental and supply conditions. It is not an observed time assigned to an infall-stage category.
+For simplicity, we set up a restricted spatially resolved analytical model. Its conversion time, molecular depletion time, recycling fraction, feedback loading, and HI stripping coefficient are constant in time at a specified location. The H$\alpha$ budget combines compact HII emission and leaked-OB-powered emission into one effective young-star component, with a constant HOLMES component and adopts the same intrinsic H$\alpha$/H$\beta$ ratio, 2.86, for both components. Time $t=0$ denotes the onset of the imposed environmental and supply conditions. It is not an observed time assigned to an infall-stage category.
 
 ## 2. Definition of the local two-reservoir model
 
@@ -31,7 +31,7 @@ $$
 
 Consequently, $\Sigma_\Phi(t)$ is a rate, whereas $\tau_\Phi$ and $\tau_{\mathrm{conv}}$ are times. Even when $\tau_{\mathrm{conv}}$ is constant, $\tau_\Phi$ generally evolves. 
 
-Let $0\leq R<1$ be the prompt stellar mass return fraction and $\eta\geq0$ the feedback mass-loading factor, so that the feedback mass loss rate is $\eta\Sigma_{\mathrm{SFR}}(t)$. The net removal associated with star formation and feedback is $(1-R+\eta)\Sigma_{\mathrm{SFR}}(t)$. This is the usual regulator bookkeeping, here assigned effectively to the molecular reservoir (e.g., [Lilly et al. 2013](#ref-lilly); [Huang et al. 2026](#ref-huang)). 
+Let $0\leq R<1$ be the prompt stellar mass return fraction and $\eta\geq0$ the feedback mass-loading factor, so that the feedback mass loss rate is $\eta\Sigma_{\mathrm{SFR}}(t)$. The net removal associated with star formation and feedback is $(1-R+\eta)\Sigma_{\mathrm{SFR}}(t)$. This is the usual regulator bookkeeping, here assigned effectively to the molecular reservoir (e.g., [Lilly et al. 2013](#ref-lilly); [Armitage 2026](#ref-armitage); [Huang et al. 2026](#ref-huang)). 
 
 We use only $\gamma_{\mathrm{strip}}$ for the direct RPS loss coefficient and it has units of inverse time and acts only on HI gas. The baseline has no direct molecular stripping, and no external supply to HI after $t=0$ due to the fact of starvation in cluster environment. Again, $\tau_{\mathrm{conv}}$, $\tau_{\mathrm{dep}}$, $R$, $\eta$, and $\gamma_{\mathrm{strip}}$ are constant in time at fixed location $\boldsymbol{x}$. Their possible spatial dependence is retained conceptually. Constant $\tau_{\mathrm{dep}}$ means constant molecular SFE, not constant SFR. A linear molecular law is an empirical first approximation in nearby discs, with substantial environmental and scale-dependent limitations ([Leroy et al. 2013](#ref-leroy)). The HI-only stripping choice is a hypothesis for this calculation, not a claim that molecular stripping never occurs; observations provide counterexamples ([Boselli et al. 2014](#ref-boselli)).
 
@@ -44,7 +44,7 @@ $$
 \frac{d\Sigma_{\mathrm{HI}}(t)}{dt}
 &=-\Sigma_\Phi(t)-\gamma_{\mathrm{strip}}\Sigma_{\mathrm{HI}}(t),\\
 \frac{d\Sigma_{\mathrm{H_2}}(t)}{dt}
-&=\Sigma_\Phi(t)-(1-R+\lambda)\Sigma_{\mathrm{SFR}}(t).
+&=\Sigma_\Phi(t)-(1-R+\eta)\Sigma_{\mathrm{SFR}}(t).
 \end{aligned}
 \tag{3}
 $$
@@ -54,7 +54,7 @@ These are the model's local mass balances. Their sum explicitly cancels the inte
 $$
 \frac{d}{dt}(\Sigma_{\mathrm{HI}}(t)+\Sigma_{\mathrm{H_2}}(t))
 =-\gamma_{\mathrm{strip}}\Sigma_{\mathrm{HI}}(t)
--(1-R+\lambda)\Sigma_{\mathrm{SFR}}(t).
+-(1-R+\eta)\Sigma_{\mathrm{SFR}}(t).
 \tag{4}
 $$
 
@@ -63,7 +63,7 @@ Thus conversion does not destroy gas. The total cold reservoir declines through 
 $$
 \gamma_{\mathrm{HI}}\equiv\frac{1}{\tau_{\mathrm{conv}}}+\gamma_{\mathrm{strip}},
 \qquad
-\gamma_{\mathrm{H_2}}\equiv\frac{1-R+\lambda}{\tau_{\mathrm{dep}}}.
+\gamma_{\mathrm{H_2}}\equiv\frac{1-R+\eta}{\tau_{\mathrm{dep}}}.
 \tag{5}
 $$
 
@@ -228,10 +228,10 @@ $$
 &\ \Longleftrightarrow\ 
 \Sigma_{\Phi,0}>\gamma_{\mathrm{H_2}}\Sigma_{\mathrm{H_2},0}
 \ \Longleftrightarrow\ 
-\tau_{\Phi,0}<\frac{\tau_{\mathrm{dep}}}{1-R+\lambda},\\
+\tau_{\Phi,0}<\frac{\tau_{\mathrm{dep}}}{1-R+\eta},\\
 \left.\frac{d\Sigma_{\mathrm{SFR}}(t)}{dt}\right|_0<0
 &\ \Longleftrightarrow\ 
-\tau_{\Phi,0}>\frac{\tau_{\mathrm{dep}}}{1-R+\lambda}.
+\tau_{\Phi,0}>\frac{\tau_{\mathrm{dep}}}{1-R+\eta}.
 \end{aligned}
 \tag{18}
 $$
@@ -336,9 +336,9 @@ Therefore a solution of either $\Sigma_{\mathrm{H_2}}$ or $\Sigma_{\mathrm{SFR}}
 
 ### 3.5 Atomic-gas asymmetry and the leading/trailing SFR contrast 
 
-We now want to explain potential SF enhancement/suppression in the leading/tailing RPS side, e.g., in NGC4654. Here we compare positions $x$ with different initial atomic columns, but the same initial molecular column $\Sigma_{\mathrm{H_2},0}$ and the same $\tau_{\mathrm{conv}}$, $\tau_{\mathrm{dep}}$, $R$, $\eta$, and $\gamma_{\mathrm{strip}}$. Here $x$ denotes a spatial position. The rates in equation (5) are therefore common to all positions. We define $c_{\mathrm{HI}}(x)\equiv\Sigma_{\mathrm{HI}}(x,0)/\Sigma_{\mathrm{HI},0}>0$, where $\Sigma_{\mathrm{HI},0}$ is the reference initial atomic column and $c_{\mathrm{HI}}(x_{\mathrm{reference}})=1$.
+We now want to explain the potential SF enhancement/suppression in the leading/tailing RPS side, e.g., in NGC4654. Here we compare positions $x$ with different initial atomic columns, but the same initial molecular column $\Sigma_{\mathrm{H_2},0}$ and the same $\tau_{\mathrm{conv}}$, $\tau_{\mathrm{dep}}$, $R$, $\eta$, and $\gamma_{\mathrm{strip}}$. Here $x$ denotes a spatial position. The rates in equation (5) are therefore common to all positions. We define $c_{\mathrm{HI}}(x)\equiv\Sigma_{\mathrm{HI}}(x,0)/\Sigma_{\mathrm{HI},0}>0$, where $\Sigma_{\mathrm{HI},0}$ is the reference initial atomic column and $c_{\mathrm{HI}}(x_{\mathrm{reference}})=1$.
 
-This factor represents an atomic excess or deficit established before model onset. Applying the perturbation only to HI is motivated by the greater susceptibility of diffuse atomic gas than dense molecular clouds to ram pressure ([Boselli et al. 2014](#ref-boselli); [Lee et al. 2017](#ref-lee); [Cramer et al. 2020](#ref-cramer)). It is an initial-condition approximation on how RPS act on the compresion of HI gas. Equation (8) and the unchanged supply law immediately give
+This factor represents an atomic excess or deficit established before model onset. Applying the perturbation only to HI is again motivated by the greater susceptibility of diffuse atomic gas than dense molecular clouds to ram pressure ([Boselli et al. 2014](#ref-boselli); [Lee et al. 2017](#ref-lee); [Cramer et al. 2020](#ref-cramer)). It is an initial-condition approximation on how RPS act on the compresion of HI gas. Equation (8) and the unchanged supply law immediately give
 
 $$
 \begin{aligned}
@@ -364,7 +364,7 @@ $$
 \tag{27}
 $$
 
-Only the supplied term is multiplied by $c_{\mathrm{HI}}(x)$; the initial molecular term is common. Dividing by the common depletion time gives
+Only the supplied term is multiplied by $c_{\mathrm{HI}}(x)$; the initial molecular term is common. Dividing by the common depletion timescale gives
 
 $$
 \begin{aligned}
@@ -378,9 +378,9 @@ $$
 \tag{28}
 $$
 
-These expressions use consistent physical units, with the numerical conversion in equation (6). For equal response rates, replace the exponential quotient by $t e^{-\gamma_{\mathrm{H_2}}t}$, as in equation (15).
+For equal response rates, replace the exponential quotient by $t e^{-\gamma_{\mathrm{H_2}}t}$, as in equation (15).
 
-Let $\Sigma_{\mathrm{H_2}}^{\mathrm{reference}}(t)$ be equation (27) evaluated at $c_{\mathrm{HI}}=1$. Subtracting the solutions at any two positions $x_1$ and $x_2$ cancels the common initial term:
+Let $\Sigma_{\mathrm{H_2}}^{\mathrm{reference}}(t)$ be equation (27) evaluated at $c_{\mathrm{HI}}=1$, which corresponds to equation (13), i.e., $\Sigma_{\mathrm{H_2}}^{\mathrm{reference}}(t) = \Sigma_{\mathrm{H_2}}(t)$. Subtracting the solutions at any two positions $x_1$ and $x_2$ cancels the common initial term:
 
 $$
 \begin{aligned}
@@ -392,9 +392,9 @@ $$
 \tag{29}
 $$
 
-The second bracket is the surviving molecular gas supplied after $t=0$. It is strictly positive for every finite $t>0$, since the numerator and denominator of the exponential quotient have the same sign; its equal-rate limit is also positive. It is not the full reference molecular column: that would incorrectly predict a nonzero difference at $t=0$. Consequently, the molecular difference, and the SFR difference obtained by dividing by $\tau_{\mathrm{dep}}>0$, have the sign of $c_{\mathrm{HI}}(x_1)-c_{\mathrm{HI}}(x_2)$.
+The second bracket is the surviving molecular gas supplied after $t=0$. It is strictly positive for every finite $t>0$, since the numerator and denominator of the exponential quotient have the same sign; its equal-rate limit is also positive. Consequently, the molecular column difference, and the SFR difference obtained by dividing by $\tau_{\mathrm{dep}}>0$, have the sign of $c_{\mathrm{HI}}(x_1)-c_{\mathrm{HI}}(x_2)$.
 
-If the proposed geometry establishes $c_{\mathrm{HI}}(x_{\mathrm{leading}})>1>c_{\mathrm{HI}}(x_{\mathrm{trailing}})>0$, then
+If the proposed geometry establishes $c_{\mathrm{HI}}(x_{\mathrm{leading}})>1=c_{\mathrm{HI}}(x_{\mathrm{reference}})>c_{\mathrm{HI}}(x_{\mathrm{trailing}})>0$, then
 
 $$
 \boxed{
@@ -409,9 +409,7 @@ $$
 \tag{30}
 $$
 
-The superscripts denote evaluation at the corresponding position. All three SFRs are equal at $t=0$; their differences develop through the atomic supply. The reference has the same stripping coefficient as the other positions. This is a spatial ordering, not a statement that the leading SFR is increasing with time or that every RPS geometry has the assumed atomic pattern. 
-
-## 4. From instantaneous SFR to young-star H$\alpha$ emission
+## 4. From decreasing $\Sigma_\mathrm{SFR}$ to fading young-star H$\alpha$ emission
 
 Let $\mathcal L_\alpha^{\mathrm{young}}$ be the H$\alpha$ luminosity per adopted area powered by the young stellar population. It includes both compact HII emission and emission powered by O/B star photons absorbed outside compact HII regions, i.e. the leaky photons. For the main calculation these are one effective component. 
 
@@ -424,7 +422,7 @@ $$
 \tag{31}
 $$
 
-$C_\alpha$ is the H$\alpha$-to-SFR calibration, which already absorbs stellar population and the assumed IMF. In MAUVE observation the adopted value is $C_\alpha=4.9835821\times10^{-42}\ M_\odot\,\mathrm{yr^{-1}}/(\mathrm{erg\,s^{-1}})$ with Chabrier IMF. 
+$C_\alpha$ is the H$\alpha$-to-SFR calibration, which already absorbs stellar population and the assumed IMF. Note that in MAUVE observation the adopted value is $C_\alpha=4.98\times10^{-42}\ M_\odot\,\mathrm{yr^{-1}}/(\mathrm{erg\,s^{-1}})$ with Chabrier IMF. 
 
 ## 5. HOLMES's contribution to H$\alpha$ budget
 
@@ -437,7 +435,7 @@ $$
 \tag{32}
 $$
 
-Here we adopt $q_{\mathrm{H,HOLMES}}=7\times10^{40}\ \mathrm{s^{-1}}M_\odot^{-1}$ from the PEGASE normalization used by [Belfiore et al. (2022), section 3.2](#ref-belfiore).  In ionization equilibrium, one absorbed ionizing photon balances a Case-B recombination. The probability that such a recombination produces H$\alpha$ is $p_\alpha=\alpha_\alpha^{\mathrm{eff}}/\alpha_B$. Each emitted H$\alpha$ photon carries energy $h_{\mathrm P}\nu_\alpha$. Therefore
+Here we adopt $q_{\mathrm{H,HOLMES}}=7\times10^{40}\ \mathrm{s^{-1}}M_\odot^{-1}$ from the PEGASE normalization used by [Belfiore et al. (2022), section 3.2](#ref-belfiore).  In ionization equilibrium, one absorbed ionizing photon balances a Case-B recombination [(Hummer & Storey 1987)](#ref-hs): $\alpha_B$ excludes recombinations directly to the hydrogen ground state; $\alpha_\alpha^{\mathrm{eff}}$ counts recombinations yielding H$\alpha$. The probability that such a recombination produces H$\alpha$ is $p_\alpha=\alpha_\alpha^{\mathrm{eff}}/\alpha_B$. Each emitted H$\alpha$ photon carries energy $h\nu_\alpha$. Therefore
 
 $$
 \begin{aligned}
@@ -451,11 +449,11 @@ p_\alpha\equiv\frac{\alpha_\alpha^{\mathrm{eff}}}{\alpha_B}\simeq\frac{1}{2.206}
 \tag{33}
 $$
 
-$\alpha_B$ excludes recombinations directly to the hydrogen ground state; $\alpha_\alpha^{\mathrm{eff}}$ counts recombinations yielding H$\alpha$ [(Hummer & Storey 1987)](#ref-hs). With $\lambda_\alpha=6562.8\AA$, $\epsilon_\alpha=1.3721\times10^{-12}$ erg per absorbed photon. The adopted numerical conversion $p_\alpha$ is given in [Cid Fernandes et al. (2011), equation 2](#ref-cid), for photoionization by populations older than $10^8$ yr. Therefore, since the old stellar mass ($\Sigma_*^{\mathrm{old}}$) assigned to the region changes little, we consider HOLMES's H$\alpha$ emission as constant (or at least relatively constant compared to the young stellar's contribution).
+With $\lambda_\alpha=6562.8\AA$, $\epsilon_\alpha=1.3721\times10^{-12}$ erg per absorbed photon. The adopted numerical conversion $p_\alpha$ is given in [Cid Fernandes et al. (2011), equation 2](#ref-cid), for photoionization by populations older than $10^8$ yr. Therefore, since the old stellar mass ($\Sigma_*^{\mathrm{old}}$) assigned to the region changes little, we consider HOLMES's H$\alpha$ emission as constant (or at least relatively constant compared to the young stellar's contribution).
 
 ## 6. How the luminosity weights change
 
-Add the two positive Halpha contributions before defining their weights:
+By our definition, H$\alpha$ emission comes from young stellar and HOLMES components, so we can also define their luminosity weights, respectively:
 
 $$
 \begin{aligned}
@@ -487,7 +485,7 @@ This connects the gas balance directly to the changing source weight. Molecular 
 
 ## 7. The BPT line ratios and the complete connection
 
- For a forbidden line $\ell$, let $B$ denote its Balmer denominator and define the linear component ratio $R_{\ell/B}^j=\mathcal L_\ell^j/\mathcal L_B^j$, with $j$ belongs to young or HOLMES. N2 is [N II]6583/Halpha, S2 is ([S II]6716+[S II]6731)/Halpha, and O3 is [O III]5007/Hbeta. Due to the harder ionization of HOLMES, we have 
+For a forbidden line $\ell$, let $B$ denote its Balmer denominator and define the linear component ratio $R_{\ell/B}^j=\mathcal L_\ell^j/\mathcal L_B^j$, with $j$ belongs to young or HOLMES contribution. N2 is [N II]6583/Halpha, S2 is ([S II]6716+[S II]6731)/Halpha, and O3 is [O III]5007/Hbeta. Due to the harder ionization of HOLMES, we have 
 $$
 R_{\ell/B}^{\mathrm{young}}<R_{\ell/B}^{\mathrm{HOLMES}}.
 $$
@@ -506,7 +504,9 @@ Substitute $\mathcal L_\ell^j=R_{\ell/B}^j\mathcal L_B^j$ into the total ratio y
 
 $$
 \begin{aligned}
-R_{\ell/B}(t)
+R_{\ell/B}(t)&=\frac{\mathcal L_l^{\mathrm{young}}(t)
++\mathcal L_l^{\mathrm{HOLMES}}}
+{\mathcal L_B^{\mathrm{young}}(t)+\mathcal L_B^{\mathrm{HOLMES}}}\\
 &=\frac{R_{\ell/B}^{\mathrm{young}}\mathcal L_B^{\mathrm{young}}(t)
 +R_{\ell/B}^{\mathrm{HOLMES}}\mathcal L_B^{\mathrm{HOLMES}}}
 {\mathcal L_B^{\mathrm{young}}(t)+\mathcal L_B^{\mathrm{HOLMES}}}\\
@@ -518,7 +518,7 @@ R_{\ell/B}(t)
 \tag{38}
 $$
 
-This luminosity-weighted identity has an HII/DIG antecedent in . For constant component spectra, differentiate equation (38):
+Then we differentiate equation (38):
 
 $$
 \frac{dR_{\ell/B}(t)}{dt}
@@ -527,7 +527,7 @@ $$
 \tag{39}
 $$
 
-When young emission fades, the sign of the ratio change is the sign of the spectral contrast. Harder ionization alone does not require every ratio to increase. Both Balmer and forbidden-line luminosities can decline while their ratio rises because the Balmer line fades faster.
+Hence, the change of HOLMES weight/fraction directly trace the change of observed BPT line ratio. 
 
 Finally, inserting the gas solution, the young-star conversion, and the old-star normalization gives the complete prediction:
 
@@ -545,58 +545,54 @@ R_{\ell/B}(t)
 \tag{40}
 $$
 
+## 8. Conclusion
+
+In summary, by establishing the simple two-reservoir model, we show that as a galaxy goes through the cluster environment, the RPS acts on the removal of HI column and cause the delayed decline of both molecular gas and SFR intensity. This further leads to the fading H$\alpha$ surface brightness from young stellar component, while the H$\alpha$ emission from ionization by HOLMES remains relatively unchanged, which causes the increasing fraction/weight of harder ionization and therefore higher BPT line ratio in observation.
+
 ## References
 
 <span id="ref-armitage"></span>
-**Armitage, P. J. (2022).** *Lecture notes on accretion disk physics.* arXiv:2201.07262, sections II.A and III.A.1. [Primary manuscript](https://arxiv.org/pdf/2201.07262). Equations 9 and 91--97 define surface density and derive its continuity equation; the phase-specific sources and sinks are added explicitly in this report.
+**Armitage, P. J. (2022).** *Lecture notes on accretion disk physics.* arXiv:2201.07262. [ArXiv](https://arxiv.org/pdf/2201.07262). 
 
 <span id="ref-belfiore"></span>
-**Belfiore, F., et al. (2022).** *A tale of two DIGs: The relative role of H II regions and low-mass hot evolved stars in powering the diffuse ionised gas in PHANGS-MUSE galaxies.* A&A, 659, A26. [DOI](https://doi.org/10.1051/0004-6361/202141859); [primary full text](https://arxiv.org/html/2111.14876v3).
-
+**Belfiore, F., et al. (2022).** *A tale of two DIGs: The relative role of H II regions and low-mass hot evolved stars in powering the diffuse ionised gas in PHANGS-MUSE galaxies.* A&A, 659, A26.  [DOI](https://doi.org/10.1051/0004-6361/202141859).
 
 <span id="ref-blanc"></span>
-**Blanc, G. A., Heiderman, A., Gebhardt, K., Evans, N. J. II, & Adams, J. (2009).** *The Spatially Resolved Star Formation Law from Integral Field Spectroscopy: VIRUS-P Observations of NGC 5194.* ApJ, 704, 842--862. [DOI](https://doi.org/10.1088/0004-637X/704/1/842); [primary manuscript](https://arxiv.org/pdf/0908.2810).
-
+**Blanc, G. A., Heiderman, A., Gebhardt, K., Evans, N. J. II, & Adams, J. (2009).** *The Spatially Resolved Star Formation Law from Integral Field Spectroscopy: VIRUS-P Observations of NGC 5194.* ApJ, 704, 842--862. [DOI](https://doi.org/10.1088/0004-637X/704/1/842).
 
 <span id="ref-boselli"></span>
-**Boselli, A., et al. (2014).** *Cold gas properties of the Herschel Reference Survey. III. Molecular gas stripping in cluster galaxies.* A&A, 564, A67. [DOI](https://doi.org/10.1051/0004-6361/201322313); [primary manuscript](https://arxiv.org/abs/1402.0326).
-
+**Boselli, A., et al. (2014).** *Cold gas properties of the Herschel Reference Survey. III. Molecular gas stripping in cluster galaxies.* A&A, 564, A67. [DOI](https://doi.org/10.1051/0004-6361/201322313).
 
 <span id="ref-brown"></span>
-**Brown, T., et al. (2023).** *VERTICO VII: Environmental Quenching Caused by Suppression of Molecular Gas Content and Star Formation Efficiency in Virgo Cluster Galaxies.* ApJ, 956, 37. [DOI](https://doi.org/10.3847/1538-4357/acf195); [primary manuscript](https://arxiv.org/pdf/2308.10943).
-
+**Brown, T., et al. (2023).** *VERTICO VII: Environmental Quenching Caused by Suppression of Molecular Gas Content and Star Formation Efficiency in Virgo Cluster Galaxies.* ApJ, 956, 37. [DOI](https://doi.org/10.3847/1538-4357/acf195).
 
 <span id="ref-byler"></span>
-**Byler, N., et al. (2019).** *Self-consistent predictions for LIER-like emission lines from post-AGB stars.* AJ, 158, 2. [DOI](https://doi.org/10.3847/1538-3881/ab1b70); [primary manuscript](https://arxiv.org/pdf/1904.10978).
-
+**Byler, N., et al. (2019).** *Self-consistent predictions for LIER-like emission lines from post-AGB stars.* AJ, 158, 2. [DOI](https://doi.org/10.3847/1538-3881/ab1b70).
 
 <span id="ref-cid"></span>
-**Cid Fernandes, R., Stasinska, G., Mateus, A., & Vale Asari, N. (2011).** *A comprehensive classification of galaxies in the Sloan Digital Sky Survey: how to tell true from fake AGN?* MNRAS, 413, 1687--1699. [DOI](https://doi.org/10.1111/j.1365-2966.2011.18244.x); [primary paper](https://minerva.ufsc.br/starlight/files/papers/j.1365-2966.2011.18244.x.pdf).
-
+**Cid Fernandes, R., Stasinska, G., Mateus, A., & Vale Asari, N. (2011).** *A comprehensive classification of galaxies in the Sloan Digital Sky Survey: how to tell true from fake AGN?* MNRAS, 413, 1687--1699. [DOI](https://doi.org/10.1111/j.1365-2966.2011.18244.x).
 
 <span id="ref-cramer"></span>
-**Cramer, W. J., et al. (2020).** *ALMA evidence for ram pressure compression and stripping of molecular gas in the Virgo cluster galaxy NGC 4402.* ApJ, 901. [DOI](https://doi.org/10.3847/1538-4357/abaf54); [primary manuscript](https://arxiv.org/pdf/1910.14082).
+**Cramer, W. J., et al. (2020).** *ALMA evidence for ram pressure compression and stripping of molecular gas in the Virgo cluster galaxy NGC 4402.* ApJ, 901. [DOI](https://doi.org/10.3847/1538-4357/abaf54).
 
 <span id="ref-fumagalli"></span>
-**Fumagalli, M., Krumholz, M. R., Prochaska, J. X., Gavazzi, G., & Boselli, A. (2009).** *Molecular hydrogen deficiency in HI-poor galaxies and its implications for star formation.* ApJ, 697, 1811--1821. [DOI](https://doi.org/10.1088/0004-637X/697/2/1811); [primary manuscript](https://arxiv.org/abs/0903.3950).
-
+**Fumagalli, M., Krumholz, M. R., Prochaska, J. X., Gavazzi, G., & Boselli, A. (2009).** *Molecular hydrogen deficiency in HI-poor galaxies and its implications for star formation.* ApJ, 697, 1811--1821. [DOI](https://doi.org/10.1088/0004-637X/697/2/1811).
 
 <span id="ref-huang"></span>
-**Huang, R., et al. (2026).** *MAUVE-MUSE: When Metallicity Follows or Fights Star Formation--A Mass-Dependent Inversion in Virgo Galaxies.* MNRAS, 549, stag1019. [DOI](https://doi.org/10.1093/mnras/stag1019); [primary manuscript](https://arxiv.org/html/2605.31412v1).
+**Huang, R., et al. (2026).** *MAUVE-MUSE: When Metallicity Follows or Fights Star Formation--A Mass-Dependent Inversion in Virgo Galaxies.* MNRAS, 549, stag1019. [DOI](https://doi.org/10.1093/mnras/stag1019).
 
 
 <span id="ref-hs"></span>
 **Hummer, D. G., & Storey, P. J. (1987).** *Recombination-line intensities for hydrogenic ions--I. Case B calculations for HI and HeII.* MNRAS, 224, 801--820. [DOI](https://doi.org/10.1093/mnras/224.3.801).
 
-
 <span id="ref-ke"></span>
-**Kennicutt, R. C., Jr., & Evans, N. J. II (2012).** *Star Formation in the Milky Way and Nearby Galaxies.* ARA&A, 50, 531--608. [DOI](https://doi.org/10.1146/annurev-astro-081811-125610); [primary manuscript](https://arxiv.org/abs/1204.3552).
+**Kennicutt, R. C., Jr., & Evans, N. J. II (2012).** *Star Formation in the Milky Way and Nearby Galaxies.* ARA&A, 50, 531--608. [DOI](https://doi.org/10.1146/annurev-astro-081811-125610).
 
 <span id="ref-lee"></span>
-**Lee, B., et al. (2017).** *The effect of ram pressure on the molecular gas of galaxies: three case studies in the Virgo cluster.* MNRAS, 466, 1382--1398. [DOI](https://doi.org/10.1093/mnras/stw3162); [primary manuscript](https://arxiv.org/pdf/1701.02750).
+**Lee, B., et al. (2017).** *The effect of ram pressure on the molecular gas of galaxies: three case studies in the Virgo cluster.* MNRAS, 466, 1382--1398. [DOI](https://doi.org/10.1093/mnras/stw3162).
 
 <span id="ref-leroy"></span>
-**Leroy, A. K., et al. (2013).** *Molecular Gas and Star Formation in Nearby Disk Galaxies.* AJ, 146, 19. [DOI](https://doi.org/10.1088/0004-6256/146/2/19); [primary manuscript](https://arxiv.org/pdf/1301.2328).
+**Leroy, A. K., et al. (2013).** *Molecular Gas and Star Formation in Nearby Disk Galaxies.* AJ, 146, 19. [DOI](https://doi.org/10.1088/0004-6256/146/2/19).
 
 <span id="ref-lilly"></span>
-**Lilly, S. J., Carollo, C. M., Pipino, A., Renzini, A., & Peng, Y. (2013).** *Gas Regulation of Galaxies: The Evolution of the Cosmic Specific Star Formation Rate, the Metallicity-Mass-Star-formation Rate Relation, and the Stellar Content of Halos.* ApJ, 772, 119. [DOI](https://doi.org/10.1088/0004-637X/772/2/119); [primary manuscript](https://arxiv.org/abs/1303.5059).
+**Lilly, S. J., Carollo, C. M., Pipino, A., Renzini, A., & Peng, Y. (2013).** *Gas Regulation of Galaxies: The Evolution of the Cosmic Specific Star Formation Rate, the Metallicity-Mass-Star-formation Rate Relation, and the Stellar Content of Halos.* ApJ, 772, 119. [DOI](https://doi.org/10.1088/0004-637X/772/2/119).
