@@ -645,7 +645,7 @@ def broadcast_bin_results(
     *,
     integer_fields: set[str] | frozenset[str] | None = None,
 ) -> dict[str, np.ndarray]:
-    """Broadcast one value per BINID into full-size float or int16 maps."""
+    """Broadcast bin results, retaining wider integer QC values when supplied."""
 
     binid = np.asarray(binid_map)
     ids = np.asarray(bin_ids, dtype=np.int64)
@@ -676,7 +676,10 @@ def broadcast_bin_results(
                 f"Result field {name} has shape {values.shape}, expected {(ids.size,)}."
             )
         if name in integers:
-            result_map = np.full(binid.shape, NOT_EVALUATED_FLAG, dtype=np.int16)
+            result_map = np.full(
+                binid.shape, NOT_EVALUATED_FLAG,
+                dtype=np.result_type(np.int16, values.dtype),
+            )
         else:
             result_map = np.full(binid.shape, np.nan, dtype=np.float64)
         sorted_values = values[sort_order]
@@ -884,14 +887,20 @@ def _records_to_arrays(
     records: Sequence[Mapping[str, float | int]],
     float_fields: Sequence[str],
     integer_fields: Sequence[str],
+    *,
+    integer_dtypes: Mapping[str, Any] | None = None,
 ) -> dict[str, np.ndarray]:
+    integer_dtypes = {} if integer_dtypes is None else integer_dtypes
     return {
         **{
             name: np.asarray([record[name] for record in records], dtype=np.float64)
             for name in float_fields
         },
         **{
-            name: np.asarray([record[name] for record in records], dtype=np.int16)
+            name: np.asarray(
+                [record[name] for record in records],
+                dtype=integer_dtypes.get(name, np.int16),
+            )
             for name in integer_fields
         },
     }
@@ -1507,7 +1516,11 @@ def run_pyqz_spectra(
         np.random.set_state(random_state)
 
     return ModelBatchRun(
-        results=_records_to_arrays(records, PYQZ_FLOAT_FIELDS, PYQZ_INTEGER_FIELDS),
+        # pyqz concatenates decimal QC digits (e.g. 91234), exceeding int16.
+        results=_records_to_arrays(
+            records, PYQZ_FLOAT_FIELDS, PYQZ_INTEGER_FIELDS,
+            integer_dtypes={"flag": np.int32},
+        ),
         failures=tuple(failures),
         recoveries=tuple(recoveries),
     )

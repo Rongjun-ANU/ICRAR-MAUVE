@@ -123,6 +123,12 @@ pressure is fixed model provenance; it is not an inferred pressure map. Its
 bundled range is `8.00 <= 12+log(O/H) <= 8.875` and
 `6.5 <= LogQ <= 8.5`, with diagnostic-specific off-grid behaviour retained.
 
+`PYQZ_FLAG_HII` and `PYQZ_FLAG_SF` use signed 32-bit FITS images (`BITPIX=32`)
+because pyqz concatenates decimal QC digits: a raw flag such as `91234` exceeds
+the signed 16-bit range. The full raw flag is preserved through bin expansion
+and region masking; `-99` still means not evaluated. Validity masks and the
+NebulaBayes/JY22 flag layers retain their existing signed 16-bit storage.
+
 NebulaBayes uses its bundled MAPPINGS 5.1 HII grid with parameter order
 `log U`, `log P/k`, `12+log(O/H)`, interpolated shape `[40,20,160]`, linear
 interpolation, `grid_error=0.10`, an Hbeta normalisation, all six likelihood

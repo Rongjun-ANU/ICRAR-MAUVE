@@ -340,6 +340,12 @@ Changes (2026-08-29)
   seed on the same MAPPINGS-V diagnostic and evaluates the same multivariate
   KDE/0.61 contour on a local adaptive mesh; spatial-bin results and genuinely
   off-grid integrated spectra remain unchanged.
+
+Changes (2026-10-06)
+-----------------------
+* Preserve raw pyqz decimal QC flags as signed 32-bit integers through bin
+  broadcasting, HII/SF masking, and FITS output. Flags such as 91234 exceed
+  signed 16-bit storage; other model validity masks retain their existing type.
 """
 
 # ------------------------------------------------------------------
@@ -3761,8 +3767,12 @@ def print_model_recoveries(label, recoveries):
 def selected_model_field(source_map, selection, *, integer=False):
     """Apply an HII/SF mask without changing the underlying shared fit."""
     if integer:
-        output = np.full(source_map.shape, NOT_EVALUATED_FLAG, dtype=np.int16)
-        output[selection] = np.asarray(source_map, dtype=np.int16)[selection]
+        values = np.asarray(source_map)
+        output = np.full(
+            values.shape, NOT_EVALUATED_FLAG,
+            dtype=np.result_type(np.int16, values.dtype),
+        )
+        output[selection] = values[selection]
         return output
     return np.where(selection, np.asarray(source_map, dtype=np.float64), np.nan)
 
@@ -7113,7 +7123,7 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
             CARTA_DIMENSIONLESS_BUNIT,
             "Raw pyqz flag in HII regions; -99 means not evaluated",
             "Raw pyqz flag in SF regions; -99 means not evaluated",
-            dtype=np.int16,
+            dtype=np.int32,
             references=pyqz_references,
         )
         append_named_hii_sf_pair(
@@ -7540,7 +7550,8 @@ def build_ordered_output_hdul(base_hdus) -> fits.HDUList:
                     f"gas-map shape {HA6562_FLUX.shape}."
                 )
             expected_dtype = np.dtype(
-                np.int16 if name in integer_model_names else np.float64
+                np.int32 if name.startswith("PYQZ_FLAG_")
+                else np.int16 if name in integer_model_names else np.float64
             )
             if (
                 hdu.data.dtype.kind != expected_dtype.kind
