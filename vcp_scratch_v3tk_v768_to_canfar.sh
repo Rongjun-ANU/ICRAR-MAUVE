@@ -8,11 +8,13 @@ set -euo pipefail
 #   - files are uploaded one at a time using a one-file staging directory
 #   - each file is retried independently with exponential backoff
 #   - one failed file does not prevent the remaining files in that galaxy from running
-#   - existing identical remote files are left for vcp to detect and skip
+#   - success requires a full remote read-back with matching bytes and SHA-256
+#   - missing continuum cubes fail the galaxy instead of silently succeeding
+#   - --cont-only selects only continuum cubes for targeted recovery
 #   - no vls/vmkdir dependency; vcp handles the remote galaxy directory as before
 #
 # Usage:
-#   ./vcp_scratch_v3tk_v768_to_canfar.sh [--dry-run] [normal|7000] [GALID ...]
+#   ./vcp_scratch_v3tk_v768_to_canfar.sh [--dry-run] [--cont-only] [normal|7000] [GALID ...]
 #
 # Examples:
 #   ./vcp_scratch_v3tk_v768_to_canfar.sh 7000 NGC4607 NGC4698
@@ -134,7 +136,7 @@ PRODUCT_SUFFIXES=(
 
 usage() {
     cat <<'USAGE'
-Usage: ./vcp_scratch_v3tk_v768_to_canfar.sh [--dry-run] [normal|7000] [GALID ...]
+Usage: ./vcp_scratch_v3tk_v768_to_canfar.sh [--dry-run] [--cont-only] [normal|7000] [GALID ...]
 
 Upload selected nGIST products directly from Setonix scratch to CANFAR.
 
@@ -150,6 +152,7 @@ Examples:
 
 Options:
   -n, --dry-run  Show selected galaxies and source files without contacting CADC
+  --cont-only    Upload and verify only the continuum cubes
   -h, --help     Show this help
 
 Environment:
@@ -160,6 +163,13 @@ Environment:
   BASE_OVERLAY      Base CADC overlay image
   OVERLAY_DIR       Temporary worker overlay directory (default: $MYSCRATCH/cadc_upload_overlays)
   VCP_CMD           Optional explicit path to vcp
+
+Every upload is downloaded again to scratch and compared by size and SHA-256.
+Allow scratch space for one extra largest-file copy per worker and download
+traffic equal to the upload volume. Keep source products idle during transfer.
+FITS sources must start with SIMPLE; this is a sanity check, not full FITS QC.
+If vcp repeatedly skips a corrupt remote file as identical, quarantine that
+exact file on CANFAR before retrying. This script does not delete remote files.
 USAGE
 }
 
@@ -255,6 +265,7 @@ wait_for_overlay() {
 }
 
 DRY_RUN=0
+CONT_ONLY=0
 REQUESTED_RUNS=()
 REQUESTED_GALAXIES=()
 
@@ -262,6 +273,9 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         -n|--dry-run)
             DRY_RUN=1
+            ;;
+        --cont-only)
+            CONT_ONLY=1
             ;;
         -h|--help)
             usage
@@ -289,6 +303,10 @@ while [ "$#" -gt 0 ]; do
     esac
     shift
 done
+
+if [ "$CONT_ONLY" -eq 1 ]; then
+    PRODUCT_SUFFIXES=(_cont_cube.fits)
+fi
 
 if ! is_positive_integer "$JOBS"; then
     echo "ERROR: JOBS must be a positive integer, got: $JOBS" >&2
@@ -389,6 +407,12 @@ command -v flock >/dev/null 2>&1 || {
     echo "ERROR: flock is not available in PATH." >&2
     exit 1
 }
+for required_command in sha256sum stat head; do
+    command -v "$required_command" >/dev/null 2>&1 || {
+        echo "ERROR: $required_command is not available in PATH." >&2
+        exit 1
+    }
+done
 
 if [ ! -f "$BASE_OVERLAY" ]; then
     echo "ERROR: CADC overlay not found: $BASE_OVERLAY" >&2
@@ -460,9 +484,23 @@ upload_one_file() {
     local filename
     local staged_path
     local attempt delay
+    local remote_path readback_path source_bytes source_hash readback_bytes readback_hash current_hash
 
     filename=$(basename "$path")
     staged_path="${stage_galaxy_dir}/${filename}"
+    remote_path="${dest_base}/${galaxy}/${filename}"
+    # Keep read-back outside the uploaded directory so it cannot be uploaded.
+    readback_path="${stage_galaxy_dir%/*}/readback.tmp"
+
+    if [[ "$filename" == *.fits ]] && [ "$(head -c 9 "$path")" != 'SIMPLE  =' ]; then
+        echo "ERROR [$run $galaxy]: $filename has no primary FITS SIMPLE card; refusing upload." >&2
+        return 1
+    fi
+    source_bytes=$(stat -c %s "$path") || return 1
+    source_hash=$(sha256sum "$path") || return 1
+    source_hash=${source_hash%% *}
+    echo "[$run $galaxy] Source: $path ($source_bytes bytes; SHA256 $source_hash)"
+    echo "[$run $galaxy] Destination: $remote_path"
 
     # Keep exactly one file in the staged galaxy directory.  Because the
     # staging directory lives under source_base, ln is normally a hard link
@@ -483,9 +521,29 @@ upload_one_file() {
         # as the original working script.  The staged galaxy directory
         # contains only this one file, so each vcp invocation is independent.
         if CADC_OVERLAY="$overlay" "$VCP_CMD" -v "$stage_galaxy_dir" "${dest_base}/"; then
-            echo "[$run $galaxy] OK: $filename"
-            rm -f "$staged_path"
-            return 0
+            # A fresh local target prevents vcp's identical-file skip on GET.
+            rm -f "$readback_path"
+            if CADC_OVERLAY="$overlay" "$VCP_CMD" -v "$remote_path" "$readback_path" && [ -f "$readback_path" ]; then
+                readback_bytes=$(stat -c %s "$readback_path") || readback_bytes=unknown
+                readback_hash=$(sha256sum "$readback_path") || readback_hash=unknown
+                readback_hash=${readback_hash%% *}
+                current_hash=$(sha256sum "$path") || current_hash=unknown
+                current_hash=${current_hash%% *}
+                if [ "$current_hash" != "$source_hash" ]; then
+                    echo "ERROR [$run $galaxy]: source changed during transfer: $filename; stop its writer before retrying." >&2
+                    rm -f "$staged_path" "$readback_path"
+                    return 1
+                fi
+                if [ "$readback_bytes" = "$source_bytes" ] && [ "$readback_hash" = "$source_hash" ]; then
+                    echo "[$run $galaxy] VERIFIED: $filename ($readback_bytes bytes; SHA256 $readback_hash)"
+                    rm -f "$staged_path" "$readback_path"
+                    return 0
+                fi
+                echo "ERROR [$run $galaxy]: read-back mismatch: $filename; source=$source_bytes/$source_hash remote=$readback_bytes/$readback_hash" >&2
+            else
+                echo "ERROR [$run $galaxy]: read-back failed for $remote_path" >&2
+            fi
+            rm -f "$readback_path"
         fi
 
         if [ "$attempt" -lt "$FILE_RETRIES" ]; then
@@ -496,7 +554,7 @@ upload_one_file() {
     done
 
     echo "ERROR [$run $galaxy]: giving up on $filename after $FILE_RETRIES attempts." >&2
-    rm -f "$staged_path"
+    rm -f "$staged_path" "$readback_path"
     return 1
 }
 
@@ -521,6 +579,10 @@ upload_galaxy() {
             sources+=("$path")
         else
             echo "WARNING [$run $galaxy]: missing source, skipping: $path" >&2
+            if [ "$suffix" = _cont_cube.fits ]; then
+                echo "ERROR [$run $galaxy]: required continuum cube is missing." >&2
+                galaxy_status=1
+            fi
         fi
     done
 
@@ -531,9 +593,12 @@ upload_galaxy() {
 
     echo "Uploading $run $galaxy (${#sources[@]} files) one file at a time..."
 
-    stage_root=$(mktemp -d "${source_base}/.vcp_upload_stage_${RUN_ID}_${run}_${galaxy}.XXXXXX")
+    stage_root=$(mktemp -d "${source_base}/.vcp_upload_stage_${RUN_ID}_${run}_${galaxy}.XXXXXX") || return 1
     stage_galaxy_dir="${stage_root}/${galaxy}"
-    mkdir -p "$stage_galaxy_dir"
+    if ! mkdir -p "$stage_galaxy_dir"; then
+        rm -rf "$stage_root"
+        return 1
+    fi
 
     for path in "${sources[@]}"; do
         if upload_one_file "$run" "$galaxy" "$path" "$dest_base" "$overlay" "$stage_galaxy_dir"; then
@@ -547,7 +612,7 @@ upload_galaxy() {
     rm -rf "$stage_root"
 
     if [ "$galaxy_status" -eq 0 ]; then
-        echo "Finished $run $galaxy: ${succeeded}/${#sources[@]} files successful."
+        echo "Finished $run $galaxy: ${succeeded}/${#sources[@]} files verified by read-back."
     else
         echo "Finished $run $galaxy with failures: $succeeded succeeded, $failed failed." >&2
     fi
@@ -590,4 +655,4 @@ if [ "$status" -ne 0 ]; then
     exit "$status"
 fi
 
-echo "Upload to CANFAR finished."
+echo "Upload to CANFAR finished; all selected available files verified by read-back and no required continuum cubes missing."
