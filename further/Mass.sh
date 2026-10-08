@@ -30,6 +30,9 @@
 # Changes (2026-08-01):
 #   - Document the existing RUN GALAXY form for selecting one galaxy from one
 #     run, e.g. `normal NGC4321` or `7000 NGC4321`.
+#
+# Changes (2026-10-08):
+#   - Print a final list of failed galaxies with run, exit code, and log path.
 
 set -euo pipefail
 
@@ -204,6 +207,7 @@ phangs_native_filename() {
 # ──────────────────────────────────────────────────────────────
 all_start=$(date +%s)
 run_status=0
+FAILED_TASKS=()
 
 for TASK in "${TASKS[@]}"; do
   IFS='|' read -r RUN_LABEL RUN_ROOT PRODUCT_SUBDIR GAL <<<"$TASK"
@@ -282,10 +286,11 @@ for TASK in "${TASKS[@]}"; do
   mins=$((dur / 60)); secs=$((dur % 60))
 
   if [[ $status -eq 0 ]]; then
-    msg="✅  $GAL finished in ${mins}m${secs}s"
+    msg="✅  $RUN_LABEL / $GAL finished in ${mins}m${secs}s"
   else
     run_status=1
-    msg="🛑  $GAL failed (exit $status) after ${mins}m${secs}s – see $LOGFILE"
+    FAILED_TASKS+=("  - $RUN_LABEL / $GAL (exit $status) - see $LOGFILE")
+    msg="🛑  $RUN_LABEL / $GAL failed (exit $status) after ${mins}m${secs}s – see $LOGFILE"
   fi
   echo "$msg" | tee -a "$LOGFILE"      # append to log + echo to screen
 done
@@ -299,6 +304,8 @@ if [[ $run_status -eq 0 ]]; then
 else
   printf "\n🛑  Mass.sh completed with one or more failures in %dh%02dm%02ds\n" \
        $((tot/3600)) $(((tot/60)%60)) $((tot%60)) >&2
+  printf 'Failed tasks (%d):\n' "${#FAILED_TASKS[@]}" >&2
+  printf '%s\n' "${FAILED_TASKS[@]}" >&2
 fi
 
 exit "$run_status"

@@ -25,6 +25,10 @@
 # Changes (2026-08-01):
 #   - Document the existing RUN GALAXY form for selecting one galaxy from one
 #     run, e.g. `normal NGC4321` or `7000 NGC4321`.
+#
+# Changes (2026-10-08):
+#   - Print a final list of failed galaxies with run, exit code, and log path.
+#   - Collect per-task statuses separately for parallel and xargs workers.
 
 set -euo pipefail
 
@@ -201,11 +205,12 @@ process_task() {
   end=$(date +%s)
   dur=$((end - start))
   mins=$((dur / 60)); secs=$((dur % 60))
+  printf '%s\n' "$status" >"$TASK_STATUS_DIR/${RUN_LABEL}_${GAL}.status"
 
   if [[ $status -eq 0 ]]; then
-    msg="✅  $GAL finished in ${mins}m${secs}s"
+    msg="✅  $RUN_LABEL / $GAL finished in ${mins}m${secs}s"
   else
-    msg="🛑  $GAL failed (exit $status) after ${mins}m${secs}s – see $LOGFILE"
+    msg="🛑  $RUN_LABEL / $GAL failed (exit $status) after ${mins}m${secs}s – see $LOGFILE"
   fi
   echo "$msg" | tee -a "$LOGFILE"
   return "$status"
@@ -220,6 +225,9 @@ export ROOT_LOCAL PYTHON_BIN SCRIPT LOG_PREFIX
 # ──────────────────────────────────────────────────────────────
 all_start=$(date +%s)
 run_status=0
+TASK_STATUS_DIR="$(mktemp -d "${TMPDIR:-/tmp}/mauve-task-status.XXXXXX")"
+trap 'rm -rf "$TASK_STATUS_DIR"' EXIT
+export TASK_STATUS_DIR
 
 printf "Running %d run/galaxy tasks in parallel using %d cores...\n" "${#TASKS[@]}" "$CORES"
 printf "Using Python executable: %s\n" "$PYTHON_BIN"
@@ -235,6 +243,24 @@ else
 fi
 set -e
 
+# Read only this invocation's statuses, in the original task order.
+FAILED_TASKS=()
+for TASK in "${TASKS[@]}"; do
+  IFS='|' read -r RUN_LABEL RUN_ROOT PRODUCT_SUBDIR GAL <<<"$TASK"
+  STATUS_FILE="$TASK_STATUS_DIR/${RUN_LABEL}_${GAL}.status"
+  LOGFILE="$RUN_ROOT/$PRODUCT_SUBDIR/${LOG_PREFIX}_logs/${GAL}.log"
+  if [[ -f "$STATUS_FILE" ]]; then
+    read -r status <"$STATUS_FILE"
+    if [[ "$status" == "0" ]]; then
+      continue
+    fi
+    FAILED_TASKS+=("  - $RUN_LABEL / $GAL (exit $status) - see $LOGFILE")
+  else
+    FAILED_TASKS+=("  - $RUN_LABEL / $GAL (no completion status) - see $LOGFILE")
+  fi
+  [[ $run_status -ne 0 ]] || run_status=1
+done
+
 all_end=$(date +%s)
 tot=$((all_end - all_start))
 if [[ $run_status -eq 0 ]]; then
@@ -243,6 +269,12 @@ if [[ $run_status -eq 0 ]]; then
 else
   printf "\n🛑  SFR.sh completed with one or more failures in %dh%02dm%02ds using %d cores\n" \
        $((tot/3600)) $(((tot/60)%60)) $((tot%60)) "$CORES" >&2
+  if [[ ${#FAILED_TASKS[@]} -gt 0 ]]; then
+    printf 'Failed tasks (%d):\n' "${#FAILED_TASKS[@]}" >&2
+    printf '%s\n' "${FAILED_TASKS[@]}" >&2
+  else
+    printf 'Execution failed without a recorded task failure; check the parallel/xargs output above.\n' >&2
+  fi
 fi
 
 exit "$run_status"
