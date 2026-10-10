@@ -152,6 +152,6 @@ def test_api_read_only_suffix_is_not_duplicated(tmp_path):
     wrapper=tmp_path/'python'
     wrapper.write_text('#!/bin/bash\ncat >/dev/null\nprintf "%s" "$CADC_OVERLAY"\n')
     wrapper.chmod(0o755)
-    result=subprocess.run(['/bin/bash','-c',code+'\nCANFAR_API=https://example.invalid\nchecksum_job_api base.img:ro status job'],env=dict(os.environ,CADC_PYTHON_CMD=str(wrapper)),capture_output=True,text=True)
+    result=subprocess.run(['/bin/bash','-c',code+'\nCANFAR_API=https://example.invalid\nchecksum_job_api base.img:ro status job'],env=dict(os.environ,CADC_PYTHON_CMD=str(wrapper),worker_dir=str(tmp_path)),capture_output=True,text=True)
     assert result.returncode==0,result.stderr
     assert result.stdout=='base.img:ro'

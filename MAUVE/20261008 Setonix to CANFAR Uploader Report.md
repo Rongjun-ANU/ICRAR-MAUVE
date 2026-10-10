@@ -1,6 +1,8 @@
 # Setonix to CANFAR uploader: workflow, integrity and operational results
 
 **Date:** 8 October 2026 (Australia/Perth)  
+**Updated:** 10 October 2026: automatic recovery for date-valid but remotely rejected CADC certificates.
+
 **Script:** `vcp_scratch_v3tk_v768_to_canfar.sh`  
 **Local source:** `/Users/Igniz/Desktop/ICRAR/vcp_scratch_v3tk_v768_to_canfar.sh`
 
@@ -184,7 +186,43 @@ At startup, the uploader checks the certificate at `~/.ssl/cadcproxy.pem` inside
 | Missing or expired | Run `cadc-get-cert -u "$CADC_USER"`, allowing the normal login prompt |
 | Unreadable, invalid or not yet valid | Fail with a diagnostic instead of unexpectedly prompting |
 
-After renewal, the script checks the certificate again without prompting a second time. It does not renew periodically during a long run. Local date validation does not guarantee that every remote operation will accept the certificate; API and transfer failures remain errors requiring investigation.
+After renewal, the script checks the certificate again without prompting a second time. It does not renew periodically during a long run. Local date validation does not guarantee that every remote operation will accept the certificate; the recovery added on 10 October handles the specific failures described below.
+
+#### Recovery after CANFAR service/authentication failures (10 October update)
+
+The user reported ARC metadata HTTP 500 responses containing `failed to check membership with group service` or `Connection reset by peer`, and authenticated session-listing HTTP 500 responses containing `SSLHandshakeException` / `decrypt_error`. The certificate was date-valid and `/arc/capabilities` returned HTTP 200. CANFAR support subsequently stated that services had recovered and a new certificate might be needed. The user reports that manual recertification restored access. This is user-supplied operational evidence; this update did not independently reproduce the outage or establish its server-side cause.
+
+The uploader now detects those error signatures in failed CADC commands, plus explicit HTTP 401 or expired-certificate diagnostics, and calls:
+
+```bash
+cadc-get-cert -u "$CADC_USER"
+```
+
+`CADC_USER` defaults to `RongjunHuang`. A shared lock permits **one recovery refresh attempt per uploader invocation**, coordinated across all galaxy/file workers. This is separate from startup renewal for a missing/expired certificate. Workers wait for an in-progress refresh; successful renewal must pass the same local certificate-date check before recovery proceeds. A failed renewal is not repeatedly attempted in that run.
+
+The normal login prompt may require a password. The recovery uses `/dev/tty` when available because background workers may inherit closed input; it stores no password. An unattended run still needs credentials accepted by `cadc-get-cert`; automatic invocation does not make password authentication unattended.
+
+| Failed operation | Recovery behavior |
+|---|---|
+| ARC metadata lookup; small checksum worker/request transfer or response/manifest download; session GET; deletion of a known session | Refresh, then retry once if the operation began before successful refresh |
+| Actual product upload | Refresh without an extra immediate replay; the existing `FILE_RETRIES` loop controls retries, including partial-destination backups in forced mode |
+| Session creation POST; remote backup/quarantine move | Refresh without replay, preserve failure status; inspect remote outcome before rerunning |
+
+Before session creation, an authenticated session-list GET probes access and can recover safely before the POST. A failed POST remains unverified and is never automatically resubmitted. Diagnostic output and certificate prompts go to stderr so they cannot corrupt captured session IDs or manifest results.
+
+Unrelated HTTP 500 responses, permission errors, missing objects and image-pull failures do not trigger renewal. A persistent membership/TLS/reset error remains a service failure after the bounded retry; renewal cannot repair a continuing CANFAR outage. All existing checksum, quarantine, receipt and **UNVERIFIED** safeguards remain in effect. This change does not recover killed interactive sessions.
+
+Local validation on 10 October: **55 offline tests passed, one interruption test deselected** after it timed out separately on this host. The timeout also reproduced using only the unchanged slot/shutdown functions, and `pgrep` reported `Cannot get process list` / `sysmond service not found`; this host cannot exercise that process-enumeration check. The passing tests cover recovery signatures, concurrent renewal, failed renewal/date validation, persistent service errors, session GET recovery before a single POST, no replay of a failed POST, and existing checksum/forced-overwrite safeguards. Older extracted-function fixtures now supply the shared worker directory; the full manual-manifest fixture explicitly mocks certificate checks and selects manual mode. `bash -n` passed and all nine embedded Python blocks passed Python 3.6 grammar parsing. These are offline checks: no live certificate renewal, Setonix deployment or production CANFAR transfer was performed for this update.
+
+Reproduce the offline checks from the ICRAR directory (the process-interruption check remains excluded on this host):
+
+```bash
+bash -n vcp_scratch_v3tk_v768_to_canfar.sh
+/opt/miniconda3/envs/ICRAR/bin/python -m pytest -q \
+  test_vcp_certificate_recovery.py test_vcp_force_overwrite.py \
+  test_vcp_error_summary.py test_vcp_parallel_uploads.py \
+  test_vcp_checksum_repair.py -k 'not interrupt_releases_slot' --tb=short
+```
 
 The production log explicitly reports reuse of a certificate expiring on 18 October 2026 at 02:11:28 GMT. That is evidence for this run, not a fixed future expiry date.
 

@@ -80,7 +80,7 @@ if upload_galaxy 7000 NGC4698 overlay; then status=0; else status=$?; fi
 print_error_summary
 exit "$status"
 '''
-    env=dict(os.environ,TEST_ROOT=str(tmp_path),ISSUE_DIR=str(tmp_path/'issues'),VCP_CMD=str(tmp_path/'vcp'),VMV_CMD=str(tmp_path/'vmv'),FAIL_FIRST=str(int(fail_first)),METADATA_FAILURE=str(int(metadata_failure)),MOVE_FAILURE=str(int(move_failure)))
+    env=dict(os.environ,TEST_ROOT=str(tmp_path),worker_dir=str(tmp_path),ISSUE_DIR=str(tmp_path/'issues'),VCP_CMD=str(tmp_path/'vcp'),VMV_CMD=str(tmp_path/'vmv'),FAIL_FIRST=str(int(fail_first)),METADATA_FAILURE=str(int(metadata_failure)),MOVE_FAILURE=str(int(move_failure)))
     result=subprocess.run(['/bin/bash','-c',harness],env=env,capture_output=True,text=True,timeout=15)
     assert result.returncode==int(metadata_failure or move_failure),result.stdout+result.stderr
     assert 'FORBIDDEN' not in result.stdout+result.stderr

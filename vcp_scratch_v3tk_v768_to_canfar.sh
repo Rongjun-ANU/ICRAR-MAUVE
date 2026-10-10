@@ -33,6 +33,7 @@ Options:
 
 Environment:
   JOBS              Concurrent galaxy workers (default 5, maximum 5)
+  CADC_USER         CADC username for certificate renewal (default RongjunHuang)
   TRANSFER_JOBS     Shared parallel file slots across all galaxies (default 10, maximum 10)
   CADC_READ_ONLY    auto (default), 1 to share a read-only overlay, or 0 to copy overlays
   FILE_RETRIES      Attempts per individual file (default 5)
@@ -59,6 +60,9 @@ All selected products are checked, not only continuum cubes. Small copies of
 this script and request/response JSON files are retained in each run directory.
 One-core, 1 GB CANFAR jobs compute actual byte hashes and are removed afterward.
 Missing/expired certificates prompt for login; valid certificates are reused.
+Recognized membership/TLS/reset failures trigger one coordinated certificate
+refresh per run, even for a date-valid certificate. Login may prompt again.
+Safe reads retry once; uncertain submissions/moves are not replayed.
 Job/API failures stop verification and never fall back to trusting metadata.
 
 Optional manual mode: first run this INSIDE CANFAR with the same selections:
@@ -84,6 +88,7 @@ USAGE
 # Upload selected nGIST v7.6.8 products directly from Setonix scratch to CANFAR.
 #
 # Improvements in this version:
+#   - refresh date-valid certificates once on recognized CANFAR service/auth errors
 #   - explicit forced overwrite without CANFAR checksums preserves destination backups
 #   - report checksum job status and image-pull failures; capture events before cleanup
 #   - final summaries identify each failed run, galaxy, file and processing stage
@@ -103,7 +108,7 @@ USAGE
 #   - --canfar-manifest uses embedded Python; only this script is needed
 #   - missing vmv wrappers reuse the known vcp container launch configuration
 #   - automatic API-launched checksum jobs need no manually started watcher
-#   - valid CADC certificates are reused; renewal occurs only when needed
+#   - valid CADC certificates are reused until a recognized remote failure
 #   - no vls/vmkdir dependency; vcp handles the remote galaxy directory as before
 #
 # Usage:
@@ -498,6 +503,10 @@ CADC_CERT_CHECK
     echo "CADC certificate missing or expired; renewing now."
     cadc-get-cert -u "$CADC_USER" || return 1
     # Verify renewal without prompting a second time.
+    validate_cadc_certificate
+}
+
+validate_cadc_certificate() {
     CADC_OVERLAY="$BASE_OVERLAY:ro" "$CADC_PYTHON_CMD" <<'CADC_CERT_RECHECK'
 from pathlib import Path
 import ssl
@@ -512,7 +521,77 @@ except Exception:
 CADC_CERT_RECHECK
 }
 
+refresh_cadc_certificate() {
+    # All galaxy/file subprocesses share this invocation's lock and markers.
+    # Keep prompts off stdout, which may contain a session ID/JSON result.
+    (
+        flock 9 || return 1
+        if [ -f "$worker_dir/cert_refresh.attempted" ]; then
+            [ -f "$worker_dir/cert_refresh.ok" ]
+            return $?
+        fi
+        : > "$worker_dir/cert_refresh.attempted" || return 1
+        echo "WARNING: CANFAR rejected the current certificate or reset authentication; refreshing CADC certificate once." >&2
+        # Background workers may inherit /dev/null as stdin. Use the terminal
+        # for the normal password prompt when available; never store a password.
+        if ( : </dev/tty ) 2>/dev/null; then
+            cadc-get-cert -u "$CADC_USER" </dev/tty >&2 || return 1
+        else
+            cadc-get-cert -u "$CADC_USER" >&2 || return 1
+        fi
+        validate_cadc_certificate || return 1
+        : > "$worker_dir/cert_refresh.ok" || return 1
+        echo "CADC certificate refreshed and validity checked." >&2
+    ) 9>"$worker_dir/cert_refresh.lock"
+}
+
+cadc_with_recovery() {
+    local mode=$1 result output error already_refreshed=0
+    shift
+    [ ! -f "$worker_dir/cert_refresh.ok" ] || already_refreshed=1
+    output=$(mktemp "$worker_dir/cadc_stdout.XXXXXX") || return 1
+    error=$(mktemp "$worker_dir/cadc_stderr.XXXXXX") || { rm -f "$output"; return 1; }
+    if "$@" >"$output" 2>"$error"; then
+        cat "$output"
+        cat "$error" >&2
+        rm -f "$output" "$error"
+        return 0
+    else
+        result=$?
+    fi
+    cat "$output" "$error" >&2
+    # Match the supplied outage signatures, not every HTTP 500 or permission
+    # failure. A service outage can persist even after certificate renewal.
+    if [ "$already_refreshed" -eq 0 ] && LC_ALL=C grep -Eiq \
+        'failed to check membership with group service|SSLHandshakeException|decrypt_error|Connection reset by peer|HTTP[ /]+401([^0-9]|$)|certificate (has )?expired' "$output" "$error"; then
+        if refresh_cadc_certificate; then
+            rm -f "$output" "$error"
+            if [ "$mode" = retry ]; then
+                echo "Retrying CADC operation once with the refreshed certificate." >&2
+                "$@"
+                return $?
+            fi
+            echo "Certificate refreshed; recovery did not replay the failed transfer/mutation. Existing file retry rules still apply." >&2
+            return "$result"
+        fi
+        echo "ERROR: CADC certificate refresh failed; no further automatic refresh in this run." >&2
+    fi
+    rm -f "$output" "$error"
+    return "$result"
+}
+
 checksum_job_api() {
+    local overlay=$1 action=$2
+    if [ "$action" = submit ]; then
+        # Recover authentication with an idempotent GET before the POST.
+        cadc_with_recovery retry checksum_job_api_raw "$overlay" probe || return 1
+        cadc_with_recovery no-retry checksum_job_api_raw "$@"
+    else
+        cadc_with_recovery retry checksum_job_api_raw "$@"
+    fi
+}
+
+checksum_job_api_raw() {
     local overlay=$1
     shift
     CADC_OVERLAY="${overlay%:ro}:ro" "$CADC_PYTHON_CMD" "$CANFAR_API" "$@" <<'CADC_JOB_API'
@@ -529,7 +608,10 @@ session = requests.Session()
 cert = str(Path.home()/".ssl/cadcproxy.pem")
 session.cert = (cert, cert)
 try:
-    if action == "submit":
+    if action == "probe":
+        response = session.get(base.rstrip('/')+'/session', timeout=(10,30))
+        response.raise_for_status()
+    elif action == "submit":
         image, worker, request, name = sys.argv[3:7]
         parameters = {"name":name, "image":image, "type":"headless",
             "cores":1, "ram":1, "cmd":"/bin/bash",
@@ -556,6 +638,8 @@ try:
                 response.raise_for_status()
         elif action == "status":
             response = session.get(url, timeout=(10,30))
+            if response.status_code >= 400:
+                raise ValueError("Session status HTTP " + str(response.status_code) + ": " + response.text[:2000])
             response.raise_for_status()
             print(response.json().get("status", "Unknown"))
         elif action in ("logs", "events"):
@@ -565,7 +649,11 @@ try:
         else:
             raise ValueError("Unknown API operation")
 except Exception as error:
-    message = re.sub(r'https://[^\s]+', '[URL redacted]', str(error))
+    # requests.HTTPError normally omits the response body containing the
+    # server-side group-service/TLS diagnostics needed for recovery.
+    response = getattr(error, "response", None)
+    detail = "" if response is None else ": " + response.text[:2000]
+    message = re.sub(r'https://[^\s]+', '[URL redacted]', str(error) + detail)
     print("ERROR: CANFAR checksum job API: " + message, file=sys.stderr)
     sys.exit(1)
 CADC_JOB_API
@@ -1072,6 +1160,10 @@ for ((i = 0; i < ${#WORK_ITEMS[@]}; i++)); do
 done
 
 remote_file_exists() {
+    cadc_with_recovery retry remote_file_exists_raw "$@"
+}
+
+remote_file_exists_raw() {
     local overlay=$1 remote_path=$2
     CADC_OVERLAY="${overlay%:ro}:ro" "$CADC_PYTHON_CMD" "$remote_path" <<'CADC_NODE_EXISTS'
 import re
@@ -1112,7 +1204,7 @@ backup_forced_destination() {
     }
     backup_path="${remote_path}.overwrite_backup_$(date -u +%Y%m%dT%H%M%SZ)_${RUN_ID}_${RANDOM}_${RANDOM}"
     echo "[$run $galaxy] OVERWRITE BACKUP: $remote_path -> $backup_path"
-    if ! CADC_OVERLAY="$overlay" "$vmv_cmd" -v "$remote_path" "$backup_path"; then
+    if ! CADC_OVERLAY="$overlay" cadc_with_recovery no-retry "$vmv_cmd" -v "$remote_path" "$backup_path"; then
         record_issue ERROR "$run" "$galaxy" "$filename" backup "Remote backup move failed; replacement upload refused."
         return 1
     fi
@@ -1188,7 +1280,7 @@ upload_one_file() {
         }
         quarantine_path="${remote_path}.corrupt_$(date -u +%Y%m%dT%H%M%SZ)_${RUN_ID}_${RANDOM}_${RANDOM}"
         echo "[$run $galaxy] QUARANTINE: $remote_path -> $quarantine_path"
-        if ! CADC_OVERLAY="$overlay" "$vmv_cmd" -v "$remote_path" "$quarantine_path"; then
+        if ! CADC_OVERLAY="$overlay" cadc_with_recovery no-retry "$vmv_cmd" -v "$remote_path" "$quarantine_path"; then
             echo "ERROR [$run $galaxy]: quarantine failed; refusing upload." >&2
             record_issue ERROR "$run" "$galaxy" "$filename" quarantine "Remote move failed; replacement upload refused."
             rm -f "$staged_path"
@@ -1209,7 +1301,7 @@ upload_one_file() {
             fi
         fi
         echo "[$run $galaxy] UPLOAD: $filename -- attempt $attempt/$FILE_RETRIES"
-        if CADC_OVERLAY="$overlay" "$VCP_CMD" -v "$stage_galaxy_dir" "${dest_base}/"; then
+        if CADC_OVERLAY="$overlay" cadc_with_recovery no-retry "$VCP_CMD" -v "$stage_galaxy_dir" "${dest_base}/"; then
             current_hash=$(sha256sum "$path") || current_hash=unknown
             current_hash=${current_hash%% *}
             rm -f "$staged_path"
@@ -1273,7 +1365,7 @@ with_cadc_slot() {
 slot_vcp() {
     local overlay=$1
     shift
-    CADC_OVERLAY="${CADC_SLOT_OVERLAY:-$overlay}" "$VCP_CMD" -v "$@"
+    CADC_OVERLAY="${CADC_SLOT_OVERLAY:-$overlay}" cadc_with_recovery retry "$VCP_CMD" -v "$@"
 }
 
 slot_job_api() {

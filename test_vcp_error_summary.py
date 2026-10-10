@@ -20,7 +20,7 @@ class Session:
     wrapper=tmp_path/'python-wrapper'
     wrapper.write_text('#!/bin/bash\nexec "'+__import__('sys').executable+'" - "$@"\n')
     wrapper.chmod(0o700)
-    env=dict(os.environ,PYTHONPATH=str(tmp_path),CADC_PYTHON_CMD=str(wrapper))
+    env=dict(os.environ,PYTHONPATH=str(tmp_path),CADC_PYTHON_CMD=str(wrapper),worker_dir=str(tmp_path))
     code='\n'.join(re.findall(r'(?ms)^\w+\(\) \{.*?^\}',SCRIPT.read_text()))
     result=subprocess.run(['/bin/bash','-c',code+'\nCANFAR_API=https://example.test/skaha/v1\nchecksum_job_api overlay events testjob'],env=env,capture_output=True,text=True)
     assert result.returncode==0,result.stderr

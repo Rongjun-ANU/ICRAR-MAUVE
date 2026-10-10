@@ -79,7 +79,7 @@ elif mode == 'vcp':
         FAKE_REMOTE=str(remote), FAKE_SOURCE=str(source), FAKE_EVENTS=str(events),
         VCP_CMD=str(tools / "vcp"), VMV_CMD=str(tools / "vmv"),
         CHECKSUM_PYTHON=sys.executable, CHECKSUM_HELPER=str(HELPER),
-        CHECKSUM_RECEIPT_DIR=str(tmp_path / "receipts"))
+        CHECKSUM_RECEIPT_DIR=str(tmp_path / "receipts"), worker_dir=str(tmp_path))
 
     def regenerate():
         manifest_helper.generate(SimpleNamespace(root=str(remote), run="7000",
@@ -116,6 +116,10 @@ def full_transfer(transfer):
     run, source, target, regenerate = transfer
     tmp_path = source.parent.parent.parent
     tools = tmp_path / 'tools'
+    # Authentication is mocked; this test must never inspect a real certificate.
+    python_wrapper = tools / 'cadc-python'
+    python_wrapper.write_text('#!/bin/bash\ncat >/dev/null\nexit 0\n')
+    python_wrapper.chmod(0o700)
     environment = os.environ.copy()
     environment.update(PATH=str(tools) + os.pathsep + environment['PATH'],
         FAKE_REMOTE=str(tmp_path / 'remote'), FAKE_SOURCE=str(source),
@@ -123,9 +127,10 @@ def full_transfer(transfer):
         CHECKSUM_PYTHON=sys.executable, CHECKSUM_HELPER=str(HELPER),
         CHECKSUM_RECEIPT_DIR=str(tmp_path / 'receipts'), BASE_OVERLAY=str(tmp_path / 'base.img'),
         OVERLAY_DIR=str(tmp_path / 'overlays'), SOURCE_7000=str(source.parent.parent),
-        DEST_7000='arc:products/v3tk_v7.6.8_7000', FILE_RETRIES='1')
+        DEST_7000='arc:products/v3tk_v7.6.8_7000', FILE_RETRIES='1',
+        CADC_PYTHON_CMD=str(python_wrapper))
     def execute():
-        result = subprocess.run(['/bin/bash', str(SCRIPT), '--cont-only', '7000', 'NGC4698'],
+        result = subprocess.run(['/bin/bash', str(SCRIPT), '--manual-checksum', '--cont-only', '7000', 'NGC4698'],
             env=environment, capture_output=True, text=True)
         actions = (tmp_path / 'events').read_text().splitlines()
         assert not any(a.startswith('GET ') and a.endswith('.fits') for a in actions)
