@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "pages": 29,
+  "notebook_hashes_unchanged": 128,
+  "report_hashes_unchanged": 22,
+  "local_links_checked": 152,
+  "body_text_segment_coverage": 1.0,
+  "unmatched_segments": [],
+  "off_page_characters": 0,
+  "orphan_headings": 0,
+  "rendered_pages": 29,
+  "contact_sheets": [
+    "/private/tmp/mauve_second_paper_20261011/qa_contact_1.jpg",
+    "/private/tmp/mauve_second_paper_20261011/qa_contact_2.jpg",
+    "/private/tmp/mauve_second_paper_20261011/qa_contact_3.jpg",
+    "/private/tmp/mauve_second_paper_20261011/qa_contact_4.jpg"
+  ],
+  "markdown_sha256": "f11ff6f030a333e0b81ce7b2a8efa2c153d02e0e705af3eaceb202f42d4ac2bc",
+  "pdf_sha256": "6cc8cab3b657fcfce60d1c8750ecb95733f859b3a61f449f1e22526bd64a3154"
+}

@@ -1,0 +1,4 @@
+Unnamed: 0,statistic,estimate_dex,CI95_low,CI95_high
+0,positive-side absolute delta,0.099946,-0.120093,0.248577
+1,negative-side absolute delta,-0.003432,-0.253267,0.149537
+2,positive minus negative,0.103378,-0.019586,0.223149

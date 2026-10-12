@@ -1,0 +1,5 @@
+Unnamed: 0,stage_minus_pre,variable,N_bins_in_fixed_range,median_delta_log_F,median_delta_log_I,N_bins_I_CI_above_zero,N_bins_I_CI_below_zero
+0,close-to-peak,log_sigma_star,10,-0.083,-0.304,0,7
+1,close-to-peak,radius_re,10,0.016,-0.502,0,10
+2,post-peak,log_sigma_star,10,0.018,-0.674,0,10
+3,post-peak,radius_re,10,-0.031,-0.545,0,10

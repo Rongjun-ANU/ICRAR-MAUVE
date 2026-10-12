@@ -1,0 +1,13 @@
+Unnamed: 0,metric,comparison,Ngal_a,Ngal_b,observed_difference,p_permutation_two_sided
+0,M,close-to-peak_minus_pre-peak,5,8,-0.137104,0.185781
+1,M,post-peak_minus_pre-peak,13,8,-0.24126,0.037196
+2,W,close-to-peak_minus_pre-peak,5,8,-0.010881,0.694731
+3,W,post-peak_minus_pre-peak,13,8,-0.019285,0.559344
+4,f_enh,close-to-peak_minus_pre-peak,5,8,-0.07227,0.118988
+5,f_enh,post-peak_minus_pre-peak,13,8,-0.120015,0.002
+6,f_sup,close-to-peak_minus_pre-peak,5,8,0.051783,0.255474
+7,f_sup,post-peak_minus_pre-peak,13,8,0.140918,0.134687
+8,F_tail,close-to-peak_minus_pre-peak,5,8,-0.004654,0.852315
+9,F_tail,post-peak_minus_pre-peak,13,8,0.017448,0.545945
+10,A_tail,close-to-peak_minus_pre-peak,5,8,-0.145376,0.148285
+11,A_tail,post-peak_minus_pre-peak,13,8,-0.275682,0.038896

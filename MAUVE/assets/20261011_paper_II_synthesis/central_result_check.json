@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "fraction_max_abs_difference": 4.042743372117963e-05,
+  "decomposition_max_abs_differences": {
+    "delta_log_occupancy": 4.94340796108883e-06,
+    "delta_log_survivor_intensity": 4.970258484171541e-06,
+    "delta_log_total_hii": 4.991725775171929e-06
+  },
+  "cells": [
+    3,
+    5,
+    7,
+    9,
+    11
+  ],
+  "products": 26
+}

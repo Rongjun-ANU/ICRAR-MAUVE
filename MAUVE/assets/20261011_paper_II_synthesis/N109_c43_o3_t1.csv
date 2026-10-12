@@ -1,0 +1,7 @@
+Unnamed: 0,selection,stage,ratio,N_matched_cells,N_finite_draws,delta_dex,lo,hi,status
+102,E50_L39.5_S35,close-to-peak,N2,3,1972,0.023587,-0.020583,0.064155,inconclusive
+103,E50_L39.5_S35,close-to-peak,S2,3,1972,-0.076669,-0.123877,-0.031346,inconclusive
+104,E50_L39.5_S35,close-to-peak,O3,3,1972,-0.225596,-0.44858,-0.001245,inconclusive
+105,E50_L39.5_S35,post-peak,N2,3,1967,0.081845,0.033623,0.127152,inconclusive
+106,E50_L39.5_S35,post-peak,S2,3,1967,-0.082877,-0.116153,-0.048322,inconclusive
+107,E50_L39.5_S35,post-peak,O3,3,1967,-0.437287,-0.572999,-0.28972,offset beyond tolerance

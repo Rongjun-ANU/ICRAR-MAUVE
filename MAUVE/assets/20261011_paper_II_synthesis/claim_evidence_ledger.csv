@@ -1,0 +1,10 @@
+claim,source,status,evidence_file
+occupancy,"N104 cells 15,19,24; N103 cells 3,5,7,9,11",live central reproduction,live_category_fractions_by_stage.csv
+SFR decomposition,"N103 cells 9,11,13",live central reproduction; stored uncertainty,live_sfr_decomposition.csv
+survivor distribution,"N087 cells 19,34,35",saved notebook output,N087_c19_o1_t1.csv
+NSF intensity,N105 cell 31; R10 section 1.3,saved notebook/report result,N105_c31_o1_t1.csv
+HII invariance,N109 cell 43,saved notebook output,N109_c43_o3_t1.csv
+BPT distance,N120 and N121 cell 21,saved notebook output,N120_c21_o1_t1.csv
+fixed Halpha ratios,"N124 cells 11,13",saved notebook output,N124_c13_o2_t1.csv
+NGC4654,"N126 cells 9,14,16,19,21,23",saved notebook output,N126_c16_o2_t1.csv
+gas/HOLMES models,"R12 section 8; N110 cells 1,26",conditional model demonstration,

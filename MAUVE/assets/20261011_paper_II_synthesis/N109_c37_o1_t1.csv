@@ -1,0 +1,7 @@
+Unnamed: 0,DIG_selection,stage,N_gal,median_w,lo,hi
+0,DIG_L38.5,pre-peak,8,0.140078,0.048638,0.391609
+1,DIG_L38.5,close-to-peak,5,0.24612,0.026568,1.0
+2,DIG_L38.5,post-peak,13,0.705982,0.5,0.984011
+3,DIG_L39,pre-peak,8,0.273852,0.22287,0.557963
+4,DIG_L39,close-to-peak,5,0.393185,0.069759,1.0
+5,DIG_L39,post-peak,13,1.0,0.857062,1.0

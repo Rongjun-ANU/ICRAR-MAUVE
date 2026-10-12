@@ -1,0 +1,28 @@
+
+Fontconfig error: No writable cache directories
+	/opt/homebrew/var/cache/fontconfig
+	/Users/Igniz/.cache/fontconfig
+	/Users/Igniz/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/opt/homebrew/var/cache/fontconfig
+	/Users/Igniz/.cache/fontconfig
+	/Users/Igniz/.fontconfig
+Matplotlib is building the font cache; this may take a moment.
+Project root: /Users/Igniz/Desktop/ICRAR/further
+Scope: HII-traced Sigma_SFR occupancy/intensity across all three infall stages
+No additional inclination correction is applied to either surface-density map.
+Pre-peak: 8/8 products pass QC
+Close-to-peak: 5/5 products pass QC
+Post-peak: 13/16 products pass QC
+Total passing products: 26/29
+Strict-S/N retained sample by stage
+LIVE EQUAL-GALAXY FULL-FOOTPRINT FRACTIONS
+                    f_SF      f_ND     f_NSF
+stage                                      
+pre-peak       0.493584  0.137383  0.369033
+close-to-peak  0.331680  0.386461  0.281860
+post-peak      0.100664  0.627727  0.271609
+MAX ABS DIFFERENCE FROM SAVED FOUR-DECIMAL FRACTIONS: 4.042743372117963e-05
+DECOMPOSITION MAX ABS DIFFERENCES: {'delta_log_occupancy': 4.94340796108883e-06, 'delta_log_survivor_intensity': 4.970258484171541e-06, 'delta_log_total_hii': 4.991725775171929e-06}
+PASS: source setup/loader/central-estimator cells 3,5,7,9,11 only; no bootstrap, plots, raw fits, or product writes.

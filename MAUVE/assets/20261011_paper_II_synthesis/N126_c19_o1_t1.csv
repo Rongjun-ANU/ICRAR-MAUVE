@@ -1,0 +1,3 @@
+Unnamed: 0,footprint,status,GALID,observable,cells,clusters,annuli,A1_dex,A1_lo,A1_hi,phi_disc_deg,PA_sky_deg,PA_offset_lo,PA_offset_hi,phase_resultant,RSS_gain,p_wild,p_mc_se,failed_boot,condition
+0,SF matched footprint,ok,NGC4654,star,1803,249,123,0.038528,0.021064,0.057676,234.591564,335.942651,-22.032443,45.188845,0.965387,1.322359,0.005,0.004987,0,29.938242
+1,full usable footprint,ok,NGC4654,star,2106,259,123,0.044765,0.028664,0.059447,244.096484,346.702361,-20.886247,49.334129,0.976997,2.111557,0.005,0.004987,0,29.845784
