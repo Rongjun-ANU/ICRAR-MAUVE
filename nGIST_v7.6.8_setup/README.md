@@ -121,6 +121,56 @@ For local validation only, the generator also accepts `MAUVE_CUBE_DIR`,
 Production Setonix configs should use the default scratch/product paths unless
 there is a deliberate run-location change.
 
+## Independent NGC4689 7000 A SNR5 test (2026-10-16)
+
+The standalone files for this test are:
+
+```text
+config_setup/NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SNR5_setonix.yaml
+config_setup/NGC4689_v3tk_v7.6.8_7000_SNR5_setonix.slurm
+```
+
+The YAML copies the existing NGC4689 7000 A configuration with these changes:
+
+- `GENERAL.RUN_ID: NGC4689_v3tk_v7.6.8_7000_SNR5`
+- `GENERAL.OUTPUT: /scratch/pawsey1308/mauve/v3tk_v7.6.8_prepare/20261016/product/`
+- `SPATIAL_MASKING.MIN_SNR: 5` (retaining `THRESHOLD_METHOD: actual`)
+- `SFH.MDEG: 16` instead of 12
+- `CONT.METHOD: false` and `GAS.METHOD: false`
+
+The run performs the required read/mask/bin/prepare steps, then KIN and SFH;
+LS and UMOD remain disabled. The input cube, NGC4689 spatial mask, 4800-7000 A
+wavelength coverage, and all KIN settings are unchanged. Voronoi settings remain
+`TARGET_SNR: 40.0` and `COVARIANCE: 0.0`, with `VELSCALE: 41`. Binning is
+recomputed after the stricter spatial mask, so identical bin boundaries are not
+guaranteed. SFH retains `SPEC_EMICLEAN: false` and `FIXED: true` to use the new
+KIN result without requiring GAS.
+
+The product directory will be:
+
+```text
+/scratch/pawsey1308/mauve/v3tk_v7.6.8_prepare/20261016/product/NGC4689_v3tk_v7.6.8_7000_SNR5/
+```
+
+The Slurm script retains the existing NGC4689 7000 A resource request:
+`highmem`, 128 CPUs, `980G`, and `96:00:00`. These are requested limits, not
+an estimated runtime. It uses a separate job name and pipeline log.
+
+This test is independent of the standard generator and `27_*.sh` batch lists.
+To stage just the two test files, run locally from `config_setup/`:
+
+```bash
+scp NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SNR5_setonix.yaml rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/
+scp NGC4689_v3tk_v7.6.8_7000_SNR5_setonix.slurm rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/
+```
+
+Then submit on Setonix:
+
+```bash
+cd /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial
+sbatch NGC4689_v3tk_v7.6.8_7000_SNR5_setonix.slurm
+```
+
 ## Staging input cubes to Setonix scratch
 
 The generated YAML files expect input cubes under:
