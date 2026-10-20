@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-20",
+  "parent_notebook": "20261019_check_NSF_Halpha_corrected_flux_HOLMES_by_stage.ipynb",
+  "parent_notebook_sha256": "df517edaa776667ee027e418d5509824c4d867a7cd2b24474da0b9d657ed3568",
+  "local_mass_bin_edges": [
+    "-inf",
+    "8.0",
+    "9.0",
+    "inf"
+  ],
+  "radius_bin_edges": [
+    "0.0",
+    "0.5",
+    "1.0",
+    "inf"
+  ],
+  "source_notebook": "20261017_check_NSF_SII_ratio_EW_SF_proximity_sigma_by_stage.ipynb",
+  "source_sha256": "bda6338eb76ee5bdb8cf026ddda606585ef48f26dda7a687d2678177548058a9",
+  "equation_note_sha256": "939395a1f18677bfd8263714ae9d26914e59585aba587ebdc3a9a92f9c763ed9",
+  "Q_HOLMES": 7e+40,
+  "EPSILON_ALPHA": 1.3721e-12,
+  "HOLMES_ABSORBED_FRACTION": 1.0,
+  "MASS_DISTANCE_MPC": 16.5,
+  "mass_assumption": "Sigma_old approximately Sigma_star; no population-weight correction",
+  "inclination_max_exclusive": 80.0,
+  "SNR_POSTFIT_min_exclusive": 25.0,
+  "SF_reference_EW_min": 20.0,
+  "N_products": 26,
+  "N_NSF_flux": 2233856,
+  "python": "3.13.3 | packaged by conda-forge | (main, Apr 14 2025, 20:44:30) [Clang 18.1.8 ]",
+  "numpy": "2.2.6",
+  "pandas": "2.2.3",
+  "matplotlib": "3.10.3",
+  "scipy": "1.15.2",
+  "astropy": "7.0.2"
+}
