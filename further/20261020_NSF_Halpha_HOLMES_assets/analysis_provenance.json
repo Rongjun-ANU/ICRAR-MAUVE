@@ -1,5 +1,8 @@
 {
   "date": "2026-10-20",
+  "distribution_weighting": "equal GALID within finite delta support per stage/panel",
+  "distribution_quantiles": "inverse weighted empirical CDF",
+  "threshold_weighting": "pooled spaxels",
   "parent_notebook": "20261019_check_NSF_Halpha_corrected_flux_HOLMES_by_stage.ipynb",
   "parent_notebook_sha256": "df517edaa776667ee027e418d5509824c4d867a7cd2b24474da0b9d657ed3568",
   "local_mass_bin_edges": [
