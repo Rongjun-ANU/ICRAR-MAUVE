@@ -1,0 +1,95 @@
+NGC4689 5100 (957, 747) finite 504128 variance_percentiles [13.3356638  24.50649738 46.73594151]
+NGC4689 5500 (957, 747) finite 504141 variance_percentiles [11.56207275 20.59507561 38.41123199]
+NGC4689 6000 (957, 747) finite 504176 variance_percentiles [11.47721267 20.82881451 38.26242733]
+NGC4689 6800 (957, 747) finite 504061 variance_percentiles [ 5.05101156  9.04782963 17.4229908 ]
+IC3392 5100 (438, 437) finite 96363 variance_percentiles [16.43873386 28.07055283 71.45757523]
+IC3392 5500 (438, 437) finite 96357 variance_percentiles [13.01241684 22.45739555 57.63687363]
+IC3392 6000 (438, 437) finite 96303 variance_percentiles [11.20172548 19.37601662 50.54899712]
+IC3392 6800 (438, 437) finite 96322 variance_percentiles [ 5.21879666  9.81556845 28.18168888]
+NGC4606 5100 (435, 434) finite 96763 variance_percentiles [12.81254339 23.87579536 68.50238037]
+NGC4606 5500 (435, 434) finite 96719 variance_percentiles [11.81931152 21.18893433 60.3304451 ]
+NGC4606 6000 (435, 434) finite 96702 variance_percentiles [12.25103354 21.0308733  57.95939598]
+NGC4606 6800 (435, 434) finite 96687 variance_percentiles [ 5.55338016 10.48895931 32.52702217]
+{
+  "angle_degrees": -11.026090861793222,
+  "uv_bounds": [
+    -24.123510341194688,
+    575.0923416047931,
+    108.68392104036192,
+    974.8823130153922
+  ],
+  "transform": "u=x*cos(angle)+y*sin(angle); v=-x*sin(angle)+y*cos(angle); zero-based x,y",
+  "trough_centers_by_wavelength": {
+    "5100": [
+      [
+        275.5
+      ],
+      [
+        396.5,
+        673.5
+      ]
+    ],
+    "5500": [
+      [
+        275.5
+      ],
+      [
+        403.5,
+        674.5
+      ]
+    ],
+    "6000": [
+      [
+        276.5
+      ],
+      [
+        396.5,
+        673.5
+      ]
+    ],
+    "6800": [
+      [
+        276.5
+      ],
+      [
+        396.5,
+        683.5
+      ]
+    ]
+  },
+  "exclusion_halfwidth_pixels": 20,
+  "region_counts": {
+    "1": 64462,
+    "2": 64206,
+    "3": 61780,
+    "4": 61534,
+    "5": 67861,
+    "6": 67590
+  },
+  "caution": "Regions are geometric labels, not verified OB001-OB006 identities or unblended exposure spectra.",
+  "approximate_overlap_bands_uv": [
+    [
+      263.0,
+      286.0
+    ],
+    [
+      390.0,
+      417.0
+    ],
+    [
+      665.0,
+      691.0
+    ]
+  ],
+  "overlap_method": "Union of half-depth detrended variance trough widths across four windows; approximate, not measured exposure support.",
+  "single_pointing_hull_sizes_pixels": {
+    "IC3392": [
+      314.5830504303873,
+      323.6521848896986
+    ],
+    "NGC4606": [
+      314.4421540165859,
+      325.8600032583144
+    ]
+  }
+}

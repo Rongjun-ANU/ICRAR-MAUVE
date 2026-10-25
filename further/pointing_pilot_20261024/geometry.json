@@ -1,0 +1,83 @@
+{
+  "angle_degrees": -11.026090861793222,
+  "uv_bounds": [
+    -24.123510341194688,
+    575.0923416047931,
+    108.68392104036192,
+    974.8823130153922
+  ],
+  "transform": "u=x*cos(angle)+y*sin(angle); v=-x*sin(angle)+y*cos(angle); zero-based x,y",
+  "trough_centers_by_wavelength": {
+    "5100": [
+      [
+        275.5
+      ],
+      [
+        396.5,
+        673.5
+      ]
+    ],
+    "5500": [
+      [
+        275.5
+      ],
+      [
+        403.5,
+        674.5
+      ]
+    ],
+    "6000": [
+      [
+        276.5
+      ],
+      [
+        396.5,
+        673.5
+      ]
+    ],
+    "6800": [
+      [
+        276.5
+      ],
+      [
+        396.5,
+        683.5
+      ]
+    ]
+  },
+  "exclusion_halfwidth_pixels": 20,
+  "region_counts": {
+    "1": 64462,
+    "2": 64206,
+    "3": 61780,
+    "4": 61534,
+    "5": 67861,
+    "6": 67590
+  },
+  "caution": "Regions are geometric labels, not verified OB001-OB006 identities or unblended exposure spectra.",
+  "approximate_overlap_bands_uv": [
+    [
+      263.0,
+      286.0
+    ],
+    [
+      390.0,
+      417.0
+    ],
+    [
+      665.0,
+      691.0
+    ]
+  ],
+  "overlap_method": "Union of half-depth detrended variance trough widths across four windows; approximate, not measured exposure support.",
+  "single_pointing_hull_sizes_pixels": {
+    "IC3392": [
+      314.5830504303873,
+      323.6521848896986
+    ],
+    "NGC4606": [
+      314.4421540165859,
+      325.8600032583144
+    ]
+  }
+}

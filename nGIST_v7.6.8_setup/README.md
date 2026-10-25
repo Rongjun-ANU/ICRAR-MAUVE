@@ -121,35 +121,46 @@ For local validation only, the generator also accepts `MAUVE_CUBE_DIR`,
 Production Setonix configs should use the default scratch/product paths unless
 there is a deliberate run-location change.
 
-## Independent NGC4689 7000 A SNR5 test (2026-10-16)
+## Independent NGC4689 7000 A SFH16 test (updated 2026-10-23)
 
 The standalone files for this test are:
 
 ```text
-config_setup/NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SNR5_setonix.yaml
-config_setup/NGC4689_v3tk_v7.6.8_7000_SNR5_setonix.slurm
+config_setup/NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml
+config_setup/NGC4689_v3tk_v7.6.8_7000_SFH16_setonix.slurm
 ```
 
 The YAML copies the existing NGC4689 7000 A configuration with these changes:
 
-- `GENERAL.RUN_ID: NGC4689_v3tk_v7.6.8_7000_SNR5`
-- `GENERAL.OUTPUT: /scratch/pawsey1308/mauve/v3tk_v7.6.8_prepare/20261016/product/`
-- `SPATIAL_MASKING.MIN_SNR: 5` (retaining `THRESHOLD_METHOD: actual`)
+- `GENERAL.RUN_ID: NGC4689_SFH16`
 - `SFH.MDEG: 16` instead of 12
-- `CONT.METHOD: false` and `GAS.METHOD: false`
+- `CONT.METHOD: false` and `GAS.METHOD: false` to run only KIN then SFH
 
-The run performs the required read/mask/bin/prepare steps, then KIN and SFH;
-LS and UMOD remain disabled. The input cube, NGC4689 spatial mask, 4800-7000 A
-wavelength coverage, and all KIN settings are unchanged. Voronoi settings remain
-`TARGET_SNR: 40.0` and `COVARIANCE: 0.0`, with `VELSCALE: 41`. Binning is
-recomputed after the stricter spatial mask, so identical bin boundaries are not
-guaranteed. SFH retains `SPEC_EMICLEAN: false` and `FIXED: true` to use the new
-KIN result without requiring GAS.
+The output root is the same as the standard 7000 run:
+`/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/`.
+Spatial masking retains the original `MIN_SNR: -10`,
+`THRESHOLD_METHOD: actual`, and input `MASK: NGC4689_mask.fits`.
+All KIN, read-data, prepare-spectra, and Voronoi settings are unchanged:
+target S/N 40, covariance 0, and velocity scale 41 km/s.
+LS and UMOD remain disabled. SFH retains `SPEC_EMICLEAN: false` and
+`FIXED: true` to use the new KIN result without requiring GAS.
+
+Before starting nGIST, the Slurm job copies the existing 7000 output mask:
+
+```text
+source: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689/NGC4689_mask.fits
+target: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689_SFH16/NGC4689_SFH16_mask.fits
+```
+
+The target filename follows the new run ID. An existing target mask is retained
+on resubmission; a missing source causes a fresh job to stop before nGIST.
+The job reuses the mask, while binning is computed with the original settings;
+it does not copy the existing bin-assignment products.
 
 The product directory will be:
 
 ```text
-/scratch/pawsey1308/mauve/v3tk_v7.6.8_prepare/20261016/product/NGC4689_v3tk_v7.6.8_7000_SNR5/
+/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689_SFH16/
 ```
 
 The Slurm script retains the existing NGC4689 7000 A resource request:
@@ -160,15 +171,15 @@ This test is independent of the standard generator and `27_*.sh` batch lists.
 To stage just the two test files, run locally from `config_setup/`:
 
 ```bash
-scp NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SNR5_setonix.yaml rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/
-scp NGC4689_v3tk_v7.6.8_7000_SNR5_setonix.slurm rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/
+scp NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/
+scp NGC4689_v3tk_v7.6.8_7000_SFH16_setonix.slurm rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/
 ```
 
 Then submit on Setonix:
 
 ```bash
 cd /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial
-sbatch NGC4689_v3tk_v7.6.8_7000_SNR5_setonix.slurm
+sbatch NGC4689_v3tk_v7.6.8_7000_SFH16_setonix.slurm
 ```
 
 ## Staging input cubes to Setonix scratch

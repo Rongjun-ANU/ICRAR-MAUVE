@@ -2,20 +2,21 @@
 set -euo pipefail
 
 # Standalone copy of vcp_scratch_v3tk_v768_to_canfar.sh for the independent
-# NGC4689 SNR5 / SFH MDEG16 test, plus gas maps from the standard 7000 run.
-# Use the special run ID for every destination product, including borrowed gas.
+# NGC4689 SFH MDEG16 test with the standard 7000 masking settings.
+# Transfer this run's KIN/SFH products and original-run gas maps for QC.
+# Completed automatic jobs remove their temporary CANFAR checksum files.
 usage() {
     cat <<'USAGE'
-Usage: bash vcp_scratch_v3tk_v768_7000_SNR5_to_canfar.sh [OPTIONS]
+Usage: bash vcp_scratch_v3tk_v768_7000_SFH16_to_canfar.sh [OPTIONS]
 
-Upload ONLY NGC4689_v3tk_v7.6.8_7000_SNR5 from Setonix:
-  /scratch/pawsey1308/mauve/v3tk_v7.6.8_prepare/20261016/product/NGC4689_v3tk_v7.6.8_7000_SNR5/
+Upload ONLY NGC4689_SFH16 from Setonix:
+  /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689_SFH16/
 to CANFAR:
-  /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4689_v3tk_v7.6.8_7000_SNR5/
+  /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4689_SFH16/
 
 Examples (run on Setonix):
-  bash vcp_scratch_v3tk_v768_7000_SNR5_to_canfar.sh --dry-run
-  bash vcp_scratch_v3tk_v768_7000_SNR5_to_canfar.sh
+  bash vcp_scratch_v3tk_v768_7000_SFH16_to_canfar.sh --dry-run
+  bash vcp_scratch_v3tk_v768_7000_SFH16_to_canfar.sh
 
 Options:
   -n, --dry-run      List source products and destination; no CADC contact.
@@ -27,34 +28,35 @@ Options:
 
 Products: CONFIG, LOGFILE, _mask.fits, _spatial_binning_maps.fits,
           _kin_maps.fits, _sfh_maps.fits, _sfh_weights.fits.
-Also copy these gas products from the standard run:
-  /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689/NGC4689_gas_bin_maps.fits
-  /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689/NGC4689_gas_spaxel_maps.fits
-Rename the uploaded copies to match the special run:
-  NGC4689_v3tk_v7.6.8_7000_SNR5_gas_bin_maps.fits
-  NGC4689_v3tk_v7.6.8_7000_SNR5_gas_spaxel_maps.fits
-Original Setonix filenames and file contents are unchanged.
+Also transfer NGC4689_gas_bin_maps.fits and NGC4689_gas_spaxel_maps.fits
+from /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689/.
+Uploaded copies use NGC4689_SFH16_gas_bin_maps.fits and
+NGC4689_SFH16_gas_spaxel_maps.fits so the existing QC script can open them.
 The SFH map and both gas maps are required; other missing products are skipped.
-GAS and CONT were disabled for this test; no continuum cube is required.
-Borrowed gas maps retain the standard run's fits and binning; they were not
-refitted with the special run's SNR5 mask or new spatial bins.
+GAS and CONT are disabled for this test; no continuum cube is transferred.
+Borrowed gas contents and binning remain those of the original 7000 run;
+the renamed copies are not new SFH16 gas fits or proof of matching BIN_IDs.
+The pipeline job reuses the original 7000 mask and SFH MDEG=16; this uploader
+only transfers the resulting files and does not change masks or binning.
 No run or galaxy arguments are accepted. The standard uploader is unchanged.
 
 Checksum helper modes (this script is self-contained):
-  bash vcp_scratch_v3tk_v768_7000_SNR5_to_canfar.sh --canfar-manifest 7000
+  bash vcp_scratch_v3tk_v768_7000_SFH16_to_canfar.sh --canfar-manifest 7000
       Run INSIDE CANFAR; --root may override /arc/projects/mauve/products.
   --canfar-request PATH is used internally by automatic checksum jobs.
 Only the special run ID is accepted by the checksum worker.
 
 The original uploader's CADC environment, certificate recovery, file retries,
 backup/quarantine and pending-receipt safeguards are retained. Set SOURCE_7000
-only to relocate the source parent; SOURCE_GAS_7000 may relocate the standard
-NGC4689 gas directory. The destination and selected case are fixed.
+only to relocate the source parent. SOURCE_GAS_7000 may relocate the original
+NGC4689 gas directory; the destination and selected case are fixed.
 CADC_USER defaults to RongjunHuang; BASE_OVERLAY, OVERLAY_DIR, VCP_CMD,
 VMV_CMD, CADC_PYTHON_CMD, CHECKSUM_PYTHON, TRANSFER_JOBS and FILE_RETRIES
 are supported as in the standard uploader. Keep product writers idle.
 Automatic verification compares actual CANFAR byte counts and SHA-256 hashes;
 no FITS files are downloaded. Manual mode requires a fresh manifest after upload.
+Automatic worker/request/response files are removed after response download and
+job deletion. Failed requests may remain; shared manifests/receipts are preserved.
 Forced mode skips CANFAR verification and preserves .overwrite_backup_* objects.
 Exit codes: 0=verified (or force-transferred UNVERIFIED), 1=error,
             2=awaiting fresh manual manifest or invalid options.
@@ -79,7 +81,7 @@ import time
 import uuid
 
 RUNS = {"7000": "v3tk_v7.6.8_7000"}
-SPECIAL_CASE = "NGC4689_v3tk_v7.6.8_7000_SNR5"
+SPECIAL_CASE = "NGC4689_SFH16"
 SUFFIXES = ("CONFIG", "_sfh_maps.fits", "_sfh_weights.fits",
             "_spatial_binning_maps.fits", "_kin_maps.fits", "LOGFILE", "_mask.fits",
             "_gas_bin_maps.fits", "_gas_spaxel_maps.fits")
@@ -323,7 +325,7 @@ trap finish_reporting EXIT
 CURRENT_STAGE=argument-validation
 start_secs=$SECONDS
 
-SOURCE_7000=${SOURCE_7000:-/scratch/pawsey1308/mauve/v3tk_v7.6.8_prepare/20261016/product}
+SOURCE_7000=${SOURCE_7000:-/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000}
 SOURCE_GAS_7000=${SOURCE_GAS_7000:-/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689}
 DEST_7000=arc:projects/mauve/products/v3tk_v7.6.8_7000
 CADC_USER=${CADC_USER:-RongjunHuang}
@@ -768,7 +770,7 @@ CADC_OVERLAY_MODE
 
 DRY_RUN=0
 REQUESTED_RUNS=(7000)
-REQUESTED_GALAXIES=(NGC4689_v3tk_v7.6.8_7000_SNR5)
+REQUESTED_GALAXIES=(NGC4689_SFH16)
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -862,7 +864,7 @@ if ! is_positive_integer "$RETRY_MAX_SLEEP"; then
 fi
 
 RUNS=(7000)
-WORK_ITEMS=("7000|NGC4689_v3tk_v7.6.8_7000_SNR5")
+WORK_ITEMS=("7000|NGC4689_SFH16")
 
 if [ "${#WORK_ITEMS[@]}" -eq 0 ]; then
     echo "No available galaxies selected."
@@ -1229,6 +1231,34 @@ slot_job_api() {
     checksum_job_api "${CADC_SLOT_OVERLAY:-$overlay}" "$@"
 }
 
+cleanup_checksum_files() {
+    local overlay=$1 dest_base=$2 request_id=$3
+    CADC_OVERLAY="${CADC_SLOT_OVERLAY:-$overlay}" "$CADC_PYTHON_CMD" "$dest_base" "$request_id" <<'CADC_CHECKSUM_CLEANUP'
+import re
+import sys
+import vos
+from cadcutils.exceptions import NotFoundException
+
+base, request_id = sys.argv[1:]
+if not base.startswith("arc:") or not re.fullmatch(r"[0-9a-f]{32}", request_id):
+    sys.exit("Invalid checksum cleanup destination/request ID")
+client = vos.Client()
+failed = False
+# Exact UUID-owned paths only; never sweep shared manifests or other jobs.
+for kind, suffix in (("worker", ".sh"), ("request", ".json"), ("response", ".json")):
+    path = base.rstrip("/") + "/.checksum_" + kind + "_" + request_id + suffix
+    try:
+        client.delete(path)
+    except NotFoundException:
+        pass
+    except Exception as error:
+        message = re.sub(r'https://[^\s]+', '[URL redacted]', str(error))
+        print("WARNING: checksum cleanup failed for " + path + ": " + message, file=sys.stderr)
+        failed = True
+sys.exit(1 if failed else 0)
+CADC_CHECKSUM_CLEANUP
+}
+
 request_fresh_manifest() {
     local run=$1 galaxy=$2 dest_base=$3 overlay=$4 manifest_path=$5
     shift 5
@@ -1272,6 +1302,11 @@ request_fresh_manifest() {
                 echo "[$run $galaxy] Received fresh CANFAR-computed checksum response."
                 if with_cadc_slot slot_job_api "$overlay" delete "$job_id"; then
                     rm -f "$job_file"
+                    # The response is now local and the remote job is stopped.
+                    # Keep receipts and manual/shared manifests for safe retries.
+                    if ! with_cadc_slot cleanup_checksum_files "$overlay" "$dest_base" "$request_id"; then
+                        echo "WARNING [$run $galaxy]: temporary checksum files may remain for request $request_id." >&2
+                    fi
                 else
                     echo "WARNING: job $job_id will be cleaned up again at exit." >&2
                 fi

@@ -1,7 +1,7 @@
 GENERAL:
-  RUN_ID: NGC4689_v3tk_v7.6.8_7000_SNR5
+  RUN_ID: NGC4689_SFH16
   INPUT: /scratch/pawsey1308/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
-  OUTPUT: /scratch/pawsey1308/mauve/v3tk_v7.6.8_prepare/20261016/product/
+  OUTPUT: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/
   REDSHIFT: 0.00535
   PARALLEL: true
   NCPU: 128
@@ -20,7 +20,7 @@ READ_DATA:
   EBmV: 0.0196
 SPATIAL_MASKING:
   METHOD: default
-  MIN_SNR: 5
+  MIN_SNR: -10
   MASK: NGC4689_mask.fits
   THRESHOLD_METHOD: actual
 SPATIAL_BINNING:

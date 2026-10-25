@@ -57,7 +57,9 @@ Environment:
 Default checksum mode, ON SETONIX; no SSH into CANFAR or manually running session is needed:
   ./vcp_scratch_v3tk_v768_to_canfar.sh 7000 NGC4698
 All selected products are checked, not only continuum cubes. Small copies of
-this script and request/response JSON files are retained in each run directory.
+this script and request/response JSON files are removed after each response is
+downloaded and its job is deleted. Failed requests may remain for diagnosis.
+Shared/manual manifests and pending-upload receipts are preserved.
 One-core, 1 GB CANFAR jobs compute actual byte hashes and are removed afterward.
 Missing/expired certificates prompt for login; valid certificates are reused.
 Recognized membership/TLS/reset failures trigger one coordinated certificate
@@ -88,6 +90,7 @@ USAGE
 # Upload selected nGIST v7.6.8 products directly from Setonix scratch to CANFAR.
 #
 # Improvements in this version:
+#   - remove each completed automatic job's temporary checksum files on CANFAR
 #   - refresh date-valid certificates once on recognized CANFAR service/auth errors
 #   - explicit forced overwrite without CANFAR checksums preserves destination backups
 #   - report checksum job status and image-pull failures; capture events before cleanup
@@ -1374,6 +1377,34 @@ slot_job_api() {
     checksum_job_api "${CADC_SLOT_OVERLAY:-$overlay}" "$@"
 }
 
+cleanup_checksum_files() {
+    local overlay=$1 dest_base=$2 request_id=$3
+    CADC_OVERLAY="${CADC_SLOT_OVERLAY:-$overlay}" "$CADC_PYTHON_CMD" "$dest_base" "$request_id" <<'CADC_CHECKSUM_CLEANUP'
+import re
+import sys
+import vos
+from cadcutils.exceptions import NotFoundException
+
+base, request_id = sys.argv[1:]
+if not base.startswith("arc:") or not re.fullmatch(r"[0-9a-f]{32}", request_id):
+    sys.exit("Invalid checksum cleanup destination/request ID")
+client = vos.Client()
+failed = False
+# Exact UUID-owned paths only; never sweep shared manifests or other jobs.
+for kind, suffix in (("worker", ".sh"), ("request", ".json"), ("response", ".json")):
+    path = base.rstrip("/") + "/.checksum_" + kind + "_" + request_id + suffix
+    try:
+        client.delete(path)
+    except NotFoundException:
+        pass
+    except Exception as error:
+        message = re.sub(r'https://[^\s]+', '[URL redacted]', str(error))
+        print("WARNING: checksum cleanup failed for " + path + ": " + message, file=sys.stderr)
+        failed = True
+sys.exit(1 if failed else 0)
+CADC_CHECKSUM_CLEANUP
+}
+
 request_fresh_manifest() {
     local run=$1 galaxy=$2 dest_base=$3 overlay=$4 manifest_path=$5
     shift 5
@@ -1417,6 +1448,11 @@ request_fresh_manifest() {
                 echo "[$run $galaxy] Received fresh CANFAR-computed checksum response."
                 if with_cadc_slot slot_job_api "$overlay" delete "$job_id"; then
                     rm -f "$job_file"
+                    # The response is now local and the remote job is stopped.
+                    # Keep receipts and manual/shared manifests for safe retries.
+                    if ! with_cadc_slot cleanup_checksum_files "$overlay" "$dest_base" "$request_id"; then
+                        echo "WARNING [$run $galaxy]: temporary checksum files may remain for request $request_id." >&2
+                    fi
                 else
                     echo "WARNING: job $job_id will be cleaned up again at exit." >&2
                 fi
