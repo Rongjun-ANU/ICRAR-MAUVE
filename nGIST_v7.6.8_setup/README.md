@@ -121,66 +121,146 @@ For local validation only, the generator also accepts `MAUVE_CUBE_DIR`,
 Production Setonix configs should use the default scratch/product paths unless
 there is a deliberate run-location change.
 
-## Independent NGC4689 7000 A SFH16 test (updated 2026-10-23)
+## Formal 7000 A SFH16 runs (updated 2026-10-28)
 
-The standalone files for this test are:
+The SFH16 workflow defaults to exactly `NGC4189`, `NGC4380`, `NGC4450`,
+`NGC4567_8`, and `NGC4689`. It has its own creation/send commands so ordinary
+`27_*.sh` runs retain their existing meaning. Every command accepts a subset
+of those five galaxy IDs.
 
-```text
-config_setup/NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml
-config_setup/NGC4689_v3tk_v7.6.8_7000_SFH16_setonix.slurm
-```
-
-The YAML copies the existing NGC4689 7000 A configuration with these changes:
-
-- `GENERAL.RUN_ID: NGC4689_SFH16`
-- `SFH.MDEG: 16` instead of 12
-- `CONT.METHOD: false` and `GAS.METHOD: false` to run only KIN then SFH
-
-The output root is the same as the standard 7000 run:
-`/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/`.
-Spatial masking retains the original `MIN_SNR: -10`,
-`THRESHOLD_METHOD: actual`, and input `MASK: NGC4689_mask.fits`.
-All KIN, read-data, prepare-spectra, and Voronoi settings are unchanged:
-target S/N 40, covariance 0, and velocity scale 41 km/s.
-LS and UMOD remain disabled. SFH retains `SPEC_EMICLEAN: false` and
-`FIXED: true` to use the new KIN result without requiring GAS.
-
-Before starting nGIST, the Slurm job copies the existing 7000 output mask:
-
-```text
-source: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689/NGC4689_mask.fits
-target: /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689_SFH16/NGC4689_SFH16_mask.fits
-```
-
-The target filename follows the new run ID. An existing target mask is retained
-on resubmission; a missing source causes a fresh job to stop before nGIST.
-The job reuses the mask, while binning is computed with the original settings;
-it does not copy the existing bin-assignment products.
-
-The product directory will be:
-
-```text
-/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4689_SFH16/
-```
-
-The Slurm script retains the existing NGC4689 7000 A resource request:
-`highmem`, 128 CPUs, `980G`, and `96:00:00`. These are requested limits, not
-an estimated runtime. It uses a separate job name and pipeline log.
-
-This test is independent of the standard generator and `27_*.sh` batch lists.
-To stage just the two test files, run locally from `config_setup/`:
+Run locally:
 
 ```bash
-scp NGC4689_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/
-scp NGC4689_v3tk_v7.6.8_7000_SFH16_setonix.slurm rhuang@setonix.pawsey.org.au:/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/
+cd /Users/Igniz/Desktop/ICRAR/nGIST_v7.6.8_setup/config_setup
+bash SFH16_creation.sh
+bash SFH16_send.sh rhuang
+# Selected-galaxy examples:
+# bash SFH16_creation.sh NGC4567_8 NGC4689
+# bash SFH16_send.sh rhuang@setonix.pawsey.org.au NGC4567_8 NGC4689
 ```
 
-Then submit on Setonix:
+`SFH16_creation.sh` uses `SFH16_workflow.py` to derive each YAML from its
+existing generated 7000 YAML, and its Slurm job from the matching 7000 job,
+with SFH-only resource overrides (`work`, `230G`, `24:00:00`).
+Run it again after intentionally updating the baseline configuration.
+`SFH16_galaxies.sh` supplies the shared five-galaxy selection and Python launcher.
+Executing `./SFH16_galaxies.sh` directly submits the five SFH16 jobs with sbatch;
+pass galaxy IDs to submit a subset. Sourcing it supplies helpers without
+submitting jobs. Use `bash SFH16_ready.sh` for preparation before submission.
+The generated names are:
+
+```text
+{galid}_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml
+{galid}_v3tk_v7.6.8_7000_SFH16_setonix.slurm
+```
+
+The run ID is `{galid}_SFH16`; the output root remains
+`/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/`.
+The only changed SFH fit parameter is `MDEG: 12 -> 16`.
+`SFH.FIXED: true`, `SPEC_EMICLEAN: false`, the spectral mask, library,
+regularisation, noise model, wavelength range, and all other fit settings
+are retained. `OW_CONFIG: true` selects the new YAML and `OW_OUTPUT: false`
+allows resuming a prepared run without overwriting completed SFH outputs.
+
+Masking, binning, spectrum preparation, KIN, CONT, GAS, LS and UMOD have
+`METHOD: false`. This prevents recomputation of any upstream input. READ_DATA
+still reads the cube because the nGIST main pipeline calls it unconditionally;
+the SFH fit reads the copied spectra, not newly prepared spectra.
+
+After sending, prepare on Setonix, before submission:
 
 ```bash
 cd /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial
-sbatch NGC4689_v3tk_v7.6.8_7000_SFH16_setonix.slurm
+module load singularity/4.1.0-slurm
+bash SFH16_ready.sh
+# Or prepare a subset: bash SFH16_ready.sh NGC4689
 ```
+
+The send command transfers the selected YAMLs into `configFiles/`, and the
+jobs plus `SFH16_ready.sh`, `SFH16_galaxies.sh`, and `SFH16_workflow.py` into
+the tutorial directory. It neither prepares products nor submits jobs.
+The preparation launcher uses `PYTHON` if supplied, otherwise `ngistenv1308
+python` when available (with local Python fallbacks). It needs PyYAML, numpy,
+astropy and h5py, all of which are used by the pipeline environment.
+
+Preparation makes independent byte-identical copies with these names:
+
+| Original, under `{galid}/` | Copy, under `{galid}_SFH16/` | Purpose |
+| --- | --- | --- |
+| `{galid}_mask.fits` | `{galid}_SFH16_mask.fits` | Preserve original spatial selection |
+| `{galid}_table.fits` | `{galid}_SFH16_table.fits` | Preserve exact bin membership and map geometry |
+| `{galid}_bin_spectra.hdf5` | `{galid}_SFH16_bin_spectra.hdf5` | Identical SFH spectra, errors and wavelength grid |
+| `{galid}_kin.fits` | `{galid}_SFH16_kin.fits` | Identical fixed stellar kinematics |
+
+The disabled preparation/KIN modules do not require `_bin_spectra_linear.hdf5`,
+`_all_spectra.hdf5`, KIN best fits or optimal templates. GAS/CONT outputs are
+unneeded with `SPEC_EMICLEAN: false`. No original `_sfh*` output is copied:
+nGIST would otherwise skip an already completed SFH fit.
+
+`SFH16_ready.sh` checks the original product's saved `CONFIG` against the new
+YAML, allowing the new run ID, runtime switches, disabled module methods and
+SFH MDEG change. It rejects differences in other supplied science settings.
+It also checks spectral/error/wavelength dimensions, VELSCALE, KIN row count
+and moment column order, table bin IDs, and mask/table row counts. It preserves
+the source CONFIG as `SFH16_SOURCE_CONFIG.yaml` and records SHA-256 hashes in
+`SFH16_INPUTS.json`. A temporary directory is published only after copying
+and verifying every dependency. The original product is never written.
+
+Normal preparation skips any existing SFH16 product folder, prints `Skipped`,
+and continues to the next galaxy without reading its source inputs or changing
+the folder. A skip does not certify that its contents are ready for submission.
+Use `SFH16_ready.sh --check [GALID ...]` for strict verification of the manifest,
+source/config hashes and copied inputs; jobs retain this strict check.
+In particular, the earlier NGC4689 test folder has no staging manifest and is
+now skipped normally; preserve or move it aside only if preparing a fresh
+formal run. A read-only
+[Setonix audit](docs/2026-10-28-NGC4689-SFH16-audit.md) found that its mask,
+table, binned spectra and KIN are byte-identical to the original 7000 products,
+despite recomputation. Its saved CONFIG differs only in RUN_ID/OUTPUT,
+CONT/GAS being disabled and SFH.MDEG=16. This existing result can be retained
+for the SFH polynomial comparison; rerunning it just to avoid recomputation
+is unnecessary. Do not mix old outputs into a fresh prepared folder.
+Preparation can be rerun
+safely after a successful preparation, retaining any subsequent SFH results.
+
+Each generated Slurm job runs `bash SFH16_ready.sh --check {galid}` before
+starting nGIST. This verifies preparation but never creates a missing run.
+Submit only after preparation succeeds:
+
+```bash
+./SFH16_galaxies.sh
+# Or submit a subset:
+# ./SFH16_galaxies.sh NGC4189 NGC4380 NGC4450 NGC4567_8
+```
+
+All five SFH16 jobs request `work`, `230G`, `24:00:00` and 128 CPUs.
+The creation workflow explicitly overrides partition/memory/time rather than
+inheriting the complete pipeline's requests. The previous NGC4689 SFH16 test
+(which also performed binning, spectrum preparation and KIN) completed in
+01:18:11; its main Slurm step recorded MaxRSS=99566424K (about 95 GiB).
+Its SFH fit took 1764.44 seconds. These observations support the smaller
+request for this experiment; peak usage for the other four SFH-only jobs
+has not been measured. nGIST still reads each full input cube before SFH, so
+memory is not determined by the binned-spectrum file alone. Check accounting
+after the first run before applying the same request to additional galaxies.
+The original SFH-stage times at 128 CPUs were 770.25 s (NGC4189), 1166.89 s
+(NGC4380), 4807.96 s (NGC4450), and 4905.44 s (NGC4567_8); these are baseline
+MDEG=12 measurements, not guarantees for MDEG=16.
+
+Dependency behavior was checked against upstream nGIST reporting 7.6.8 at
+[commit 038e9fa](https://github.com/geckos-survey/ngist/tree/038e9fa4839758e9dae53baeaf93a82bd75d8026):
+`MainPipeline.py`, the module dispatchers, `ppxf_sfh_wrapper.py`,
+`save_maps_fits.py`, and `_initialise.py`. In particular, `SFH.FIXED` reads
+`_kin.fits` independently of `KIN.METHOD`. Local verification uses synthetic
+FITS/HDF5 staging tests, config comparisons, shell syntax and mocked SSH:
+
+```bash
+/opt/miniconda3/envs/ICRAR/bin/python tests/test_sfh16.py
+```
+
+Use the same nGIST/pPXF environment,
+spectral-mask/LSF files and template library as the baseline; copying products
+does not establish that those external resources have stayed unchanged.
 
 ## Staging input cubes to Setonix scratch
 

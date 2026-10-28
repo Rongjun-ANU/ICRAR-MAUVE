@@ -19,19 +19,19 @@ READ_DATA:
   LMAX_SNR: 7000
   EBmV: 0.0196
 SPATIAL_MASKING:
-  METHOD: default
+  METHOD: false
   MIN_SNR: -10
   MASK: NGC4689_mask.fits
   THRESHOLD_METHOD: actual
 SPATIAL_BINNING:
-  METHOD: voronoi
+  METHOD: false
   TARGET_SNR: 40.0
   COVARIANCE: 0.0
 PREPARE_SPECTRA:
-  METHOD: default
+  METHOD: false
   VELSCALE: 41
 KIN:
-  METHOD: ppxf
+  METHOD: false
   SPEC_MASK: specMask_KIN_narrow10
   LMIN: 4800
   LMAX: 7000
