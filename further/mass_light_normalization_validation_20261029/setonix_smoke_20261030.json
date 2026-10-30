@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "shape": [
+    2,
+    2
+  ],
+  "modes": [
+    "light_norm_to_r",
+    "light_r"
+  ],
+  "provenance_checked": true,
+  "photometry_identical_between_modes": true,
+  "mass_log_difference_matches_ml_log_ratio_within_map_precision": true,
+  "max_mass_log_difference_error_dex": 8.499049808662106e-08,
+  "map_precision_rounding_bound_dex": 8.956916417446337e-07,
+  "light_r_over_corrected_ml_ratio_minmax": [
+    1.00095642533528,
+    1.0012347900223861
+  ],
+  "mass_script_sha256": "658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873",
+  "speclite_source": "0.20 copied to temporary scratch pydeps; installed environment unchanged"
+}

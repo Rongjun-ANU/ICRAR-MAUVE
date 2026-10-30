@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -21,6 +22,13 @@ CONFIG_DIR = Path(os.environ.get("SFH16_CONFIG_DIR", HERE / "configFiles" if (HE
 DISABLED = ("SPATIAL_MASKING", "SPATIAL_BINNING", "PREPARE_SPECTRA", "KIN", "CONT", "GAS", "LS", "UMOD")
 SUFFIXES = ("_mask.fits", "_table.fits", "_bin_spectra.hdf5", "_kin.fits")
 MANIFEST = "SFH16_INPUTS.json"
+
+
+def known_galids():
+    # Read the same selection as the shell entry points, including on Setonix.
+    return subprocess.check_output(
+        ["bash", "-c", 'source "$1"; printf "%s\\n" "${ALL_GALIDS[@]}"',
+         "bash", str(HERE / "27_galaxies.sh")], text=True).splitlines()
 
 
 def load(path):
@@ -195,8 +203,17 @@ if __name__ == "__main__":
     try:
         mode, *galids = sys.argv[1:]
         require(mode in {"create", "ready", "check"} and galids, "Use the SFH16_*.sh entry points")
+        allowed = set(known_galids())
         for galid in galids:
-            require(galid in {"NGC4189", "NGC4380", "NGC4450", "NGC4567_8", "NGC4689"}, "Unknown SFH16 galaxy")
+            require(galid in allowed, f"Unknown SFH16 galaxy: {galid}")
+        if mode == "create":
+            # Fail before writing any files if a requested baseline is absent.
+            missing = [str(path) for galid in galids for path in
+                       (config_path(galid, False), HERE / f"{galid}_v3tk_v7.6.8_7000_setonix.slurm")
+                       if not path.is_file()]
+            require(not missing, "Missing original 7000 baseline files: " + ", ".join(missing)
+                    + ". Supply the actual baseline before creating SFH16 configs, or select an available subset.")
+        for galid in galids:
             if mode == "create":
                 create(galid)
             else:

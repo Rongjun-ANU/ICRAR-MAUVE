@@ -1,0 +1,168 @@
+{
+  "ngist_version": "7.6.8",
+  "ngist_miles_source": "/work/ngist/ngistPipeline/prepareTemplates/miles.py",
+  "ngist_miles_sha256": "45e4f3ff68fe4d5df81d77a362ef225d15e3651736ae86d58d7ea8c26174f921",
+  "ngist_auxiliary_source": "/work/ngist/ngistPipeline/auxiliary/_auxiliary.py",
+  "ngist_auxiliary_sha256": "9dc3bc4f79f01a257ec3271513ee185992eb48a900dd0873369f3d1ea367b307",
+  "ngist_sfh_wrapper_sha256": "917f44bae1b964a2ab75be991ef2e40c286efad90ad7ca860d23ce770fb35f06",
+  "template_velscale_ratio_verified": 2,
+  "mass_script_sha256": "658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873",
+  "reports": [
+    {
+      "galaxy": "IC3392",
+      "weights": "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/IC3392/IC3392_sfh_weights.fits",
+      "lmax": 8900,
+      "bins": 4062,
+      "ssps": 477,
+      "setup": {
+        "config_path": "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/IC3392/CONFIG",
+        "config_sha256": "0e146c54ed54f7d86de796a9c9cd4ca3d06e7c0c67e0dcbbe7e2dd179a8009cd",
+        "lmin": 4800.0,
+        "lmax": 8900.0,
+        "redshift": 0.005566,
+        "galaxy_velscale": 41.0,
+        "template_velscale": 20.5,
+        "velscale_source": "CONFIG.PREPARE_SPECTRA.VELSCALE",
+        "data_lsf_path": "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MUSE-WFM-MILES",
+        "template_lsf_path": "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MILES",
+        "data_lsf_sha256": "878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e",
+        "template_lsf_sha256": "a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d",
+        "ngist_revision": "038e9fa4839758e9dae53baeaf93a82bd75d8026",
+        "ppxf_version": "9.4.5",
+        "numpy_version": "1.26.4",
+        "scipy_version": "1.17.1",
+        "astropy_version": "7.2.0",
+        "mass_script_sha256": "658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873"
+      },
+      "metadata": {
+        "prepared_range": [
+          4650.2000000003,
+          9049.400000000745
+        ],
+        "template_count": 477,
+        "template_manifest_sha256": "2c28591c7d7f8436670b6d290212c297cc232808ac48fd5a34ebd2ed3dfec675"
+      },
+      "max_factor_relative_error": 0.0,
+      "max_normalized_spectrum_absolute_error": 0.0,
+      "max_fraction_sum_error": 4.440892098500626e-16,
+      "light_r_error_dex_percentiles": [
+        -0.03642300068419216,
+        -0.01589423305824663,
+        -0.009576279451814128,
+        -0.004514026615143687,
+        0.0006195965024954976
+      ],
+      "light_r_error_percent_percentiles": [
+        -8.044650513359242,
+        -3.5936219342600855,
+        -2.180886968733259,
+        -1.0340100145487312,
+        0.14276918533455696
+      ]
+    },
+    {
+      "galaxy": "IC3392",
+      "weights": "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/IC3392/IC3392_sfh_weights.fits",
+      "lmax": 7000,
+      "bins": 3750,
+      "ssps": 477,
+      "setup": {
+        "config_path": "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/IC3392/CONFIG",
+        "config_sha256": "3bbb8cee0c168d47da683b2669009d2dd93167309757b2daa0c512be40875ca2",
+        "lmin": 4800.0,
+        "lmax": 7000.0,
+        "redshift": 0.005566,
+        "galaxy_velscale": 41.0,
+        "template_velscale": 20.5,
+        "velscale_source": "CONFIG.PREPARE_SPECTRA.VELSCALE",
+        "data_lsf_path": "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MUSE-WFM-MILES",
+        "template_lsf_path": "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MILES",
+        "data_lsf_sha256": "878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e",
+        "template_lsf_sha256": "a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d",
+        "ngist_revision": "038e9fa4839758e9dae53baeaf93a82bd75d8026",
+        "ppxf_version": "9.4.5",
+        "numpy_version": "1.26.4",
+        "scipy_version": "1.17.1",
+        "astropy_version": "7.2.0",
+        "mass_script_sha256": "658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873"
+      },
+      "metadata": {
+        "prepared_range": [
+          4650.2000000003,
+          7149.500000000552
+        ],
+        "template_count": 477,
+        "template_manifest_sha256": "2c28591c7d7f8436670b6d290212c297cc232808ac48fd5a34ebd2ed3dfec675"
+      },
+      "max_factor_relative_error": 0.0,
+      "max_normalized_spectrum_absolute_error": 0.0,
+      "max_fraction_sum_error": 4.440892098500626e-16,
+      "light_r_error_dex_percentiles": [
+        -0.08843338655770275,
+        -0.039050201433041526,
+        -0.024624613240761067,
+        -0.01346192364398761,
+        0.0005507116296234487
+      ],
+      "light_r_error_percent_percentiles": [
+        -18.42320974372954,
+        -8.599241756183597,
+        -5.512276253192527,
+        -3.0521736247837543,
+        0.1268864717427487
+      ]
+    },
+    {
+      "galaxy": "NGC4064",
+      "weights": "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4064/NGC4064_sfh_weights.fits",
+      "lmax": 7000,
+      "bins": 8841,
+      "ssps": 477,
+      "setup": {
+        "config_path": "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/NGC4064/CONFIG",
+        "config_sha256": "3944aaf8d1b9bcd33c9ea01d2faf8aef159c7899fef596d55e5a0cd18771464b",
+        "lmin": 4800.0,
+        "lmax": 7000.0,
+        "redshift": 0.003025,
+        "galaxy_velscale": 41.0,
+        "template_velscale": 20.5,
+        "velscale_source": "CONFIG.PREPARE_SPECTRA.VELSCALE",
+        "data_lsf_path": "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MUSE-WFM-MILES",
+        "template_lsf_path": "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MILES",
+        "data_lsf_sha256": "878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e",
+        "template_lsf_sha256": "a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d",
+        "ngist_revision": "038e9fa4839758e9dae53baeaf93a82bd75d8026",
+        "ppxf_version": "9.4.5",
+        "numpy_version": "1.26.4",
+        "scipy_version": "1.17.1",
+        "astropy_version": "7.2.0",
+        "mass_script_sha256": "658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873"
+      },
+      "metadata": {
+        "prepared_range": [
+          4650.2000000003,
+          7149.500000000552
+        ],
+        "template_count": 477,
+        "template_manifest_sha256": "2c28591c7d7f8436670b6d290212c297cc232808ac48fd5a34ebd2ed3dfec675"
+      },
+      "max_factor_relative_error": 0.0,
+      "max_normalized_spectrum_absolute_error": 0.0,
+      "max_fraction_sum_error": 4.440892098500626e-16,
+      "light_r_error_dex_percentiles": [
+        -0.11709475585308005,
+        -0.038547409826214275,
+        -0.01982781710464509,
+        -0.009196336488188303,
+        0.0034865446931625485
+      ],
+      "light_r_error_percent_percentiles": [
+        -23.63308545424003,
+        -8.49336391918751,
+        -4.462871704418003,
+        -2.095272374730309,
+        0.8060377165018506
+      ]
+    }
+  ]
+}

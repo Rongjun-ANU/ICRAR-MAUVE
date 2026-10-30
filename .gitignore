@@ -41,6 +41,10 @@
 !specMask*
 !*.html
 
+# Small production LSF inputs used by Mass.py (extensionless text files).
+!further/lsf_MUSE-WFM-MILES
+!further/lsf_MILES
+
 # Keep these metadata files tracked too
 !.gitignore
 !README.md

@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 . ./SFH16_galaxies.sh
 remote_login=rhuang@setonix.pawsey.org.au
-if [[ $# -gt 0 && "$1" != NGC* ]]; then
+if [[ $# -gt 0 ]] && ! looks_like_galid "$1"; then
   remote_login="$1"
   shift
   [[ "$remote_login" == *@* ]] || remote_login="${remote_login}@setonix.pawsey.org.au"
@@ -20,7 +20,7 @@ for galid in "${SELECTED_GALIDS[@]}"; do
   yaml_files+=("${galid}_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml")
   slurm_files+=("${galid}_v3tk_v7.6.8_7000_SFH16_setonix.slurm")
 done
-control_files=(SFH16_ready.sh SFH16_galaxies.sh SFH16_workflow.py)
+control_files=(27_galaxies.sh SFH16_ready.sh SFH16_galaxies.sh SFH16_workflow.py)
 for file in "${yaml_files[@]}" "${slurm_files[@]}" "${control_files[@]}"; do
   [[ -s "$file" ]] || { echo "ERROR: missing $file; run SFH16_creation.sh first" >&2; exit 1; }
 done

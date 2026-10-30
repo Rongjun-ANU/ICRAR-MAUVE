@@ -2,14 +2,28 @@
 set -euo pipefail
 
 # Standalone copy of vcp_scratch_v3tk_v768_to_canfar.sh for the independent
-# Five SFH MDEG16 runs with reused original 7000 spectra and kinematics.
-# Transfer new SFH products and original KIN/binning/gas maps for Mass/QC.
+# Full 40-galaxy / 39-cube SFH MDEG16 sample with reused 7000 inputs.
+# 2026-10-30: upload only new SFH maps/weights and their CONFIG/LOGFILE.
+# Reuse original 7000 mask, binning, KIN and gas maps without duplicating them.
 # Completed automatic jobs remove their temporary CANFAR checksum files.
+# Keep this standalone sample aligned with config_setup/27_galaxies.sh.
+# Both the upload selector and embedded CANFAR worker use this one list.
+SFH16_GALIDS=(
+    IC3392 NGC4064 NGC4189 NGC4192 NGC4216 NGC4222 NGC4254
+    NGC4293 NGC4294 NGC4298 NGC4302 NGC4321 NGC4330 NGC4351
+    NGC4380 NGC4383 NGC4388 NGC4394 NGC4396 NGC4405 NGC4402
+    NGC4419 NGC4424 NGC4450 NGC4457 NGC4501 NGC4522 NGC4535
+    NGC4548 NGC4567_8 NGC4569 NGC4579 NGC4580 NGC4606 NGC4607
+    NGC4654 NGC4689 NGC4694 NGC4698
+)
+
 usage() {
     cat <<'USAGE'
 Usage: bash vcp_scratch_v3tk_v768_7000_SFH16_to_canfar.sh [OPTIONS] [GALID ...]
 
-Upload finished SFH16 runs for NGC4189, NGC4380, NGC4450, NGC4567_8, NGC4689.
+Upload finished SFH16 runs across the full 40-galaxy / 39-cube sample.
+NGC4567_8 is one combined cube. All 39 cube IDs are supported, including
+NGC4579; absent or unfinished runs are skipped in the default selection.
 Source on Setonix:
   /scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000/<GALID>_SFH16/
 to CANFAR:
@@ -29,31 +43,31 @@ Options:
                     Required together; preserve backups, upload UNVERIFIED.
   -h, --help         Show this help.
 
-Products from <GALID>_SFH16: CONFIG, LOGFILE, _mask.fits, _sfh_maps.fits,
-                           _sfh_weights.fits.
-Products from original <GALID>: _kin_maps.fits, _spatial_binning_maps.fits,
-                               _gas_bin_maps.fits, _gas_spaxel_maps.fits.
-This source rule applies identically to all five galaxies, including NGC4689.
-Original map copies are renamed to <GALID>_SFH16<suffix>; contents are unchanged.
-No continuum cubes, spectra HDF5 files, or temporary files are selected.
-All nine products and a successful pipeline LOGFILE are required for upload.
+Only four products from <GALID>_SFH16 are selected:
+  CONFIG, LOGFILE, <GALID>_SFH16_sfh_maps.fits,
+  <GALID>_SFH16_sfh_weights.fits.
+This rule applies identically to all 39 cubes, including NGC4689.
+Reuse mask, spatial binning, KIN and gas maps from the original 7000 run;
+they are neither required nor uploaded by this script. No continuum cubes,
+spectra HDF5 files, or temporary files are selected.
+All four products and a successful pipeline LOGFILE are required for upload.
+Existing extra products on CANFAR are left in place; this is not a cleanup tool.
 Without GALID arguments, unfinished/incomplete runs are skipped. Explicitly
 selected unfinished/incomplete runs fail before CADC access. --dry-run lists
 all selected paths without enforcing completion, and reports readiness.
-Both GALID and GALID_SFH16 arguments are accepted for the five supported cases.
+Both GALID and GALID_SFH16 arguments are accepted for all 39 supported cubes.
 The uploader only transfers files; it does not change masks or binning.
 
 Checksum helper modes (this script is self-contained):
   bash vcp_scratch_v3tk_v768_7000_SFH16_to_canfar.sh --canfar-manifest 7000
       Run INSIDE CANFAR; --root may override /arc/projects/mauve/products.
   --canfar-request PATH is used internally by automatic checksum jobs.
-The checksum worker accepts only the five supported <GALID>_SFH16 run IDs.
+The checksum worker accepts all 39 supported <GALID>_SFH16 run IDs.
 Manual mode can limit selection: --canfar-manifest 7000 NGC4189_SFH16
 
 The original uploader's CADC environment, certificate recovery, file retries,
 backup/quarantine and pending-receipt safeguards are retained. Set SOURCE_7000
-only to relocate the SFH16 source parent. SOURCE_ORIGINAL_7000 defaults to
-SOURCE_7000 and may relocate the original-galaxy parent. Destination is fixed.
+only to relocate the SFH16 source parent. Destination is fixed.
 CADC_USER defaults to RongjunHuang; BASE_OVERLAY, OVERLAY_DIR, VCP_CMD,
 VMV_CMD, CADC_PYTHON_CMD, CHECKSUM_PYTHON, TRANSFER_JOBS and FILE_RETRIES
 are supported as in the standard uploader. Keep product writers idle.
@@ -69,7 +83,7 @@ USAGE
 
 # The same script runs on CANFAR and Setonix; no separate helper is needed.
 checksum_manifest() {
-    "${CHECKSUM_PYTHON:-python3}" - "$@" <<'CANFAR_CHECKSUM_PYTHON'
+    "${CHECKSUM_PYTHON:-python3}" - "${SFH16_GALIDS[*]}" "$@" <<'CANFAR_CHECKSUM_PYTHON'
 #!/usr/bin/env python3
 """Hash actual CANFAR product files and write a small SHA-256 manifest."""
 
@@ -85,11 +99,8 @@ import time
 import uuid
 
 RUNS = {"7000": "v3tk_v7.6.8_7000"}
-SPECIAL_CASES = ("NGC4189_SFH16", "NGC4380_SFH16", "NGC4450_SFH16",
-                 "NGC4567_8_SFH16", "NGC4689_SFH16")
-SUFFIXES = ("CONFIG", "_sfh_maps.fits", "_sfh_weights.fits",
-            "_spatial_binning_maps.fits", "_kin_maps.fits", "LOGFILE", "_mask.fits",
-            "_gas_bin_maps.fits", "_gas_spaxel_maps.fits")
+SPECIAL_CASES = tuple(galaxy + "_SFH16" for galaxy in sys.argv.pop(1).split())
+SUFFIXES = ("CONFIG", "_sfh_maps.fits", "_sfh_weights.fits", "LOGFILE")
 FORMAT = "mauve-sha256-v1"
 
 
@@ -331,7 +342,6 @@ CURRENT_STAGE=argument-validation
 start_secs=$SECONDS
 
 SOURCE_7000=${SOURCE_7000:-/scratch/pawsey1308/mauve/products/v3tk_v7.6.8_7000}
-SOURCE_ORIGINAL_7000=${SOURCE_ORIGINAL_7000:-$SOURCE_7000}
 DEST_7000=arc:projects/mauve/products/v3tk_v7.6.8_7000
 CADC_USER=${CADC_USER:-RongjunHuang}
 
@@ -643,12 +653,7 @@ PRODUCT_SUFFIXES=(
     CONFIG
     _sfh_maps.fits
     _sfh_weights.fits
-    _spatial_binning_maps.fits
-    _kin_maps.fits
     LOGFILE
-    _mask.fits
-    _gas_bin_maps.fits
-    _gas_spaxel_maps.fits
 )
 
 
@@ -683,26 +688,15 @@ is_positive_integer() {
 
 
 destination_filename() {
-    local galaxy=$1 path=$2 filename original
-    original=${galaxy%_SFH16}
-    filename=$(basename "$path")
-    case "$filename" in
-        "${original}_kin_maps.fits"|"${original}_spatial_binning_maps.fits"|"${original}_gas_bin_maps.fits"|"${original}_gas_spaxel_maps.fits")
-            printf '%s%s\n' "$galaxy" "${filename#"$original"}"
-            ;;
-        *) printf '%s\n' "$filename" ;;
-    esac
+    local path=$2
+    basename "$path"
 }
 
 source_path() {
     local source_base=$1
     local galaxy=$2
     local suffix=$3
-    local original=${galaxy%_SFH16}
     case "$suffix" in
-        _kin_maps.fits|_spatial_binning_maps.fits|_gas_bin_maps.fits|_gas_spaxel_maps.fits)
-            printf '%s/%s/%s%s\n' "$SOURCE_ORIGINAL_7000" "$original" "$original" "$suffix"
-            ;;
         CONFIG|LOGFILE)
             printf '%s/%s/%s\n' "$source_base" "$galaxy" "$suffix"
             ;;
@@ -786,7 +780,7 @@ CADC_OVERLAY_MODE
 
 DRY_RUN=0
 REQUESTED_RUNS=(7000)
-REQUESTED_GALAXIES=(NGC4189_SFH16 NGC4380_SFH16 NGC4450_SFH16 NGC4567_8_SFH16 NGC4689_SFH16)
+REQUESTED_GALAXIES=("${SFH16_GALIDS[@]/%/_SFH16}")
 EXPLICIT_GALAXIES=0
 
 while [ "$#" -gt 0 ]; do
@@ -819,10 +813,14 @@ while [ "$#" -gt 0 ]; do
             ;;
         *)
             original=${1%_SFH16}
-            case "$original" in
-                NGC4189|NGC4380|NGC4450|NGC4567_8|NGC4689) ;;
-                *) echo "ERROR: unsupported SFH16 galaxy: $1" >&2; exit 2 ;;
-            esac
+            supported=0
+            for galaxy in "${SFH16_GALIDS[@]}"; do
+                if [ "$original" = "$galaxy" ]; then supported=1; break; fi
+            done
+            if [ "$supported" -eq 0 ]; then
+                echo "ERROR: unsupported SFH16 galaxy: $1" >&2
+                exit 2
+            fi
             selected="${original}_SFH16"
             if [ "$EXPLICIT_GALAXIES" -eq 0 ]; then
                 REQUESTED_GALAXIES=("$selected")
@@ -901,10 +899,10 @@ WORK_ITEMS=()
 for galaxy in "${REQUESTED_GALAXIES[@]}"; do
     if [ "$DRY_RUN" -eq 0 ] && ! sfh16_ready "$galaxy"; then
         if [ "$EXPLICIT_GALAXIES" -eq 1 ]; then
-            echo "ERROR: $galaxy is not ready: require successful LOGFILE and all nine source products. Use --dry-run $galaxy to inspect paths." >&2
+            echo "ERROR: $galaxy is not ready: require successful LOGFILE and all four source products. Use --dry-run $galaxy to inspect paths." >&2
             exit 1
         fi
-        echo "Skipping $galaxy: not ready (successful LOGFILE/all nine source products required)."
+        echo "Skipping $galaxy: not ready (successful LOGFILE/all four source products required)."
         continue
     fi
     WORK_ITEMS+=("7000|$galaxy")
@@ -1473,14 +1471,9 @@ upload_galaxy() {
         if [ -f "$path" ]; then
             sources+=("$path")
         else
-            echo "WARNING [$run $galaxy]: missing source, skipping: $path" >&2
-            case "$suffix" in
-                _sfh_maps.fits|_gas_bin_maps.fits|_gas_spaxel_maps.fits)
-                    echo "ERROR [$run $galaxy]: required SFH/gas map is missing: $path" >&2
-                    record_issue ERROR "$run" "$galaxy" "$(basename "$path")" source-discovery "Required SFH/gas map is missing on Setonix: $path"
-                    galaxy_status=1
-                    ;;
-            esac
+            echo "ERROR [$run $galaxy]: required SFH run product is missing: $path" >&2
+            record_issue ERROR "$run" "$galaxy" "$(basename "$path")" source-discovery "Required SFH run product is missing on Setonix: $path"
+            galaxy_status=1
         fi
     done
 

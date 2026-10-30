@@ -48,6 +48,99 @@ python Mass.py -g NGC4254 --root . --fallback-root . --cube-root /arc/projects/m
 python proxy_EWHa.py -g NGC4254 --root . --fallback-root . --cube-root /arc/projects/mauve/cubes/v3tk
 ```
 
+## Mass LIGHT-to-R normalization (2026-10-29)
+
+`Mass.py` defaults to `light_norm_to_r`. The former helper measured the mean
+of raw, linearly sampled SSP flux inside `LMIN`--`LMAX`; its 2026-04-23
+changelog incorrectly called that exact. nGIST normalizes each SSP after a
+padded crop, resolution convolution and logarithmic rebinning.
+The normalization functions are integrated directly into `Mass.py` and
+reconstruct that prepared mean `n_j` using the checked nGIST 7.6.8 algorithm.
+No separate normalization module is required. The fitted populations and BaSTI
+photometry stay the inputs to the same conversion:
+
+```text
+q_R,bj = w_bj * 10**(-0.4 * R_j) / n_j
+f_R,bj = q_R,bj / sum_j(q_R,bj)
+ML_R,b = sum_j(f_R,bj * BaSTI_ML_R,j)
+```
+
+Each valid bin's R-light fractions sum to one. Division by `n_j` is required
+because the fitted coefficient multiplies the prepared spectrum divided by
+`n_j`. The change corrects this normalization step; it does not refit spectra
+or change the R-band photometry, attenuation or inclination treatment.
+
+Required resources:
+
+- The selected weights file, its saved SSP `GRID`, and its exact run `CONFIG`.
+  `GENERAL.RUN_ID` must match the weights basename before `_sfh_weights.fits`
+  (also accepts `_sfh-weights.fits` and gzip). SFH header settings must agree
+  with `CONFIG`; another galaxy's or another run's configuration is not a
+  substitute. This also applies to SFH16 QC/transfer workflows: include the
+  actual rerun `CONFIG` or pass its path explicitly.
+- The original `EMILES_baseFe_safe/` SSP library and `BaSTI+Chabrier.dat`.
+- `lsf_MUSE-WFM-MILES` and `lsf_MILES`, placed directly beside `Mass.py`.
+  These are production copies from Setonix, fetched on 2026-10-29 from
+  `/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/`.
+  Data LSF SHA256:
+  `878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e`.
+  Template LSF SHA256:
+  `a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d`.
+- NumPy, SciPy, Astropy, pPXF and PyYAML, in addition to the existing photometry
+  dependencies. Galaxy sampling is read directly from the run's
+  `CONFIG.PREPARE_SPECTRA.VELSCALE`; template sampling is half that step.
+  nGIST's standard preparation uses this configured value and copies it to
+  intermediate spectra metadata. No `.h5`/`.hdf5` files or h5py installation
+  are required by Mass post-processing of the final CANFAR products.
+
+LSFs are located using the configured paths relative to `CONFIG`, then the
+bundled files beside `Mass.py`; `--lsf-dir` explicitly selects a resource
+directory. The reconstruction preserves nGIST's redshift/floor rule and linear
+extrapolation, including its constant template FWHM beyond 9000 Angstrom.
+This reproduces historical preparation; it does not establish the physical
+validity of that resolution prescription outside the optical E-MILES region.
+
+Missing inputs, conflicting settings, duplicate/missing SSP identities,
+different SSP wavelength grids, non-finite spectra, or invalid R fractions
+stop reconstruction. There is **no automatic approximate fallback**.
+`--sfh-weight-interpretation light_v_to_r`, `light_r`, or `mass` remain explicit
+alternative coefficient conventions. They must be appropriate for the input
+weights; selecting one is not a remedy for a missing reconstruction input.
+
+For a single selected galaxy with relocated resources:
+
+```bash
+python Mass.py -g IC3392 --root . --product-subdir v3tk_v7.6.8 \
+  --ngist-config v3tk_v7.6.8/IC3392/CONFIG \
+  --template-library-dir ./EMILES_baseFe_safe --lsf-dir .
+```
+
+`Mass.sh` forwards `MASS_TEMPLATE_LIBRARY_DIR`, `MASS_NGIST_CONFIG`,
+`MASS_LSF_DIR`, and `MASS_SFH_WEIGHT_INTERPRETATION`. A CONFIG override must
+match each selected task; use it for a single galaxy/run. The default resolves
+CONFIG independently beside each selected weights file.
+
+Logs and the output `ML_R` extension record the mode, preparation limits,
+redshift, sampling source/step, resource hashes, SSP manifest hash, reference
+nGIST revision and numerical package versions. A new run writes updated mass
+products as usual; the implementation checks themselves do not regenerate
+existing galaxy products.
+
+Focused regression tests:
+
+```bash
+MPLCONFIGDIR=/tmp/mass_mpl python -m pytest -q tests/test_mass_light_normalization.py
+```
+
+The [implementation validation note](mass_light_normalization_validation_20261029/README.md)
+records the executed 7000/8900 real-weight comparison, exact reference-spectrum
+checks, synthetic pipeline smoke test, figures, reproducible validator command
+and the pre-existing legacy wrapper-test failure.
+The final integrated script also logs the error from wrongly assuming `light_r`
+as `log10(light_r / corrected_light_norm_to_r)` and as a percentage. Negative
+values mean that `light_r` underestimates M/L. Updated comparisons and Setonix
+checks are recorded in the validation note.
+
 ## SFR, strong-line metallicity, and photoionisation-grid methods
 
 `SFR+Z.py` reads the raw gas-bin maps plus the matching

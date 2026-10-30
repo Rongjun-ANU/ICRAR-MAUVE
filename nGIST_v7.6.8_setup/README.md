@@ -121,12 +121,34 @@ For local validation only, the generator also accepts `MAUVE_CUBE_DIR`,
 Production Setonix configs should use the default scratch/product paths unless
 there is a deliberate run-location change.
 
-## Formal 7000 A SFH16 runs (updated 2026-10-28)
+## Formal 7000 A SFH16 runs (updated 2026-10-29)
 
-The SFH16 workflow defaults to exactly `NGC4189`, `NGC4380`, `NGC4450`,
-`NGC4567_8`, and `NGC4689`. It has its own creation/send commands so ordinary
-`27_*.sh` runs retain their existing meaning. Every command accepts a subset
-of those five galaxy IDs.
+The SFH16 workflow defaults to the full 40-galaxy sample in 39 cubes, using
+the `ALL_GALIDS` list in `27_galaxies.sh`. `NGC4567_8` remains one combined
+cube/run, and `IC3392` is accepted as a galaxy argument by the send command.
+It has its own creation/send commands so ordinary `27_*.sh` runs retain their
+existing meaning. Every command accepts a subset of the 39 cube IDs.
+
+All selected original 7000 YAMLs and Slurm scripts must exist before creation;
+missing baselines stop generation before any output is written. On 2026-10-29,
+38 baseline pairs are available locally. NGC4579 lacks both files and has no
+row in the local cube-center/size CSV snapshots. A read-only Setonix check also
+found neither baseline file nor its original product `CONFIG`. Its real baseline
+must be supplied before the no-argument full-sample creation/send sequence can
+succeed. Do not substitute another galaxy's settings. To generate/send the
+currently available 38 cubes explicitly, use:
+
+```bash
+cd /Users/Igniz/Desktop/ICRAR/nGIST_v7.6.8_setup/config_setup
+source ./SFH16_galaxies.sh
+available=()
+for galid in "${SFH16_GALIDS[@]}"; do
+  [[ "$galid" == NGC4579 ]] || available+=("$galid")
+done
+bash SFH16_creation.sh "${available[@]}"
+bash SFH16_send.sh rhuang "${available[@]}"
+# On Setonix, use the explicit preparation/submission lists printed by send.
+```
 
 Run locally:
 
@@ -143,8 +165,8 @@ bash SFH16_send.sh rhuang
 existing generated 7000 YAML, and its Slurm job from the matching 7000 job,
 with SFH-only resource overrides (`work`, `230G`, `24:00:00`).
 Run it again after intentionally updating the baseline configuration.
-`SFH16_galaxies.sh` supplies the shared five-galaxy selection and Python launcher.
-Executing `./SFH16_galaxies.sh` directly submits the five SFH16 jobs with sbatch;
+`SFH16_galaxies.sh` supplies the shared full-sample selection and Python launcher.
+Executing `./SFH16_galaxies.sh` directly submits the 39 SFH16 jobs with sbatch;
 pass galaxy IDs to submit a subset. Sourcing it supplies helpers without
 submitting jobs. Use `bash SFH16_ready.sh` for preparation before submission.
 The generated names are:
@@ -177,7 +199,7 @@ bash SFH16_ready.sh
 ```
 
 The send command transfers the selected YAMLs into `configFiles/`, and the
-jobs plus `SFH16_ready.sh`, `SFH16_galaxies.sh`, and `SFH16_workflow.py` into
+jobs plus `27_galaxies.sh`, `SFH16_ready.sh`, `SFH16_galaxies.sh`, and `SFH16_workflow.py` into
 the tutorial directory. It neither prepares products nor submits jobs.
 The preparation launcher uses `PYTHON` if supplied, otherwise `ngistenv1308
 python` when available (with local Python fallbacks). It needs PyYAML, numpy,
@@ -233,16 +255,16 @@ Submit only after preparation succeeds:
 # ./SFH16_galaxies.sh NGC4189 NGC4380 NGC4450 NGC4567_8
 ```
 
-All five SFH16 jobs request `work`, `230G`, `24:00:00` and 128 CPUs.
+All generated SFH16 jobs request `work`, `230G`, `24:00:00` and 128 CPUs.
 The creation workflow explicitly overrides partition/memory/time rather than
 inheriting the complete pipeline's requests. The previous NGC4689 SFH16 test
 (which also performed binning, spectrum preparation and KIN) completed in
 01:18:11; its main Slurm step recorded MaxRSS=99566424K (about 95 GiB).
 Its SFH fit took 1764.44 seconds. These observations support the smaller
-request for this experiment; peak usage for the other four SFH-only jobs
-has not been measured. nGIST still reads each full input cube before SFH, so
-memory is not determined by the binned-spectrum file alone. Check accounting
-after the first run before applying the same request to additional galaxies.
+request for the initial experiment; they do not establish peak usage for the
+full sample. nGIST still reads each full input cube before SFH, so memory is
+not determined by the binned-spectrum file alone. Review accounting for the
+expanded sample before concluding that every cube fits this resource request.
 The original SFH-stage times at 128 CPUs were 770.25 s (NGC4189), 1166.89 s
 (NGC4380), 4807.96 s (NGC4450), and 4905.44 s (NGC4567_8); these are baseline
 MDEG=12 measurements, not guarantees for MDEG=16.

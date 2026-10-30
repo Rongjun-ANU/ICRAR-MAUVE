@@ -12,7 +12,9 @@ import numpy as np
 import yaml
 
 CONFIG = Path(__file__).resolve().parents[1] / "config_setup"
-GALIDS = ["NGC4189", "NGC4380", "NGC4450", "NGC4567_8", "NGC4689"]
+GALIDS = subprocess.check_output(
+    ["bash", "-c", 'source "$1"; printf "%s\\n" "${ALL_GALIDS[@]}"',
+     "bash", str(CONFIG / "27_galaxies.sh")], text=True).splitlines()
 SUFFIXES = ["_mask.fits", "_table.fits", "_bin_spectra.hdf5", "_kin.fits"]
 
 
@@ -26,11 +28,18 @@ class SFH16Tests(unittest.TestCase):
         self.products = self.work / "products"
         self.products.mkdir()
         for path in CONFIG.glob("*"):
-            if path.is_file() and (path.name.startswith("SFH16_") or
+            if path.is_file() and (path.name == "27_galaxies.sh" or path.name.startswith("SFH16_") or
                                   any(path.name.startswith(g + "_") for g in GALIDS)):
                 shutil.copy2(path, self.cfg / path.name)
         for galid in GALIDS:
             path = self.cfg / f"{galid}_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml"
+            if not path.exists():
+                # Synthetic baseline for sample members not yet staged locally.
+                template = "NGC4689_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml"
+                path.write_text((CONFIG / template).read_text().replace("NGC4689", galid))
+                slurm = "NGC4689_v3tk_v7.6.8_7000_setonix.slurm"
+                (self.cfg / f"{galid}_v3tk_v7.6.8_7000_setonix.slurm").write_text(
+                    (CONFIG / slurm).read_text().replace("NGC4689", galid))
             config = yaml.safe_load(path.read_text())
             config["GENERAL"]["OUTPUT"] = str(self.products)
             path.write_text(yaml.safe_dump(config))
@@ -46,6 +55,24 @@ class SFH16Tests(unittest.TestCase):
 
     def generate(self):
         self.run_script("SFH16_creation.sh")
+
+    def test_default_selection_covers_39_cubes(self):
+        result = subprocess.check_output(
+            ["bash", "-c", 'source "$1"; select_sfh16_galids; printf "%s\\n" "${SELECTED_GALIDS[@]}"',
+             "bash", str(self.cfg / "SFH16_galaxies.sh")], text=True)
+        self.assertEqual(result.splitlines(), GALIDS)
+        self.assertEqual(len(set(GALIDS)), 39)
+        self.assertIn("IC3392", GALIDS)
+        self.assertIn("NGC4579", GALIDS)
+
+    def test_missing_baseline_rejected_before_any_generation(self):
+        for path in self.cfg.glob("*_SFH16_setonix.*"):
+            path.unlink()
+        (self.cfg / "NGC4579_MAUVE_MasterConfig_v7.6.8_7000_setonix.yaml").unlink()
+        result = self.run_script("SFH16_creation.sh", ok=False)
+        self.assertIn("Missing original 7000 baseline files", result.stderr)
+        self.assertIn("NGC4579", result.stderr)
+        self.assertEqual(list(self.cfg.glob("*_SFH16_setonix.*")), [])
 
     def source(self, galid="NGC4689"):
         source = self.products / galid
@@ -139,7 +166,7 @@ class SFH16Tests(unittest.TestCase):
             target.mkdir()
             (target / "keep.txt").write_text("existing result")
         result = self.run_script("SFH16_ready.sh")
-        self.assertEqual(result.stdout.count("Skipped "), 5)
+        self.assertEqual(result.stdout.count("Skipped "), len(GALIDS))
         for galid in GALIDS:
             target = self.products / (galid + "_SFH16")
             self.assertEqual([p.name for p in target.iterdir()], ["keep.txt"])
@@ -181,17 +208,28 @@ class SFH16Tests(unittest.TestCase):
                         '  cat > "$payload"\nfi\n')
         stub.chmod(0o755)
         self.env.update(PATH=str(bindir) + os.pathsep + self.env["PATH"], SSH_TEST_DIR=str(self.work))
-        self.run_script("SFH16_send.sh", "NGC4567_8")
+        self.run_script("SFH16_send.sh", "IC3392")
         import tarfile
         contents = []
         for archive in sorted(self.work.glob("payload_*.tar")):
             with tarfile.open(archive) as stream:
                 contents.extend(stream.getnames())
         self.assertEqual(set(contents), {
-            "NGC4567_8_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml",
-            "NGC4567_8_v3tk_v7.6.8_7000_SFH16_setonix.slurm",
-            "SFH16_ready.sh", "SFH16_galaxies.sh", "SFH16_workflow.py"})
+            "IC3392_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml",
+            "IC3392_v3tk_v7.6.8_7000_SFH16_setonix.slurm",
+            "27_galaxies.sh", "SFH16_ready.sh", "SFH16_galaxies.sh", "SFH16_workflow.py"})
         self.assertIn("rhuang@setonix.pawsey.org.au", (self.work / "calls").read_text())
+        for archive in self.work.glob("payload_*.tar"):
+            archive.unlink()
+        self.run_script("SFH16_send.sh")
+        contents = []
+        for archive in self.work.glob("payload_*.tar"):
+            with tarfile.open(archive) as stream:
+                contents.extend(stream.getnames())
+        self.assertEqual(set(contents), {
+            *(f"{g}_MAUVE_MasterConfig_v7.6.8_7000_SFH16_setonix.yaml" for g in GALIDS),
+            *(f"{g}_v3tk_v7.6.8_7000_SFH16_setonix.slurm" for g in GALIDS),
+            "27_galaxies.sh", "SFH16_ready.sh", "SFH16_galaxies.sh", "SFH16_workflow.py"})
 
     def test_source_config_mismatch_rejected(self):
         self.generate()

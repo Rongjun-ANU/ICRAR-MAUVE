@@ -33,6 +33,14 @@
 #
 # Changes (2026-10-08):
 #   - Print a final list of failed galaxies with run, exit code, and log path.
+# Changes (2026-10-29):
+#   - Mass LIGHT-to-R now reconstructs nGIST's prepared SSP mean rather than
+#     the former raw-window approximation; CONFIG/LSFs are required and errors
+#     no longer trigger an automatic V-band approximation. Forward explicit
+#     library, CONFIG, LSF and coefficient-convention overrides below.
+# Changes (2026-10-30):
+#   - Read VELSCALE from run CONFIG; intermediate HDF5 spectra and h5py are
+#     not required for Mass post-processing of the final CANFAR products.
 
 set -euo pipefail
 
@@ -48,6 +56,18 @@ SCRIPT="Mass.py"                # Python script to call
 LOG_PREFIX="mass"               # Per-run logs live under ${PRODUCT_SUBDIR}/${LOG_PREFIX}_logs
 
 EXTRA_ARGS=()
+if [[ -n "${MASS_TEMPLATE_LIBRARY_DIR:-}" ]]; then
+  EXTRA_ARGS+=(--template-library-dir "$MASS_TEMPLATE_LIBRARY_DIR")
+fi
+if [[ -n "${MASS_NGIST_CONFIG:-}" ]]; then
+  EXTRA_ARGS+=(--ngist-config "$MASS_NGIST_CONFIG")
+fi
+if [[ -n "${MASS_LSF_DIR:-}" ]]; then
+  EXTRA_ARGS+=(--lsf-dir "$MASS_LSF_DIR")
+fi
+if [[ -n "${MASS_SFH_WEIGHT_INTERPRETATION:-}" ]]; then
+  EXTRA_ARGS+=(--sfh-weight-interpretation "$MASS_SFH_WEIGHT_INTERPRETATION")
+fi
 if [[ "${MASS_DISABLE_STAT:-0}" == "1" ]]; then
   EXTRA_ARGS+=(--disable-stat-propagation)
 fi
@@ -82,7 +102,7 @@ else
   exit 1
 fi
 
-if ! "$PYTHON_BIN" -c 'import numpy, astropy, scipy, matplotlib, speclite, ppxf' >/dev/null 2>&1; then
+if ! "$PYTHON_BIN" -c 'import numpy, astropy, scipy, matplotlib, speclite, ppxf, yaml' >/dev/null 2>&1; then
   echo "ERROR: $PYTHON_BIN is missing one or more required Python packages for Mass.py." >&2
   echo "       Activate the science environment or set PYTHON_BIN to the correct interpreter." >&2
   exit 1
@@ -235,6 +255,10 @@ for TASK in "${TASKS[@]}"; do
     echo "MASS_DISABLE_STAT: ${MASS_DISABLE_STAT:-0}"
     echo "MASS_NCPUS       : ${MASS_NCPUS}"
     echo "MASS_ROW_BLOCK_SIZE: ${MASS_ROW_BLOCK_SIZE:-default}"
+    echo "SSP library     : ${MASS_TEMPLATE_LIBRARY_DIR:-automatic}"
+    echo "nGIST CONFIG    : ${MASS_NGIST_CONFIG:-beside selected weights}"
+    echo "LSF directory   : ${MASS_LSF_DIR:-run resources then script directory}"
+    echo "Weight convention: ${MASS_SFH_WEIGHT_INTERPRETATION:-light_norm_to_r}"
     echo
   } >"$LOGFILE" 2>&1
 

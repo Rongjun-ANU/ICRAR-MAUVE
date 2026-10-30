@@ -5,7 +5,7 @@ Generate further Voronoi-binning maps for a MAUVE galaxy.
 This script is adapted from `map_MILES_brief.py` and now takes the galaxy
 identifier (e.g. IC3392) as a command‑line argument:
 
-    python map_MILES_brief_param.py -g IC3392
+    python Mass.py -g IC3392
 
 The MAUVE directory tree is assumed to look like::
 
@@ -172,6 +172,40 @@ Changes (2026-06-29)
   `v3tk_v7.6.8_7000` under the selected products root and write outputs back to
   the matching run folder.
 
+Changes (2026-10-29)
+-----------------------
+* Corrected the 2026-04-23 claim of an "exact" LIGHT normalization: the old
+  helper took nanmean of raw linear-grid SSP samples inside LMIN--LMAX. nGIST
+  instead takes mean after its padded crop, LSF convolution and logarithmic
+  rebinning at galaxy VELSCALE/2. The R-band conversion equation was already
+  correct; its per-SSP divisor n_j was only an approximation.
+* Reconstruct n_j with the checked nGIST preparation algorithm, using this
+  weights product's CONFIG, cross-checked SFH headers, original SSPs and LSFs.
+  Retain getLSF's historical redshift/floor/extrapolation rules, including
+  constant-template-LSF extrapolation beyond its last tabulated wavelength.
+* Reject conflicting run metadata, duplicate/missing SSP identities, invalid
+  means or negative weights. Removed automatic approximate fallback: requested
+  reconstruction must succeed. Alternative weight conventions require an
+  explicit --sfh-weight-interpretation choice.
+* Added --ngist-config and --lsf-dir; production LSF resources live directly
+  beside this script. Record preparation settings, input hashes and numerical
+  versions in logs and output FITS HISTORY. No galaxy refit is required.
+
+Changes (2026-10-30)
+-----------------------
+* Integrated all normalization functions directly into Mass.py at the user's
+  request and removed the separate runtime normalization module. Provenance
+  now hashes this actual Mass.py source, including the in-file implementation.
+* Rechecked the final script against the discussion and original nGIST
+  preparation, and added an explicit light_r error diagnostic relative to the
+  reconstructed LIGHT-to-R result. A positive log10(light_r/corrected) means
+  that treating saved LIGHT weights as R fractions overestimates M/L_R.
+* Read VELSCALE directly from the run's CONFIG.PREPARE_SPECTRA.VELSCALE.
+  nGIST uses that configured value when log-rebinning and writing spectra;
+  the intermediate HDF5 metadata is a copy of it. Final CANFAR products do
+  not need to include those intermediates, and Mass.py no longer opens them
+  or requires h5py. The template velocity step remains VELSCALE/2.
+
 """
 
 # ------------------------------------------------------------------
@@ -185,17 +219,16 @@ apply_inclination_correction = True
 # Interpretation of nGIST SFH template weights when converting them into a
 # composite R-band mass-to-light ratio.
 # Available options:
-#   "light_norm_to_r": exact LIGHT-mode conversion using the SSP template mean
-#                      flux in the fitted wavelength window and the BaSTI
+#   "light_norm_to_r": LIGHT-mode conversion using the reconstructed mean
+#                      of each prepared nGIST SSP and the BaSTI
 #                      R-band luminosity proxy (default).
 #   "light_r":      weights are already R-band light fractions.
-#   "light_v_to_r": approximate LIGHT-mode fallback using SSP V-R colours.
+#   "light_v_to_r": explicit approximate alternative using SSP V-R colours.
 #   "mass":         weights are mass fractions, giving the harmonic-mean M/L_R.
 sfh_weight_interpretation = "light_norm_to_r"
 
-# If the exact LIGHT-mode conversion is requested but the original SSP template
-# library is unavailable, fall back to this approximate interpretation.
-sfh_weight_interpretation_fallback = "light_v_to_r"
+# Reconstruction errors stop the requested mode. They must not silently change
+# the assumed weight convention or produce approximate masses under its name.
 
 # Minimum retained fraction of the R-band filter support required to accept
 # a spaxel photometry measurement when some wavelength bins are masked/NaN.
@@ -504,9 +537,17 @@ def parse_args() -> argparse.Namespace:
             "(needed for the exact light_norm_to_r M/L conversion)"
         ),
     )
+    p.add_argument("--ngist-config", default=None,
+                   help="CONFIG from this exact SFH run (default: beside selected weights)")
+    p.add_argument("--lsf-dir", default=None,
+                   help="Directory containing both CONFIG-named LSF files (default: run resources, then beside Mass.py)")
+    p.add_argument("--sfh-weight-interpretation", default=sfh_weight_interpretation,
+                   choices=("light_norm_to_r", "light_r", "light_v_to_r", "mass"),
+                   help="SFH coefficient convention; no automatic fallback (default: light_norm_to_r)")
     return p.parse_args()
 
 args          = parse_args()
+sfh_weight_interpretation = args.sfh_weight_interpretation
 galaxy        = args.galaxy.upper()   # ensure consistent capitalisation
 rootdir       = Path(args.root).expanduser().resolve()
 product_subdir = Path(args.product_subdir)
@@ -643,6 +684,11 @@ print(f"Vectorized processing row-block size: {row_block_size}")
 # 2.  Imports (same as original)
 # ------------------------------------------------------------------
 import glob, warnings, gc, time
+import hashlib
+import yaml
+import scipy
+import astropy
+import ppxf as ppxf_package
 import numpy as np
 import matplotlib.pyplot as plt
 from urllib import request
@@ -660,6 +706,7 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 
 from ppxf.ppxf import ppxf, rebin
 import ppxf.ppxf_util as util
+from ppxf.ppxf_util import gaussian_filter1d, log_rebin
 from ppxf import sps_util as lib
 
 # ------------------------------------------------------------------
@@ -822,32 +869,6 @@ def build_ab_maggies_linear_coeff(
     return coeff
 
 
-_MILES_TEMPLATE_RE = re.compile(
-    r"[ME]ch(?P<slope>\d+\.\d+)"
-    r"Z(?P<mh_sign>[mp])(?P<mh>\d+\.\d+)"
-    r"T(?P<age>\d+\.\d+)"
-    r"_iT(?P<alpha_sign>[mp])(?P<alpha>\d+\.\d+)"
-)
-
-
-def parse_template_filename_key(template_path: Path) -> tuple[float, float, float] | None:
-    """Parse a MILES-style SSP filename into rounded (age[Gyr], [M/H], [alpha/Fe])."""
-    match = _MILES_TEMPLATE_RE.search(template_path.name)
-    if match is None:
-        return None
-
-    mh = float(match.group("mh"))
-    if match.group("mh_sign") == "m":
-        mh *= -1.0
-
-    alpha = float(match.group("alpha"))
-    if match.group("alpha_sign") == "m":
-        alpha *= -1.0
-
-    age = float(match.group("age"))
-    return (round(age, 2), round(mh, 2), round(alpha, 2))
-
-
 def resolve_template_library_dir(
     library_header_value: str | None,
     script_dir: Path,
@@ -874,46 +895,223 @@ def resolve_template_library_dir(
     )
 
 
-def build_template_norm_flux_lookup(
-    template_dir: Path,
-    lmin: float,
-    lmax: float,
-) -> dict[tuple[float, float, float], float]:
+# ------------------------------------------------------------------
+# nGIST LIGHT normalization, integrated here on 2026-10-30.
+# The former raw-window mean omitted padding, convolution and log sampling.
+# Reference nGIST commit: 038e9fa4839758e9dae53baeaf93a82bd75d8026.
+# Keep this implementation in Mass.py so its runtime needs no helper module.
+# ------------------------------------------------------------------
+NGIST_REVISION = "038e9fa4839758e9dae53baeaf93a82bd75d8026"
+TEMPLATE_VELSCALE_RATIO = 2
+_TEMPLATE_RE = re.compile(
+    r"[ME]ch\d+\.\d+Z(?P<sign>[mp])(?P<mh>\d+\.\d+)"
+    r"T(?P<age>\d+\.\d+)_iT(?P<asign>[mp])(?P<alpha>\d+\.\d+)"
+)
+
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def parse_template_filename_key(path):
+    match = _TEMPLATE_RE.search(Path(path).name)
+    if match is None:
+        raise ValueError(f"Unsupported SSP filename: {path}")
+    age = float(match["age"])
+    metal = float(match["mh"]) * (-1 if match["sign"] == "m" else 1)
+    # nGIST's baseFe library has ALPHA=0; its iT token is not an alpha label.
+    if "baseFe" in Path(path).name:
+        alpha = 0.
+    else:
+        alpha_match = re.search(r"E([mp])(\d+\.\d+)", Path(path).name)
+        if alpha_match is None:
+            raise ValueError(f"Missing nGIST alpha identity: {path}")
+        alpha = float(alpha_match[2]) * (-1 if alpha_match[1] == "m" else 1)
+    return (round(age, 2), round(metal, 2), round(alpha, 2))
+
+
+def _resource_path(name, config_path, config_dir, script_dir, override_dir):
+    path = Path(str(name)).expanduser()
+    if override_dir is not None:
+        candidates = [Path(override_dir).expanduser() / path.name]
+    else:
+        # Production-relative paths have no portable cwd. Resolve relative to
+        # CONFIG first, then the explicitly bundled resources beside Mass.py.
+        candidates = [config_dir / path, config_path.parent / path, script_dir / path.name]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+    raise FileNotFoundError(f"Cannot resolve LSF {name!r}; checked {candidates}")
+
+
+def load_run_setup(weight_path, weights_header, script_dir, config_path=None, lsf_dir=None):
+    """Read the selected run only; never borrow a different run's CONFIG."""
+    weight_path, script_dir = Path(weight_path), Path(script_dir)
+    config_path = Path(config_path).expanduser() if config_path else weight_path.parent / "CONFIG"
+    config_path = config_path.resolve()
+    if not config_path.is_file():
+        raise FileNotFoundError(f"Run CONFIG missing: {config_path}. Supply --ngist-config for this exact SFH run.")
+    config = yaml.safe_load(config_path.read_text())
+    sfh, general = config["SFH"], config["GENERAL"]
+    for key in ("LMIN", "LMAX", "NORM_TEMP", "TEMPLATE_SET", "LIBRARY", "LSF_TEMP"):
+        if key not in weights_header:
+            raise ValueError(f"SFH weights header is missing {key}")
+        saved, configured = weights_header[key], sfh[key]
+        same = (float(saved) == float(configured)) if key in ("LMIN", "LMAX") else str(saved).rstrip("/") == str(configured).rstrip("/")
+        if not same:
+            raise ValueError(f"CONFIG/weights mismatch for {key}: {configured!r} versus {saved!r}")
+    if sfh["NORM_TEMP"] != "LIGHT" or sfh["TEMPLATE_SET"] != "miles":
+        raise ValueError("light_norm_to_r requires NORM_TEMP=LIGHT and TEMPLATE_SET=miles")
+    lmin, lmax = float(sfh["LMIN"]), float(sfh["LMAX"])
+    redshift = float(general["REDSHIFT"])
+    if not (np.isfinite(lmin) and np.isfinite(lmax) and 0 < lmin < lmax and np.isfinite(redshift) and redshift > -1):
+        raise ValueError("Invalid run wavelength limits or redshift")
+    config_dir = Path(str(general["CONFIG_DIR"])).expanduser()
+    if not config_dir.is_absolute():
+        config_dir = config_path.parent / config_dir
+    data_path = _resource_path(general["LSF_DATA"], config_path, config_dir, script_dir, lsf_dir)
+    temp_path = _resource_path(sfh["LSF_TEMP"], config_path, config_dir, script_dir, lsf_dir)
+    # Check this CONFIG against the selected weights basename, including any
+    # optional run keyword. Never borrow another run's metadata silently.
+    prefix = re.sub(r"_sfh[-_]weights\.fits(?:\.gz)?$", "", weight_path.name, flags=re.I)
+    if prefix == weight_path.name:
+        raise ValueError(f"Unrecognized SFH weights basename: {weight_path.name}")
+    if str(general["RUN_ID"]) != prefix:
+        raise ValueError(f"CONFIG RUN_ID {general['RUN_ID']!r} does not match weights basename {prefix!r}")
+    # nGIST's standard prepareSpectra code uses this configured step for
+    # log-rebinning and copies it into intermediate spectra metadata. CONFIG
+    # is sufficient: final CANFAR products need no .h5/.hdf5 spectra files.
+    galaxy_velscale = float(config["PREPARE_SPECTRA"]["VELSCALE"])
+    velscale_source = "CONFIG.PREPARE_SPECTRA.VELSCALE"
+    if not np.isfinite(galaxy_velscale) or galaxy_velscale <= 0:
+        raise ValueError("VELSCALE must be finite and positive")
+    return dict(config=config, config_path=str(config_path), config_sha256=sha256_file(config_path),
+        lmin=lmin, lmax=lmax, redshift=redshift, galaxy_velscale=galaxy_velscale,
+        template_velscale=galaxy_velscale/TEMPLATE_VELSCALE_RATIO, velscale_source=velscale_source,
+        data_lsf_path=str(data_path), template_lsf_path=str(temp_path),
+        data_lsf_sha256=sha256_file(data_path), template_lsf_sha256=sha256_file(temp_path),
+        ngist_revision=NGIST_REVISION, ppxf_version=ppxf_package.__version__,
+        numpy_version=np.__version__, scipy_version=scipy.__version__, astropy_version=astropy.__version__,
+        mass_script_sha256=sha256_file(__file__))
+
+
+def load_lsf(data_path, template_path, redshift):
+    """Preserve getLSF's actual floor/redshift rule and linear extrapolation."""
+    curves = []
+    for path in (data_path, template_path):
+        values = np.genfromtxt(path, comments="#")
+        if values.ndim != 2 or values.shape[1] != 2 or len(values) < 2 or not np.isfinite(values).all() or np.any(np.diff(values[:, 0]) <= 0) or np.any(values[:, 1] <= 0):
+            raise ValueError(f"Invalid wavelength/FWHM LSF table: {path}")
+        curves.append(values)
+    data, template = curves
+    data[:, 0] /= 1 + redshift
+    data[:, 1] /= 1 + redshift
+    # This second division in the floor test is in the reference getLSF.
+    # Altering it would change the historical preparation being reconstructed.
+    data[data[:, 1]/(1+redshift) < 2.51, 1] = 2.54*(1+redshift)
+    return (interp1d(data[:, 0], data[:, 1], "linear", fill_value="extrapolate"),
+            interp1d(template[:, 0], template[:, 1], "linear", fill_value="extrapolate"))
+
+
+def build_template_norm_flux_lookup(template_dir, lmin, lmax, *, lsf_data,
+        lsf_templates, template_velscale, grid_keys=None):
+    """Return prepared SSP means keyed by identity, plus reproducible provenance.
+
+    Selection, convolution and log_rebin mirror the reference miles.py. Added
+    validation rejects assumptions nGIST makes implicitly: shared linear grid,
+    complete unique identities, finite spectra, and positive means. No cache is
+    shared across runs or galaxies; redshift and LSF inputs can change n_j.
     """
-    Return the pre-normalization mean flux in the fitted spectral window for each SSP.
+    paths = sorted(Path(template_dir).glob("*.fits"))
+    if not paths:
+        raise FileNotFoundError(f"No SSP FITS templates in {template_dir}")
+    identities = [parse_template_filename_key(p) for p in paths]
+    if len(set(identities)) != len(identities):
+        raise ValueError("Duplicate SSP identities in template library")
+    if grid_keys is not None:
+        if len(set(grid_keys)) != len(grid_keys):
+            raise ValueError("Duplicate SSP identities in saved GRID")
+        missing = set(grid_keys)-set(identities)
+        if missing:
+            raise ValueError(f"Missing {len(missing)} GRID SSPs in template library: {sorted(missing)[:5]}")
+    with fits.open(paths[0]) as handle:
+        header = handle[0].header
+        start, step, count = float(header["CRVAL1"]), float(header["CDELT1"]), int(header["NAXIS1"])
+    if not np.isfinite(step) or step <= 0 or count < 2:
+        raise ValueError("Invalid SSP wavelength grid")
+    end = start + step*(count-1)
+    overhead_lo = 150. if lmin-start > 150. else lmin-start-5
+    overhead_hi = 150. if end-lmax > 150. else end-lmax-5
+    # Use the reference np.arange endpoint construction, not linspace.
+    wave = np.arange(start, end+step, step)
+    indices = np.where((wave > lmin-overhead_lo) & (wave < lmax+overhead_hi))[0]
+    if len(indices) < 2 or indices[-1] >= count:
+        raise ValueError("Invalid padded SSP crop")
+    retained = wave[indices]
+    data_fwhm, temp_fwhm = lsf_data(retained), lsf_templates(retained)
+    if not np.isfinite(data_fwhm).all() or not np.isfinite(temp_fwhm).all() or np.any(data_fwhm <= 0) or np.any(temp_fwhm <= 0):
+        raise ValueError("Invalid interpolated LSF")
+    if np.any(data_fwhm-temp_fwhm < 0):
+        raise ValueError("Template resolution is lower than data resolution; nGIST would stop")
+    sigma = np.sqrt(data_fwhm**2-temp_fwhm**2)/2.355/step
+    bounds = [retained[0], retained[-1]]
+    lookup, manifest = {}, hashlib.sha256()
+    for path, identity in zip(paths, identities):
+        with fits.open(path, memmap=True) as handle:
+            h = handle[0].header
+            if (float(h["CRVAL1"]), float(h["CDELT1"]), int(h["NAXIS1"])) != (start, step, count):
+                raise ValueError(f"SSP wavelength grid differs from first template: {path}")
+            flux = np.squeeze(np.asarray(handle[0].data, dtype=np.float64))
+            if flux.shape != (count,):
+                raise ValueError(f"Expected a one-dimensional SSP: {path}")
+            cropped = flux[indices]
+            if not np.isfinite(cropped).all():
+                raise ValueError(f"Non-finite SSP samples: {path}")
+            prepared, _, _ = log_rebin(bounds, gaussian_filter1d(cropped, sigma), velscale=template_velscale)
+        # The old nanmean(raw[LMIN:LMAX]) was NOT this normalization factor.
+        # This scalar is exactly at the reference LIGHT division site.
+        mean = float(np.mean(prepared))
+        if not np.isfinite(prepared).all() or not np.isfinite(mean) or mean <= 0:
+            raise ValueError(f"Invalid prepared SSP mean: {path}")
+        lookup[identity] = mean
+        manifest.update(f"{path.name}\t{sha256_file(path)}\n".encode())
+    return lookup, dict(prepared_range=[float(x) for x in bounds], template_count=len(paths),
+                        template_manifest_sha256=manifest.hexdigest())
 
-    This mirrors pPXF's LIGHT-mode normalization, where the output weights
-    represent mean-flux fractions within norm_range / [LMIN, LMAX].
+
+def r_light_mass_to_light(weights, ml_r, luminosity_r, norm_flux):
+    """q=w*ell_R/n, f_R=q/sum(q), M/L_R=sum(f_R*SSP_ML_R).
+
+    The fit multiplies P_j/n_j by w_j: restoring the coefficient of P_j
+    therefore DIVIDES w_j by n_j. Multiplication by n_j reverses the rescaling.
     """
-    lookup: dict[tuple[float, float, float], float] = {}
+    weights = np.asarray(weights, dtype=np.float64)
+    ml_r, luminosity_r, norm_flux = [np.asarray(x, dtype=np.float64) for x in (ml_r, luminosity_r, norm_flux)]
+    if weights.ndim != 2 or any(x.shape != (weights.shape[1],) for x in (ml_r, luminosity_r, norm_flux)):
+        raise ValueError("Weights and SSP property dimensions disagree")
+    if not np.isfinite(weights).all() or np.any(weights < 0):
+        raise ValueError("SFH weights must be finite and nonnegative")
+    if any(not np.isfinite(x).all() or np.any(x <= 0) for x in (ml_r, luminosity_r, norm_flux)):
+        raise ValueError("SSP properties and normalization factors must be finite and positive")
+    q = weights * (luminosity_r/norm_flux)[None, :]
+    denominator = q.sum(axis=1)
+    if not np.isfinite(denominator).all() or np.any(denominator <= 0):
+        raise ValueError("Invalid R-light contribution sums")
+    fractions = q/denominator[:, None]
+    ml = np.sum(fractions*ml_r[None, :], axis=1)
+    direct = np.sum(q*ml_r[None, :], axis=1)/denominator
+    if not np.allclose(fractions.sum(axis=1), 1., rtol=0, atol=1e-12) or not np.allclose(ml, direct, rtol=1e-12):
+        raise ValueError("R-fraction normalization/algebra check failed")
+    contributing_min = np.min(np.where(weights > 0, ml_r[None, :], np.inf), axis=1)
+    contributing_max = np.max(np.where(weights > 0, ml_r[None, :], -np.inf), axis=1)
+    if np.any(ml < contributing_min*(1-1e-12)) or np.any(ml > contributing_max*(1+1e-12)):
+        raise ValueError("M/L_R outside contributing SSP extrema")
+    return ml, fractions
 
-    for template_path in sorted(template_dir.glob("*.fits")):
-        key = parse_template_filename_key(template_path)
-        if key is None:
-            continue
-
-        with fits.open(template_path, memmap=True) as hdul:
-            template_flux = np.asarray(hdul[0].data, dtype=np.float64)
-            template_hdr = hdul[0].header
-
-        wave = template_hdr["CRVAL1"] + template_hdr["CDELT1"] * np.arange(
-            template_hdr["NAXIS1"], dtype=np.float64
-        )
-        in_window = (wave >= lmin) & (wave <= lmax)
-        if not np.any(in_window):
-            continue
-
-        mean_flux = float(np.nanmean(template_flux[in_window]))
-        if np.isfinite(mean_flux) and mean_flux > 0:
-            lookup[key] = mean_flux
-
-    if len(lookup) == 0:
-        raise RuntimeError(
-            f"No valid SSP template mean-flux measurements were found in {template_dir} "
-            f"for the normalization window [{lmin}, {lmax}] Angstrom."
-        )
-
-    return lookup
 
 # ------------------------------------------------------------------
 # 4.  Begin main workflow 
@@ -1019,9 +1217,10 @@ w_norm = w / weight_sum[:, None]
 norm_check = w_norm.sum(axis=1, dtype=np.float64)
 
 # Candidate interpretations of the saved SFH weights.
-# - light_r: old behaviour, valid only if the weights are already R-band light fractions.
-# - light_norm_to_r: exact LIGHT-mode conversion using the template mean flux
-#   in the fitted wavelength window (ppxf norm_range / nGIST LMIN-LMAX).
+# - light_r: directly assume weights are R-band light fractions; this is not
+#   the default interpretation of the saved nGIST mean-one-template weights.
+# - light_norm_to_r: use mean(prepared SSP), including nGIST padding, LSF
+#   matching and log sampling; the raw-window mean was the former approximation.
 # - light_v_to_r: approximate LIGHT-mode conversion using SSP V-R colours.
 # - mass: use the harmonic-mean M/L_R that would apply if the weights were mass fractions.
 light_r_simple = np.sum(w_norm * ml_r_ssp[None, :], axis=1, dtype=np.float64)
@@ -1029,21 +1228,32 @@ light_r_simple = np.sum(w_norm * ml_r_ssp[None, :], axis=1, dtype=np.float64)
 norm_flux_ssp = np.full(len(grid), np.nan, dtype=np.float64)
 light_norm_to_r = np.full(weight_sum.shape, np.nan, dtype=np.float64)
 template_library_dir: Path | None = None
-template_library_status = "not requested"
-template_library_error: Exception | None = None
+normalization_provenance = None
 
-try:
+if sfh_weight_interpretation == "light_norm_to_r":
+    # CONFIG belongs to the selected weights product. In particular, an SFH16
+    # product must never inherit an ordinary-run CONFIG just because it exists.
+    setup = load_run_setup(weight_path, weights_hdr, script_dir,
+                           config_path=args.ngist_config, lsf_dir=args.lsf_dir)
+    configured_library = Path(setup["config"]["GENERAL"].get("TEMPLATE_DIR", ".")) / setup["config"]["SFH"]["LIBRARY"]
+    if not configured_library.is_absolute():
+        configured_library = Path(setup["config_path"]).parent / configured_library
     template_library_dir = resolve_template_library_dir(
         weights_hdr.get("LIBRARY"),
         script_dir=script_dir,
-        override_dir=template_library_dir_override,
+        override_dir=(template_library_dir_override if template_library_dir_override is not None
+                      else configured_library if configured_library.is_dir() else None),
         rootdir=rootdir,
         fallback_root=fallback_root,
     )
-    template_norm_flux_lookup = build_template_norm_flux_lookup(
+    if template_library_dir_override is not None and not template_library_dir_override.is_dir():
+        raise FileNotFoundError(f"Explicit SSP library not found: {template_library_dir_override}")
+    lsf_data, lsf_templates = load_lsf(setup["data_lsf_path"], setup["template_lsf_path"], setup["redshift"])
+    template_norm_flux_lookup, preparation_metadata = build_template_norm_flux_lookup(
         template_library_dir,
-        lmin=float(weights_hdr["LMIN"]),
-        lmax=float(weights_hdr["LMAX"]),
+        lmin=setup["lmin"], lmax=setup["lmax"],
+        lsf_data=lsf_data, lsf_templates=lsf_templates,
+        template_velscale=setup["template_velscale"], grid_keys=grid_template_keys,
     )
 
     missing_template_keys: list[tuple[float, float, float]] = []
@@ -1064,27 +1274,16 @@ try:
     if not np.all(np.isfinite(norm_flux_ssp)) or np.any(norm_flux_ssp <= 0):
         raise ValueError("Encountered invalid SSP mean-flux values from the template library.")
 
-    lr_over_lnorm = lum_r_proxy_ssp / norm_flux_ssp
-    light_norm_to_r_num = np.sum(
-        w_norm * (ml_r_ssp * lr_over_lnorm)[None, :],
-        axis=1,
-        dtype=np.float64,
-    )
-    light_norm_to_r_den = np.sum(
-        w_norm * lr_over_lnorm[None, :],
-        axis=1,
-        dtype=np.float64,
-    )
-    light_norm_to_r = np.divide(
-        light_norm_to_r_num,
-        light_norm_to_r_den,
-        out=np.full_like(light_norm_to_r_num, np.nan, dtype=np.float64),
-        where=light_norm_to_r_den > 0,
-    )
-    template_library_status = "available"
-except (FileNotFoundError, KeyError, RuntimeError, ValueError) as exc:
-    template_library_error = exc
-    template_library_status = f"unavailable ({exc})"
+    # Fitted w_j multiplies P_j/n_j. Its R contribution is w_j*ell_R,j/n_j,
+    # then normalized per bin; do not multiply by n_j to "undo" normalization.
+    light_norm_to_r, r_fractions = r_light_mass_to_light(
+        w, ml_r_ssp, lum_r_proxy_ssp, norm_flux_ssp)
+    print("Converted R-light fraction sums [min,max] =",
+          r_fractions.sum(axis=1).min(), r_fractions.sum(axis=1).max())
+    del r_fractions
+    normalization_provenance = {k: v for k, v in setup.items() if k != "config"}
+    normalization_provenance.update(preparation_metadata)
+    normalization_provenance["template_library_dir"] = str(template_library_dir)
 
 lr_over_lv = 10.0 ** (0.4 * v_minus_r_ssp)
 light_v_to_r_num = np.sum(w_norm * (ml_r_ssp * lr_over_lv)[None, :], axis=1, dtype=np.float64)
@@ -1114,20 +1313,6 @@ if sfh_weight_interpretation not in ml_bin_candidates:
         "Unsupported sfh_weight_interpretation="
         f"{sfh_weight_interpretation!r}. Expected one of {sorted(ml_bin_candidates)}."
     )
-if sfh_weight_interpretation == "light_norm_to_r" and not np.all(np.isfinite(light_norm_to_r)):
-    if sfh_weight_interpretation_fallback not in ml_bin_candidates:
-        raise ValueError(
-            "Unsupported sfh_weight_interpretation_fallback="
-            f"{sfh_weight_interpretation_fallback!r}. Expected one of {sorted(ml_bin_candidates)}."
-        )
-    effective_sfh_weight_interpretation = sfh_weight_interpretation_fallback
-    print(
-        "Warning: Exact light_norm_to_r conversion is unavailable because the "
-        "original SSP template library could not be resolved. "
-        f"Falling back to {effective_sfh_weight_interpretation!r}."
-    )
-    if template_library_error is not None:
-        print(f"Template-library resolution detail: {template_library_error}")
 ml_bin = ml_bin_candidates[effective_sfh_weight_interpretation]
 
 print(
@@ -1146,21 +1331,25 @@ print(
     "Composite ML_R candidates [median] "
     f"(light_r, light_norm_to_r, light_v_to_r, mass_harmonic) = "
     f"[{np.nanmedian(light_r_simple):.4f}, "
-    f"{np.nanmedian(light_norm_to_r):.4f}, "
+    f"{finite_median(light_norm_to_r):.4f}, "
     f"{np.nanmedian(light_v_to_r):.4f}, "
     f"{np.nanmedian(mass_harmonic):.4f}]"
 )
-if template_library_dir is not None:
-    print(
-        "Template-library LIGHT normalization for ML_R: "
-        f"{template_library_dir} (LMIN={float(weights_hdr['LMIN']):.1f}, "
-        f"LMAX={float(weights_hdr['LMAX']):.1f} Angstrom)"
-    )
-else:
-    print(
-        "Template-library LIGHT normalization for ML_R: "
-        f"{template_library_status}"
-    )
+if normalization_provenance is not None:
+    # This comparison intentionally makes the incorrect assumption that the
+    # saved mean-one-template LIGHT weights are already R-band fractions.
+    # The denominator is the reconstructed LIGHT-to-R result for the same bin.
+    light_r_error_dex = np.log10(light_r_simple / light_norm_to_r)
+    light_r_error_percent = 100.0 * (light_r_simple / light_norm_to_r - 1.0)
+    print("Wrong light_r assumption: delta = log10(light_r / corrected_light_norm_to_r)")
+    print("  delta dex [min,p16,p50,p84,max] =",
+          np.percentile(light_r_error_dex, [0, 16, 50, 84, 100]))
+    print("  M/L error percent [min,p16,p50,p84,max] =",
+          np.percentile(light_r_error_percent, [0, 16, 50, 84, 100]))
+if normalization_provenance is not None:
+    print("nGIST prepared-template normalization provenance:")
+    for key, value in normalization_provenance.items():
+        print(f"  {key}: {value}")
 print(
     "Selected SFH-weight interpretation for ML_R: "
     f"{effective_sfh_weight_interpretation}"
@@ -1173,7 +1362,7 @@ assert np.all(np.isfinite(ml_bin)) and (ml_bin > 0).all()
 # --- 0)  inputs already in memory ------------------------------------------
 # binning_BINID  -> (ny, nx) float array   (NaN   = originally masked pixel
 #                                            <0    = masked, but *belongs to* |id|)
-# ml_bin         -> (N_bin,) float array   (your 4 077 zone M/L_R values)
+# ml_bin         -> (N_bin,) float array   (one M/L_R value per weights row)
 
 # --- 1)  create blank map, same shape & dtype ------------------------------
 binning_MLR = np.full_like(binning_BINID, np.nan, dtype=np.float32)
@@ -1681,6 +1870,13 @@ with fits.open(out_path, mode="append") as hdul:             # open existing fil
                              header=binning_hdr, name="ML_R")
     new_hdu.header["EXTNAME"] = "ML_R"                       # name keyword
     new_hdu.header["BUNIT"] = "Msol/Lsol_R"                   # units keyword
+    new_hdu.header["MLMODE"] = effective_sfh_weight_interpretation
+    if normalization_provenance is not None:
+        new_hdu.header["MLNORM"] = "NGIST_PREPARED"
+        new_hdu.header.add_history("2026-10-29: n_j is mean after padded crop, LSF convolution, log_rebin.")
+        new_hdu.header.add_history("R fractions = (w*ell_R/n_j)/sum(w*ell_R/n_j). No automatic fallback.")
+        for key, value in normalization_provenance.items():
+            new_hdu.header.add_history(f"ML_R {key}={value}")
     hdul.append(new_hdu)                                    # add as 9-th HDU
     hdul.flush()                                             # write in-place
 

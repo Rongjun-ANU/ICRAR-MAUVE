@@ -1,0 +1,76 @@
+{
+  "weights": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/IC3392/IC3392_sfh_weights.fits",
+  "weights_sha256": "aa0680a9a1a11c214d7a1a009eca16c261c4610e1a3fe599efa1f8e10d44ad70",
+  "photometry_sha256": "feb424f764dfd6e9344ca993e86b246f8c756438a978bd2e533bebce5fc07443",
+  "reference_source_sha256": {
+    "miles.py": "45e4f3ff68fe4d5df81d77a362ef225d15e3651736ae86d58d7ea8c26174f921",
+    "_auxiliary.py": "9dc3bc4f79f01a257ec3271513ee185992eb48a900dd0873369f3d1ea367b307"
+  },
+  "bins": 4062,
+  "ssps": 477,
+  "setup": {
+    "config_path": "/Users/Igniz/Desktop/ICRAR/further/v3tk_v7.6.8/IC3392/CONFIG",
+    "config_sha256": "0e146c54ed54f7d86de796a9c9cd4ca3d06e7c0c67e0dcbbe7e2dd179a8009cd",
+    "lmin": 4800.0,
+    "lmax": 8900.0,
+    "redshift": 0.005566,
+    "galaxy_velscale": 41.0,
+    "template_velscale": 20.5,
+    "velscale_source": "CONFIG.PREPARE_SPECTRA.VELSCALE",
+    "data_lsf_path": "/Users/Igniz/Desktop/ICRAR/further/lsf_MUSE-WFM-MILES",
+    "template_lsf_path": "/Users/Igniz/Desktop/ICRAR/further/lsf_MILES",
+    "data_lsf_sha256": "878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e",
+    "template_lsf_sha256": "a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d",
+    "ngist_revision": "038e9fa4839758e9dae53baeaf93a82bd75d8026",
+    "ppxf_version": "9.4.2",
+    "numpy_version": "2.2.6",
+    "scipy_version": "1.15.2",
+    "astropy_version": "7.0.2",
+    "mass_script_sha256": "658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873"
+  },
+  "metadata": {
+    "prepared_range": [
+      4650.2000000003,
+      9049.400000000745
+    ],
+    "template_count": 477,
+    "template_manifest_sha256": "2c28591c7d7f8436670b6d290212c297cc232808ac48fd5a34ebd2ed3dfec675"
+  },
+  "max_factor_relative_error": 0.0,
+  "max_normalized_spectrum_absolute_error": 0.0,
+  "factor_new_over_old_percentiles": [
+    0.9956527948616037,
+    1.006797024945319,
+    1.0296714152070094,
+    1.0807969103721284,
+    1.128759782470636
+  ],
+  "delta_log10_ml_percentiles": [
+    8.381805411229257e-05,
+    0.004565547822925037,
+    0.007937725489345411,
+    0.012096186286457995,
+    0.02489909711738232
+  ],
+  "light_r_error_definition": "log10(light_r / corrected_light_norm_to_r)",
+  "light_r_error_dex_percentiles": [
+    -0.03642300068419216,
+    -0.01589423305824671,
+    -0.009576279451814128,
+    -0.004514026615143687,
+    0.0006195965024954976
+  ],
+  "light_r_error_percent_percentiles": [
+    -8.044650513359242,
+    -3.5936219342601023,
+    -2.180886968733259,
+    -1.0340100145487312,
+    0.14276918533455696
+  ],
+  "light_r_overestimate_bins": 7,
+  "light_r_underestimate_bins": 4055,
+  "median_light_r_ml": 1.6413057461970835,
+  "max_fraction_sum_error": 4.440892098500626e-16,
+  "median_old_ml": 1.6449571297489793,
+  "median_new_ml": 1.6786750853222625
+}

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Deliberately separate from the ordinary 27_* run selection.
-SFH16_GALIDS=(NGC4189 NGC4380 NGC4450 NGC4567_8 NGC4689)
+# Full sample: 40 galaxies in 39 cubes; NGC4567_8 is one combined run.
+# Sourcing the ordinary selection supplies data/helpers without submitting jobs.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/27_galaxies.sh"
+SFH16_GALIDS=("${ALL_GALIDS[@]}")
 select_sfh16_galids() {
   SELECTED_GALIDS=()
   if [[ $# -eq 0 ]]; then
