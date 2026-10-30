@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 2026-10-30: Stage missing PHANGS-native cubes as ordinary Mass.sh does.
 # 2026-10-30: Reuse neighbouring 7000 binning/KIN/gas with new SFH16 inputs.
 # 2026-10-29: Mass.py followed by QC for 40 galaxies in 39 SFH16 cubes.
 # See QC_ngist_v3tk_v768_7000_SFH16.md for inputs, outputs and examples.
@@ -86,7 +87,15 @@ mkdir -p "$output_dir/logs_SFH16"
 output_dir="$(cd "$output_dir" && pwd -P)"
 work_view="$(mktemp -d "${TMPDIR:-/tmp}/qc_SFH16.XXXXXX")"
 work_view="$(cd "$work_view" && pwd -P)"
+phangs_stage_dir=""
+release_phangs_cube() {
+  if [[ -n "$phangs_stage_dir" ]]; then
+    rm -rf -- "$phangs_stage_dir"
+    phangs_stage_dir=""
+  fi
+}
 cleanup() {
+  release_phangs_cube
   rm -rf -- "$work_view"
 }
 trap cleanup EXIT
@@ -106,8 +115,42 @@ find_fits() {
   return 1
 }
 mass_args=()
-[[ -z "${PHANGS_CUBE_ROOT:-}" ]] || mass_args+=(--phangs-cube-root "$PHANGS_CUBE_ROOT")
 [[ -z "${TEMPLATE_LIBRARY_DIR:-}" ]] || mass_args+=(--template-library-dir "$TEMPLATE_LIBRARY_DIR")
+phangs_args=()
+prepare_phangs_cube() {
+  phangs_args=()
+  case "$galid" in NGC4254|NGC4321|NGC4535) ;; *) return 0 ;; esac
+  local filename="${galid}_PHANGS_DATACUBE_native.fits"
+  local folder stage_root source rc
+  stage_root="${PHANGS_STAGING_ROOT:-/scratch}"
+  for folder in "${PHANGS_CUBE_ROOT:-}" "$cube_root" "$stage_root"; do
+    [[ -n "$folder" ]] || continue
+    if [[ -s "$folder/$filename" || -s "$folder/$filename.gz" ]]; then
+      echo "Using local PHANGS cube: $folder/$filename[.gz]"
+      phangs_args=(--phangs-cube-root "$folder")
+      return 0
+    fi
+  done
+  command -v vcp >/dev/null 2>&1 || {
+    echo "ERROR: no local PHANGS cube for $galid and vcp is unavailable." >&2
+    return 1
+  }
+  mkdir -p "$stage_root" || return $?
+  phangs_stage_dir=$(mktemp -d "${stage_root%/}/qc_SFH16_phangs.XXXXXX") || return $?
+  source="${PHANGS_NATIVE_VOS_DIR:-vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES}"
+  echo "Staging PHANGS cube: ${source%/}/$filename -> $phangs_stage_dir/$filename"
+  if vcp "${source%/}/$filename" "$phangs_stage_dir/$filename"; then
+    [[ -s "$phangs_stage_dir/$filename" ]] || {
+      echo "ERROR: vcp returned success without a nonempty cube." >&2
+      return 1
+    }
+    phangs_args=(--phangs-cube-root "$phangs_stage_dir")
+  else
+    rc=$?
+    echo "ERROR: PHANGS cube download failed for $galid (exit $rc)." >&2
+    return "$rc"
+  fi
+}
 passed=0; skipped=0; failed=0
 for galid in "${selected[@]}"; do
   run_id="${galid}_SFH16"
@@ -151,11 +194,13 @@ for galid in "${selected[@]}"; do
   if {
     printf 'SFH16 source: %s\nOriginal 7000 binning: %s\nSFH maps: %s\nSFH weights: %s\n' \
       "$run_dir" "$binning" "$sfh_map" "$sfh_weights"
-    "$python_bin" -u "$script_dir/Mass.py" -g "$galid" \
+    prepare_phangs_cube && "$python_bin" -u "$script_dir/Mass.py" -g "$galid" \
       --root "$work_view" --product-subdir . --fallback-root "$work_view" \
       --ngist-config "$run_dir/CONFIG" \
-      --cube-root "$cube_root" ${mass_args[@]+"${mass_args[@]}"}
+      --cube-root "$cube_root" ${phangs_args[@]+"${phangs_args[@]}"} \
+      ${mass_args[@]+"${mass_args[@]}"}
   } >"$mass_log" 2>&1; then
+    release_phangs_cube
     fresh_mass="$run_view/${run_id}_spatial_binning_maps_further.fits"
     if [[ ! -s "$fresh_mass" ]]; then
       echo "FAIL $run_id: Mass exited 0 but did not produce $fresh_mass"
@@ -163,6 +208,7 @@ for galid in "${selected[@]}"; do
     fi
   else
     rc=$?
+    release_phangs_cube
     echo "FAIL $run_id: Mass exit $rc; see $mass_log"
     failed=$((failed+1)); continue
   fi

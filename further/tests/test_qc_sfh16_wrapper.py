@@ -19,6 +19,10 @@ root = Path(a[a.index('--root')+1])
 with open(os.environ['TRACE'], 'a') as f:
     f.write(repr(('mass', a)) + '\n')
 assert Path(a[a.index('--fallback-root')+1]) == root
+if g in {'NGC4254', 'NGC4321', 'NGC4535'}:
+    cube_root = Path(a[a.index('--phangs-cube-root')+1])
+    name = g+'_PHANGS_DATACUBE_native.fits'
+    assert (cube_root/name).is_file() or (cube_root/(name+'.gz')).is_file()
 assert Path(a[a.index('--ngist-config')+1]).resolve() == (Path(os.environ['PRODUCTS'])/(g+'_SFH16')/'CONFIG').resolve()
 names = {'_unique_paths', '_has_glob_chars', '_fits_path_alternates',
          '_glob_candidate_patterns', '_candidate_paths', '_input_search_dirs',
@@ -255,6 +259,57 @@ class SFH16WrapperTest(unittest.TestCase):
         r = self.run_wrapper('NGC4189', 'NGC4189_SFH16')
         self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
         self.assertEqual(len(self.calls()), 2)
+
+    def setup_phangs(self):
+        self.seed('NGC4254')
+        stage = self.root/'stage'
+        stage.mkdir()
+        self.env['PHANGS_STAGING_ROOT'] = str(stage)
+        fakebin = self.root/'vcpbin'
+        fakebin.mkdir()
+        vcp = fakebin/'vcp'
+        vcp.write_text('#!/usr/bin/env bash\nprintf "%s\\n" "$1" >> "$VCP_TRACE"\nprintf cube > "$2"\nexit "${VCP_EXIT:-0}"\n')
+        vcp.chmod(0o755)
+        self.env['VCP_TRACE'] = str(self.root/'vcp_trace')
+        self.env['PATH'] = str(fakebin)+os.pathsep+os.environ['PATH']
+        return stage
+
+    def test_phangs_download_passed_to_mass_and_removed(self):
+        stage = self.setup_phangs()
+        r = self.run_wrapper('--cube-root', str(self.root/'missing'), 'NGC4254')
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertIn('vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4254_PHANGS_DATACUBE_native.fits', (self.root/'vcp_trace').read_text())
+        self.assertEqual(list(stage.iterdir()), [])
+
+    def test_phangs_failed_download_blocks_mass_and_cleans_partial(self):
+        stage = self.setup_phangs()
+        self.env['VCP_EXIT'] = '8'
+        r = self.run_wrapper('--cube-root', str(self.root/'missing'), 'NGC4254')
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual(self.calls(), [])
+        self.assertEqual(list(stage.iterdir()), [])
+
+    def test_phangs_local_compressed_cube_is_preserved_without_download(self):
+        stage = self.setup_phangs()
+        cubes = self.root/'native cubes'
+        cubes.mkdir()
+        cube = cubes/'NGC4254_PHANGS_DATACUBE_native.fits.gz'
+        cube.write_bytes(b'existing cube')
+        self.env['PHANGS_CUBE_ROOT'] = str(cubes)
+        r = self.run_wrapper('NGC4254')
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertEqual(cube.read_bytes(), b'existing cube')
+        self.assertFalse((self.root/'vcp_trace').exists())
+        self.assertEqual(list(stage.iterdir()), [])
+
+    def test_phangs_staged_cube_removed_after_mass_failure(self):
+        stage = self.setup_phangs()
+        self.env['FAIL_MASS'] = 'NGC4254'
+        r = self.run_wrapper('--cube-root', str(self.root/'missing'), 'NGC4254')
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual([c[0] for c in self.calls()], ['mass'])
+        self.assertEqual(list(stage.iterdir()), [])
+        self.assert_scratch_clean()
 
 
 if __name__ == '__main__':

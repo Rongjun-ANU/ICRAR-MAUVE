@@ -127,9 +127,19 @@ Optional environment variables:
 
 - `PYTHON_BIN`: Python executable.
 - `CUBE_ROOT`: default cube directory, overridden by `--cube-root`.
-- `PHANGS_CUBE_ROOT`: passed to Mass for local PHANGS-native cubes, needed for
-  NGC4254, NGC4321, and NGC4535 if those cubes are stored separately. This
-  wrapper does not download or stage VOS cubes.
+- `PHANGS_CUBE_ROOT`: first location checked for the PHANGS-native cubes for
+  NGC4254, NGC4321, and NGC4535, followed by the selected cube root and staging
+  root. Existing nonempty `.fits` or `.fits.gz` cubes are reused and retained.
+- `PHANGS_STAGING_ROOT`: temporary download parent (default `/scratch`). Missing
+  native cubes are downloaded with `vcp` into a private directory here, passed
+  to Mass with `--phangs-cube-root`, and removed immediately after Mass succeeds
+  or fails. Exit cleanup also removes this private directory. Only one cube is
+  staged at a time. The directory must have room for the native cube.
+- `PHANGS_NATIVE_VOS_DIR`: download source, default
+  `vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES`, matching ordinary `Mass.sh`.
+  Downloads require `vcp` and working CANFAR/VOS access. A download failure
+  prevents Mass/QC for that galaxy, removes partial temporary files, and allows
+  the batch to continue.
 - `TEMPLATE_LIBRARY_DIR`: passed as `--template-library-dir` for Mass's
   template-based M/L conversion. Existing Mass validity checks remain active.
 
@@ -138,6 +148,13 @@ Local verification:
 ```bash
 bash -n QC_ngist_v3tk_v768_7000_SFH16.sh
 /opt/miniconda3/envs/ICRAR/bin/python tests/test_qc_sfh16_wrapper.py
+```
+
+After deploying the updated shell wrapper to CANFAR, retry only the three
+missing-cube failures:
+
+```bash
+bash QC_ngist_v3tk_v768_7000_SFH16.sh NGC4254 NGC4321 NGC4535
 ```
 
 The wrapper tests use temporary product placeholders, recording Mass/QC
