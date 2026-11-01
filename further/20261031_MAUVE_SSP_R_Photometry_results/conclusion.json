@@ -1,0 +1,32 @@
+{
+  "generated_utc": "2026-10-31T15:15:48.839133+00:00",
+  "versions": {
+    "python": "3.11.15 | packaged by conda-forge | (main, Mar  5 2026, 16:45:40) [GCC 14.3.0]",
+    "ppxf": "9.4.5",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "astropy": "7.2.0"
+  },
+  "n_available": 477,
+  "n_selected": 477,
+  "full_grid": true,
+  "numerical_integration_status": "PASS",
+  "max_abs_native_independent_mag": 1.5230692139489577e-05,
+  "max_abs_native_explicit_kernel_mag": 1.7763568394002505e-15,
+  "max_abs_raw_log_R_mag": 3.842740592396865e-08,
+  "exact_table_convention_status": "UNVERIFIED",
+  "strict_photometric_equivalence_established": false,
+  "baseline_R": {
+    "profile": "ppxf_R_baseline",
+    "band": "R",
+    "authoritative": false,
+    "n": 477,
+    "median_delta_mag": -0.011151158352560309,
+    "p95_abs_delta_mag": 0.02950944040020973,
+    "max_abs_delta_mag": 0.04400018841960618,
+    "centered_p95_abs_mag": 0.0219720546485961,
+    "frac_within_table_rounding": 0.008385744234800839,
+    "median_flux_ratio": 1.010323520002547
+  },
+  "caveat": "Diagnostic agreement alone does not certify a historical table convention or absolute spectrum units; no SSP was rescaled to its table magnitude."
+}

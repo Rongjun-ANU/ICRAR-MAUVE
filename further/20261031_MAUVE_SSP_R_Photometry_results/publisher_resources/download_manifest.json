@@ -1,0 +1,32 @@
+{
+  "out_phot_CH_BASTI": {
+    "url": "https://research.iac.es/proyecto/miles/media/tarfiles/SSP_models/v11.0/out_phot_CH_BASTI",
+    "sha256": "d04ee532be77d96486ae175f16f6ac1aa77a272babfc87c7106684ff51859805",
+    "bytes": 160272
+  },
+  "out_mass_CH_BASTI": {
+    "url": "https://research.iac.es/proyecto/miles/media/tarfiles/SSP_models/v11.0/out_mass_CH_BASTI",
+    "sha256": "5777c0a3121aa2b36c600a8757c624bda965f95bc0b7114071a93d5e48575618",
+    "bytes": 69324
+  },
+  "UBBVRIJHK_ch_iTp0.00.MAG": {
+    "url": "https://research.iac.es/proyecto/miles/media/tarfiles/SSP_models/v11.0/UBBVRIJHK_ch_iTp0.00.MAG",
+    "sha256": "319b9aab6f6b80f6b5f420490a27bcfc49e904c5ce5a240e3c9e0451e7eba0b4",
+    "bytes": 139614
+  },
+  "filters_UBBVRIJHK.res": {
+    "url": "https://research.iac.es/proyecto/miles/media/tarfiles/SSP_models/v11.0/filters_UBBVRIJHK.res",
+    "sha256": "cdaafc0a9e5ec68330e3909bd5591e7525d27f2af4fefbc584d91608656f26f9",
+    "bytes": 5399
+  },
+  "HEADER_out_mass": {
+    "url": "https://research.iac.es/proyecto/miles/media/tarfiles/SSP_models/v11.0/HEADER_out_mass",
+    "sha256": "db608b0dc2083568f2c3d7df0f0a8e509d023b02b8ef4eacf416be0d0d0bcc10",
+    "bytes": 183
+  },
+  "alpha_lyr_stis_008.fits": {
+    "url": "https://ssb.stsci.edu/trds/calspec/alpha_lyr_stis_008.fits",
+    "sha256": "600c8911dfb6d66a5ea52f815adc1d0366806a104b89329bd4a64d7906139830",
+    "bytes": 276480
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "experiment_id": "d331b6665d204432",
+  "galaxy": "NGC4522",
+  "run": "8900",
+  "versions": {
+    "python": "3.11.15 | packaged by conda-forge | (main, Mar  5 2026, 16:45:40) [GCC 14.3.0]",
+    "ppxf": "9.4.5",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "astropy": "7.2.0",
+    "h5py": "3.15.1"
+  },
+  "source_hashes": {
+    "/home/rhuang/Mass.py": "658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873",
+    "/home/rhuang/BaSTI+Chabrier.dat": "feb424f764dfd6e9344ca993e86b246f8c756438a978bd2e533bebce5fc07443",
+    "/software/projects/pawsey1308/ngist/ngistPipeline/prepareTemplates/miles.py": "45e4f3ff68fe4d5df81d77a362ef225d15e3651736ae86d58d7ea8c26174f921",
+    "/software/projects/pawsey1308/ngist/ngistPipeline/auxiliary/_auxiliary.py": "9dc3bc4f79f01a257ec3271513ee185992eb48a900dd0873369f3d1ea367b307",
+    "/software/projects/pawsey1308/ngist/ngistPipeline/starFormationHistories/ppxf_sfh_wrapper.py": "917f44bae1b964a2ab75be991ef2e40c286efad90ad7ca860d23ce770fb35f06",
+    "/ngistenv1308/lib/python3.11/site-packages/ppxf/sps_util.py": "849365a7379e40b10a0eae21a9d44c4970c8162e90b94f7f02450cee9ac8c10a",
+    "/ngistenv1308/lib/python3.11/site-packages/ppxf/ppxf_util.py": "2aa4ba219d6469d557fafab22dc875f4ec1db5565a55db2f899c171385f8c1c3",
+    "/ngistenv1308/lib/python3.11/site-packages/ppxf/ppxf.py": "653d19d0cb87678afd962426ed9d0d7c4f3bb2e9bca96c82a2c7e24b17cd8fde",
+    "/ngistenv1308/lib/python3.11/site-packages/ppxf/sps_models/spectra_sun_vega.npz": "a5ccd82d08c19251b7b5ab42705038922ff0b61dc0a3a282f273091a4fafd5b3",
+    "/ngistenv1308/lib/python3.11/site-packages/ppxf/examples/FILTER.RES.txt": "ec35aebd38cf48883b3fbe7c51228aad17d270c3f268d291a8960996cc53d21b",
+    "notebook_sources_only": "f70e04050094b6e4634ae09f6e9e329fceda3688e17815886bab4e0c984fc28d"
+  },
+  "input_hashes": {
+    "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/NGC4522/CONFIG": "e6edcc36c384f78d185c042e76b19bd2a64c929f672b1eb9305cc3927add484a",
+    "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/NGC4522/NGC4522_sfh_weights.fits": "83d70e7d9ebd373f56940a60b7f3afa9d3943a767ad2d22139ec9b84d8e3c640",
+    "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/NGC4522/NGC4522_bin_spectra.hdf5": "63c6f788975e68cfedaccf90801b9b5c89b930a250f18fd897b2c45a6c019e3f",
+    "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/NGC4522/NGC4522_kin.fits": "55c3b7ca5a24ce667a8e3b15eb4bffd7029d795ba55a5ec7b75493905331c1e8",
+    "/scratch/pawsey1308/mauve/products/v3tk_v7.6.8/NGC4522/NGC4522_spatial_binning_maps.fits": "2f158d10c918d12fdade3ed7eb59cf9344086e8d7107ce8028c5a51bb6973a31",
+    "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MUSE-WFM-MILES": "878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e",
+    "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/lsf_MILES": "a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d"
+  },
+  "masks": {
+    "/software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial/configFiles/specMask_KIN_narrow10": "39c2bbcb56289aa650a7f55b67e45369d4fb078d18cadf16575ec8164c253947"
+  },
+  "max_norm_relative_error": 9.103828801926284e-15,
+  "max_prepared_sample_abs_error": 0.0,
+  "max_normalized_sample_abs_error": 0.0,
+  "preparation": {
+    "prepared_range": [
+      4650.2000000003,
+      9049.400000000745
+    ],
+    "template_count": 477,
+    "template_manifest_sha256": "2c28591c7d7f8436670b6d290212c297cc232808ac48fd5a34ebd2ed3dfec675"
+  },
+  "run_mode": "full",
+  "pilot_bins": 9
+}

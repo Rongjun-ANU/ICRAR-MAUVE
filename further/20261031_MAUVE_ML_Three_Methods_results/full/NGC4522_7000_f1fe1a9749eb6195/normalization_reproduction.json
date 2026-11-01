@@ -1,0 +1,18 @@
+{
+  "galaxy": "NGC4522",
+  "fit_range": "4800-7000",
+  "n_ssp": 477,
+  "n_prepared_pixels": 6292,
+  "n_spatial_bins": 2582,
+  "galaxy_velscale": 41.0,
+  "template_velscale": 20.5,
+  "max_abs_relative_norm_error": 7.66053886991358e-15,
+  "median_abs_relative_norm_error": 1.5543122344752192e-15,
+  "max_abs_norm_error": 9.107298248878237e-18,
+  "max_abs_prepared_sample_error": 0.0,
+  "max_abs_normalized_sample_error": 0.0,
+  "normalization_rtol": 1e-10,
+  "sample_atol": 1e-12,
+  "status": "PASS",
+  "case_output": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4522_7000_f1fe1a9749eb6195"
+}

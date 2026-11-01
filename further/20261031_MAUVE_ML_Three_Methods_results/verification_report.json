@@ -1,0 +1,37 @@
+{
+  "cases": [
+    {
+      "galaxy": "NGC4522",
+      "run": "7000",
+      "n_success": 2582,
+      "max_relative_table_control_error": 2.942091015256665e-13,
+      "max_relative_native_photometry_prediction_error": 2.9198865547641617e-13,
+      "interpretation": "Both calculations reproduce the saved methods; their difference is explained by the table versus synthetic R luminosity with shared SSP masses and recorded conventions."
+    },
+    {
+      "galaxy": "NGC4522",
+      "run": "8900",
+      "n_success": 2593,
+      "max_relative_table_control_error": 2.0949908474676704e-13,
+      "max_relative_native_photometry_prediction_error": 2.1227464230832993e-13,
+      "interpretation": "Both calculations reproduce the saved methods; their difference is explained by the table versus synthetic R luminosity with shared SSP masses and recorded conventions."
+    },
+    {
+      "galaxy": "NGC4698",
+      "run": "7000",
+      "n_success": 22547,
+      "max_relative_table_control_error": 1.8129941992128806e-13,
+      "max_relative_native_photometry_prediction_error": 1.801891968966629e-13,
+      "interpretation": "Both calculations reproduce the saved methods; their difference is explained by the table versus synthetic R luminosity with shared SSP masses and recorded conventions."
+    },
+    {
+      "galaxy": "NGC4698",
+      "run": "8900",
+      "n_success": 23887,
+      "max_relative_table_control_error": 1.815214645262131e-13,
+      "max_relative_native_photometry_prediction_error": 1.821875983409882e-13,
+      "interpretation": "Both calculations reproduce the saved methods; their difference is explained by the table versus synthetic R luminosity with shared SSP masses and recorded conventions."
+    }
+  ],
+  "total_success": 51609
+}

@@ -1,0 +1,67 @@
+{
+  "generated_utc": "2026-10-31T17:36:20.156667+00:00",
+  "host": "nid002807",
+  "mode": "plots from completed full-fit CSVs; no refits",
+  "cases": [
+    {
+      "galaxy": "NGC4522",
+      "run": "7000",
+      "n_success": 2582,
+      "n_failed": 0,
+      "histogram_bins": 60,
+      "histogram_totals": {
+        "ML_R_light_r": 2582,
+        "ML_R_light_norm_to_r": 2582,
+        "ML_R_ppxf_native": 2582
+      },
+      "histogram": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4522_7000_f1fe1a9749eb6195/figures/ml_histograms_raw_counts.png",
+      "scatter": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4522_7000_f1fe1a9749eb6195/figures/ml_pairwise_scatter_one_to_one.png",
+      "input_csv_sha256": "73f9e6f9e74dd1c839fc99e48be4bedc2e09b534e1b4999dfdf7b88d03bd2c5f"
+    },
+    {
+      "galaxy": "NGC4522",
+      "run": "8900",
+      "n_success": 2593,
+      "n_failed": 0,
+      "histogram_bins": 60,
+      "histogram_totals": {
+        "ML_R_light_r": 2593,
+        "ML_R_light_norm_to_r": 2593,
+        "ML_R_ppxf_native": 2593
+      },
+      "histogram": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4522_8900_ea74423c08a4ce79/figures/ml_histograms_raw_counts.png",
+      "scatter": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4522_8900_ea74423c08a4ce79/figures/ml_pairwise_scatter_one_to_one.png",
+      "input_csv_sha256": "17575bb5242fbfaf9a730ddd83573ab9d8d8bdb3994833df64f550e331487da1"
+    },
+    {
+      "galaxy": "NGC4698",
+      "run": "7000",
+      "n_success": 22547,
+      "n_failed": 0,
+      "histogram_bins": 60,
+      "histogram_totals": {
+        "ML_R_light_r": 22547,
+        "ML_R_light_norm_to_r": 22547,
+        "ML_R_ppxf_native": 22547
+      },
+      "histogram": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4698_7000_0f95530175aa3419/figures/ml_histograms_raw_counts.png",
+      "scatter": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4698_7000_0f95530175aa3419/figures/ml_pairwise_scatter_one_to_one.png",
+      "input_csv_sha256": "701414b4c23078109a3d7f15e20f5e900278342948b5d6f456dd19410b39540e"
+    },
+    {
+      "galaxy": "NGC4698",
+      "run": "8900",
+      "n_success": 23887,
+      "n_failed": 0,
+      "histogram_bins": 60,
+      "histogram_totals": {
+        "ML_R_light_r": 23887,
+        "ML_R_light_norm_to_r": 23887,
+        "ML_R_ppxf_native": 23887
+      },
+      "histogram": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4698_8900_fac88e4421ef63a2/figures/ml_histograms_raw_counts.png",
+      "scatter": "/scratch/pawsey1308/rhuang/mauve_ml_three_methods_20261031/d331b6665d204432/full/NGC4698_8900_fac88e4421ef63a2/figures/ml_pairwise_scatter_one_to_one.png",
+      "input_csv_sha256": "4b3a0118dd22830e0aded70ef5a1d60f6baaf9faf20c18792a0370f41e643fc5"
+    }
+  ]
+}
