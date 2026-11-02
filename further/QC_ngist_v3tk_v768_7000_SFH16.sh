@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# 2026-11-02: Reuse existing nonempty SFH16 mass products unless --force.
 # 2026-10-30: Stage missing PHANGS-native cubes as ordinary Mass.sh does.
 # 2026-10-30: Reuse neighbouring 7000 binning/KIN/gas with new SFH16 inputs.
 # 2026-10-29: Mass.py followed by QC for 40 galaxies in 39 SFH16 cubes.
@@ -11,6 +12,7 @@ product_root="/arc/projects/mauve/products/$version"
 cube_root="${CUBE_ROOT:-/arc/projects/mauve/cubes/v3tk}"
 output_dir="$PWD/QC"
 dry_run=false
+force=false
 requested=()
 all_galids=(
   IC3392 NGC4064 NGC4189 NGC4192 NGC4216 NGC4222 NGC4254 NGC4293
@@ -30,11 +32,13 @@ while [[ $# -gt 0 ]]; do
       esac
       shift 2 ;;
     --dry-run) dry_run=true; shift ;;
+    --force) force=true; shift ;;
     -h|--help)
-      echo "Usage: bash ${0##*/} [--root DIR] [--cube-root DIR] [--output-dir DIR] [--dry-run] [GALID ...]"
+      echo "Usage: bash ${0##*/} [--root DIR] [--cube-root DIR] [--output-dir DIR] [--dry-run] [--force] [GALID ...]"
       echo "Defaults to all 39 cube IDs (40 galaxies); missing inputs are skipped."
       echo "Explicit missing targets fail. GALID may include _SFH16. Runs sequentially."
       echo "Reads SFH16 CONFIG/LOGFILE/maps/weights; reuses binning/KIN/gas from neighbouring GALID."
+      echo "Reuses nonempty SFH16 mass products; --force regenerates and overwrites them."
       exit 0 ;;
     --*) echo "ERROR: unknown option $1" >&2; exit 2 ;;
     *) requested+=("${1%_SFH16}"); shift ;;
@@ -61,11 +65,26 @@ for galid in "${requested[@]}"; do
   [[ "$duplicate" == true ]] || selected+=("$galid")
 done
 echo "SFH16 QC: ${#selected[@]} cube IDs selected; full sample = 39 cube IDs / 40 galaxies."
+# Only the SFH16 mass product is eligible for reuse, never the ordinary one.
+existing_mass_product() {
+  local path
+  for path in "$1/${2}_spatial_binning_maps_further.fits" \
+              "$1/${2}_spatial_binning_maps_further.fits.gz"; do
+    if [[ -s "$path" ]]; then printf '%s\n' "$path"; return 0; fi
+  done
+  return 1
+}
 if [[ "$dry_run" == true ]]; then
   for galid in "${selected[@]}"; do
-    echo "PLAN ${galid}_SFH16: CONFIG, LOGFILE, SFH maps/weights from $product_root/${galid}_SFH16"
-    echo "REUSE $galid: spatial binning, KIN, gas BIN/SPAXEL from $product_root/$galid"
-    echo "PLAN Mass.py -g $galid via private input view -> $product_root/${galid}_SFH16/${galid}_SFH16_spatial_binning_maps_further.fits"
+    if [[ "$force" == false ]] && mass_product=$(existing_mass_product "$product_root/${galid}_SFH16" "${galid}_SFH16"); then
+      echo "REUSE mass: $mass_product; skip Mass.py and cube staging"
+      echo "PLAN ${galid}_SFH16: SFH maps from $product_root/${galid}_SFH16"
+      echo "REUSE $galid: KIN, gas BIN/SPAXEL from $product_root/$galid"
+    else
+      echo "PLAN ${galid}_SFH16: CONFIG, LOGFILE, SFH maps/weights from $product_root/${galid}_SFH16"
+      echo "REUSE $galid: spatial binning, KIN, gas BIN/SPAXEL from $product_root/$galid"
+      echo "PLAN Mass.py -g $galid via private input view -> $product_root/${galid}_SFH16/${galid}_SFH16_spatial_binning_maps_further.fits"
+    fi
     echo "PLAN QC: existing QC plotting code via private input view; output $output_dir/${galid}_SFH16_${version}_QC.pdf"
   done
   exit 0
@@ -156,13 +175,19 @@ for galid in "${selected[@]}"; do
   run_id="${galid}_SFH16"
   run_dir="$product_root/$run_id"
   original_dir="$product_root/$galid"
+  reuse_mass=false
+  if [[ "$force" == false ]] && mass_product=$(existing_mass_product "$run_dir" "$run_id"); then
+    reuse_mass=true
+  fi
   missing=()
-  for name in CONFIG LOGFILE; do
-    [[ -f "$run_dir/$name" ]] || missing+=("$run_dir/$name")
-  done
+  if [[ "$reuse_mass" == false ]]; then
+    for name in CONFIG LOGFILE; do
+      [[ -f "$run_dir/$name" ]] || missing+=("$run_dir/$name")
+    done
+    sfh_weights=$(find_fits "$run_dir" "$run_id" sfh_weights sfh-weights) || missing+=("$run_dir/${run_id}_sfh_weights.fits[.gz]")
+    binning=$(find_fits "$original_dir" "$galid" spatial_binning_maps SPATIAL_BINNING_maps) || missing+=("$original_dir/${galid}_spatial_binning_maps.fits[.gz]")
+  fi
   sfh_map=$(find_fits "$run_dir" "$run_id" sfh_maps SFH_maps) || missing+=("$run_dir/${run_id}_sfh_maps.fits[.gz]")
-  sfh_weights=$(find_fits "$run_dir" "$run_id" sfh_weights sfh-weights) || missing+=("$run_dir/${run_id}_sfh_weights.fits[.gz]")
-  binning=$(find_fits "$original_dir" "$galid" spatial_binning_maps SPATIAL_BINNING_maps) || missing+=("$original_dir/${galid}_spatial_binning_maps.fits[.gz]")
   kin=$(find_fits "$original_dir" "$galid" kin_maps KIN_maps) || missing+=("$original_dir/${galid}_kin_maps.fits[.gz]")
   gas_bin=$(find_fits "$original_dir" "$galid" gas_bin_maps gas_BIN_maps GAS_BIN_maps) || missing+=("$original_dir/${galid}_gas_bin_maps.fits[.gz]")
   gas_spaxel=$(find_fits "$original_dir" "$galid" gas_spaxel_maps gas_SPAXEL_maps GAS_SPAXEL_maps) || missing+=("$original_dir/${galid}_gas_spaxel_maps.fits[.gz]")
@@ -177,43 +202,49 @@ for galid in "${selected[@]}"; do
   run_view="$work_view/$galid"
   mkdir "$run_view"
   ln -s "$galid" "$work_view/$run_id"
-  binning_alias="$run_view/${run_id}_spatial_binning_maps.fits"
-  [[ "$binning" != *.gz ]] || binning_alias+=.gz
-  if ! ln -L "$binning" "$binning_alias" 2>/dev/null; then
-    cp "$binning" "$binning_alias"
+  if [[ "$reuse_mass" == false ]]; then
+    binning_alias="$run_view/${run_id}_spatial_binning_maps.fits"
+    [[ "$binning" != *.gz ]] || binning_alias+=.gz
+    if ! ln -L "$binning" "$binning_alias" 2>/dev/null; then
+      cp "$binning" "$binning_alias"
+    fi
+    ln -s "$sfh_weights" "$run_view/${run_id}_sfh_weights.fits"
   fi
   ln -s "$sfh_map" "$run_view/${run_id}_sfh_maps.fits"
-  ln -s "$sfh_weights" "$run_view/${run_id}_sfh_weights.fits"
   ln -s "$kin" "$run_view/${run_id}_kin_maps.fits"
   ln -s "$gas_bin" "$run_view/${run_id}_gas_bin_maps.fits"
   ln -s "$gas_spaxel" "$run_view/${run_id}_gas_spaxel_maps.fits"
   mass_log="$output_dir/logs_SFH16/${run_id}_mass.log"
   qc_log="$output_dir/logs_SFH16/${run_id}_qc.log"
-  echo "MASS $run_id -> $mass_log"
-  echo "REUSE $galid: $binning; $kin; $gas_bin; $gas_spaxel"
-  if {
-    printf 'SFH16 source: %s\nOriginal 7000 binning: %s\nSFH maps: %s\nSFH weights: %s\n' \
-      "$run_dir" "$binning" "$sfh_map" "$sfh_weights"
-    prepare_phangs_cube && "$python_bin" -u "$script_dir/Mass.py" -g "$galid" \
-      --root "$work_view" --product-subdir . --fallback-root "$work_view" \
-      --ngist-config "$run_dir/CONFIG" \
-      --cube-root "$cube_root" ${phangs_args[@]+"${phangs_args[@]}"} \
-      ${mass_args[@]+"${mass_args[@]}"}
-  } >"$mass_log" 2>&1; then
-    release_phangs_cube
-    fresh_mass="$run_view/${run_id}_spatial_binning_maps_further.fits"
-    if [[ ! -s "$fresh_mass" ]]; then
-      echo "FAIL $run_id: Mass exited 0 but did not produce $fresh_mass"
+  fresh_mass="$run_view/${run_id}_spatial_binning_maps_further.fits"
+  if [[ "$reuse_mass" == true ]]; then
+    echo "REUSE mass: $mass_product; skip Mass.py and cube staging"
+  else
+    echo "MASS $run_id -> $mass_log"
+    echo "REUSE $galid: $binning; $kin; $gas_bin; $gas_spaxel"
+    if {
+      printf 'SFH16 source: %s\nOriginal 7000 binning: %s\nSFH maps: %s\nSFH weights: %s\n' \
+        "$run_dir" "$binning" "$sfh_map" "$sfh_weights"
+      prepare_phangs_cube && "$python_bin" -u "$script_dir/Mass.py" -g "$galid" \
+        --root "$work_view" --product-subdir . --fallback-root "$work_view" \
+        --ngist-config "$run_dir/CONFIG" \
+        --cube-root "$cube_root" ${phangs_args[@]+"${phangs_args[@]}"} \
+        ${mass_args[@]+"${mass_args[@]}"}
+    } >"$mass_log" 2>&1; then
+      release_phangs_cube
+      if [[ ! -s "$fresh_mass" ]]; then
+        echo "FAIL $run_id: Mass exited 0 but did not produce $fresh_mass"
+        failed=$((failed+1)); continue
+      fi
+    else
+      rc=$?
+      release_phangs_cube
+      echo "FAIL $run_id: Mass exit $rc; see $mass_log"
       failed=$((failed+1)); continue
     fi
-  else
-    rc=$?
-    release_phangs_cube
-    echo "FAIL $run_id: Mass exit $rc; see $mass_log"
-    failed=$((failed+1)); continue
+    mass_product="$run_dir/${run_id}_spatial_binning_maps_further.fits"
+    mv -f -- "$fresh_mass" "$mass_product"
   fi
-  mass_product="$run_dir/${run_id}_spatial_binning_maps_further.fits"
-  mv -f -- "$fresh_mass" "$mass_product"
   ln -s "$mass_product" "$fresh_mass"
   echo "QC $run_id -> $qc_log"
   # Override only QC's top-level data_folder assignment in memory. The actual

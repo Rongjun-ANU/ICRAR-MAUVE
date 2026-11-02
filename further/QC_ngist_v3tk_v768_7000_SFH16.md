@@ -11,7 +11,11 @@ It does not depend on the Setonix setup repository being installed on CANFAR.
 bash QC_ngist_v3tk_v768_7000_SFH16.sh --dry-run
 
 # Process all available SFH16 runs sequentially.
+# Reuse existing nonempty SFH16 mass products and rerun QC only.
 bash QC_ngist_v3tk_v768_7000_SFH16.sh
+
+# Force Mass regeneration and overwrite its product after successful creation.
+bash QC_ngist_v3tk_v768_7000_SFH16.sh --force NGC4189
 
 # Process one or several explicitly selected runs; either ID spelling works.
 bash QC_ngist_v3tk_v768_7000_SFH16.sh NGC4567_8
@@ -33,7 +37,24 @@ explicit root therefore works even when `/arc` is present.
 Python is selected from `PYTHON_BIN`, the active `CONDA_PREFIX`, the local ICRAR
 interpreter if present, then `python` on PATH. It must support both existing
 Python scripts and their dependencies. The existing photometry and catalogue
-tables beside `Mass.py` are still required.
+tables beside `Mass.py` are required only when running the mass step.
+
+By default, a nonempty existing SFH16 mass product at
+`<root>/G_SFH16/G_SFH16_spatial_binning_maps_further.fits` (or `.fits.gz`)
+is reused. The wrapper skips `Mass.py`, template/cube lookup, and PHANGS cube
+staging/download, and proceeds directly to QC. If both forms are nonempty,
+the uncompressed file takes priority. Only the SFH16 mass product is eligible;
+the ordinary `G/G_spatial_binning_maps_further.fits` is never substituted.
+Missing or empty products trigger Mass production. `--force` always runs Mass,
+even when an existing product is present. `--dry-run` reports which branch
+would run, and can be combined with `--force`.
+
+The QC-only branch requires the SFH16 SFH maps and the original KIN and gas
+BIN/SPAXEL maps below. CONFIG, LOGFILE, SFH weights, original spatial-binning
+maps, cubes, and templates are needed only for the mass-production branch.
+Reuse checks file size only; it does not validate FITS contents, provenance,
+or whether the existing mass product matches the current SFH fit. Use
+`--force` when a product needs to be refreshed.
 
 For each physical cube ID `G`, the wrapper uses the four-file SFH16 transfer
 layout. Only the following inputs come from the new SFH16 run:
@@ -64,11 +85,12 @@ FITS discovery also accepts `.fits.gz`, `SPATIAL_BINNING_maps`, `SFH_maps`,
 
 Only run after the SFH16 job and product transfer finish. Presence checks are
 not a completion, checksum, FITS-integrity, or scientific-readiness audit.
-The wrapper requires the SFH16 CONFIG and LOGFILE but does not parse the log's
-completion marker or compare bin assignments. It does not fetch missing files.
+When producing mass, the wrapper requires the SFH16 CONFIG and LOGFILE but does
+not parse the log's completion marker or compare bin assignments. It does not
+fetch missing nGIST products; the PHANGS cube staging exception is described below.
 
-The mass step creates a private temporary directory containing a combined input
-view. It invokes `Mass.py -g G --root <view> --product-subdir .
+The wrapper creates a private temporary directory containing a combined input
+view. When mass production is needed, it invokes `Mass.py -g G --root <view> --product-subdir .
 --fallback-root <view> --ngist-config <root>/G_SFH16/CONFIG
 --cube-root <cube-root>`, preserving
 the physical galaxy ID for cube lookup, distance, inclination, and catalogue
@@ -83,15 +105,19 @@ inputs use symlinks to their selected source files. No persistent inherited
 FITS copies are created. Temporary inputs are removed on exit, including after
 Mass or QC failure.
 
-Mass must exit successfully and create a nonempty, fresh output in the private
+When invoked, Mass must exit successfully and create a nonempty, fresh output in the private
 view before the wrapper moves it to:
 
 ```text
 <root>/G_SFH16/G_SFH16_spatial_binning_maps_further.fits
 ```
 
-A previous mass product cannot satisfy this check. The ordinary-run mass
-product is never selected as an output.
+A previous mass product cannot satisfy this fresh-output check when Mass is
+invoked, including with `--force`. If Mass fails or produces no nonempty output,
+QC is not run for that galaxy and the previous mass product is preserved.
+Successful generation publishes the uncompressed `.fits` path above, which
+takes priority on subsequent reruns; any older `.fits.gz` is left in place.
+The ordinary-run mass product is never selected as an output.
 
 QC then combines the new SFH and mass maps with the original KIN and gas maps.
 The shell wrapper's embedded Python launcher parses the existing
@@ -108,8 +134,11 @@ explicitly rather than selecting another product tree. Other outputs are:
 <output-dir>/logs_SFH16/G_SFH16_qc.log
 ```
 
-The default output directory is `$PWD/QC`. Rerunning regenerates the SFH16 mass
-product and QC PDF and replaces those per-run logs. The ordinary-run files
+The default output directory is `$PWD/QC`. Every successful rerun regenerates
+the QC PDF and replaces its QC log. The mass product and mass log are regenerated
+only when mass production is needed or `--force` is supplied. On the QC-only
+branch, an existing mass log is left untouched and no new mass log is written.
+The ordinary-run files
 have different names and are not selected. Avoid concurrent invocations on the
 same run because they would write the same products and logs.
 
@@ -159,7 +188,9 @@ bash QC_ngist_v3tk_v768_7000_SFH16.sh NGC4254 NGC4321 NGC4535
 
 The wrapper tests use temporary product placeholders, recording Mass/QC
 stand-ins, and the actual Mass filename-discovery/output-naming helpers.
-They check split-source routing, the combined ID, preserved ordinary products
+They check existing-product reuse without Mass-only inputs or cube downloads,
+compressed reuse, empty-product regeneration, forced overwrite and failure
+preservation, dry-run branching, split-source routing, the combined ID, preserved ordinary products
 and old duplicates, compressed/uppercase filenames, temporary-copy fallback,
 fresh-output gating, failure handling, and cleanup. They verify routing and
 control flow, not stellar masses or real QC map values. A production CANFAR

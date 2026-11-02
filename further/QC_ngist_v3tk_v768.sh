@@ -24,7 +24,9 @@ if [ -z "$jobs" ]; then
     jobs="$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)"
 fi
 
+# Regular runs only; SFH16 QC uses QC_ngist_v3tk_v768_7000_SFH16.sh.
 find "$product_root" -mindepth 2 -maxdepth 2 -name '*_sfh_maps.fits' -print |
     sed -E 's#.*/([^/]+)/[^/]+_sfh_maps\.fits#\1#' |
+    sed '/_SFH16$/d' |
     sort -u |
     xargs -P "$jobs" -I {} "$python_bin" "$qc_py" {}

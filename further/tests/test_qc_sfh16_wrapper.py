@@ -173,25 +173,118 @@ class SFH16WrapperTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
         self.assert_scratch_clean()
 
-    def test_mass_failure_prevents_qc_and_preserves_existing_output(self):
+    def test_mass_failure_prevents_qc(self):
+        g = 'NGC4189'
+        self.seed(g)
+        output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
+        self.env['FAIL_MASS'] = g
+        r = self.run_wrapper(g)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual([c[0] for c in self.calls()], ['mass'])
+        self.assertFalse(output.exists())
+        self.assert_scratch_clean()
+
+    def test_success_without_fresh_mass_output_prevents_qc(self):
+        g = 'NGC4189'
+        self.seed(g)
+        output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
+        self.env['NO_MASS_OUTPUT'] = g
+        r = self.run_wrapper(g)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertEqual([c[0] for c in self.calls()], ['mass'])
+        self.assertFalse(output.exists())
+        self.assert_scratch_clean()
+
+    def test_existing_mass_runs_only_qc_without_mass_inputs_or_cube_staging(self):
+        self.setup_phangs()
+        g = 'NGC4254'
+        run = self.products/(g+'_SFH16')
+        for name in ('CONFIG', 'LOGFILE', g+'_SFH16_sfh_weights.fits'):
+            (run/name).unlink()
+        (self.products/g/f'{g}_spatial_binning_maps.fits').unlink()
+        output = run/f'{g}_SFH16_spatial_binning_maps_further.fits'
+        output.write_bytes(b'new:mass')
+        before = output.stat().st_mtime_ns
+        self.env['FAIL_MASS'] = g
+        r = self.run_wrapper(g)
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertEqual([c[0] for c in self.calls()], ['qc'])
+        self.assertEqual(output.read_bytes(), b'new:mass')
+        self.assertEqual(output.stat().st_mtime_ns, before)
+        self.assertFalse((self.root/'vcp_trace').exists())
+        self.assertFalse((self.root/'QC'/'logs_SFH16'/f'{g}_SFH16_mass.log').exists())
+        self.assert_scratch_clean()
+
+    def test_compressed_existing_mass_is_reused(self):
+        g = 'NGC4189'
+        self.seed(g)
+        output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits.gz'
+        output.write_bytes(b'new:mass')
+        r = self.run_wrapper(g)
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertEqual([c[0] for c in self.calls()], ['qc'])
+        self.assert_scratch_clean()
+
+    def test_empty_existing_mass_is_regenerated(self):
+        g = 'NGC4189'
+        self.seed(g)
+        output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
+        output.touch()
+        r = self.run_wrapper(g)
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertEqual([c[0] for c in self.calls()], ['mass', 'qc'])
+        self.assertEqual(output.read_bytes(), b'new:mass')
+
+    def test_dry_run_reports_existing_mass_reuse(self):
+        g = 'NGC4189'
+        self.seed(g)
+        output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
+        output.write_bytes(b'new:mass')
+        r = self.run_wrapper('--dry-run', g)
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertIn('REUSE mass', r.stdout)
+        self.assertNotIn('PLAN Mass.py', r.stdout)
+        self.assertEqual(self.calls(), [])
+
+    def test_force_regenerates_existing_mass(self):
+        g = 'NGC4189'
+        self.seed(g)
+        output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
+        output.write_bytes(b'previous mass')
+        r = self.run_wrapper('--force', g)
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertEqual([c[0] for c in self.calls()], ['mass', 'qc'])
+        self.assertEqual(output.read_bytes(), b'new:mass')
+
+    def test_force_failure_preserves_existing_mass_and_blocks_qc(self):
         g = 'NGC4189'
         self.seed(g)
         output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
         output.write_bytes(b'previous mass')
         self.env['FAIL_MASS'] = g
-        r = self.run_wrapper(g)
+        r = self.run_wrapper('--force', g)
         self.assertNotEqual(r.returncode, 0)
         self.assertEqual([c[0] for c in self.calls()], ['mass'])
         self.assertEqual(output.read_bytes(), b'previous mass')
         self.assert_scratch_clean()
 
-    def test_success_without_fresh_mass_output_does_not_use_stale_product(self):
+    def test_force_dry_run_plans_mass_even_when_product_exists(self):
+        g = 'NGC4189'
+        self.seed(g)
+        output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
+        output.write_bytes(b'previous mass')
+        r = self.run_wrapper('--force', '--dry-run', g)
+        self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
+        self.assertIn('PLAN Mass.py', r.stdout)
+        self.assertNotIn('REUSE mass', r.stdout)
+
+    def test_force_without_fresh_output_preserves_previous_mass(self):
         g = 'NGC4189'
         self.seed(g)
         output = self.products/(g+'_SFH16')/f'{g}_SFH16_spatial_binning_maps_further.fits'
         output.write_bytes(b'previous mass')
         self.env['NO_MASS_OUTPUT'] = g
-        r = self.run_wrapper(g)
+        r = self.run_wrapper('--force', g)
         self.assertNotEqual(r.returncode, 0)
         self.assertEqual([c[0] for c in self.calls()], ['mass'])
         self.assertEqual(output.read_bytes(), b'previous mass')
