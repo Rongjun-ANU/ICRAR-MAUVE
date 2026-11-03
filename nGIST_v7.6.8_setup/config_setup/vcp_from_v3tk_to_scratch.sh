@@ -155,6 +155,11 @@ cleanup_on_exit() {
 }
 trap cleanup_on_exit EXIT
 
+# Select the supported runtime before CADC wrappers (native CADC needs no module).
+if [ "$DRY_RUN" -eq 0 ] && type module >/dev/null 2>&1; then
+	module load pawseyenv/2026.11 singularity/4.3.5-slurm || exit 1
+fi
+
 # If previous runs were interrupted, stop stale transfer processes first.
 pkill -TERM -u "$USER" -f '/cadcenv/bin/vcp|/home/rhuang/bin/vcp|/cadcenv/bin/vls' 2>/dev/null || true
 sleep 1

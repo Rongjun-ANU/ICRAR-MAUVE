@@ -90,6 +90,7 @@ USAGE
 # Upload selected nGIST v7.6.8 products directly from Setonix scratch to CANFAR.
 #
 # Improvements in this version:
+#   - select the current Pawsey runtime before invoking CADC container wrappers
 #   - remove each completed automatic job's temporary checksum files on CANFAR
 #   - refresh date-valid certificates once on recognized CANFAR service/auth errors
 #   - explicit forced overwrite without CANFAR checksums preserves destination backups
@@ -1061,6 +1062,10 @@ if [ "$DRY_RUN" -eq 1 ]; then
 fi
 
 CURRENT_STAGE=preflight
+# Select the supported Setonix runtime; native CADC installations need no module.
+if type module >/dev/null 2>&1; then
+    module load pawseyenv/2026.11 singularity/4.3.5-slurm || exit 1
+fi
 command -v cadc-get-cert >/dev/null 2>&1 || {
     echo "ERROR: cadc-get-cert is not available in PATH." >&2
     exit 1

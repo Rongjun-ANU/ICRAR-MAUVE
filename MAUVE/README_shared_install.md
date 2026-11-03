@@ -216,13 +216,13 @@ source ~/.bashrc
 It is also recommended to add these to `~/.bashrc`:
 
 ```bash
-module load singularity/4.1.0-slurm
+module load pawseyenv/2026.11 singularity/4.3.5-slurm
 module load rclone/1.68.1
 ```
 
 ### Notes
 
-- `singularity/4.1.0-slurm` is recommended because the shared wrappers and Mapviewer use Singularity.
+- Select `pawseyenv/2026.11 singularity/4.3.5-slurm` explicitly because the shared wrappers and Mapviewer use Singularity.
 
 - `rclone/1.68.1` is recommended because many users may want to move data to or from object storage.
 
@@ -369,7 +369,7 @@ A typical Slurm script under `/software/projects/pawsey1308/ngist_supplementary_
 
 set -euo pipefail
 
-module load singularity/4.1.0-slurm
+module load pawseyenv/2026.11 singularity/4.3.5-slurm
 
 cd /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial
 
@@ -428,7 +428,7 @@ git pull --ff-only
 ### 9.2 Update the shared environment
 
 ```bash
-module load singularity/4.1.0-slurm
+module load pawseyenv/2026.11 singularity/4.3.5-slurm
 
 BASE=/software/projects/pawsey1308
 SCR=/scratch/pawsey1308/$USER
@@ -544,7 +544,7 @@ Add to `~/.bashrc`:
 
 ```bash
 export PATH=/software/projects/pawsey1308/bin:$PATH
-module load singularity/4.1.0-slurm
+module load pawseyenv/2026.11 singularity/4.3.5-slurm
 module load rclone/1.68.1
 ```
 

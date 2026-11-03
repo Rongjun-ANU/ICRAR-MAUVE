@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # Standalone copy of vcp_scratch_v3tk_v768_to_canfar.sh for the independent
+# 2026-11-03: select the current Pawsey runtime before CADC container wrappers.
 # Full 40-galaxy / 39-cube SFH MDEG16 sample with reused 7000 inputs.
 # 2026-10-30: upload only new SFH maps/weights and their CONFIG/LOGFILE.
 # Reuse original 7000 mask, binning, KIN and gas maps without duplicating them.
@@ -958,6 +959,10 @@ if [ "$DRY_RUN" -eq 1 ]; then
 fi
 
 CURRENT_STAGE=preflight
+# Select the supported Setonix runtime; native CADC installations need no module.
+if type module >/dev/null 2>&1; then
+    module load pawseyenv/2026.11 singularity/4.3.5-slurm || exit 1
+fi
 command -v cadc-get-cert >/dev/null 2>&1 || {
     echo "ERROR: cadc-get-cert is not available in PATH." >&2
     exit 1

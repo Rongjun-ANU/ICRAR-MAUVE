@@ -193,7 +193,7 @@ After sending, prepare on Setonix, before submission:
 
 ```bash
 cd /software/projects/pawsey1308/ngist_supplementary_public/ngistTutorial
-module load singularity/4.1.0-slurm
+module load pawseyenv/2026.11 singularity/4.3.5-slurm
 bash SFH16_ready.sh
 # Or prepare a subset: bash SFH16_ready.sh NGC4689
 ```
@@ -291,6 +291,12 @@ The generated YAML files expect input cubes under:
 ```text
 /scratch/pawsey1308/mauve/cubes/v3tk/
 ```
+
+The Setonix cube staging script and the parent ICRAR scratch-to-CANFAR
+uploaders select `pawseyenv/2026.11 singularity/4.3.5-slurm` before invoking
+CADC wrappers when the `module` command is available. Module-load failures
+stop the transfer. Help, checksum-worker modes, and uploader dry-runs do not
+load modules; native CADC environments without modules continue to use PATH.
 
 Use `config_setup/vcp_from_v3tk_to_scratch.sh` on Setonix/CADC-capable
 environments to stage the current cube inputs. With no galaxy arguments, it
@@ -483,6 +489,12 @@ For each galaxy ID, it creates:
 The slurm scripts are copied from `v3tk_v7.6.8_setonix.slurm` and
 `v3tk_v7.6.8_7000_setonix.slurm` by replacing the literal `GALID` placeholder
 with the current galaxy ID.
+
+Both templates explicitly select `pawseyenv/2026.11 singularity/4.3.5-slurm`.
+Pawsey disables unversioned Singularity loads, so keep the collection and runtime
+versions together when updating them. `SFH16_creation.sh` inherits this selection
+from the generated 7000 jobs; rerun `27_creation.sh` before SFH16 creation to
+propagate a template change through all three run variants.
 
 The generated slurm scripts start with the scheduler settings from those
 templates. `27_creation.sh` then applies the run-specific partition, memory,
