@@ -382,6 +382,29 @@ except Exception:
 # =============================================================================
 # MANUAL PER-GALAXY POST-PROCESSING FIXES
 # =============================================================================
+# Exclude known false Gaia foreground detections before any mask construction.
+# NGC4579: the galaxy nucleus has unreliable Gaia astrometry (RUWE=3.32,
+# excess-noise significance=94.6); its nominal proper motion is not evidence
+# for a foreground star. Match both galaxy and source ID, never a central radius.
+MANUAL_GAIA_EXCLUSIONS = {
+    "NGC4579": {"3928583019165890304"},
+}
+
+
+def exclude_manual_gaia_sources(base, gaia):
+    """Remove explicitly identified false foreground detections from Gaia results."""
+    excluded = MANUAL_GAIA_EXCLUSIONS.get(base, set())
+    if gaia is None or not excluded:
+        return gaia
+    keep = []
+    for row in gaia:
+        source_id = str(row["source_id"])
+        keep.append(source_id not in excluded)
+        if source_id in excluded:
+            print(f"[MANUAL] {base}: excluded false Gaia foreground detection DR3 {source_id}")
+    return gaia[np.asarray(keep, dtype=bool)]
+
+
 # Apply these narrowly targeted corrections only after the normal catalog masking
 # workflow. Key every rule by both galaxy and a stable catalog identifier so that
 # unrelated detections are never adjusted.
@@ -2481,6 +2504,7 @@ def build_masks_for_one(rfits_path: str, cfg: Config):
     if bool(getattr(cfg, "gaia_apply_epoch_propagation", True)):
         gaia_rad = gaia_rad + (float(getattr(cfg, "gaia_epoch_query_padding_arcsec", 20.0)) * u.arcsec)
     gaia = query_gaia_sources(center, gaia_rad, cfg)
+    gaia = exclude_manual_gaia_sources(base, gaia)
     star_patches = []
     gaia_star_records = []
     n_star_masked = 0

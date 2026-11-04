@@ -1,48 +1,1600 @@
-Logging to: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/v3tk_to_VRI.log
-Start time: 2026-06-19T08:52:29Z
-Host: dep66727
-User: Igniz
-CWD: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI
-Uname: Darwin dep66727 25.5.0 Darwin Kernel Version 25.5.0: Mon Apr 27 20:41:26 PDT 2026; root:xnu-12377.121.6~2/RELEASE_ARM64_T8132 arm64
+Logging to: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/v3tk_to_VRI.log
+Start time: 2026-11-04T02:53:12Z
+Host: contributed2
+User: RongjunHuang
+CWD: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI
+Uname: Linux contributed2 5.14.0-611.54.3.el9_7.x86_64 #1 SMP PREEMPT_DYNAMIC Thu May 7 16:31:24 EDT 2026 x86_64 x86_64 x86_64 GNU/Linux
 
 Resource snapshot (best effort):
-core file size          (blocks, -c) 0
-data seg size           (kbytes, -d) unlimited
-file size               (blocks, -f) unlimited
-max locked memory       (kbytes, -l) unlimited
-max memory size         (kbytes, -m) unlimited
-open files                      (-n) 1048575
-pipe size            (512 bytes, -p) 1
-stack size              (kbytes, -s) 8176
-cpu time               (seconds, -t) unlimited
-max user processes              (-u) 2666
-virtual memory          (kbytes, -v) unlimited
-Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on
-/dev/disk3s5   460Gi   400Gi    29Gi    94%    2.5M  301M    1%   /System/Volumes/Data
+real-time non-blocking time  (microseconds, -R) unlimited
+core file size              (blocks, -c) unlimited
+data seg size               (kbytes, -d) unlimited
+scheduling priority                 (-e) 0
+file size                   (blocks, -f) unlimited
+pending signals                     (-i) 3092560
+max locked memory           (kbytes, -l) unlimited
+max memory size             (kbytes, -m) unlimited
+open files                          (-n) 65535
+pipe size                (512 bytes, -p) 8
+POSIX message queues         (bytes, -q) 819200
+real-time priority                  (-r) 0
+stack size                  (kbytes, -s) 8192
+cpu time                   (seconds, -t) unlimited
+max user processes                  (-u) unlimited
+virtual memory              (kbytes, -v) unlimited
+file locks                          (-x) unlimited
+               total        used        free      shared  buff/cache   available
+Mem:           755Gi        52Gi       366Gi        33Mi       342Gi       702Gi
+Swap:             0B          0B          0B
+Filesystem                                                                                                                       Size  Used Avail Use% Mounted on
+keel-prod-cavern@c88b251e-a300-11f0-8689-8c84746f1f7e.cephfs=/volumes/csi-keel-prod/cavern/4123f030-4545-4c6b-b789-a51ee7ace724  2.5P  1.9P  651T  75% /arc
 
 Target directory: /arc/projects/mauve/cubes/v3tk
-Working directory: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI
-Found 1 file(s):
-- /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Working directory: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI
+Found 39 file(s):
+- /arc/projects/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- /arc/projects/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+- vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4254_PHANGS_DATACUBE_native.fits
+- vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.fits
+- vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4535_PHANGS_DATACUBE_native.fits
 
-=== Processing: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
-Input: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
--rw-r--r--@ 2 Igniz  staff    13G Jun 19 16:39 /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
-Running: python v3tk_to_VRI.py /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
-row_chunk: 10
+=== Processing: /arc/projects/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 2.4G Dec  9  2025 /arc/projects/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
 v3tk_to_VRI.py version: 2026-01-15.1
 Cube spectral coverage: 4700.0–9400.0 Å
   V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
   R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
   I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
-Wrote: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
 HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
-Runtime: 471.08 s
-real 472.48
-user 85.71
-sys 51.26
-Done: /Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
-Runtime (this file): 474s
+Runtime: 50.31 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 41.76
+	System time (seconds): 8.63
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:50.54
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 14610332
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 113726
+	Voluntary context switches: 57
+	Involuntary context switches: 400
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 9040
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/IC3392_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 51s
 
-All done. Total runtime: 474s
-End time: 2026-06-19T09:00:25Z
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.6G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 97.05 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 76.47
+	System time (seconds): 19.30
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:37.24
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 20757260
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1541939
+	Voluntary context switches: 64
+	Involuntary context switches: 733
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 17720
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4064_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 97s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.4G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 69.24 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 59.49
+	System time (seconds): 9.57
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:09.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 18884820
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 104632
+	Voluntary context switches: 101
+	Involuntary context switches: 720
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 9008
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4189_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 70s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 14G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 353.20 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 276.11
+	System time (seconds): 76.29
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:53.39
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 55445508
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 509244
+	Voluntary context switches: 89
+	Involuntary context switches: 3030
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 83464
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4192_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 354s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 16G Sep 23 06:30 /arc/projects/mauve/cubes/v3tk/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 373.09 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 286.67
+	System time (seconds): 85.12
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:13.28
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 54680924
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 558301
+	Voluntary context switches: 83
+	Involuntary context switches: 2756
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 87136
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 374s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 6.9G Jul  1 07:52 /arc/projects/mauve/cubes/v3tk/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 147.08 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 114.65
+	System time (seconds): 32.85
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:27.26
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 33669132
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2670871
+	Voluntary context switches: 67
+	Involuntary context switches: 1106
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 31280
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4222_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 147s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 6.5G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 125.27 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 100.03
+	System time (seconds): 25.10
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:05.47
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 31980448
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1991291
+	Voluntary context switches: 75
+	Involuntary context switches: 1015
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 23080
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4293_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 126s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.6G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 92.10 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 73.88
+	System time (seconds): 19.16
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:32.30
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 20777104
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1546497
+	Voluntary context switches: 63
+	Involuntary context switches: 735
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 17720
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4294_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 93s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 13G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 244.75 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 189.44
+	System time (seconds): 54.33
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:04.95
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 43192256
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1013898
+	Voluntary context switches: 109
+	Involuntary context switches: 1980
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 48664
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4298_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 245s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 11G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 157.00 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 130.74
+	System time (seconds): 24.48
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:37.19
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 15425812
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1933996
+	Voluntary context switches: 188
+	Involuntary context switches: 1622
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 21528
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4302_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 158s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 6.7G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 143.28 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 109.00
+	System time (seconds): 35.07
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:23.46
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 33486920
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1562363
+	Voluntary context switches: 59
+	Involuntary context switches: 1193
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 31456
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4330_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 144s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.5G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 70.95 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 61.38
+	System time (seconds): 9.76
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:11.15
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 18701552
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 104581
+	Voluntary context switches: 102
+	Involuntary context switches: 815
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 9040
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4351_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 71s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 13G Jun 16 10:17 /arc/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 235.85 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 187.36
+	System time (seconds): 47.05
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:56.03
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 40787628
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 329373
+	Voluntary context switches: 133
+	Involuntary context switches: 1952
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 47416
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4380_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 237s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 5.8G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 115.26 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 94.26
+	System time (seconds): 21.66
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:55.44
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23572764
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1823728
+	Voluntary context switches: 78
+	Involuntary context switches: 1149
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 20992
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4383_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 116s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 6.6G Apr  8  2026 /arc/projects/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 101.92 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 86.77
+	System time (seconds): 14.41
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:42.09
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 27469676
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1180907
+	Voluntary context switches: 137
+	Involuntary context switches: 1208
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 13264
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4388_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 102s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.6G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 100.96 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 81.59
+	System time (seconds): 19.66
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:41.14
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 22708188
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1647879
+	Voluntary context switches: 68
+	Involuntary context switches: 780
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 19000
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4394_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 102s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 6.8G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 150.39 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 118.14
+	System time (seconds): 32.52
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:30.57
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 33497912
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2046103
+	Voluntary context switches: 69
+	Involuntary context switches: 1164
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 31320
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4396_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 151s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 8.6G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 132.63 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 111.98
+	System time (seconds): 19.32
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:12.82
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 36261404
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1516928
+	Voluntary context switches: 153
+	Involuntary context switches: 1455
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 17240
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4402_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 133s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.5G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 78.44 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 61.64
+	System time (seconds): 16.41
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:18.61
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 19133112
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1432033
+	Voluntary context switches: 128
+	Involuntary context switches: 780
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 16296
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4405_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 79s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.6G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 98.40 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 78.73
+	System time (seconds): 20.50
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:38.58
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 22849268
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1419784
+	Voluntary context switches: 56
+	Involuntary context switches: 841
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 19032
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4419_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 99s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.3G Jun 19 09:23 /arc/projects/mauve/cubes/v3tk/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 69.99 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 60.27
+	System time (seconds): 9.95
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:10.20
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 18219804
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 105129
+	Voluntary context switches: 92
+	Involuntary context switches: 704
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 9080
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4424_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 71s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 13G Jun  5 04:50 /arc/projects/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 180.87 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 150.46
+	System time (seconds): 27.67
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:01.06
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23856120
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2153417
+	Voluntary context switches: 199
+	Involuntary context switches: 2008
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 24536
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4450_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 181s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 8.4G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 149.86 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 122.23
+	System time (seconds): 26.32
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:30.05
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 27197852
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2155730
+	Voluntary context switches: 126
+	Involuntary context switches: 1457
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 24736
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4457_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 151s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 17G Dec 10  2025 /arc/projects/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 334.92 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 257.88
+	System time (seconds): 73.88
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:35.12
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 54204016
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5310760
+	Voluntary context switches: 138
+	Involuntary context switches: 2632
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 69896
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4501_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 336s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.6G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 95.16 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 76.54
+	System time (seconds): 19.66
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:35.34
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 21580460
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1592963
+	Voluntary context switches: 59
+	Involuntary context switches: 981
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 18320
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4522_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 95s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 19G Oct 21 08:54 /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 344.69 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 271.81
+	System time (seconds): 68.30
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:44.87
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 53300476
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5699325
+	Voluntary context switches: 267
+	Involuntary context switches: 3417
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 67368
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 346s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 13G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 240.87 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 191.14
+	System time (seconds): 48.44
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:01.05
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 41170184
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 323785
+	Voluntary context switches: 118
+	Involuntary context switches: 1977
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 48296
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 241s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 17G May 28 06:04 /arc/projects/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 286.06 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 228.29
+	System time (seconds): 53.60
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:46.26
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 40281780
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4499955
+	Voluntary context switches: 204
+	Involuntary context switches: 2956
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 52520
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 287s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 19G Oct 29 06:43 /arc/projects/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 280.09 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 210.29
+	System time (seconds): 71.02
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:40.31
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 53941888
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5267779
+	Voluntary context switches: 29
+	Involuntary context switches: 615
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 68720
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 281s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.6G Feb 27  2026 /arc/projects/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 98.65 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 78.85
+	System time (seconds): 20.18
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:38.85
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23275996
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1639284
+	Voluntary context switches: 55
+	Involuntary context switches: 740
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 18864
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 99s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 2.4G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 49.72 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 42.00
+	System time (seconds): 8.93
+	Percent of CPU this job got: 102%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:49.90
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 14476656
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 124796
+	Voluntary context switches: 54
+	Involuntary context switches: 468
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8944
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 50s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 4.5G May 14 03:25 /arc/projects/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 70.53 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 60.78
+	System time (seconds): 9.66
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:10.72
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 11304816
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 123456
+	Voluntary context switches: 107
+	Involuntary context switches: 762
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8904
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4607_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 71s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 17G Jul  2 03:05 /arc/projects/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 304.27 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 239.65
+	System time (seconds): 61.41
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:04.47
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 53288228
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5150997
+	Voluntary context switches: 181
+	Involuntary context switches: 3281
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 60784
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4654_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 305s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 13G Sep 15 05:02 /arc/projects/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 207.22 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 161.64
+	System time (seconds): 36.72
+	Percent of CPU this job got: 95%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 3:27.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 30570956
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 115
+	Minor (reclaiming a frame) page faults: 2894943
+	Voluntary context switches: 312
+	Involuntary context switches: 2120
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 33576
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 212s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 2.4G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 49.50 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 42.13
+	System time (seconds): 8.80
+	Percent of CPU this job got: 102%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:49.68
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 14680804
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 116990
+	Voluntary context switches: 46
+	Involuntary context switches: 533
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 9144
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4694_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 50s
+
+=== Processing: /arc/projects/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz ===
+Input: /arc/projects/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+-rw-rw----+ 1 cortese cortese 8.8G Dec 11  2025 /arc/projects/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Running: python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 167.16 s
+	Command being timed: "python v3tk_to_VRI.py /arc/projects/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits"
+	User time (seconds): 131.32
+	System time (seconds): 33.81
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:47.35
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 26972840
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2921292
+	Voluntary context switches: 93
+	Involuntary context switches: 1538
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 33984
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: /arc/projects/mauve/cubes/v3tk/NGC4698_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Runtime (this file): 168s
+
+=== Processing: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4254_PHANGS_DATACUBE_native.fits ===
+WARNING: Current version vos 3.6.3. A newer version, 3.7.0, is available on PyPI
+Input: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native.fits
+-rw-r--r--. 1 RongjunHuang RongjunHuang 38G Nov  4 04:41 /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native.fits
+Running: python v3tk_to_VRI.py /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native.fits --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 122.37 s
+	Command being timed: "python v3tk_to_VRI.py /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native.fits --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4254_PHANGS_DATACUBE_native_VRI.fits"
+	User time (seconds): 69.38
+	System time (seconds): 54.57
+	Percent of CPU this job got: 101%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:02.61
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 44301940
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4768834
+	Voluntary context switches: 28
+	Involuntary context switches: 1898
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 56544
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4254_PHANGS_DATACUBE_native.fits
+Runtime (this file): 723s
+
+=== Processing: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.fits ===
+WARNING: Current version vos 3.6.3. A newer version, 3.7.0, is available on PyPI
+Input: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native.fits
+-rw-r--r--. 1 RongjunHuang RongjunHuang 39G Nov  4 04:49 /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native.fits
+Running: python v3tk_to_VRI.py /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native.fits --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 128.27 s
+	Command being timed: "python v3tk_to_VRI.py /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native.fits --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4321_PHANGS_DATACUBE_native_VRI.fits"
+	User time (seconds): 73.73
+	System time (seconds): 56.09
+	Percent of CPU this job got: 101%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:08.49
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 50389648
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4856227
+	Voluntary context switches: 30
+	Involuntary context switches: 2557
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 57760
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.fits
+Runtime (this file): 488s
+
+=== Processing: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4535_PHANGS_DATACUBE_native.fits ===
+WARNING: Current version vos 3.6.3. A newer version, 3.7.0, is available on PyPI
+Input: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native.fits
+-rw-r--r--. 1 RongjunHuang RongjunHuang 18G Nov  4 04:56 /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native.fits
+Running: python v3tk_to_VRI.py /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native.fits --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native_VRI.fits
+row_chunk: 192
+v3tk_to_VRI.py version: 2026-01-15.1
+Cube spectral coverage: 4700.0–9400.0 Å
+  V (bessell-V): bandpass 4800.0–6900.0 Å; overlap 4800.0–6900.0 Å (100.0%)
+  R (bessell-R): bandpass 5600.0–8500.0 Å; overlap 5600.0–8500.0 Å (100.0%)
+  I (bessell-I): bandpass 7100.0–9100.0 Å; overlap 7100.0–9100.0 Å (100.0%)
+Wrote: /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native_VRI.fits
+HDUs: V_FLUX/V_MAG, R_FLUX/R_MAG, I_FLUX/I_MAG
+Runtime: 55.97 s
+	Command being timed: "python v3tk_to_VRI.py /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native.fits --output /arc/home/RongjunHuang/ICRAR/v3tk_to_VRI/NGC4535_PHANGS_DATACUBE_native_VRI.fits"
+	User time (seconds): 33.21
+	System time (seconds): 24.54
+	Percent of CPU this job got: 102%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:56.24
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23302068
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2205991
+	Voluntary context switches: 28
+	Involuntary context switches: 143
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 25760
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+Done: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4535_PHANGS_DATACUBE_native.fits
+Runtime (this file): 329s
+
+All done. Total runtime: 7433s
+End time: 2026-11-04T04:57:06Z

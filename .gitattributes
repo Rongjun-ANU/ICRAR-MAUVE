@@ -3,3 +3,5 @@ further/20261024_SETONIX_pointing_continuum_diagnostics.ipynb filter=lfs diff=lf
 v3tk_masking_VRI/All_combined_VRI_16_9.png filter=lfs diff=lfs merge=lfs -text
 v3tk_masking_VRI/All_combined_VRI_mask_16_9.png filter=lfs diff=lfs merge=lfs -text
 v3tk_to_VRI/All_combined_VRI_16_9.png filter=lfs diff=lfs merge=lfs -text
+v3tk_to_VRI/ALL_combined_VRI.png filter=lfs diff=lfs merge=lfs -text
+v3tk_masking_VRI/ALL_combined_VRI_mask.png filter=lfs diff=lfs merge=lfs -text

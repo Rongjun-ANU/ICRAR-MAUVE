@@ -1,8 +1,8 @@
 {
   "status": "HEURISTIC_ONLY",
   "canvas": [
-    5984,
-    3366
+    6560,
+    3690
   ],
   "settings": {
     "ratio": [
@@ -23,6 +23,48 @@
       60,
       75,
       90
+    ],
+    "selection_mode": "custom",
+    "selected_galaxy_ids": [
+      "IC3392",
+      "NGC4064",
+      "NGC4189",
+      "NGC4192",
+      "NGC4216",
+      "NGC4222",
+      "NGC4254",
+      "NGC4293",
+      "NGC4294",
+      "NGC4298",
+      "NGC4302",
+      "NGC4321",
+      "NGC4330",
+      "NGC4351",
+      "NGC4380",
+      "NGC4383",
+      "NGC4388",
+      "NGC4394",
+      "NGC4396",
+      "NGC4402",
+      "NGC4405",
+      "NGC4419",
+      "NGC4424",
+      "NGC4450",
+      "NGC4457",
+      "NGC4501",
+      "NGC4522",
+      "NGC4535",
+      "NGC4548",
+      "NGC4567_8",
+      "NGC4569",
+      "NGC4579",
+      "NGC4580",
+      "NGC4606",
+      "NGC4607",
+      "NGC4654",
+      "NGC4689",
+      "NGC4694",
+      "NGC4698"
     ],
     "rotation_limit_degrees": [
       -90,
@@ -46,8 +88,8 @@
   "note": "No optimality proof. Only exact black background is free; no brightness threshold or resizing. Angles not divisible by 90 use bicubic interpolation. Positions and boxes are in output pixels; rotated_crop_box is left, top, right, bottom in the expanded rotated source.",
   "validation": {
     "overlapping_reserved_pixels": 0,
-    "image_rectangle_overlap_pairs": 49,
-    "reserved_fraction": 0.6317621897649028,
+    "image_rectangle_overlap_pairs": 57,
+    "reserved_fraction": 0.63433777843876,
     "all_placements_inside_canvas": true
   },
   "placements": [
@@ -59,28 +101,28 @@
         437,
         438
       ],
-      "angle_degrees": 0,
+      "angle_degrees": -30,
       "rotated_crop_box": [
-        0,
-        1,
-        436,
-        438
+        117,
+        117,
+        482,
+        480
       ],
       "sprite_position": [
-        3148,
-        2877
+        3220,
+        3
       ],
       "sprite_size": [
-        456,
-        456
+        384,
+        408
       ],
       "image_position": [
-        3154,
-        2883
+        3226,
+        9
       ],
       "label_box": [
-        3430,
-        3267,
+        3346,
+        369,
         124,
         34
       ],
@@ -104,28 +146,28 @@
         566,
         665
       ],
-      "angle_degrees": 0,
+      "angle_degrees": 29.998645,
       "rotated_crop_box": [
-        0,
-        1,
-        565,
-        665
+        248,
+        131,
+        575,
+        729
       ],
       "sprite_position": [
-        1912,
-        2157
+        1024,
+        2019
       ],
       "sprite_size": [
-        588,
-        684
+        348,
+        648
       ],
       "image_position": [
-        1918,
-        2163
+        1030,
+        2025
       ],
       "label_box": [
-        2290,
-        2679,
+        1114,
+        2625,
         168,
         34
       ],
@@ -157,20 +199,20 @@
         319
       ],
       "sprite_position": [
-        3520,
-        1221
+        568,
+        3183
       ],
       "sprite_size": [
         612,
         372
       ],
       "image_position": [
-        3526,
-        1227
+        574,
+        3189
       ],
       "label_box": [
-        3742,
-        1551,
+        790,
+        3513,
         168,
         34
       ],
@@ -202,20 +244,20 @@
         1629
       ],
       "sprite_position": [
-        2992,
-        9
+        5452,
+        987
       ],
       "sprite_size": [
         1104,
         1644
       ],
       "image_position": [
-        2998,
-        15
+        5458,
+        993
       ],
       "label_box": [
-        3574,
-        1119,
+        6034,
+        2097,
         168,
         34
       ],
@@ -228,6 +270,51 @@
         "alignment_angles": [
           -62.995114,
           27.004886
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4216_observed_VRI.png",
+      "source_sha256": "935f5f9a60e232fa0505f51780dc8a8c89c812f10646c8a296551f41f3b49131",
+      "label": "NGC4216",
+      "original_size": [
+        950,
+        1955
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        949,
+        1955
+      ],
+      "sprite_position": [
+        3184,
+        819
+      ],
+      "sprite_size": [
+        972,
+        1968
+      ],
+      "image_position": [
+        3190,
+        825
+      ],
+      "label_box": [
+        3442,
+        2133,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 20.0,
+        "inclination_deg": 90.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4216_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 110.00361956319585,
+        "alignment_angles": [
+          -20.00362,
+          69.99638
         ]
       }
     },
@@ -247,20 +334,20 @@
         748
       ],
       "sprite_position": [
-        1252,
-        1701
+        3196,
+        2487
       ],
       "sprite_size": [
         912,
         768
       ],
       "image_position": [
-        1258,
-        1707
+        3202,
+        2493
       ],
       "label_box": [
-        1522,
-        2271,
+        3466,
+        3057,
         168,
         34
       ],
@@ -293,7 +380,7 @@
       ],
       "sprite_position": [
         4,
-        9
+        3
       ],
       "sprite_size": [
         1032,
@@ -301,11 +388,11 @@
       ],
       "image_position": [
         10,
-        15
+        9
       ],
       "label_box": [
         430,
-        1210,
+        1204,
         168,
         34
       ],
@@ -337,20 +424,20 @@
         532
       ],
       "sprite_position": [
-        4972,
-        2517
+        1024,
+        2787
       ],
       "sprite_size": [
         936,
         552
       ],
       "image_position": [
-        4978,
-        2523
+        1030,
+        2793
       ],
       "label_box": [
-        5302,
-        2967,
+        1354,
+        3237,
         168,
         34
       ],
@@ -382,20 +469,20 @@
         663
       ],
       "sprite_position": [
-        2224,
-        2625
+        4864,
+        3003
       ],
       "sprite_size": [
         588,
         684
       ],
       "image_position": [
-        2230,
-        2631
+        4870,
+        3009
       ],
       "label_box": [
-        2602,
-        3135,
+        5242,
+        3513,
         168,
         34
       ],
@@ -427,20 +514,20 @@
         995
       ],
       "sprite_position": [
-        2200,
-        1389
+        4600,
+        1071
       ],
       "sprite_size": [
         1056,
         1008
       ],
       "image_position": [
-        2206,
-        1395
+        4606,
+        1077
       ],
       "label_box": [
-        2782,
-        2235,
+        5182,
+        1917,
         168,
         34
       ],
@@ -472,20 +559,20 @@
         1420
       ],
       "sprite_position": [
-        4,
-        1209
+        688,
+        1707
       ],
       "sprite_size": [
         336,
         1476
       ],
       "image_position": [
-        10,
-        1215
+        694,
+        1713
       ],
       "label_box": [
-        82,
-        2640,
+        766,
+        3138,
         168,
         34
       ],
@@ -518,7 +605,7 @@
       ],
       "sprite_position": [
         1036,
-        9
+        3
       ],
       "sprite_size": [
         1248,
@@ -526,11 +613,11 @@
       ],
       "image_position": [
         1042,
-        15
+        9
       ],
       "label_box": [
         1570,
-        1019,
+        1013,
         168,
         34
       ],
@@ -562,20 +649,20 @@
         758
       ],
       "sprite_position": [
-        1204,
-        2337
+        5260,
+        2739
       ],
       "sprite_size": [
         900,
         780
       ],
       "image_position": [
-        1210,
-        2343
+        5266,
+        2745
       ],
       "label_box": [
-        1474,
-        2919,
+        5530,
+        3321,
         168,
         34
       ],
@@ -607,20 +694,20 @@
         323
       ],
       "sprite_position": [
-        3856,
-        2685
+        5512,
+        3
       ],
       "sprite_size": [
         612,
         384
       ],
       "image_position": [
-        3862,
-        2691
+        5518,
+        9
       ],
       "label_box": [
-        4078,
-        3019,
+        5734,
+        337,
         168,
         34
       ],
@@ -652,20 +739,20 @@
         1044
       ],
       "sprite_position": [
-        4288,
-        801
+        2536,
+        1563
       ],
       "sprite_size": [
         984,
         1056
       ],
       "image_position": [
-        4294,
-        807
+        2542,
+        1569
       ],
       "label_box": [
-        4942,
-        1635,
+        3190,
+        2397,
         168,
         34
       ],
@@ -683,7 +770,7 @@
     },
     {
       "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4383_observed_VRI.png",
-      "source_sha256": "fd9838e2c8a3d580d39d0467657d7a72ea4557a6c3dc8ff10faab9daa068d617",
+      "source_sha256": "ad969f6f0ac0789818258be9ce231bc93ace1e1ee127feb1509277799e77c9c0",
       "label": "NGC4383",
       "original_size": [
         633,
@@ -697,20 +784,20 @@
         705
       ],
       "sprite_position": [
-        2764,
-        2265
+        4,
+        2187
       ],
       "sprite_size": [
         648,
         720
       ],
       "image_position": [
-        2770,
-        2271
+        10,
+        2193
       ],
       "label_box": [
-        3154,
-        2871,
+        394,
+        2793,
         168,
         34
       ],
@@ -742,20 +829,20 @@
         323
       ],
       "sprite_position": [
-        3076,
-        2013
+        1960,
+        2991
       ],
       "sprite_size": [
         888,
         384
       ],
       "image_position": [
-        3082,
-        2019
+        1966,
+        2997
       ],
       "label_box": [
-        3430,
-        2347,
+        2314,
+        3325,
         168,
         34
       ],
@@ -787,20 +874,20 @@
         647
       ],
       "sprite_position": [
-        724,
-        2565
+        4,
+        2835
       ],
       "sprite_size": [
         636,
         660
       ],
       "image_position": [
-        730,
-        2571
+        10,
+        2841
       ],
       "label_box": [
-        1114,
-        3063,
+        394,
+        3333,
         168,
         34
       ],
@@ -832,20 +919,20 @@
         754
       ],
       "sprite_position": [
-        3880,
-        1917
+        5644,
+        2211
       ],
       "sprite_size": [
         900,
         768
       ],
       "image_position": [
-        3886,
-        1923
+        5650,
+        2217
       ],
       "label_box": [
-        4330,
-        2499,
+        6094,
+        2793,
         168,
         34
       ],
@@ -877,20 +964,20 @@
         318
       ],
       "sprite_position": [
-        3292,
-        1641
+        2032,
+        2619
       ],
       "sprite_size": [
         1164,
         372
       ],
       "image_position": [
-        3298,
-        1647
+        2038,
+        2625
       ],
       "label_box": [
-        3790,
-        1970,
+        2530,
+        2948,
         168,
         34
       ],
@@ -914,28 +1001,28 @@
         522,
         663
       ],
-      "angle_degrees": 0,
+      "angle_degrees": -15,
       "rotated_crop_box": [
-        1,
-        1,
-        521,
-        663
+        138,
+        74,
+        538,
+        704
       ],
       "sprite_position": [
-        340,
-        2229
+        6136,
+        2811
       ],
       "sprite_size": [
-        540,
-        684
+        420,
+        672
       ],
       "image_position": [
-        346,
-        2235
+        6142,
+        2817
       ],
       "label_box": [
-        346,
-        2763,
+        6322,
+        3441,
         168,
         34
       ],
@@ -967,20 +1054,20 @@
         643
       ],
       "sprite_position": [
-        3316,
-        2349
+        2848,
+        2919
       ],
       "sprite_size": [
         648,
         660
       ],
       "image_position": [
-        3322,
-        2355
+        2854,
+        2925
       ],
       "label_box": [
-        3670,
-        2883,
+        3202,
+        3453,
         168,
         34
       ],
@@ -1004,28 +1091,28 @@
         572,
         335
       ],
-      "angle_degrees": 0,
+      "angle_degrees": -4.001184,
       "rotated_crop_box": [
         0,
-        1,
-        571,
-        335
+        15,
+        579,
+        359
       ],
       "sprite_position": [
-        4468,
-        2877
+        1180,
+        3291
       ],
       "sprite_size": [
-        588,
+        600,
         396
       ],
       "image_position": [
-        4474,
-        2883
+        1186,
+        3297
       ],
       "label_box": [
-        4678,
-        3223,
+        1390,
+        3645,
         168,
         34
       ],
@@ -1057,20 +1144,20 @@
         867
       ],
       "sprite_position": [
-        5356,
-        921
+        1420,
+        1971
       ],
       "sprite_size": [
         624,
         924
       ],
       "image_position": [
-        5362,
-        927
+        1426,
+        1977
       ],
       "label_box": [
-        5578,
-        1799,
+        1642,
+        2849,
         168,
         34
       ],
@@ -1102,20 +1189,20 @@
         725
       ],
       "sprite_position": [
-        5236,
-        1833
+        4780,
+        2139
       ],
       "sprite_size": [
         744,
         744
       ],
       "image_position": [
-        5242,
-        1839
+        4786,
+        2145
       ],
       "label_box": [
-        5578,
-        2523,
+        5122,
+        2829,
         168,
         34
       ],
@@ -1133,7 +1220,7 @@
     },
     {
       "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4501_observed_VRI.png",
-      "source_sha256": "242ced092a2a3a455c2e9a444faf5897b68a42ca72ef455eccde1e66e78e6b06",
+      "source_sha256": "2f40fec4afe92db57f1cf83e9a809741690f10426ba090e3333af3484b1f7e7b",
       "label": "NGC4501",
       "original_size": [
         1205,
@@ -1147,20 +1234,20 @@
         1236
       ],
       "sprite_position": [
-        3736,
-        9
+        4360,
+        3
       ],
       "sprite_size": [
         1224,
         1248
       ],
       "image_position": [
-        3742,
-        15
+        4366,
+        9
       ],
       "label_box": [
-        4438,
-        975,
+        5062,
+        969,
         168,
         34
       ],
@@ -1192,20 +1279,20 @@
         659
       ],
       "sprite_position": [
-        700,
-        1929
+        3988,
+        3003
       ],
       "sprite_size": [
         612,
         672
       ],
       "image_position": [
-        706,
-        1935
+        3994,
+        3009
       ],
       "label_box": [
-        766,
-        2451,
+        4054,
+        3525,
         168,
         34
       ],
@@ -1237,20 +1324,20 @@
         898
       ],
       "sprite_position": [
-        4960,
-        9
+        1024,
+        1059
       ],
       "sprite_size": [
         624,
         960
       ],
       "image_position": [
-        4966,
-        15
+        1030,
+        1065
       ],
       "label_box": [
-        5182,
-        918,
+        1246,
+        1968,
         168,
         34
       ],
@@ -1263,6 +1350,51 @@
         "alignment_angles": [
           -11.998834,
           78.001166
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4548_observed_VRI.png",
+      "source_sha256": "452705b11b1366604c279cdfb367a771bbf23a24e7b709b0cdcf9aa1024d5046",
+      "label": "NGC4548",
+      "original_size": [
+        1201,
+        1195
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1200,
+        1195
+      ],
+      "sprite_position": [
+        3364,
+        3
+      ],
+      "sprite_size": [
+        1212,
+        1212
+      ],
+      "image_position": [
+        3370,
+        9
+      ],
+      "label_box": [
+        3718,
+        1077,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 318.0,
+        "inclination_deg": 37.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 48.00121271090283,
+        "alignment_angles": [
+          -48.001213,
+          41.998787
         ]
       }
     },
@@ -1282,20 +1414,20 @@
         1059
       ],
       "sprite_position": [
-        1516,
-        957
+        3784,
+        1095
       ],
       "sprite_size": [
         984,
         1080
       ],
       "image_position": [
-        1522,
-        963
+        3790,
+        1101
       ],
       "label_box": [
-        2122,
-        1635,
+        4390,
+        1773,
         208,
         41
       ],
@@ -1319,20 +1451,20 @@
         1260
       ],
       "sprite_position": [
-        2284,
-        9
+        1828,
+        867
       ],
       "sprite_size": [
         900,
         1272
       ],
       "image_position": [
-        2290,
-        15
+        1834,
+        873
       ],
       "label_box": [
-        2338,
-        915,
+        1882,
+        1773,
         168,
         34
       ],
@@ -1345,6 +1477,51 @@
         "alignment_angles": [
           -22.999831,
           67.000169
+        ]
+      }
+    },
+    {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4579_observed_VRI.png",
+      "source_sha256": "791f30824c281143486a4946cd4bcb7ba663def2c15a3a06029a43c038a4b2db",
+      "label": "NGC4579",
+      "original_size": [
+        1209,
+        1211
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        1208,
+        1211
+      ],
+      "sprite_position": [
+        2236,
+        3
+      ],
+      "sprite_size": [
+        1224,
+        1224
+      ],
+      "image_position": [
+        2242,
+        9
+      ],
+      "label_box": [
+        2542,
+        1065,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 273.0,
+        "inclination_deg": 40.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 3.0005747920080874,
+        "alignment_angles": [
+          -3.000575,
+          86.999425
         ]
       }
     },
@@ -1364,20 +1541,20 @@
         619
       ],
       "sprite_position": [
-        2980,
-        9
+        4420,
+        2811
       ],
       "sprite_size": [
         660,
         636
       ],
       "image_position": [
-        2986,
-        15
+        4426,
+        2817
       ],
       "label_box": [
-        3310,
-        543,
+        4750,
+        3345,
         168,
         34
       ],
@@ -1409,20 +1586,20 @@
         435
       ],
       "sprite_position": [
-        4,
-        2709
+        2560,
+        1167
       ],
       "sprite_size": [
         456,
         492
       ],
       "image_position": [
-        10,
-        2715
+        2566,
+        1173
       ],
       "label_box": [
-        142,
-        3155,
+        2698,
+        1613,
         168,
         34
       ],
@@ -1446,28 +1623,28 @@
         315,
         598
       ],
-      "angle_degrees": 0,
+      "angle_degrees": 60,
       "rotated_crop_box": [
-        0,
-        1,
-        314,
-        598
+        4,
+        4,
+        673,
+        569
       ],
       "sprite_position": [
-        5584,
-        9
+        3376,
+        3099
       ],
       "sprite_size": [
-        336,
-        660
+        684,
+        588
       ],
       "image_position": [
-        5590,
-        15
+        3382,
+        3105
       ],
       "label_box": [
-        5662,
-        618,
+        3562,
+        3585,
         168,
         34
       ],
@@ -1499,20 +1676,20 @@
         1013
       ],
       "sprite_position": [
-        340,
-        1053
+        5260,
+        303
       ],
       "sprite_size": [
         1296,
         1032
       ],
       "image_position": [
-        346,
-        1059
+        5266,
+        309
       ],
       "label_box": [
-        982,
-        1899,
+        5902,
+        1149,
         168,
         34
       ],
@@ -1529,6 +1706,51 @@
       }
     },
     {
+      "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4689_observed_VRI.png",
+      "source_sha256": "b229643495761f7e5482422f144f57b58e5d12108915dce57ff68757c07b40c7",
+      "label": "NGC4689",
+      "original_size": [
+        747,
+        957
+      ],
+      "angle_degrees": 0,
+      "rotated_crop_box": [
+        0,
+        1,
+        746,
+        957
+      ],
+      "sprite_position": [
+        4,
+        1215
+      ],
+      "sprite_size": [
+        768,
+        972
+      ],
+      "image_position": [
+        10,
+        1221
+      ],
+      "label_box": [
+        226,
+        2145,
+        168,
+        34
+      ],
+      "catalogue_alignment": {
+        "pa_deg": 341.0,
+        "inclination_deg": 38.0,
+        "status": "available",
+        "wcs_source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4689_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk_VRI.fits",
+        "major_axis_angle_from_right_deg": 70.99746894528363,
+        "alignment_angles": [
+          -70.997469,
+          19.002531
+        ]
+      }
+    },
+    {
       "source": "/Users/Igniz/Desktop/ICRAR/v3tk_to_VRI/NGC4694_observed_VRI.png",
       "source_sha256": "bb18909c7ef690f99952fd5b0c3ad483f2a64cc01e2a9a02932085870d7cb7e7",
       "label": "NGC4694",
@@ -1536,28 +1758,28 @@
         439,
         441
       ],
-      "angle_degrees": -15,
+      "angle_degrees": 0,
       "rotated_crop_box": [
-        56,
-        58,
-        483,
-        484
+        0,
+        1,
+        438,
+        441
       ],
       "sprite_position": [
-        352,
-        2913
+        2092,
+        2103
       ],
       "sprite_size": [
-        444,
-        444
+        456,
+        492
       ],
       "image_position": [
-        358,
-        2919
+        2098,
+        2109
       ],
       "label_box": [
-        586,
-        3315,
+        2230,
+        2555,
         168,
         34
       ],
@@ -1589,20 +1811,20 @@
         1189
       ],
       "sprite_position": [
-        4624,
-        1677
+        4240,
+        1875
       ],
       "sprite_size": [
         624,
         1200
       ],
       "image_position": [
-        4630,
-        1683
+        4246,
+        1881
       ],
       "label_box": [
-        5050,
-        2475,
+        4666,
+        2673,
         168,
         34
       ],
