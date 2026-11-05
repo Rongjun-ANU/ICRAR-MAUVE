@@ -61,6 +61,8 @@ NGC4567_8,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall
 NGC4567_8,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4567_8_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1059, 971)",13622883659,12.687,1028289,514828,ok
 NGC4569,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1260, 888)",37872996480,35.272,1118880,664444,ok
 NGC4569,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4569_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1260, 888)",17416249392,16.220,1118880,664444,ok
+NGC4579,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 1211, 1209)",49558314240,46.155,1464099,741861,ok
+NGC4579,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4579_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 1211, 1209)",19471768753,18.134,1464099,741861,ok
 NGC4580,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 619, 647)",13556312640,12.625,400493,183051,ok
 NGC4580,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4580_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz,"(3761, 619, 647)",4873502618,4.539,400493,183051,ok
 NGC4606,/scratch/pawsey1308/mauve/cubes/v3tk/NGC4606_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits,"(3761, 435, 434)",6390380160,5.952,188790,96725,ok

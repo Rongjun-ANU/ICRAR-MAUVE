@@ -130,25 +130,15 @@ It has its own creation/send commands so ordinary `27_*.sh` runs retain their
 existing meaning. Every command accepts a subset of the 39 cube IDs.
 
 All selected original 7000 YAMLs and Slurm scripts must exist before creation;
-missing baselines stop generation before any output is written. On 2026-10-29,
-38 baseline pairs are available locally. NGC4579 lacks both files and has no
-row in the local cube-center/size CSV snapshots. A read-only Setonix check also
-found neither baseline file nor its original product `CONFIG`. Its real baseline
-must be supplied before the no-argument full-sample creation/send sequence can
-succeed. Do not substitute another galaxy's settings. To generate/send the
-currently available 38 cubes explicitly, use:
-
-```bash
-cd /Users/Igniz/Desktop/ICRAR/nGIST_v7.6.8_setup/config_setup
-source ./SFH16_galaxies.sh
-available=()
-for galid in "${SFH16_GALIDS[@]}"; do
-  [[ "$galid" == NGC4579 ]] || available+=("$galid")
-done
-bash SFH16_creation.sh "${available[@]}"
-bash SFH16_send.sh rhuang "${available[@]}"
-# On Setonix, use the explicit preparation/submission lists printed by send.
-```
+missing baselines stop generation before any output is written. As of
+2026-11-05, all 39 local baseline pairs are available, including NGC4579,
+generated from its setup-table row and cube-center metadata. NGC4579 uses
+`highmem`, `980G`, and `96:00:00` for both the normal (8900 A) and 7000 A
+pipelines. Its 7000 A SFH16 job uses `work`, `230G`, and `24:00:00`, like the
+other SFH16 jobs. The shared selection already includes NGC4579 for creation,
+transfer, submission, and status commands; no exclusion list is needed.
+Local config availability does not establish remote baseline-product readiness:
+`SFH16_ready.sh` must verify the original 7000 products before submission.
 
 Run locally:
 

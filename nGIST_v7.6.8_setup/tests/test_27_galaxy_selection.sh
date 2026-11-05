@@ -136,7 +136,7 @@ test_creation_applies_run_specific_queue_overrides() {
     ./27_creation.sh \
       IC3392 NGC4192 NGC4254 NGC4293 NGC4294 NGC4298 NGC4321 NGC4330 \
       NGC4380 NGC4383 NGC4394 NGC4396 NGC4450 NGC4457 NGC4501 NGC4535 \
-      NGC4567_8 NGC4569 NGC4580 NGC4654 NGC4698 > creation.out
+      NGC4567_8 NGC4569 NGC4579 NGC4580 NGC4654 NGC4698 > creation.out
   )
 
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=work"
@@ -147,7 +147,7 @@ test_creation_applies_run_specific_queue_overrides() {
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=230G"
   assert_contains "${workdir}/IC3392_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=24:00:00"
 
-  for galid in NGC4192 NGC4254 NGC4298 NGC4321 NGC4380 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4654 NGC4698; do
+  for galid in NGC4192 NGC4254 NGC4298 NGC4321 NGC4380 NGC4501 NGC4535 NGC4567_8 NGC4569 NGC4579 NGC4654 NGC4698; do
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --partition=highmem"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --mem=980G"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=96:00:00"
@@ -159,7 +159,7 @@ test_creation_applies_run_specific_queue_overrides() {
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_7000_setonix.slurm" "#SBATCH --time=96:00:00"
   done
 
-  for galid in NGC4254 NGC4321 NGC4535 NGC4569 NGC4654; do
+  for galid in NGC4254 NGC4321 NGC4535 NGC4569 NGC4579 NGC4654; do
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --partition=highmem"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --mem=980G"
     assert_contains "${workdir}/${galid}_v3tk_v7.6.8_setonix.slurm" "#SBATCH --time=96:00:00"

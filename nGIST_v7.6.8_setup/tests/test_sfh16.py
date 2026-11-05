@@ -19,6 +19,21 @@ SUFFIXES = ["_mask.fits", "_table.fits", "_bin_spectra.hdf5", "_kin.fits"]
 
 
 class SFH16Tests(unittest.TestCase):
+    def test_ngc4579_local_run_files_and_resources(self):
+        for suffix, partition, memory, hours, lmax in [
+            ("", "highmem", "980G", "96:00:00", 8900),
+            ("_7000", "highmem", "980G", "96:00:00", 7000),
+            ("_7000_SFH16", "work", "230G", "24:00:00", 7000),
+        ]:
+            with self.subTest(suffix=suffix):
+                config = yaml.safe_load((CONFIG / f"NGC4579_MAUVE_MasterConfig_v7.6.8{suffix}_setonix.yaml").read_text())
+                self.assertEqual(config["READ_DATA"]["LMAX_TOT"], lmax)
+                self.assertEqual(config["GENERAL"]["RUN_ID"],
+                                 "NGC4579_SFH16" if "SFH16" in suffix else "NGC4579")
+                text = (CONFIG / f"NGC4579_v3tk_v7.6.8{suffix}_setonix.slurm").read_text()
+                for option, value in [("partition", partition), ("mem", memory), ("time", hours)]:
+                    self.assertIn(f"#SBATCH --{option}={value}\n", text)
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
