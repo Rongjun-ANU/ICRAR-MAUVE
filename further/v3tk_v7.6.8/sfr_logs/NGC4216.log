@@ -1,0 +1,326 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/projects/mauve/products
+Product subdir   : v3tk_v7.6.8
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+
+Shared input keyword ➜ <none>
+Reading gas-line FITS ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4216/NGC4216_gas_bin_maps.fits
+Matched binning FITS ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4216/NGC4216_spatial_binning_maps_further.fits
+Spatial mask FITS ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4216/NGC4216_mask.fits
+Gas-line maps collapsed onto spatial BINID: 45870 bins
+Available gas-line flux/error pairs:
+  - HB4861
+  - OIII4958
+  - OIII5006
+  - NII5754
+  - OI6300
+  - SIII6312
+  - OI6363
+  - NII6548
+  - HA6562
+  - NII6583
+  - SII6716
+  - SII6730
+  - OII7318
+  - OII7319
+  - OII7329
+  - OII7330
+Te-method optional emission-line availability:
+  - OIII4958: available
+  - NII5754: available
+  - SIII6312: available
+  - NII6548: available
+  - OII7318: available
+  - OII7319: available
+  - OII7329: available
+  - OII7330: available
+  - SIII9068: missing
+Spatial mask applied: MASKFILE[MASK] table; row-major MASK == 0; keep=598944, masked=1258306, finite H-alpha after mask=598944
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:1223: RuntimeWarning: divide by zero encountered in divide
+  BD = HA6562_FLUX / HB4861_FLUX
+--------------------------------------------------------------
+Extinction law for k(λ)=A(λ)/E(B−V): calzetti
+k(Hβ 4861Å)  = 4.5981   at λ=0.4861 µm
+k(Hα 6562Å)  = 3.3264   at λ=0.6562 µm
+k([OIII]5006)= 4.4647   at λ=0.5006 µm
+k([NII]6583) = 3.3130   at λ=0.6583 µm
+k([SII]6716) = 3.2298   at λ=0.6716 µm
+k([SII]6730) = 3.2212   at λ=0.6730 µm
+k(OIII4958) = 4.5083   at λ=0.4958 µm
+k(NII5754) = 3.8531   at λ=0.5755 µm
+k(OI6300) = 3.5017   at λ=0.6300 µm
+k(SIII6312) = 3.4934   at λ=0.6312 µm
+k(OI6363) = 3.4582   at λ=0.6363 µm
+k(NII6548) = 3.3355   at λ=0.6548 µm
+k(OII7318) = 2.8906   at λ=0.7319 µm
+k(OII7319) = 2.8901   at λ=0.7320 µm
+k(OII7329) = 2.8854   at λ=0.7329 µm
+k(OII7330) = 2.8844   at λ=0.7331 µm
+k(SIII9068) = 2.1615   at λ=0.9069 µm (line missing; NaN placeholder)
+--------------------------------------------------------------
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2103: RuntimeWarning: divide by zero encountered in divide
+  y = np.log10(NII6583_FLUX_corr / (SII6716_FLUX_corr + SII6730_FLUX_corr)) + 0.264*np.log10(NII6583_FLUX_corr / HA6562_FLUX_corr)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2114: RuntimeWarning: divide by zero encountered in divide
+  N2 = NII_scaled / HB4861_FLUX_corr   # N2 = I([N II]λ6548 + λ6584)/I(Hβ)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2115: RuntimeWarning: divide by zero encountered in divide
+  S2 = (SII6716_FLUX_corr + SII6730_FLUX_corr) / HB4861_FLUX_corr  # S2 = I([S II]λ6717 + λ6731)/I(Hβ)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2115: RuntimeWarning: invalid value encountered in divide
+  S2 = (SII6716_FLUX_corr + SII6730_FLUX_corr) / HB4861_FLUX_corr  # S2 = I([S II]λ6717 + λ6731)/I(Hβ)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2116: RuntimeWarning: divide by zero encountered in divide
+  R3 = OIII_scaled / HB4861_FLUX_corr  # R3 = I([O III]λ4959 + λ5007)/I(Hβ) (same value as R2 in this case)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2116: RuntimeWarning: invalid value encountered in divide
+  R3 = OIII_scaled / HB4861_FLUX_corr  # R3 = I([O III]λ4959 + λ5007)/I(Hβ) (same value as R2 in this case)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2118: RuntimeWarning: divide by zero encountered in divide
+  log_R3_S2 = np.log10(R3/S2)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2118: RuntimeWarning: invalid value encountered in divide
+  log_R3_S2 = np.log10(R3/S2)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2118: RuntimeWarning: divide by zero encountered in log10
+  log_R3_S2 = np.log10(R3/S2)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2120: RuntimeWarning: divide by zero encountered in log10
+  log_S2 = np.log10(S2)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2143: RuntimeWarning: invalid value encountered in add
+  O_H_PG16[upper_mask] = (a1_upper + a2_upper * log_R3_S2[upper_mask] + a3_upper * log_N2[upper_mask] +
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2168: RuntimeWarning: divide by zero encountered in divide
+  n2s2_ratio = np.log10(nii6583_flux / sii_total)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2213: RuntimeWarning: divide by zero encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2213: RuntimeWarning: invalid value encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2215: RuntimeWarning: divide by zero encountered in log10
+  o3n2_ratio = np.log10(oiii_hb / nii_ha)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2260: RuntimeWarning: divide by zero encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2260: RuntimeWarning: invalid value encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2262: RuntimeWarning: divide by zero encountered in log10
+  o3n2_ratio = np.log10(oiii_hb / nii_ha)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2319: RuntimeWarning: divide by zero encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2319: RuntimeWarning: invalid value encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2321: RuntimeWarning: divide by zero encountered in log10
+  o3n2_ratio = np.log10(oiii_hb / nii_ha)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2421: RuntimeWarning: divide by zero encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2421: RuntimeWarning: invalid value encountered in divide
+  oiii_hb = oiii5006_flux / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2424: RuntimeWarning: divide by zero encountered in divide
+  sii_hb = sii_total / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2424: RuntimeWarning: invalid value encountered in divide
+  sii_hb = sii_total / hb4861_flux
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2427: RuntimeWarning: divide by zero encountered in divide
+  o3s2_ratio = np.log10(oiii_hb / sii_hb)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2427: RuntimeWarning: invalid value encountered in divide
+  o3s2_ratio = np.log10(oiii_hb / sii_hb)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:2427: RuntimeWarning: divide by zero encountered in log10
+  o3s2_ratio = np.log10(oiii_hb / sii_hb)
+Calculating all 6 C20 metallicities for NGC4216...
+Combined C20 metallicity: median = 8.680, range = (8.125, 8.946)
+Combined C20 dominant-weight method usage: O3N2=291210, O3S2=614, RS32=54234, R3=180713, N2=1641, S2=54394
+Galaxy NGC4216 inclination: 90.0° (cos θ = 0.000)
+Inclination correction ENABLED: applying b/a = 0.200 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:3136: RuntimeWarning: divide by zero encountered in log10
+  logS2  = np.log10((SII6716_FLUX_corr+SII6730_FLUX_corr) / HA6562_FLUX_corr)   # Σ[S II]/Hα
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:3137: RuntimeWarning: divide by zero encountered in divide
+  logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:3137: RuntimeWarning: invalid value encountered in divide
+  logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:3137: RuntimeWarning: divide by zero encountered in log10
+  logO3  = np.log10(OIII5006_FLUX_corr / HB4861_FLUX_corr)       # [O III]/Hβ
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:3223: RuntimeWarning: invalid value encountered in add
+  mask_N2_right, mask_S2_right = apply_bpt_masks(logN2=logN2+logN2_err, logS2=logS2+logS2_err, logO3=logO3)
+/arc/home/RongjunHuang/ICRAR/further/SFR+Z.py:3225: RuntimeWarning: invalid value encountered in add
+  mask_N2_up, mask_S2_up = apply_bpt_masks(logN2=logN2, logS2=logS2, logO3=logO3+logO3_err)
+--------------------------------------------------------------
+HII-region model-grid inference
+pyqz/NebulaBayes six-line corrected-input aperture: 149737 pixels in 8541 unique spatial bins; no extra S/N cut
+JY22 six-line raw-input aperture: 149737 pixels in 8541 unique spatial bins; no extra S/N cut
+Python interpreter: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+pyqz/NebulaBayes compatibility layer: model_grid_compat.py
+pyqz 0.8.4.0: diagnostic=[NII]/[SII]+;[OIII]/[SII]+; Pk=5.0; struct=pp; kappa=inf; sampling=2; srs=800; KDE=multiv; seed=20260823; nproc=1
+pyqz runtime overlay: /tmp/pyqz084-runtime-kmw1ucd8/pyqz/__init__.py
+pyqz grid identity: MAPPINGS V HII Region Grid: QZ pp_GCZO_Pk50_kinf
+pyqz bins: 1/8541 spectra complete (BINID 1262, 0.6 s)
+pyqz bins: 854/8541 spectra complete (BINID 15758, 297.8 s)
+pyqz bins: 1708/8541 spectra complete (BINID 20731, 659.9 s)
+pyqz bins: 2562/8541 spectra complete (BINID 25809, 969.5 s)
+pyqz bins: 3416/8541 spectra complete (BINID 28571, 1217.8 s)
+pyqz bins: 4270/8541 spectra complete (BINID 30870, 1479.4 s)
+pyqz bins: 5124/8541 spectra complete (BINID 33938, 1723.6 s)
+pyqz bins: 5978/8541 spectra complete (BINID 38124, 2029.2 s)
+pyqz bins: 6832/8541 spectra complete (BINID 41558, 2378.3 s)
+pyqz bins: 7686/8541 spectra complete (BINID 43485, 2624.5 s)
+pyqz bins: 8540/8541 spectra complete (BINID 45832, 2860.5 s)
+pyqz bins: 8541/8541 spectra complete (BINID 45847, 2860.8 s)
+pyqz bins: no per-spectrum exceptions
+Initialising NebulaBayes (v0.9.9) model...
+INFO Initialising NebulaBayes (v0.9.9) model...
+Loading input grid data...
+INFO Loading input grid data...
+Building flux arrays for the model grids...
+INFO Building flux arrays for the model grids...
+Resampling model emission line flux grids to shape (40, 20, 160) using linear interpolation...
+INFO Resampling model emission line flux grids to shape (40, 20, 160) using linear interpolation...
+    Interpolating for Hbeta...
+INFO     Interpolating for Hbeta...
+    Interpolating for OIII5007...
+INFO     Interpolating for OIII5007...
+    Interpolating for Halpha...
+INFO     Interpolating for Halpha...
+    Interpolating for NII6583...
+INFO     Interpolating for NII6583...
+    Interpolating for SII6716...
+INFO     Interpolating for SII6716...
+    Interpolating for SII6731...
+INFO     Interpolating for SII6731...
+Interpolated flux grid size is 1.02MB for 1 line and 6.14MB total for all 6 lines
+DEBUG Interpolated flux grid size is 1.02MB for 1 line and 6.14MB total for all 6 lines
+NebulaBayes 0.9.9: grid=/arc/home/RongjunHuang/.conda/envs/ICRAR/lib/python3.13/site-packages/NebulaBayes/grids/NB_HII_grid.fits.gz; parameters=['log U', 'log P/k', '12 + log O/H']; shape=(40, 20, 160); order=1; grid_error=0.1; norm=Hbeta; deredden=False; prior=Uniform
+NebulaBayes bins: 1/8541 spectra complete (BINID 1262, 0.0 s)
+NebulaBayes bins: 854/8541 spectra complete (BINID 15758, 13.6 s)
+NebulaBayes bins: 1708/8541 spectra complete (BINID 20731, 27.3 s)
+NebulaBayes bins: 2562/8541 spectra complete (BINID 25809, 40.9 s)
+NebulaBayes bins: 3416/8541 spectra complete (BINID 28571, 54.5 s)
+NebulaBayes bins: 4270/8541 spectra complete (BINID 30870, 68.1 s)
+NebulaBayes bins: 5124/8541 spectra complete (BINID 33938, 81.8 s)
+NebulaBayes bins: 5978/8541 spectra complete (BINID 38124, 95.4 s)
+NebulaBayes bins: 6832/8541 spectra complete (BINID 41558, 109.0 s)
+NebulaBayes bins: 7686/8541 spectra complete (BINID 43485, 122.6 s)
+NebulaBayes bins: 8540/8541 spectra complete (BINID 45832, 136.3 s)
+NebulaBayes bins: 8541/8541 spectra complete (BINID 45847, 136.3 s)
+NebulaBayes bins: no per-spectrum exceptions
+JY22/Peng2026: raw close-pair ratios=N2,S2,R3; posterior means with marginal equal-tailed p16/p84; full raw-ratio covariance; post-depletion O/H=pre-depletion-0.22; empirical chi2<=25 gross-mismatch cut; not a physical boundary; error inflation=1.0
+JY22 grid: /arc/home/RongjunHuang/ICRAR/further/Peng2026/photoionization_models/photoionization_grid_interpolated.fits; sha256=d7a219b60c9a1ea8b29339988c84b1832028b28b3c417d1c3c58b420831eb38a; inference_shape=(200, 200); requested logU=(-4.0, -0.5); retained logU=(-4.0, -0.5); solar O/H=8.69
+JY22 bins: 1/8541 spectra complete (BINID 1262, 0.0 s)
+JY22 bins: 854/8541 spectra complete (BINID 15758, 1.2 s)
+JY22 bins: 1708/8541 spectra complete (BINID 20731, 2.3 s)
+JY22 bins: 2562/8541 spectra complete (BINID 25809, 3.4 s)
+JY22 bins: 3416/8541 spectra complete (BINID 28571, 4.5 s)
+JY22 bins: 4270/8541 spectra complete (BINID 30870, 5.5 s)
+JY22 bins: 5124/8541 spectra complete (BINID 33938, 6.6 s)
+JY22 bins: 5978/8541 spectra complete (BINID 38124, 7.7 s)
+JY22 bins: 6832/8541 spectra complete (BINID 41558, 8.8 s)
+JY22 bins: 7686/8541 spectra complete (BINID 43485, 9.9 s)
+JY22 bins: 8540/8541 spectra complete (BINID 45832, 11.0 s)
+JY22 bins: 8541/8541 spectra complete (BINID 45847, 11.0 s)
+JY22 bins: no per-spectrum exceptions
+/tmp/pyqz084-runtime-kmw1ucd8/pyqz/pyqz.py:849: RuntimeWarning: invalid value encountered in divide
+  gridZ/= peak_val
+pyqz integrated HII: no per-spectrum exceptions
+pyqz integrated HII: BINID 0 adaptive-local-KDE recovery: non-finite native flag=1234; adaptive local KDE 257x257
+/tmp/pyqz084-runtime-kmw1ucd8/pyqz/pyqz.py:849: RuntimeWarning: invalid value encountered in divide
+  gridZ/= peak_val
+pyqz integrated SF: no per-spectrum exceptions
+pyqz integrated SF: BINID 1 adaptive-local-KDE recovery: non-finite native flag=1234; adaptive local KDE 257x257
+NebulaBayes integrated: no per-spectrum exceptions
+JY22 integrated: no per-spectrum exceptions
+Integrated HII/SF model-grid results (common six-line raw aperture)
+  HII: 79727 pixels, 4122 bins; integrated E(B-V)=0.54415+/-0.00010
+    pyqz: O/H=8.77113+/-0.00016; LogQ=7.19149+/-0.00030; logU=-3.28563+/-0.00030; flag=13; off-grid=0.00%; valid=1; method=adaptive-local-KDE recovery (uncertainties: 0.61 KDE contour)
+    NebulaBayes means: O/H=8.77714 [8.72562, 8.82436]; logU=-3.08306 [-3.17949, -2.97436]; log(P/k)=5.69789 [4.89474, 6.51579]; sampled modes=(8.75383, -3.07692, 6.05263); reliable=(1, 1, 1); chi2_red=2.58e+04; nlocalmax=1; flag=0; valid=1
+    JY22 gas O/H=8.91570 [8.91570, 8.91570]; pre-depletion O/H=9.13570 [9.13570, 9.13570]; logU=-1.37940 [-1.37940, -1.37940]; chi2_min=1.358e+07; residuals(N2,S2,R3)=(0.0559, -0.0030, 0.3814); residual norm=0.3854; fit_ok=0; flag=32; valid=1 (posterior means; marginal equal-tailed p16/p84)
+  SF: 149737 pixels, 8541 bins; integrated E(B-V)=0.51606+/-0.00009
+    pyqz: O/H=8.74165+/-0.00015; LogQ=7.18088+/-0.00028; logU=-3.29624+/-0.00028; flag=13; off-grid=0.00%; valid=1; method=adaptive-local-KDE recovery (uncertainties: 0.61 KDE contour)
+    NebulaBayes means: O/H=8.70478 [8.66919, 8.73972]; logU=-3.19775 [-3.28205, -3.12821]; log(P/k)=5.93375 [5.12632, 6.74737]; sampled modes=(8.69740, -3.17949, 6.28421); reliable=(1, 1, 1); chi2_red=9.836e+04; nlocalmax=2; flag=0; valid=1
+    JY22 gas O/H=8.86140 [8.86140, 8.86140]; pre-depletion O/H=9.08140 [9.08140, 9.08140]; logU=-1.52010 [-1.52010, -1.52010]; chi2_min=3.161e+07; residuals(N2,S2,R3)=(0.0850, -0.0250, 0.3705); residual norm=0.3809; fit_ok=0; flag=32; valid=1 (posterior means; marginal equal-tailed p16/p84)
+Model covariance note: JY22 uses the full first-order N2/S2/R3 covariance from raw close-pair ratios and shared denominators; pyqz/NebulaBayes independent-error APIs do not represent the analogous shared covariance.
+--------------------------------------------------------------
+Loaded SII density lookup table: /arc/home/RongjunHuang/ICRAR/further/pyneb_sii_6716_6731_density_lookup_te8000_13000_step1000_ne20_100000_n4096.npz
+DEBUG Creating converter from 3 to 5
+PyNeb Te-method valid-pixel counts:
+  NE_SII finite pixels: 279619
+  NE_SII fixed at 20 cm^-3: 131038/279619 (46.9%)
+  NE_SII exact high-density fallback pixels: 41
+  NE_SII_ALL finite pixels: 598944
+  Te(NII) HII pixels: 177
+  Te(NII) SF pixels: 202
+  Brazzini+2024 direct HII pixels: 0
+  Brazzini+2024 direct SF pixels: 0
+  NII+OII7325 semi-direct HII pixels: 80
+  NII+OII7325 semi-direct SF pixels: 80
+  Kreckel+2025 NII-only HII pixels: 37
+  Kreckel+2025 NII-only SF pixels: 42
+Integrated PyNeb Te-method values:
+  SF:
+    NE_SII: 20.00 +/- 0.00 cm^-3 (n_pix=140059, fixed20=0, exact_high_density=0)
+    Te(NII): 13832.1 +/- 72.7 K (n_pix=708)
+    O_H_BR24_DIRECT: nan dex (n_pix=0)
+    O_H_NII_OII7325: 8.4899 +/- 0.0534 dex (n_pix=80)
+    O_H_NII_K25: nan dex (n_pix=708)
+  HII:
+    NE_SII: 20.00 +/- 0.00 cm^-3 (n_pix=76042, fixed20=0, exact_high_density=0)
+    Te(NII): 10851.8 +/- 54.4 K (n_pix=379)
+    O_H_BR24_DIRECT: nan dex (n_pix=0)
+    O_H_NII_OII7325: 8.4899 +/- 0.0534 dex (n_pix=80)
+    O_H_NII_K25: 8.3886 +/- 0.2136 dex (n_pix=379)
+WARNING: VerifyWarning: Card is too long, comment will be truncated. [astropy.io.fits.card]
+WARNING VerifyWarning: Card is too long, comment will be truncated.
+Further file written ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4216/NGC4216_gas_bin_maps_further.fits
+--------------------------------------------------------------
+Total non-nan spaxels: 598944
+Number of pixels with Halpha not detected: 105116
+Number of pixels with Halpha detected, Hbeta not detected: 219922
+Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII not detected and unclassified1: 166
+Number of pixels with Halpha detected, Hbeta detected, NII not detected, OIII detected and unclassified1: 139
+Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII not detected and unclassified1: 18110
+Number of pixels with Halpha detected, Hbeta detected, NII detected, OIII detected and unclassified1: 65907
+Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII not detected and unclassified1: 6867
+Number of pixels with Halpha detected, Hbeta detected, SII not detected, OIII detected and unclassified1: 15448
+Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII not detected and unclassified1: 11409
+Number of pixels with Halpha detected, Hbeta detected, SII detected, OIII detected and unclassified1: 50598
+--------------------------------------------------------------
+Total Halpha luminosity map sum (detections + upper-limit substitutions): 1.76e+41 erg/s
+Total corrected Halpha luminosity from SF region: 1.38e+41 erg/s
+Total Halpha SFR map sum (detections + upper-limit substitutions): 0.88 M☉/yr or in log10 scale: -0.06 log(M☉/yr)
+Total Halpha SFR from SF region: 0.69 M☉/yr or in log10 scale: -0.16 log(M☉/yr)
+Total Halpha SFR from HII region: 0.55 M☉/yr or in log10 scale: -0.26 log(M☉/yr)
+--------------------------------------------------------------
+[O/H] D16 SF: Total metallicity in SF region:  8.852317574250062
+[O/H] PG16 SF: Total metallicity in SF region:  8.611155713851124
+[O/H] N2S2-N06 SF: Total metallicity in SF region:  9.10589586223014
+[O/H] O3N2-M13 SF: Total metallicity in SF region:  8.560899550500155
+[O/H] N2-M13 SF: Total metallicity in SF region:  8.584119871716412
+[O/H] O3N2-PP04 SF: Total metallicity in SF region:  8.771718954018926
+[O/H] N2-PP04 SF: Total metallicity in SF region:  8.80788923509504
+[O/H] O3N2-C20 SF: Total metallicity in SF region:  8.773049105208504
+[O/H] O3S2-C20 SF: Total metallicity in SF region:  8.82151526077885
+[O/H] RS32-C20 SF: Total metallicity in SF region:  8.74225520216283
+[O/H] R3-C20 SF: Total metallicity in SF region:  8.742728818112372
+[O/H] N2-C20 SF: Total metallicity in SF region:  8.82778635015986
+[O/H] S2-C20 SF: Total metallicity in SF region:  8.768778604036978
+[O/H] Combined-C20 SF: Total metallicity in SF region:  8.770182695975578 (weighted 6 methods; dominant S2)
+--------------------------------------------------------------
+[O/H] D16 HII: Total metallicity in HII region:  8.859193859562312
+[O/H] PG16 HII: Total metallicity in HII region:  8.601555041031581
+[O/H] N2S2-N06 HII: Total metallicity in HII region:  9.116900220510386
+[O/H] O3N2-M13 HII: Total metallicity in HII region:  8.581934389192007
+[O/H] N2-M13 HII: Total metallicity in HII region:  8.57004685840638
+[O/H] O3N2-PP04 HII: Total metallicity in HII region:  8.803172918417955
+[O/H] N2-PP04 HII: Total metallicity in HII region:  8.769846783478163
+[O/H] O3N2-C20 HII: Total metallicity in HII region:  8.792007479032588
+[O/H] O3S2-C20 HII: Total metallicity in HII region:  8.838268982210861
+[O/H] RS32-C20 HII: Total metallicity in HII region:  8.77312509514002
+[O/H] R3-C20 HII: Total metallicity in HII region:  8.774472592082363
+[O/H] N2-C20 HII: Total metallicity in HII region:  8.78355679251935
+[O/H] S2-C20 HII: Total metallicity in HII region:  8.794762672120747
+[O/H] Combined-C20 HII: Total metallicity in HII region:  8.789057511555187 (weighted 6 methods; dominant S2)
+--------------------------------------------------------------
+[O/H] D16: Total metallicity in total region:  8.894090419366632
+[O/H] PG16: Total metallicity in total region:  8.702467407980402
+[O/H] N2S2-N06: Total metallicity in total region:  9.105687010707804
+[O/H] O3N2-M13: Total metallicity in total region:  8.500361479641418
+[O/H] N2-M13: Total metallicity in total region:  nan
+[O/H] O3N2-PP04: Total metallicity in total region:  8.6811947359124
+[O/H] N2-PP04: Total metallicity in total region:  nan
+[O/H] O3N2-C20: Total metallicity in total region:  8.716626567978354
+[O/H] O3S2-C20: Total metallicity in total region:  8.762724849100694
+[O/H] RS32-C20: Total metallicity in total region:  8.613764298191203
+[O/H] R3-C20: Total metallicity in total region:  8.618300474802199
+[O/H] N2-C20: Total metallicity in total region:  nan
+[O/H] S2-C20: Total metallicity in total region:  nan
+[O/H] Combined-C20: Total metallicity in total region:  8.659551964469012 (weighted 4 methods; dominant R3)
+--------------------------------------------------------------
+Total runtime: 4179.4 s
+✅  normal / NGC4216 finished in 69m46s

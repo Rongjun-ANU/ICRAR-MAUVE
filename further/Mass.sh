@@ -41,6 +41,9 @@
 # Changes (2026-10-30):
 #   - Read VELSCALE from run CONFIG; intermediate HDF5 spectra and h5py are
 #     not required for Mass post-processing of the final CANFAR products.
+# Changes (2026-11-12):
+#   - Use the fixed PHANGS cube in the v3tk cube directory first. Keep
+#     the original local lookup and PHANGS VOS-to-scratch staging as fallbacks.
 
 set -euo pipefail
 
@@ -264,7 +267,10 @@ for TASK in "${TASKS[@]}"; do
 
   if is_phangs_native_galid "$GAL"; then
     PHANGS_FILE="$(phangs_native_filename "$GAL")"
-    if [[ -n "$PHANGS_CUBE_ROOT" && -f "$PHANGS_CUBE_ROOT/$PHANGS_FILE" ]]; then
+    FIXED_PHANGS_CUBE="$CUBE_ROOT/${PHANGS_FILE%.fits}_fixed.fits"
+    if [[ -f "$FIXED_PHANGS_CUBE.gz" || -f "$FIXED_PHANGS_CUBE" ]]; then
+      echo "Using fixed PHANGS cube from $CUBE_ROOT" | tee -a "$LOGFILE"
+    elif [[ -n "$PHANGS_CUBE_ROOT" && -f "$PHANGS_CUBE_ROOT/$PHANGS_FILE" ]]; then
       PHANGS_ARGS+=(--phangs-cube-root "$PHANGS_CUBE_ROOT")
     elif [[ -f "$CUBE_ROOT/$PHANGS_FILE" ]]; then
       PHANGS_ARGS+=(--phangs-cube-root "$CUBE_ROOT")
@@ -295,8 +301,8 @@ for TASK in "${TASKS[@]}"; do
       --product-subdir "$PRODUCT_SUBDIR" \
       --fallback-root "$ROOT_LOCAL" \
       --cube-root "$CUBE_ROOT" \
-      "${PHANGS_ARGS[@]}" \
-      "${EXTRA_ARGS[@]}" \
+      ${PHANGS_ARGS[@]+"${PHANGS_ARGS[@]}"} \
+      ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"} \
       2>&1 | tee -a "$LOGFILE"
     status=${PIPESTATUS[0]}               # exit code of python, not tee
   fi

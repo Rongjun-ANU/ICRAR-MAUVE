@@ -74,12 +74,66 @@ def test_vri_stage_defaults_discover_phangs_native_products():
         assert combined_jobs[0].output_png.name == "NGC4254_combined_VRI.png"
 
 
-def test_batch_wrapper_does_not_unzip_inputs():
-	script = (ROOT / "v3tk_to_VRI.sh").read_text()
+def test_batch_wrapper_prefers_fixed_phangs_cube_in_both_modes():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir).resolve()
+        target = root / "v3tk"
+        target.mkdir()
+        native = target / "NGC4254_PHANGS_DATACUBE_native.fits"
+        fixed = target / "NGC4254_PHANGS_DATACUBE_native_fixed.fits.gz"
+        native.touch()
+        fixed.touch()
+        env = dict(os.environ, TARGET_DIR=str(target))
 
-	assert "gunzip" not in script
-	assert "dest_fits" not in script
-	assert 'v3tk_to_VRI.py "$dest_input"' in script
+        for galids in (["NGC4254"], []):
+            result = subprocess.run(
+                ["bash", str(ROOT / "v3tk_to_VRI.sh"), "--dry-run", *galids],
+                cwd=root, env=env, text=True, capture_output=True, check=True,
+            )
+            sources = [line[2:] for line in result.stdout.splitlines() if line.startswith("- ")]
+            assert [source for source in sources if "NGC4254" in source] == [str(fixed)]
+
+
+def test_batch_wrapper_converts_local_and_scratch_phangs_inputs():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        root = Path(tmpdir).resolve()
+        target, work, scratch, bin_dir = (root / name for name in ("v3tk", "work", "scratch", "bin"))
+        for directory in (target, work, scratch, bin_dir):
+            directory.mkdir()
+        profile = bin_dir / "etc/profile.d"
+        profile.mkdir(parents=True)
+        (profile / "conda.sh").touch()
+        stubs = {
+            "conda": 'if [[ "$1" == info ]]; then echo "$FAKE_BIN"; fi\n',
+            "vcp": 'printf "%s\\n" "$2" > "$TRANSFER_LOG"\ntouch "$2"\n',
+            "python": '[[ -f "$2" && "$3" == --output ]] || exit 1\n'
+                      'printf "%s\\n" "$2" "$4" >> "$CONVERSION_LOG"\ntouch "$4"\n',
+        }
+        for name, body in stubs.items():
+            stub = bin_dir / name
+            stub.write_text("#!/bin/bash\nset -e\n" + body)
+            stub.chmod(0o755)
+        transfer, conversion = root / "transfer.log", root / "conversion.log"
+        env = dict(os.environ, TARGET_DIR=str(target), PHANGS_STAGING_ROOT=str(scratch),
+                   FAKE_BIN=str(bin_dir), PATH=f"{bin_dir}:{os.environ['PATH']}",
+                   TRANSFER_LOG=str(transfer), CONVERSION_LOG=str(conversion))
+        fixed = target / "NGC4254_PHANGS_DATACUBE_native_fixed.fits.gz"
+        fixed.touch()
+        subprocess.run(
+            ["bash", str(ROOT / "v3tk_to_VRI.sh"), "NGC4321", "NGC4254"],
+            cwd=work, env=env, text=True, capture_output=True, check=True,
+        )
+
+        staged = Path(transfer.read_text().strip())
+        assert staged.is_relative_to(scratch), f"Public cube staged outside scratch: {staged}"
+        assert list(scratch.iterdir()) == []
+        assert fixed.is_file()
+        outputs = [work / f"{galid}_PHANGS_DATACUBE_native_VRI.fits"
+                   for galid in ("NGC4321", "NGC4254")]
+        assert conversion.read_text().splitlines() == [
+            str(staged), str(outputs[0]), str(fixed), str(outputs[1]),
+        ]
+        assert sorted(work.glob("*.fits")) == sorted(outputs)
 
 
 def test_batch_wrapper_stages_public_phangs_native_inputs():

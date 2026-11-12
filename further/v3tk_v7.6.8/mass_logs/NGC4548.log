@@ -1,0 +1,214 @@
+Python executable: /arc/home/RongjunHuang/.conda/envs/ICRAR/bin/python
+Python 3.13.3
+PYTHONUNBUFFERED: 1
+Product root     : /arc/projects/mauve/products
+Product subdir   : v3tk_v7.6.8
+Cube root        : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root : <none>
+PHANGS VOS dir   : vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES
+PHANGS stage root: /scratch
+Local fallback   : /arc/home/RongjunHuang/ICRAR/further
+MASS_DISABLE_STAT: 0
+MASS_NCPUS       : 16
+MASS_ROW_BLOCK_SIZE: default
+SSP library     : automatic
+nGIST CONFIG    : beside selected weights
+LSF directory   : run resources then script directory
+Weight convention: light_norm_to_r
+
+
+=== Using the following files ===
+Product root : /arc/projects/mauve/products
+Product subdir: v3tk_v7.6.8
+Cube root    : /arc/projects/mauve/cubes/v3tk
+Fallback root: /arc/home/RongjunHuang/ICRAR/further
+Input keyword: <none>
+Cube         : /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Binning map  : /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps.fits
+SFH map      : /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_sfh_maps.fits
+Weights      : /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_sfh_weights.fits
+Photometry   : /arc/home/RongjunHuang/ICRAR/further/BaSTI+Chabrier.dat
+Output       : /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps_further.fits 
+
+Thread control: forcing 16 BLAS/OpenMP threads
+Vectorized processing row-block size: 16
+Loading: /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps.fits
+Filename: /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU       4   ()      
+  1  BINID         1 ImageHDU        26   (1201, 1195)   float64   
+  2  FLUX          1 ImageHDU        26   (1201, 1195)   float64   
+  3  SNR           1 ImageHDU        26   (1201, 1195)   float64   
+  4  SNRBIN        1 ImageHDU        26   (1201, 1195)   float64   
+  5  XBIN          1 ImageHDU        26   (1201, 1195)   float64   
+  6  YBIN          1 ImageHDU        26   (1201, 1195)   float64   
+None
+Loading: /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_sfh_weights.fits
+Filename: /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_sfh_weights.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU      27   ()      
+  1  WEIGHTS       1 BinTableHDU     31   24070R x 1C   [477D]   
+  2  GRID          1 BinTableHDU     35   477R x 3C   [D, D, D]   
+None
+Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
+Converted R-light fraction sums [min,max] = 0.9999999999999997 1.0000000000000004
+Raw SFH weight-sum [min, p16, p50, p84, max] = [1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00]
+Normalized SFH weight-sum check [min, max] = [1.000000, 1.000000]
+Composite ML_R candidates [median] (light_r, light_norm_to_r, light_v_to_r, mass_harmonic) = [2.4206, 2.4450, 2.4984, 1.0173]
+Wrong light_r assumption: delta = log10(light_r / corrected_light_norm_to_r)
+  delta dex [min,p16,p50,p84,max] = [-0.04344353 -0.00943635 -0.00452898 -0.00130362  0.00078296]
+  M/L error percent [min,p16,p50,p84,max] = [-9.51919104 -2.14936503 -1.0374172  -0.29971956  0.1804454 ]
+nGIST prepared-template normalization provenance:
+  config_path: /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/CONFIG
+  config_sha256: 6e4475a57a9e4f684a870222d466d12df95a7459df537c26e21a76c4c1580823
+  lmin: 4800.0
+  lmax: 8900.0
+  redshift: 0.001621
+  galaxy_velscale: 41.0
+  template_velscale: 20.5
+  velscale_source: CONFIG.PREPARE_SPECTRA.VELSCALE
+  data_lsf_path: /arc/home/RongjunHuang/ICRAR/further/lsf_MUSE-WFM-MILES
+  template_lsf_path: /arc/home/RongjunHuang/ICRAR/further/lsf_MILES
+  data_lsf_sha256: 878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e
+  template_lsf_sha256: a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d
+  ngist_revision: 038e9fa4839758e9dae53baeaf93a82bd75d8026
+  ppxf_version: 9.4.2
+  numpy_version: 2.2.6
+  scipy_version: 1.15.2
+  astropy_version: 7.1.0
+  mass_script_sha256: 658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873
+  prepared_range: [4650.2000000003, 9049.400000000745]
+  template_count: 477
+  template_manifest_sha256: 2c28591c7d7f8436670b6d290212c297cc232808ac48fd5a34ebd2ed3dfec675
+  template_library_dir: /arc/home/RongjunHuang/ICRAR/further/EMILES_baseFe_safe
+Selected SFH-weight interpretation for ML_R: light_norm_to_r
+BINID range check for ML_R mapping: max BINID=24069, n_weight_rows=24070
+Loading: /arc/projects/mauve/cubes/v3tk/NGC4548_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits.gz
+Using STAT variance extension for photometric error propagation.
+Cube dimensions (nz, ny, nx): 3761, 1195, 1201
+Approx. DATA footprint: 20.11 GiB
+Approx. STAT footprint: 20.11 GiB
+Building exact speclite linear operator for AB maggies...
+  Linear-operator chunk 1/8 (wave bins 0:512, elapsed 0.0s)
+  Linear-operator chunk 2/8 (wave bins 512:1024, elapsed 0.1s)
+  Linear-operator chunk 3/8 (wave bins 1024:1536, elapsed 0.1s)
+  Linear-operator chunk 4/8 (wave bins 1536:2048, elapsed 0.1s)
+  Linear-operator chunk 5/8 (wave bins 2048:2560, elapsed 0.1s)
+  Linear-operator chunk 6/8 (wave bins 2560:3072, elapsed 0.2s)
+  Linear-operator chunk 7/8 (wave bins 3072:3584, elapsed 0.2s)
+  Linear-operator chunk 8/8 (wave bins 3584:3761, elapsed 0.2s)
+Using contiguous filter-support slice: [641:3441] (2800 bins).
+Photometric propagation method: exact discrete first-order Jacobian through speclite AB-maggies operator (support bins=2800/3761).
+STAT assumption: independent spectral-bin variances (no covariance provided by cube).
+Computing AB maggies with vectorized blocks... (estimated support-slice stream volume: 29.94 GiB, DATA+STAT)
+Processed rows 0:16/1195 (  1.3%, block 1/75, block 0.78s, elapsed 0.01 min, ETA 0.97 min)
+Processed rows 16:32/1195 (  2.7%, block 2/75, block 0.79s, elapsed 0.03 min, ETA 0.96 min)
+Processed rows 32:48/1195 (  4.0%, block 3/75, block 0.79s, elapsed 0.04 min, ETA 0.95 min)
+Processed rows 48:64/1195 (  5.4%, block 4/75, block 0.79s, elapsed 0.05 min, ETA 0.94 min)
+Processed rows 64:80/1195 (  6.7%, block 5/75, block 0.79s, elapsed 0.07 min, ETA 0.92 min)
+Processed rows 80:96/1195 (  8.0%, block 6/75, block 0.79s, elapsed 0.08 min, ETA 0.91 min)
+Processed rows 96:112/1195 (  9.4%, block 7/75, block 0.79s, elapsed 0.09 min, ETA 0.90 min)
+Processed rows 112:128/1195 ( 10.7%, block 8/75, block 0.79s, elapsed 0.11 min, ETA 0.88 min)
+Processed rows 128:144/1195 ( 12.1%, block 9/75, block 0.79s, elapsed 0.12 min, ETA 0.87 min)
+Processed rows 144:160/1195 ( 13.4%, block 10/75, block 0.79s, elapsed 0.13 min, ETA 0.86 min)
+Processed rows 160:176/1195 ( 14.7%, block 11/75, block 0.79s, elapsed 0.15 min, ETA 0.85 min)
+Processed rows 176:192/1195 ( 16.1%, block 12/75, block 0.80s, elapsed 0.16 min, ETA 0.83 min)
+Processed rows 192:208/1195 ( 17.4%, block 13/75, block 0.80s, elapsed 0.17 min, ETA 0.82 min)
+Processed rows 208:224/1195 ( 18.7%, block 14/75, block 0.79s, elapsed 0.19 min, ETA 0.81 min)
+Processed rows 224:240/1195 ( 20.1%, block 15/75, block 0.80s, elapsed 0.20 min, ETA 0.79 min)
+Processed rows 240:256/1195 ( 21.4%, block 16/75, block 0.79s, elapsed 0.21 min, ETA 0.78 min)
+Processed rows 256:272/1195 ( 22.8%, block 17/75, block 0.80s, elapsed 0.22 min, ETA 0.77 min)
+Processed rows 272:288/1195 ( 24.1%, block 18/75, block 0.80s, elapsed 0.24 min, ETA 0.75 min)
+Processed rows 288:304/1195 ( 25.4%, block 19/75, block 0.80s, elapsed 0.25 min, ETA 0.74 min)
+Processed rows 304:320/1195 ( 26.8%, block 20/75, block 0.80s, elapsed 0.26 min, ETA 0.73 min)
+Processed rows 320:336/1195 ( 28.1%, block 21/75, block 0.80s, elapsed 0.28 min, ETA 0.72 min)
+Processed rows 336:352/1195 ( 29.5%, block 22/75, block 0.80s, elapsed 0.29 min, ETA 0.70 min)
+Processed rows 352:368/1195 ( 30.8%, block 23/75, block 0.80s, elapsed 0.30 min, ETA 0.69 min)
+Processed rows 368:384/1195 ( 32.1%, block 24/75, block 0.80s, elapsed 0.32 min, ETA 0.68 min)
+Processed rows 384:400/1195 ( 33.5%, block 25/75, block 0.80s, elapsed 0.33 min, ETA 0.66 min)
+Processed rows 400:416/1195 ( 34.8%, block 26/75, block 0.80s, elapsed 0.34 min, ETA 0.65 min)
+Processed rows 416:432/1195 ( 36.2%, block 27/75, block 0.80s, elapsed 0.36 min, ETA 0.64 min)
+Processed rows 432:448/1195 ( 37.5%, block 28/75, block 0.80s, elapsed 0.37 min, ETA 0.62 min)
+Processed rows 448:464/1195 ( 38.8%, block 29/75, block 0.80s, elapsed 0.38 min, ETA 0.61 min)
+Processed rows 464:480/1195 ( 40.2%, block 30/75, block 0.80s, elapsed 0.40 min, ETA 0.60 min)
+Processed rows 480:496/1195 ( 41.5%, block 31/75, block 0.80s, elapsed 0.41 min, ETA 0.58 min)
+Processed rows 496:512/1195 ( 42.8%, block 32/75, block 0.80s, elapsed 0.42 min, ETA 0.57 min)
+Processed rows 512:528/1195 ( 44.2%, block 33/75, block 0.81s, elapsed 0.44 min, ETA 0.56 min)
+Processed rows 528:544/1195 ( 45.5%, block 34/75, block 0.80s, elapsed 0.45 min, ETA 0.54 min)
+Processed rows 544:560/1195 ( 46.9%, block 35/75, block 0.82s, elapsed 0.47 min, ETA 0.53 min)
+Processed rows 560:576/1195 ( 48.2%, block 36/75, block 0.80s, elapsed 0.48 min, ETA 0.52 min)
+Processed rows 576:592/1195 ( 49.5%, block 37/75, block 0.81s, elapsed 0.49 min, ETA 0.51 min)
+Processed rows 592:608/1195 ( 50.9%, block 38/75, block 0.80s, elapsed 0.51 min, ETA 0.49 min)
+Processed rows 608:624/1195 ( 52.2%, block 39/75, block 0.80s, elapsed 0.52 min, ETA 0.48 min)
+Processed rows 624:640/1195 ( 53.6%, block 40/75, block 0.80s, elapsed 0.53 min, ETA 0.47 min)
+Processed rows 640:656/1195 ( 54.9%, block 41/75, block 0.80s, elapsed 0.55 min, ETA 0.45 min)
+Processed rows 656:672/1195 ( 56.2%, block 42/75, block 0.80s, elapsed 0.56 min, ETA 0.44 min)
+Processed rows 672:688/1195 ( 57.6%, block 43/75, block 0.80s, elapsed 0.57 min, ETA 0.43 min)
+Processed rows 688:704/1195 ( 58.9%, block 44/75, block 0.80s, elapsed 0.59 min, ETA 0.41 min)
+Processed rows 704:720/1195 ( 60.3%, block 45/75, block 0.80s, elapsed 0.60 min, ETA 0.40 min)
+Processed rows 720:736/1195 ( 61.6%, block 46/75, block 0.80s, elapsed 0.61 min, ETA 0.39 min)
+Processed rows 736:752/1195 ( 62.9%, block 47/75, block 0.81s, elapsed 0.63 min, ETA 0.37 min)
+Processed rows 752:768/1195 ( 64.3%, block 48/75, block 0.80s, elapsed 0.64 min, ETA 0.36 min)
+Processed rows 768:784/1195 ( 65.6%, block 49/75, block 0.80s, elapsed 0.65 min, ETA 0.35 min)
+Processed rows 784:800/1195 ( 66.9%, block 50/75, block 0.80s, elapsed 0.67 min, ETA 0.33 min)
+Processed rows 800:816/1195 ( 68.3%, block 51/75, block 0.80s, elapsed 0.68 min, ETA 0.32 min)
+Processed rows 816:832/1195 ( 69.6%, block 52/75, block 0.80s, elapsed 0.69 min, ETA 0.31 min)
+Processed rows 832:848/1195 ( 71.0%, block 53/75, block 0.80s, elapsed 0.71 min, ETA 0.29 min)
+Processed rows 848:864/1195 ( 72.3%, block 54/75, block 0.80s, elapsed 0.72 min, ETA 0.28 min)
+Processed rows 864:880/1195 ( 73.6%, block 55/75, block 0.80s, elapsed 0.73 min, ETA 0.27 min)
+Processed rows 880:896/1195 ( 75.0%, block 56/75, block 0.80s, elapsed 0.75 min, ETA 0.25 min)
+Processed rows 896:912/1195 ( 76.3%, block 57/75, block 0.80s, elapsed 0.76 min, ETA 0.24 min)
+Processed rows 912:928/1195 ( 77.7%, block 58/75, block 0.80s, elapsed 0.77 min, ETA 0.23 min)
+Processed rows 928:944/1195 ( 79.0%, block 59/75, block 0.80s, elapsed 0.79 min, ETA 0.21 min)
+Processed rows 944:960/1195 ( 80.3%, block 60/75, block 0.80s, elapsed 0.80 min, ETA 0.20 min)
+Processed rows 960:976/1195 ( 81.7%, block 61/75, block 0.80s, elapsed 0.81 min, ETA 0.19 min)
+Processed rows 976:992/1195 ( 83.0%, block 62/75, block 0.80s, elapsed 0.83 min, ETA 0.17 min)
+Processed rows 992:1008/1195 ( 84.4%, block 63/75, block 0.80s, elapsed 0.84 min, ETA 0.16 min)
+Processed rows 1008:1024/1195 ( 85.7%, block 64/75, block 0.80s, elapsed 0.85 min, ETA 0.15 min)
+Processed rows 1024:1040/1195 ( 87.0%, block 65/75, block 0.80s, elapsed 0.87 min, ETA 0.13 min)
+Processed rows 1040:1056/1195 ( 88.4%, block 66/75, block 0.80s, elapsed 0.88 min, ETA 0.12 min)
+Processed rows 1056:1072/1195 ( 89.7%, block 67/75, block 0.80s, elapsed 0.89 min, ETA 0.11 min)
+Processed rows 1072:1088/1195 ( 91.0%, block 68/75, block 0.80s, elapsed 0.91 min, ETA 0.09 min)
+Processed rows 1088:1104/1195 ( 92.4%, block 69/75, block 0.80s, elapsed 0.92 min, ETA 0.08 min)
+Processed rows 1104:1120/1195 ( 93.7%, block 70/75, block 0.80s, elapsed 0.93 min, ETA 0.07 min)
+Processed rows 1120:1136/1195 ( 95.1%, block 71/75, block 0.80s, elapsed 0.94 min, ETA 0.05 min)
+Processed rows 1136:1152/1195 ( 96.4%, block 72/75, block 0.80s, elapsed 0.96 min, ETA 0.04 min)
+Processed rows 1152:1168/1195 ( 97.7%, block 73/75, block 0.80s, elapsed 0.97 min, ETA 0.03 min)
+Processed rows 1168:1184/1195 ( 99.1%, block 74/75, block 0.80s, elapsed 0.98 min, ETA 0.01 min)
+Processed rows 1184:1195/1195 (100.0%, block 75/75, block 0.54s, elapsed 0.99 min, ETA 0.00 min)
+AB maggies vectorized pass completed in 0.99 min
+Estimated effective streaming throughput: 514.1 MiB/s over support-slice read volume
+Filter-support fraction [p16, p50, p84] = [0.000000, 1.000000, 1.000000]
+Strict all-finite support pixels vs accepted relaxed-support pixels = 740,218 vs 741,896 (threshold=0.9000)
+Finite binned flux-error bins: 24070/24070 (STAT=24070, sample=24070)
+Finite binned magnitude-error bins: 24070/24070
+Median binned relative flux error : 5.9489e-04
+Binned magnitude error min/max   : 3.0054e-04 .. 1.0895e-03 mag
+Binned magnitude error [p16, p50, p84] = [6.0584e-04, 6.4589e-04, 7.1326e-04] mag
+Warning: No EBV error extension found; EBV uncertainty term will be omitted.
+R-band magnitude calculation completed!
+Filter used: bessell-R
+Magnitude range: 18.78 to 26.01
+Distance modulus: 31.09 mag
+Total R-band magnitude (uncorrected) : 10.103 mag (AB)
+Total R-band magnitude (corrected)   : 9.939 mag (AB)
+Total R-band luminosity              : 10.303 log10(L☉)
+Total stellar mass (R)               : 10.671 log10(M☉)
+Integrated stellar M/L_R             : 2.3305 M☉/L☉
+Median LOGMSTAR_ERR      : 2.6555e-04 dex
+LOGMSTAR_ERR [p16, p50, p84] = [2.4496e-04, 2.6555e-04, 3.1037e-04] dex
+LOGMSTAR_ERR min/max     : 1.2021e-04 .. 4.3580e-04 dex
+Error budget note (LOGMSTAR): includes photometric+extinction propagation; excludes M/L model, distance, and inclination/area systematic uncertainties.
+Saved further file to /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps_further.fits
+M/L_R layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps_further.fits
+Stellar-mass layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps_further.fits
+Galaxy NGC4548 inclination: 37.0° (cos θ = 0.799)
+Inclination correction ENABLED: applying b/a = 0.808 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
+Median LOGMASS_SURFACE_DENSITY_ERR: 2.6555e-04 dex
+LOGMASS_SURFACE_DENSITY_ERR [p16, p50, p84] = [2.4496e-04, 2.6555e-04, 3.1037e-04] dex
+LOGMASS_SURFACE_DENSITY_ERR min/max: 1.2021e-04 .. 4.3580e-04 dex
+Consistency check |LOGMSTAR_ERR - LOGMASS_SURFACE_DENSITY_ERR| median=0.0000e+00 dex, max=1.6263e-19 dex
+Stellar mass surface density layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps_further.fits
+r-band magnitude layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps_further.fits
+r-band uncorrected magnitude layer saved ➜ /arc/projects/mauve/products/v3tk_v7.6.8/NGC4548/NGC4548_spatial_binning_maps_further.fits
+✅  normal / NGC4548 finished in 10m25s

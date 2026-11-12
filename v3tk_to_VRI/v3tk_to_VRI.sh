@@ -28,6 +28,7 @@ command -v quota >/dev/null 2>&1 && quota -s 2>/dev/null || true
 echo ""
 
 target_dir="${TARGET_DIR:-/arc/projects/mauve/cubes/v3tk}"
+phangs_staging_root="${PHANGS_STAGING_ROOT:-/scratch}"
 pwd_dir="$(pwd)"
 phangs_native_vos_dir="vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES"
 phangs_native_files=(
@@ -84,7 +85,7 @@ normalize_galid() {
 }
 
 normalized_requested_galids=()
-for requested_galid in "${requested_galids[@]}"; do
+for requested_galid in ${requested_galids[@]+"${requested_galids[@]}"}; do
 	normalized_requested_galids+=("$(normalize_galid "$requested_galid")")
 done
 
@@ -199,12 +200,18 @@ source_for_galid() {
 	local phangs_file local_phangs local_source
 
 	if phangs_file="$(phangs_native_file_for_galid "$galid")"; then
-		local_phangs="$target_dir/$phangs_file"
-		if [[ -f "$local_phangs" ]]; then
-			printf '%s\n' "$local_phangs"
-		else
-			printf '%s\n' "$phangs_native_vos_dir/$phangs_file"
-		fi
+		for local_phangs in \
+			"$target_dir/${phangs_file%.fits}_fixed.fits.gz" \
+			"$target_dir/${phangs_file%.fits}_fixed.fits" \
+			"$target_dir/$phangs_file" \
+			"$target_dir/$phangs_file.gz"
+		do
+			if [[ -f "$local_phangs" ]]; then
+				printf '%s\n' "$local_phangs"
+				return 0
+			fi
+		done
+		printf '%s\n' "$phangs_native_vos_dir/$phangs_file"
 		return 0
 	fi
 
@@ -226,7 +233,7 @@ append_source_once() {
 	local stem_key already_seen seen_stem
 	stem_key="${source_name%.gz}"
 	already_seen=0
-	if (( ${#seen_input_stems[@]} > 0 )); then
+	if [[ -n "${seen_input_stems[0]:-}" ]]; then
 		for seen_stem in "${seen_input_stems[@]}"; do
 			if [[ "$seen_stem" == "$stem_key" ]]; then
 				already_seen=1
@@ -242,7 +249,7 @@ append_source_once() {
 }
 
 shopt -s nullglob
-if (( ${#normalized_requested_galids[@]} > 0 )); then
+if [[ -n "${normalized_requested_galids[0]+set}" ]]; then
 	for requested_galid in "${normalized_requested_galids[@]}"; do
 		source_path="$(source_for_galid "$requested_galid")"
 		append_source_once "$source_path" "$(basename "$source_path")"
@@ -250,7 +257,7 @@ if (( ${#normalized_requested_galids[@]} > 0 )); then
 else
 	raw_files=("$pwd_dir"/*_v3tk.fits "$pwd_dir"/*_v3tk.fits.gz)
 
-	for candidate in "${raw_files[@]}"; do
+	for candidate in ${raw_files[@]+"${raw_files[@]}"}; do
 		base_candidate="$(basename "$candidate")"
 		if is_phangs_native_galid "$(galid_from_cube_name "$base_candidate")"; then
 			continue
@@ -265,7 +272,7 @@ else
 		raw_files=()
 	fi
 
-	for candidate in "${raw_files[@]}"; do
+	for candidate in ${raw_files[@]+"${raw_files[@]}"}; do
 		base_candidate="$(basename "$candidate")"
 		if is_phangs_native_galid "$(galid_from_cube_name "$base_candidate")"; then
 			continue
@@ -274,12 +281,8 @@ else
 	done
 
 	for phangs_file in "${phangs_native_files[@]}"; do
-		local_phangs="$target_dir/$phangs_file"
-		if [[ -f "$local_phangs" ]]; then
-			append_source_once "$local_phangs" "$phangs_file"
-		else
-			append_source_once "$phangs_native_vos_dir/$phangs_file" "$phangs_file"
-		fi
+		source_path="$(source_for_galid "${phangs_file%%_PHANGS_DATACUBE_native.fits}")"
+		append_source_once "$source_path" "$phangs_file"
 	done
 fi
 
@@ -295,7 +298,7 @@ fi
 echo "Target directory: $target_dir"
 echo "Working directory: $(pwd)"
 
-if (( ${#files[@]} == 0 )); then
+if [[ -z "${files[0]:-}" ]]; then
 	echo "No input cubes found from local v3tk patterns or PHANGS native public sources"
 	exit 0
 fi
@@ -312,12 +315,24 @@ fi
 
 activate_conda
 
+phangs_stage_dir=""
+cleanup_phangs_stage() {
+	if [[ -n "$phangs_stage_dir" ]]; then
+		rm -rf -- "$phangs_stage_dir"
+		phangs_stage_dir=""
+	fi
+}
+trap cleanup_phangs_stage EXIT
+
 total_start_epoch="$(date +%s)"
 
 for src_input in "${files[@]}"; do
 	per_start_epoch="$(date +%s)"
 	base_input="$(basename "$src_input")"
 	output_base="${base_input%.gz}"
+	if [[ "$output_base" == *_PHANGS_DATACUBE_native_fixed.fits ]]; then
+		output_base="${output_base%_fixed.fits}.fits"
+	fi
 	output_path="$(pwd)/${output_base%.fits}_VRI.fits"
 	run_input="$src_input"
 
@@ -329,11 +344,12 @@ for src_input in "${files[@]}"; do
 
 	# 1) use local filesystem inputs in place; Astropy reads both .fits and .fits.gz directly.
 	if [[ "$src_input" == vos:* ]]; then
-		run_input="$(pwd)/$base_input"
 		if ! command -v vcp >/dev/null 2>&1; then
 			echo "ERROR: vcp is required to stage public VOSpace input: $src_input" >&2
 			exit 1
 		fi
+		phangs_stage_dir="$(mktemp -d "${phangs_staging_root%/}/v3tk_to_VRI.XXXXXXXX")"
+		run_input="$phangs_stage_dir/$base_input"
 		vcp "$src_input" "$run_input"
 	fi
 
@@ -365,6 +381,7 @@ for src_input in "${files[@]}"; do
 		command -v quota >/dev/null 2>&1 && quota -s 2>/dev/null || true
 		exit $py_status
 	fi
+	cleanup_phangs_stage
 
 	per_end_epoch="$(date +%s)"
 	per_runtime="$((per_end_epoch - per_start_epoch))"

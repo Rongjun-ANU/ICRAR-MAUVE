@@ -34,11 +34,12 @@
 # Changes (2026-10-08):
 #   - Print a final list of failed galaxies with run, exit code, and log path.
 #   - Collect per-task statuses separately for parallel and xargs workers.
+# Changes (2026-11-12):
+#   - Stop staging PHANGS science cubes. The proxy uses the continuum cube
+#     from the selected nGIST run.
 #
 # The script checks per-galaxy v3tk products under:
 #   ${ROOT_PRODUCT_BASE}/v3tk_v7.6.8/${GAL}
-# and v3tk datacubes under:
-#   ${CUBE_ROOT}
 # Prior post-processing outputs are expected in the current working directory.
 
 set -euo pipefail
@@ -50,10 +51,6 @@ export LANG=C
 # 1.  Configurable variables
 # ──────────────────────────────────────────────────────────────
 ROOT_LOCAL="$PWD"
-CUBE_ROOT="/arc/projects/mauve/cubes/v3tk"
-PHANGS_CUBE_ROOT="${PHANGS_CUBE_ROOT:-}"
-PHANGS_NATIVE_VOS_DIR="vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES"
-PHANGS_STAGING_ROOT="${PHANGS_STAGING_ROOT:-/scratch}"
 SCRIPT="proxy_EWHa.py"
 LOG_PREFIX="proxy_ewha"
 
@@ -183,17 +180,6 @@ for RUN_LABEL in "${RUN_LABELS[@]}"; do
   done
 done
 
-is_phangs_native_galid() {
-  case "$1" in
-    NGC4254|NGC4321|NGC4535) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-phangs_native_filename() {
-  printf '%s_PHANGS_DATACUBE_native.fits\n' "$1"
-}
-
 # ──────────────────────────────────────────────────────────────
 # 2.  Process function for each galaxy
 # ──────────────────────────────────────────────────────────────
@@ -204,9 +190,7 @@ process_task() {
   local LOGDIR="$RUN_ROOT/$PRODUCT_SUBDIR/${LOG_PREFIX}_logs"
   mkdir -p "$LOGDIR"
   local LOGFILE="$LOGDIR/${GAL}.log"
-  local PHANGS_ARGS=()
-  local STAGED_PHANGS_CUBE=""
-  local status=0
+  local status
 
   local REDSHIFT_FILE="${ROOT_LOCAL}/new_redshifts"
 
@@ -219,56 +203,20 @@ process_task() {
     "$PYTHON_BIN" --version
     echo "Product root        : $RUN_ROOT"
     echo "Product subdir      : $PRODUCT_SUBDIR"
-    echo "Cube root           : $CUBE_ROOT"
-    echo "PHANGS cube root    : ${PHANGS_CUBE_ROOT:-<none>}"
-    echo "PHANGS VOS dir      : $PHANGS_NATIVE_VOS_DIR"
-    echo "PHANGS stage root   : $PHANGS_STAGING_ROOT"
     echo "Local fallback root : $ROOT_LOCAL"
     echo "Input resolution    : delegated to $SCRIPT"
     echo "Redshift file       : $REDSHIFT_FILE"
     echo
   } >"$LOGFILE" 2>&1
 
-  if is_phangs_native_galid "$GAL"; then
-    PHANGS_FILE="$(phangs_native_filename "$GAL")"
-    if [[ -n "$PHANGS_CUBE_ROOT" && -f "$PHANGS_CUBE_ROOT/$PHANGS_FILE" ]]; then
-      PHANGS_ARGS+=(--phangs-cube-root "$PHANGS_CUBE_ROOT")
-    elif [[ -f "$CUBE_ROOT/$PHANGS_FILE" ]]; then
-      PHANGS_ARGS+=(--phangs-cube-root "$CUBE_ROOT")
-    else
-      if ! command -v vcp >/dev/null 2>&1; then
-        echo "ERROR: no local PHANGS cube found for $GAL and vcp is not available." >>"$LOGFILE"
-        status=1
-      else
-        STAGE_DIR="${PHANGS_STAGING_ROOT%/}"
-        STAGED_PHANGS_CUBE="$STAGE_DIR/$PHANGS_FILE"
-        mkdir -p "$STAGE_DIR"
-        echo "Staging PHANGS cube: $PHANGS_NATIVE_VOS_DIR/$PHANGS_FILE -> $STAGED_PHANGS_CUBE" >>"$LOGFILE"
-        vcp "$PHANGS_NATIVE_VOS_DIR/$PHANGS_FILE" "$STAGED_PHANGS_CUBE" >>"$LOGFILE" 2>&1
-        status=$?
-        if [[ $status -eq 0 ]]; then
-          PHANGS_ARGS+=(--phangs-cube-root "$STAGE_DIR")
-        fi
-      fi
-    fi
-  fi
-
-  if [[ $status -eq 0 ]]; then
-    "$PYTHON_BIN" "$SCRIPT" \
-      -g "$GAL" \
-      --root "$RUN_ROOT" \
-      --product-subdir "$PRODUCT_SUBDIR" \
-      --fallback-root "$ROOT_LOCAL" \
-      --cube-root "$CUBE_ROOT" \
-      "${PHANGS_ARGS[@]}" \
-      --redshift-file "$REDSHIFT_FILE" \
-      >>"$LOGFILE" 2>&1
-    status=$?
-  fi
-
-  if [[ -n "$STAGED_PHANGS_CUBE" ]]; then
-    rm -f "$STAGED_PHANGS_CUBE"
-  fi
+  "$PYTHON_BIN" "$SCRIPT" \
+    -g "$GAL" \
+    --root "$RUN_ROOT" \
+    --product-subdir "$PRODUCT_SUBDIR" \
+    --fallback-root "$ROOT_LOCAL" \
+    --redshift-file "$REDSHIFT_FILE" \
+    >>"$LOGFILE" 2>&1
+  status=$?
   set -e
   end=$(date +%s)
   dur=$((end - start))
@@ -285,9 +233,7 @@ process_task() {
 }
 
 export -f process_task
-export -f is_phangs_native_galid
-export -f phangs_native_filename
-export ROOT_LOCAL CUBE_ROOT PHANGS_CUBE_ROOT PHANGS_NATIVE_VOS_DIR PHANGS_STAGING_ROOT PYTHON_BIN SCRIPT LOG_PREFIX
+export ROOT_LOCAL PYTHON_BIN SCRIPT LOG_PREFIX
 
 # ──────────────────────────────────────────────────────────────
 # 3.  Parallel execution

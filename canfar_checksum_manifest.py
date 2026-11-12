@@ -2,13 +2,16 @@
 """Hash actual CANFAR product files and write a small SHA-256 manifest."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import datetime
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import shlex
 import sys
+import time
 import uuid
 
 RUNS = {"normal": "v3tk_v7.6.8", "7000": "v3tk_v7.6.8_7000"}
@@ -99,6 +102,139 @@ def lookup(args):
     return 0
 
 
+def hash_download_request(args):
+    request = Path(args.request)
+    root = request.parent.parent.resolve()
+    paths = json.loads(request.read_text(encoding="utf-8"))
+
+    def hash_product(relative):
+        try:
+            path = (root / relative).resolve()
+            path.relative_to(root)
+            return hash_file(path)
+        except Exception as error:
+            return {"status": "error", "error": str(error)}
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        entries = dict(zip(paths, pool.map(hash_product, paths)))
+    response = request.with_suffix(".response.json")
+    temporary = response.with_suffix(".tmp")
+    temporary.write_text(json.dumps(entries), encoding="utf-8")
+    os.replace(temporary, response)
+    return 0
+
+
+def fetch_download_checksums(directory, remote_root, paths):
+    import requests
+    from cadcutils.exceptions import NotFoundException
+    from vos import Client
+
+    cert = str(Path.home() / ".ssl" / "cadcproxy.pem")
+    api = os.environ.get("CANFAR_API", "https://ws-uv.canfar.net/skaha/v1").rstrip("/")
+    if not api.startswith("https://"):
+        raise ValueError("CANFAR_API must use HTTPS")
+    image = os.environ.get("CANFAR_CHECKSUM_IMAGE", "images.canfar.net/skaha/astroml:latest")
+    timeout = int(os.environ.get("CHECKSUM_WAIT_SECONDS", "7200"))
+    if timeout <= 0:
+        raise ValueError("CHECKSUM_WAIT_SECONDS must be positive")
+    request_id = uuid.uuid4().hex
+    name = ".download_checksum_" + request_id
+    request = directory / (name + ".json")
+    response = request.with_suffix(".response.json")
+    request.write_text(json.dumps(paths), encoding="utf-8")
+    remote_base = remote_root + "/" + paths[0].split("/")[0] + "/"
+    worker_node = remote_base + name + ".py"
+    request_node = remote_base + request.name
+    response_node = remote_base + response.name
+    worker_path = "/arc/" + worker_node.removeprefix("arc:")
+    request_path = "/arc/" + request_node.removeprefix("arc:")
+
+    client = Client()
+    with requests.Session() as session:
+        session.cert = cert
+        job_url = None
+        try:
+            client.copy(str(Path(__file__).resolve()), worker_node)
+            client.copy(str(request), request_node)
+            started = session.post(api + "/session", data={
+                "name": "dl-checksum-" + request_id[:12],
+                "image": image, "type": "headless", "cores": 4, "ram": 2,
+                "cmd": "/usr/bin/env",
+                "args": shlex.join(["python3", worker_path, "hash-download-request", request_path]),
+            }, timeout=(15, 60))
+            started.raise_for_status()
+            job_id = started.text.strip()
+            if not re.fullmatch(r"[A-Za-z0-9_-]+", job_id):
+                raise ValueError("Unexpected CANFAR checksum job ID")
+            job_url = api + "/session/" + job_id
+            print("Started CANFAR checksum job " + job_id, file=sys.stderr)
+            deadline = time.monotonic() + timeout
+            finished_at = None
+            while time.monotonic() < deadline:
+                try:
+                    client.copy(response_node, str(response))
+                except NotFoundException:
+                    pass
+                else:
+                    return json.loads(response.read_text(encoding="utf-8"))
+                reply = session.get(job_url, timeout=(10, 30))
+                reply.raise_for_status()
+                state = str(reply.json().get("status", "Unknown")).lower()
+                if state in {"failed", "terminated", "error"}:
+                    raise RuntimeError("CANFAR checksum job ended with status " + state)
+                if state in {"completed", "succeeded"}:
+                    finished_at = finished_at or time.monotonic()
+                    if time.monotonic() - finished_at >= 30:
+                        raise RuntimeError("CANFAR checksum job finished without a response")
+                time.sleep(5)
+            raise TimeoutError("CANFAR checksum job timed out after {} seconds".format(timeout))
+        finally:
+            if job_url:
+                try:
+                    deleted = session.delete(job_url, timeout=(10, 30))
+                    if deleted.status_code != 404:
+                        deleted.raise_for_status()
+                except requests.RequestException as error:
+                    print("WARNING: could not delete CANFAR checksum job " + job_id + ": " + str(error),
+                          file=sys.stderr)
+            for node in (worker_node, request_node, response_node):
+                try:
+                    client.delete(node)
+                except NotFoundException:
+                    pass
+                except Exception:
+                    print("WARNING: could not remove " + node, file=sys.stderr)
+
+
+def download_queue(args):
+    directory = Path(args.directory)
+    prefix = os.fsencode(args.remote_root + "/")
+    pending = {}
+    for record in sorted(directory.glob("pending.*")):
+        remote, local, end = record.read_bytes().split(b"\0")
+        if end or not remote.startswith(prefix):
+            raise ValueError("Invalid pending download record")
+        relative = os.fsdecode(remote[len(prefix):])
+        if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", relative) or \
+                any(part in {".", ".."} for part in relative.split("/")):
+            raise ValueError("Invalid CANFAR product path " + relative)
+        pending[relative] = (remote, local)
+    if not pending:
+        return 0
+    checksums = fetch_download_checksums(directory, args.remote_root, list(pending))
+    failed = False
+    for relative, (remote, local) in pending.items():
+        entry = checksums.get(relative, {})
+        digest = entry.get("sha256")
+        if entry.get("status") == "ok" and isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+            sys.stdout.buffer.write(b"\0".join((remote, local, digest.encode("ascii"), b"")))
+        else:
+            print("ERROR: CANFAR SHA-256 unavailable for " + relative + ": " +
+                  entry.get("error", entry.get("status", "missing response entry")), file=sys.stderr)
+            failed = True
+    return int(failed)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -113,9 +249,18 @@ def main():
     reader.add_argument("--run", choices=RUNS, required=True)
     reader.add_argument("--galaxy", required=True)
     reader.add_argument("--filename", required=True)
+    processor = sub.add_parser("hash-download-request")
+    processor.add_argument("request")
+    downloader = sub.add_parser("download-queue")
+    downloader.add_argument("directory")
+    downloader.add_argument("remote_root")
     args = parser.parse_args()
     try:
-        return generate(args) if args.command == "generate" else lookup(args)
+        actions = {"generate": generate, "lookup": lookup,
+                   "hash-download-request": hash_download_request, "download-queue": download_queue}
+        return actions[args.command](args)
+    except KeyboardInterrupt:
+        return 130
     except Exception as error:
         print("ERROR:", error, file=sys.stderr)
         return 1

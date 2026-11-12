@@ -11,7 +11,7 @@ The MAUVE directory tree is assumed to look like::
 
     /arc/projects/mauve/cubes/v3tk/
       ├─ {galaxy}_DATACUBE_FINAL_WCS_Pall_mad_red_v3tk.fits
-      └─ {galaxy}_PHANGS_DATACUBE_native.fits  # NGC4254/NGC4321/NGC4535
+      └─ {galaxy}_PHANGS_DATACUBE_native_fixed.fits.gz  # NGC4254/NGC4321/NGC4535
 
     <working directory>/v3tk_v7.6.8/{galaxy}/
       ├─ {galaxy}_spatial_binning_maps.fits
@@ -19,6 +19,12 @@ The MAUVE directory tree is assumed to look like::
       └─ {galaxy}_sfh_weights.fits
 
 Pass a different root path with ``--root`` if your tree lives elsewhere.
+
+Changes (2026-11-12)
+-----------------------
+* Prefer the fixed PHANGS-native cube in the v3tk cube directory. If it is
+  missing, retain the original native cube lookup, including scratch staged
+  by Mass.sh.
 
 Changes (2025-09-14)
 -----------------------
@@ -504,7 +510,8 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help=(
             "Optional directory containing PHANGS-native datacubes for "
-            "NGC4254/NGC4321/NGC4535. Checked before --cube-root for those galaxies."
+            "NGC4254/NGC4321/NGC4535. Used as a fallback when the fixed cube "
+            "is missing from --cube-root."
         ),
     )
     p.add_argument(
@@ -593,6 +600,11 @@ if ncpus > 0:
 # 1.  File paths derived from CLI args
 # ------------------------------------------------------------------
 cube_names = datacube_filenames_for_galaxy(galaxy)
+preferred_phangs_cube = (
+    cube_rootdir / f"{galaxy}_PHANGS_DATACUBE_native_fixed.fits.gz"
+    if galaxy in PHANGS_NATIVE_GALAXIES
+    else None
+)
 cube_roots = (
     _unique_paths(phangs_cube_rootdir, cube_rootdir)
     if galaxy in PHANGS_NATIVE_GALAXIES
@@ -613,6 +625,7 @@ weight_suffixes = [
 
 cube_path = resolve_existing_path(
     "datacube FITS",
+    preferred_phangs_cube,
     *[
         candidate
         for cube_root in cube_roots

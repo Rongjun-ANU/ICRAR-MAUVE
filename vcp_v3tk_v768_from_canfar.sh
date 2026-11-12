@@ -10,6 +10,9 @@
 #   ./vcp_v3tk_v768_from_canfar.sh 7000 NGC4321      # one galaxy, 7000 run
 #   ./vcp_v3tk_v768_from_canfar.sh NGC4321           # one galaxy, both runs
 # With no arguments, all listed galaxies from both runs are downloaded.
+# TRANSFER_JOBS sets the shared file-worker limit (default 40; 0 uses all slots).
+# Files are verified against VOSpace MD5 or a fresh SHA-256 computed on CANFAR.
+# The fallback prefers vcp's Python. CHECKSUM_PYTHON overrides interpreter selection.
 
 LOCAL_BASE="/Users/Igniz/Desktop/ICRAR/further"
 REMOTE_PRODUCT_ROOT="arc:projects/mauve/products"
@@ -25,8 +28,7 @@ ALL_GALAXIES=(
     "NGC4689" "NGC4694" "NGC4698"
 )
 
-RUNS=()
-GALAXIES=()
+typeset -aU RUNS GALAXIES
 add_run() {
     case "$1" in
         7000|v3tk_v768_7000|v3tk_v7.6.8_7000)
@@ -44,6 +46,10 @@ add_run() {
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --run)
+            if [ "$#" -lt 2 ]; then
+                echo "ERROR: --run requires a run name" >&2
+                exit 1
+            fi
             shift
             add_run "$1"
             ;;
@@ -68,108 +74,162 @@ if [ "${#GALAXIES[@]}" -eq 0 ]; then
     GALAXIES=("${ALL_GALAXIES[@]}")
 fi
 
-# Set the maximum number of concurrent workers
-BATCH_SIZE=40
+TRANSFER_JOBS=${TRANSFER_JOBS:-40}
+if [[ "$TRANSFER_JOBS" != <-> ]]; then
+    echo "ERROR: TRANSFER_JOBS must be a non-negative integer" >&2
+    exit 1
+fi
 
-# Export variables so the xargs subprocess can see them
-export LOCAL_BASE REMOTE_PRODUCT_ROOT
+queue_downloads() {
+    local run galaxy product log_dir
+    for run in "${RUNS[@]}"; do
+        for galaxy in "${GALAXIES[@]}"; do
+            for product in CONFIG LOGFILE \
+                "${galaxy}_mask.fits" "${galaxy}_sfh_maps.fits" \
+                "${galaxy}_sfh_weights.fits" "${galaxy}_kin_maps.fits" \
+                "${galaxy}_gas_bin_maps_further.fits" \
+                "${galaxy}_proxy_EW_maps_further.fits" \
+                "${galaxy}_spatial_binning_maps_further.fits"; do
+                printf '%s\0' "$REMOTE_PRODUCT_ROOT/$run/$galaxy/$product" "$LOCAL_BASE/$run/$galaxy/$product" "-"
+            done
+            for log_dir in mass_logs sfr_logs proxy_ewha_logs; do
+                printf '%s\0' "$REMOTE_PRODUCT_ROOT/$run/$log_dir/$galaxy.log" "$LOCAL_BASE/$run/$log_dir/$galaxy.log" "-"
+            done
+        done
+    done
+}
 
-# Use xargs to maintain a true "rolling queue" of parallel workers
-for RUN in "${RUNS[@]}"; do
-echo "Downloading ${RUN} from CANFAR..."
-REMOTE_GAL_BASE="${REMOTE_PRODUCT_ROOT}/${RUN}"
-export RUN REMOTE_GAL_BASE
+run_queue() {
+    xargs -0 -n 3 -P "$TRANSFER_JOBS" bash -c '
+    if [ "$#" -ne 3 ]; then
+        echo "ERROR: incomplete download queue entry" >&2
+        exit 1
+    fi
+    remote_file=$1
+    local_file=$2
+    source_hash=$3
+    algorithm=SHA-256
 
-printf "%s\n" "${GALAXIES[@]}" | xargs -P "$BATCH_SIZE" -I {} bash -c '
-    GALID="$1"
-    SOURCE_GAL_DIR="${REMOTE_GAL_BASE}/${GALID}"
-    TARGET_RUN_DIR="${LOCAL_BASE}/${RUN}"
-    TARGET_GAL_DIR="${TARGET_RUN_DIR}/${GALID}"
+    local_hash() {
+        local value
+        if [ "$algorithm" = SHA-256 ]; then
+            if command -v sha256sum >/dev/null 2>&1; then
+                value=$(sha256sum < "$1") || return 1
+            else
+                value=$(shasum -a 256 < "$1") || return 1
+            fi
+            printf "%s\n" "${value%% *}"
+        elif command -v md5 >/dev/null 2>&1; then
+            md5 -q -- "$1"
+        else
+            value=$(md5sum < "$1") || return 1
+            printf "%s\n" "${value%% *}"
+        fi
+    }
 
-    if ! VLS_OUTPUT=$(vls "${SOURCE_GAL_DIR}" 2>&1); then
-        printf "%s\n" "${VLS_OUTPUT}" >&2
-        case "${VLS_OUTPUT}" in
-            *"Expired cert"*|*"expired cert"*)
-                echo "WARNING: CANFAR certificate expired; refresh it with: cadc-get-cert -u RongjunHuang" >&2
-                ;;
-        esac
-        echo "Skipping ${RUN}/${GALID}: source folder not found or inaccessible: ${SOURCE_GAL_DIR}"
+    if [ "$source_hash" = - ]; then
+        algorithm=MD5
+        source_hash=$(vtag "$remote_file" MD5 2>&1)
+        tag_status=$?
+        if [ "$tag_status" -eq 2 ]; then
+            echo "Skipping $remote_file: source file is missing"
+            exit 0
+        fi
+        if [ "$tag_status" -ne 0 ]; then
+            printf "ERROR: could not read CANFAR MD5 for %s: %s\n" "$remote_file" "$source_hash" >&2
+            exit 1
+        fi
+        source_hash=$(printf "%s" "$source_hash" | tr -d "\047\042[:space:]" | tr "A-F" "a-f")
+        if [[ ! "$source_hash" =~ ^[[:xdigit:]]{32}$ ]]; then
+            record=$(mktemp "$checksum_dir/pending.XXXXXXXX") || exit 1
+            printf "%s\0" "$remote_file" "$local_file" > "$record" || exit 1
+            exit 0
+        fi
+    elif [[ ! "$source_hash" =~ ^[0-9a-f]{64}$ ]]; then
+        echo "ERROR: invalid SHA-256 in the download queue for $remote_file" >&2
+        exit 1
+    fi
+    if [ -f "$local_file" ] && target_hash=$(local_hash "$local_file") && [ "$target_hash" = "$source_hash" ]; then
+        echo "Verified existing file, skipping: $local_file ($algorithm)"
         exit 0
     fi
 
-    remote_md5() {
-        local value
-        value=$(vtag "$1" MD5 2>/dev/null) || return 1
-        value=$(printf "%s" "${value}" | tr -d "\047\042[:space:]")
-        [[ "${value}" =~ ^[[:xdigit:]]{32}$ ]] || return 1
-        printf "%s\n" "${value}"
-    }
+    target_dir=${local_file%/*}
+    mkdir -p -- "$target_dir" || exit 1
+    stage_dir=$(mktemp -d "$target_dir/.vcp_download.XXXXXXXX") || exit 1
+    trap "rm -rf -- \"\$stage_dir\"" EXIT
+    trap "exit 1" HUP INT TERM
+    staged_file=$stage_dir/${local_file##*/}
+    if ! vcp -v "$remote_file" "$staged_file"; then
+        echo "ERROR: download failed for $remote_file" >&2
+        exit 1
+    fi
+    if ! target_hash=$(local_hash "$staged_file"); then
+        echo "ERROR: could not hash the staged download for $remote_file" >&2
+        exit 1
+    fi
+    if [ "$source_hash" != "$target_hash" ]; then
+        echo "ERROR: $algorithm checksum mismatch for $remote_file (CANFAR $source_hash, download $target_hash)" >&2
+        exit 1
+    fi
+    if [ -d "$local_file" ] || ! mv -f -- "$staged_file" "$local_file"; then
+        echo "ERROR: could not install verified file at $local_file" >&2
+        exit 1
+    fi
+    echo "Downloaded and verified: $local_file ($algorithm $target_hash)"
+' _
+}
 
-    local_md5() {
-        local value
-        if command -v md5 >/dev/null 2>&1; then
-            md5 -q -- "$1"
-        elif command -v md5sum >/dev/null 2>&1; then
-            value=$(md5sum -- "$1") || return 1
-            printf "%s\n" "${value%% *}"
-        else
-            return 1
+resolve_checksum_python() {
+    local vcp_path vcp_header vcp_python candidate
+    local -a candidates
+    if [ -n "${CHECKSUM_PYTHON:-}" ]; then
+        candidates=("$CHECKSUM_PYTHON")
+    else
+        if vcp_path=$(whence -p vcp) && IFS= read -r vcp_header < "$vcp_path"; then
+            vcp_python=${vcp_header#\#!}
+            if [[ "$vcp_header" == '#!/'* && "${vcp_python:t}" == python* && -x "$vcp_python" ]]; then
+                candidates+=("$vcp_python")
+            fi
         fi
-    }
-
-    files_identical() {
-        local remote_file="$1"
-        local local_file="$2"
-        local source_md5 target_md5
-
-        [ -f "${local_file}" ] || return 1
-        source_md5=$(remote_md5 "${remote_file}") || return 1
-        target_md5=$(local_md5 "${local_file}") || return 1
-        [ "${source_md5}" = "${target_md5}" ]
-    }
-
-    download_if_needed() {
-        local remote_file="$1"
-        local local_file="$2"
-
-        if files_identical "${remote_file}" "${local_file}"; then
-            echo "Skipping ${remote_file}: source and target are identical"
-        elif ! vcp -v "${remote_file}" "${local_file}"; then
-            echo "WARNING: failed to download ${remote_file}"
+        candidates+=(python3)
+    fi
+    for candidate in "${candidates[@]}"; do
+        if "$candidate" -c 'import requests, vos' >/dev/null 2>&1; then
+            printf '%s\n' "$candidate"
+            return 0
         fi
-    }
-
-    echo "Downloading ${RUN}/${GALID}..."
-
-    mkdir -p "${TARGET_GAL_DIR}"
-    mkdir -p "${TARGET_RUN_DIR}/mass_logs" "${TARGET_RUN_DIR}/sfr_logs" "${TARGET_RUN_DIR}/proxy_ewha_logs"
-
-    PRODUCTS=(
-        "CONFIG"
-        "LOGFILE"
-        "${GALID}_mask.fits"
-        "${GALID}_sfh_maps.fits"
-        "${GALID}_sfh_weights.fits"
-        "${GALID}_kin_maps.fits"
-        "${GALID}_gas_bin_maps_further.fits"
-        "${GALID}_proxy_EW_maps_further.fits"
-        "${GALID}_spatial_binning_maps_further.fits"
-    )
-
-    for PRODUCT in "${PRODUCTS[@]}"; do
-        download_if_needed \
-            "${SOURCE_GAL_DIR}/${PRODUCT}" \
-            "${TARGET_GAL_DIR}/${PRODUCT}"
     done
+    echo "ERROR: no checksum Python with requests and vos. Set CHECKSUM_PYTHON to the Python in your CADC environment." >&2
+    return 1
+}
 
-    for LOG_DIR in mass_logs sfr_logs proxy_ewha_logs; do
-        download_if_needed \
-            "${REMOTE_GAL_BASE}/${LOG_DIR}/${GALID}.log" \
-            "${TARGET_RUN_DIR}/${LOG_DIR}/${GALID}.log"
-    done
+set -o pipefail
+checksum_dir=$(mktemp -d "${TMPDIR:-/tmp}/vcp_canfar_checksums.XXXXXXXX") || exit 1
+export checksum_dir
+trap 'rm -rf -- "$checksum_dir"' EXIT
+trap 'exit 1' HUP INT TERM
+echo "Downloading from CANFAR with TRANSFER_JOBS=$TRANSFER_JOBS..."
+download_status=0
+queue_downloads | run_queue || download_status=1
 
-    echo "Finished ${RUN}/${GALID}"
-' _ {}
-done
+pending=("$checksum_dir"/pending.*(N))
+if (( ${#pending[@]} )); then
+    if checksum_python=$(resolve_checksum_python); then
+        echo "Requesting CANFAR SHA-256 for ${#pending[@]} files without VOSpace MD5..."
+        "$checksum_python" "${0:A:h}/canfar_checksum_manifest.py" download-queue \
+            "$checksum_dir" "$REMOTE_PRODUCT_ROOT" > "$checksum_dir/verified.queue" || download_status=1
+        if [ -s "$checksum_dir/verified.queue" ]; then
+            run_queue < "$checksum_dir/verified.queue" || download_status=1
+        fi
+    else
+        download_status=1
+    fi
+fi
 
-echo "Download from CANFAR finished!"
+if [ "$download_status" -ne 0 ]; then
+    echo "Download finished with errors." >&2
+    exit 1
+fi
+
+echo "Download finished. All available selected files verified."
