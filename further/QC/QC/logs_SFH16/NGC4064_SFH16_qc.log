@@ -1,0 +1,16 @@
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:222: RuntimeWarning: divide by zero encountered in divide
+  to_plot= gas_image['HA6562_FLUX'].data / gas_image['HB4861_FLUX'].data
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:226: RuntimeWarning: divide by zero encountered in divide
+  to_plot= gas_image['NII6583_FLUX'].data / gas_image['HA6562_FLUX'].data
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:230: RuntimeWarning: divide by zero encountered in divide
+  to_plot= gas_image['SII6716_FLUX'].data / gas_image['NII6583_FLUX'].data
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:230: RuntimeWarning: invalid value encountered in divide
+  to_plot= gas_image['SII6716_FLUX'].data / gas_image['NII6583_FLUX'].data
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:222: RuntimeWarning: invalid value encountered in divide
+  to_plot= gas_image['HA6562_FLUX'].data / gas_image['HB4861_FLUX'].data
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:226: RuntimeWarning: invalid value encountered in divide
+  to_plot= gas_image['NII6583_FLUX'].data / gas_image['HA6562_FLUX'].data
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:278: RuntimeWarning: divide by zero encountered in divide
+  to_plot= gas_image['SII6716_FLUX'].data / gas_image['SII6730_FLUX'].data
+/arc/home/RongjunHuang/ICRAR/further/QC_ngist_v3tk_v768_7000.py:278: RuntimeWarning: invalid value encountered in divide
+  to_plot= gas_image['SII6716_FLUX'].data / gas_image['SII6730_FLUX'].data

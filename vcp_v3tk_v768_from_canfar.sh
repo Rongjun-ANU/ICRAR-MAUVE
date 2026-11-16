@@ -5,17 +5,21 @@
 #
 # Usage:
 #   ./vcp_v3tk_v768_from_canfar.sh normal            # all galaxies, normal run
-#   ./vcp_v3tk_v768_from_canfar.sh 7000              # all galaxies, 7000 run
+#   ./vcp_v3tk_v768_from_canfar.sh 7000              # all galaxies, 7000 with SFH16 products
 #   ./vcp_v3tk_v768_from_canfar.sh normal NGC4321    # one galaxy, normal run
-#   ./vcp_v3tk_v768_from_canfar.sh 7000 NGC4321      # one galaxy, 7000 run
+#   ./vcp_v3tk_v768_from_canfar.sh 7000 NGC4321      # one galaxy, 7000 with SFH16 products
 #   ./vcp_v3tk_v768_from_canfar.sh NGC4321           # one galaxy, both runs
 # With no arguments, all listed galaxies from both runs are downloaded.
+# In 7000 mode, CONFIG, LOGFILE, SFH maps and weights, and the further spatial
+# binning map come from <GALAXY>_SFH16. Other products use the original 7000 paths.
+# The SFH16 mass log comes from CANFAR home under QC/logs_SFH16.
 # TRANSFER_JOBS sets the shared file-worker limit (default 40; 0 uses all slots).
 # Files are verified against VOSpace MD5 or a fresh SHA-256 computed on CANFAR.
 # The fallback prefers vcp's Python. CHECKSUM_PYTHON overrides interpreter selection.
 
 LOCAL_BASE="/Users/Igniz/Desktop/ICRAR/further"
 REMOTE_PRODUCT_ROOT="arc:projects/mauve/products"
+export REMOTE_SFH16_ROOT="arc:home/RongjunHuang/ICRAR/further"
 ALL_RUNS=("v3tk_v7.6.8" "v3tk_v7.6.8_7000")
 
 ALL_GALAXIES=(
@@ -81,15 +85,32 @@ if [[ "$TRANSFER_JOBS" != <-> ]]; then
 fi
 
 queue_downloads() {
-    local run galaxy product log_dir
+    local run galaxy product log_dir run_id mass_log
+    local -a regular_products
     for run in "${RUNS[@]}"; do
         for galaxy in "${GALAXIES[@]}"; do
-            for product in CONFIG LOGFILE \
-                "${galaxy}_mask.fits" "${galaxy}_sfh_maps.fits" \
-                "${galaxy}_sfh_weights.fits" "${galaxy}_kin_maps.fits" \
-                "${galaxy}_gas_bin_maps_further.fits" \
-                "${galaxy}_proxy_EW_maps_further.fits" \
-                "${galaxy}_spatial_binning_maps_further.fits"; do
+            if [[ "$run" == v3tk_v7.6.8_7000 ]]; then
+                galaxy="${galaxy%_SFH16}"
+                run_id="${galaxy}_SFH16"
+                for product in CONFIG LOGFILE \
+                    "${run_id}_sfh_maps.fits" "${run_id}_sfh_weights.fits" \
+                    "${run_id}_spatial_binning_maps_further.fits"; do
+                    printf '%s\0' "$REMOTE_PRODUCT_ROOT/$run/$run_id/$product" "$LOCAL_BASE/$run/$run_id/$product" "-"
+                done
+                mass_log="QC/logs_SFH16/${run_id}_mass.log"
+                printf '%s\0' "$REMOTE_SFH16_ROOT/$mass_log" "$LOCAL_BASE/$mass_log" "-"
+            fi
+            regular_products=(
+                "${galaxy}_mask.fits" "${galaxy}_kin_maps.fits"
+                "${galaxy}_gas_bin_maps_further.fits" "${galaxy}_proxy_EW_maps_further.fits"
+            )
+            if [[ "$run" != v3tk_v7.6.8_7000 ]]; then
+                regular_products+=(
+                    CONFIG LOGFILE "${galaxy}_sfh_maps.fits" "${galaxy}_sfh_weights.fits"
+                    "${galaxy}_spatial_binning_maps_further.fits"
+                )
+            fi
+            for product in "${regular_products[@]}"; do
                 printf '%s\0' "$REMOTE_PRODUCT_ROOT/$run/$galaxy/$product" "$LOCAL_BASE/$run/$galaxy/$product" "-"
             done
             for log_dir in mass_logs sfr_logs proxy_ewha_logs; do
@@ -141,7 +162,12 @@ run_queue() {
         fi
         source_hash=$(printf "%s" "$source_hash" | tr -d "\047\042[:space:]" | tr "A-F" "a-f")
         if [[ ! "$source_hash" =~ ^[[:xdigit:]]{32}$ ]]; then
-            record=$(mktemp "$checksum_dir/pending.XXXXXXXX") || exit 1
+            pending_dir=$checksum_dir
+            if [[ "$remote_file" == "$REMOTE_SFH16_ROOT/"* ]]; then
+                pending_dir=$checksum_dir/sfh16_logs
+                mkdir -p -- "$pending_dir" || exit 1
+            fi
+            record=$(mktemp "$pending_dir/pending.XXXXXXXX") || exit 1
             printf "%s\0" "$remote_file" "$local_file" > "$record" || exit 1
             exit 0
         fi
@@ -213,19 +239,26 @@ echo "Downloading from CANFAR with TRANSFER_JOBS=$TRANSFER_JOBS..."
 download_status=0
 queue_downloads | run_queue || download_status=1
 
-pending=("$checksum_dir"/pending.*(N))
-if (( ${#pending[@]} )); then
-    if checksum_python=$(resolve_checksum_python); then
-        echo "Requesting CANFAR SHA-256 for ${#pending[@]} files without VOSpace MD5..."
-        "$checksum_python" "${0:A:h}/canfar_checksum_manifest.py" download-queue \
-            "$checksum_dir" "$REMOTE_PRODUCT_ROOT" > "$checksum_dir/verified.queue" || download_status=1
-        if [ -s "$checksum_dir/verified.queue" ]; then
-            run_queue < "$checksum_dir/verified.queue" || download_status=1
-        fi
-    else
+# The checksum helper accepts one remote root at a time.
+checksum_python=
+for pending_dir in "$checksum_dir" "$checksum_dir/sfh16_logs"; do
+    pending=("$pending_dir"/pending.*(N))
+    (( ${#pending[@]} )) || continue
+    if [ -z "$checksum_python" ] && ! checksum_python=$(resolve_checksum_python); then
         download_status=1
+        break
     fi
-fi
+    pending_root=$REMOTE_PRODUCT_ROOT
+    if [[ "$pending_dir" == "$checksum_dir/sfh16_logs" ]]; then
+        pending_root=$REMOTE_SFH16_ROOT
+    fi
+    echo "Requesting CANFAR SHA-256 for ${#pending[@]} files without VOSpace MD5..."
+    "$checksum_python" "${0:A:h}/canfar_checksum_manifest.py" download-queue \
+        "$pending_dir" "$pending_root" > "$pending_dir/verified.queue" || download_status=1
+    if [ -s "$pending_dir/verified.queue" ]; then
+        run_queue < "$pending_dir/verified.queue" || download_status=1
+    fi
+done
 
 if [ "$download_status" -ne 0 ]; then
     echo "Download finished with errors." >&2

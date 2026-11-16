@@ -1,0 +1,190 @@
+SFH16 source: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16
+Original 7000 binning: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321/NGC4321_spatial_binning_maps.fits
+SFH maps: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16/NGC4321_SFH16_sfh_maps.fits
+SFH weights: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16/NGC4321_SFH16_sfh_weights.fits
+Staging PHANGS cube: vos:phangs/RELEASES/PHANGS-MUSE/DR1.0/DATACUBES/NGC4321_PHANGS_DATACUBE_native.fits -> /scratch/qc_SFH16_phangs.j6qoX6/NGC4321_PHANGS_DATACUBE_native.fits
+WARNING: Current version vos 3.6.3. A newer version, 3.7.0, is available on PyPI
+
+=== Using the following files ===
+Product root : /tmp/qc_SFH16.MkFjfu
+Product subdir: .
+Cube root    : /arc/projects/mauve/cubes/v3tk
+PHANGS cube root: /scratch/qc_SFH16_phangs.j6qoX6
+Fallback root: /tmp/qc_SFH16.MkFjfu
+Input keyword: SFH16
+Cube         : /scratch/qc_SFH16_phangs.j6qoX6/NGC4321_PHANGS_DATACUBE_native.fits
+Binning map  : /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps.fits
+SFH map      : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16/NGC4321_SFH16_sfh_maps.fits
+Weights      : /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16/NGC4321_SFH16_sfh_weights.fits
+Photometry   : /arc/home/RongjunHuang/ICRAR/further/BaSTI+Chabrier.dat
+Output       : /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps_further.fits 
+
+Thread control: using library default thread settings
+Vectorized processing row-block size: 16
+Loading: /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps.fits
+Filename: /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU       4   ()      
+  1  BINID         1 ImageHDU        26   (1231, 999)   float64   
+  2  FLUX          1 ImageHDU        26   (1231, 999)   float64   
+  3  SNR           1 ImageHDU        26   (1231, 999)   float64   
+  4  SNRBIN        1 ImageHDU        26   (1231, 999)   float64   
+  5  XBIN          1 ImageHDU        26   (1231, 999)   float64   
+  6  YBIN          1 ImageHDU        26   (1231, 999)   float64   
+None
+Loading: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16/NGC4321_SFH16_sfh_weights.fits
+Filename: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16/NGC4321_SFH16_sfh_weights.fits
+No.    Name      Ver    Type      Cards   Dimensions   Format
+  0  PRIMARY       1 PrimaryHDU      27   ()      
+  1  WEIGHTS       1 BinTableHDU     31   43768R x 1C   [477D]   
+  2  GRID          1 BinTableHDU     35   477R x 3C   [D, D, D]   
+None
+Loaded 636 out of 636 rows of data from BaSTI+Chabrier.dat
+Converted R-light fraction sums [min,max] = 0.9999999999999996 1.0000000000000004
+Raw SFH weight-sum [min, p16, p50, p84, max] = [1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00, 1.0000e+00]
+Normalized SFH weight-sum check [min, max] = [1.000000, 1.000000]
+Composite ML_R candidates [median] (light_r, light_norm_to_r, light_v_to_r, mass_harmonic) = [1.2293, 1.3356, 1.3631, 0.4089]
+Wrong light_r assumption: delta = log10(light_r / corrected_light_norm_to_r)
+  delta dex [min,p16,p50,p84,max] = [-0.11982916 -0.05067774 -0.03124231 -0.016086    0.00422172]
+  M/L error percent [min,p16,p50,p84,max] = [-24.11239705 -11.01388242  -6.94114766  -3.63618282   0.97682806]
+nGIST prepared-template normalization provenance:
+  config_path: /arc/projects/mauve/products/v3tk_v7.6.8_7000/NGC4321_SFH16/CONFIG
+  config_sha256: 446c7b1b00acb2e72b6262e19de62e15b709784aa4a77eaa86abf6dc0e00b5bd
+  lmin: 4800.0
+  lmax: 7000.0
+  redshift: 0.00524
+  galaxy_velscale: 41.0
+  template_velscale: 20.5
+  velscale_source: CONFIG.PREPARE_SPECTRA.VELSCALE
+  data_lsf_path: /arc/home/RongjunHuang/ICRAR/further/lsf_MUSE-WFM-MILES
+  template_lsf_path: /arc/home/RongjunHuang/ICRAR/further/lsf_MILES
+  data_lsf_sha256: 878a2b04299788669a8e97d4912967fbce6966920e533bf2a0ac5b581668e72e
+  template_lsf_sha256: a3719e07017dcacee34a650fb748925d0239b8ed5b7cc9403f342070bdc9003d
+  ngist_revision: 038e9fa4839758e9dae53baeaf93a82bd75d8026
+  ppxf_version: 9.4.2
+  numpy_version: 2.2.6
+  scipy_version: 1.15.2
+  astropy_version: 7.1.0
+  mass_script_sha256: 658c1e0b55dc0b5f4d491d9089987484bd33a2072055add15f9408d4aa081873
+  prepared_range: [4650.2000000003, 7149.500000000552]
+  template_count: 477
+  template_manifest_sha256: 2c28591c7d7f8436670b6d290212c297cc232808ac48fd5a34ebd2ed3dfec675
+  template_library_dir: /arc/home/RongjunHuang/ICRAR/further/EMILES_baseFe_safe
+Selected SFH-weight interpretation for ML_R: light_norm_to_r
+BINID range check for ML_R mapping: max BINID=43767, n_weight_rows=43768
+Loading: /scratch/qc_SFH16_phangs.j6qoX6/NGC4321_PHANGS_DATACUBE_native.fits
+Using STAT variance extension for photometric error propagation.
+Cube dimensions (nz, ny, nx): 3761, 999, 1231
+Approx. DATA footprint: 17.23 GiB
+Approx. STAT footprint: 17.23 GiB
+Building exact speclite linear operator for AB maggies...
+  Linear-operator chunk 1/8 (wave bins 0:512, elapsed 0.0s)
+  Linear-operator chunk 2/8 (wave bins 512:1024, elapsed 0.0s)
+  Linear-operator chunk 3/8 (wave bins 1024:1536, elapsed 0.1s)
+  Linear-operator chunk 4/8 (wave bins 1536:2048, elapsed 0.1s)
+  Linear-operator chunk 5/8 (wave bins 2048:2560, elapsed 0.1s)
+  Linear-operator chunk 6/8 (wave bins 2560:3072, elapsed 0.1s)
+  Linear-operator chunk 7/8 (wave bins 3072:3584, elapsed 0.1s)
+  Linear-operator chunk 8/8 (wave bins 3584:3761, elapsed 0.1s)
+Using contiguous filter-support slice: [641:3441] (2800 bins).
+Photometric propagation method: exact discrete first-order Jacobian through speclite AB-maggies operator (support bins=2800/3761).
+STAT assumption: independent spectral-bin variances (no covariance provided by cube).
+Computing AB maggies with vectorized blocks... (estimated support-slice stream volume: 25.65 GiB, DATA+STAT)
+Processed rows 0:16/999 (  1.6%, block 1/63, block 1.53s, elapsed 0.03 min, ETA 1.58 min)
+Processed rows 16:32/999 (  3.2%, block 2/63, block 1.56s, elapsed 0.05 min, ETA 1.57 min)
+Processed rows 32:48/999 (  4.8%, block 3/63, block 1.59s, elapsed 0.08 min, ETA 1.56 min)
+Processed rows 48:64/999 (  6.4%, block 4/63, block 1.58s, elapsed 0.10 min, ETA 1.54 min)
+Processed rows 64:80/999 (  8.0%, block 5/63, block 1.58s, elapsed 0.13 min, ETA 1.52 min)
+Processed rows 80:96/999 (  9.6%, block 6/63, block 1.63s, elapsed 0.16 min, ETA 1.50 min)
+Processed rows 96:112/999 ( 11.2%, block 7/63, block 1.69s, elapsed 0.19 min, ETA 1.49 min)
+Processed rows 112:128/999 ( 12.8%, block 8/63, block 1.69s, elapsed 0.21 min, ETA 1.47 min)
+Processed rows 128:144/999 ( 14.4%, block 9/63, block 1.69s, elapsed 0.24 min, ETA 1.45 min)
+Processed rows 144:160/999 ( 16.0%, block 10/63, block 1.69s, elapsed 0.27 min, ETA 1.43 min)
+Processed rows 160:176/999 ( 17.6%, block 11/63, block 1.70s, elapsed 0.30 min, ETA 1.41 min)
+Processed rows 176:192/999 ( 19.2%, block 12/63, block 1.69s, elapsed 0.33 min, ETA 1.39 min)
+Processed rows 192:208/999 ( 20.8%, block 13/63, block 1.69s, elapsed 0.36 min, ETA 1.37 min)
+Processed rows 208:224/999 ( 22.4%, block 14/63, block 1.70s, elapsed 0.38 min, ETA 1.34 min)
+Processed rows 224:240/999 ( 24.0%, block 15/63, block 1.69s, elapsed 0.41 min, ETA 1.32 min)
+Processed rows 240:256/999 ( 25.6%, block 16/63, block 1.64s, elapsed 0.44 min, ETA 1.29 min)
+Processed rows 256:272/999 ( 27.2%, block 17/63, block 1.00s, elapsed 0.46 min, ETA 1.23 min)
+Processed rows 272:288/999 ( 28.8%, block 18/63, block 1.00s, elapsed 0.47 min, ETA 1.18 min)
+Processed rows 288:304/999 ( 30.4%, block 19/63, block 0.91s, elapsed 0.49 min, ETA 1.13 min)
+Processed rows 304:320/999 ( 32.0%, block 20/63, block 0.90s, elapsed 0.50 min, ETA 1.08 min)
+Processed rows 320:336/999 ( 33.6%, block 21/63, block 0.90s, elapsed 0.52 min, ETA 1.03 min)
+Processed rows 336:352/999 ( 35.2%, block 22/63, block 0.89s, elapsed 0.53 min, ETA 0.99 min)
+Processed rows 352:368/999 ( 36.8%, block 23/63, block 0.90s, elapsed 0.55 min, ETA 0.95 min)
+Processed rows 368:384/999 ( 38.4%, block 24/63, block 0.90s, elapsed 0.56 min, ETA 0.91 min)
+Processed rows 384:400/999 ( 40.0%, block 25/63, block 0.95s, elapsed 0.58 min, ETA 0.88 min)
+Processed rows 400:416/999 ( 41.6%, block 26/63, block 0.89s, elapsed 0.59 min, ETA 0.85 min)
+Processed rows 416:432/999 ( 43.2%, block 27/63, block 0.91s, elapsed 0.61 min, ETA 0.81 min)
+Processed rows 432:448/999 ( 44.8%, block 28/63, block 0.90s, elapsed 0.62 min, ETA 0.78 min)
+Processed rows 448:464/999 ( 46.4%, block 29/63, block 0.90s, elapsed 0.64 min, ETA 0.75 min)
+Processed rows 464:480/999 ( 48.0%, block 30/63, block 0.89s, elapsed 0.65 min, ETA 0.72 min)
+Processed rows 480:496/999 ( 49.6%, block 31/63, block 0.90s, elapsed 0.67 min, ETA 0.69 min)
+Processed rows 496:512/999 ( 51.3%, block 32/63, block 0.90s, elapsed 0.68 min, ETA 0.66 min)
+Processed rows 512:528/999 ( 52.9%, block 33/63, block 0.89s, elapsed 0.70 min, ETA 0.64 min)
+Processed rows 528:544/999 ( 54.5%, block 34/63, block 0.89s, elapsed 0.71 min, ETA 0.61 min)
+Processed rows 544:560/999 ( 56.1%, block 35/63, block 0.89s, elapsed 0.73 min, ETA 0.58 min)
+Processed rows 560:576/999 ( 57.7%, block 36/63, block 0.89s, elapsed 0.74 min, ETA 0.56 min)
+Processed rows 576:592/999 ( 59.3%, block 37/63, block 0.89s, elapsed 0.76 min, ETA 0.53 min)
+Processed rows 592:608/999 ( 60.9%, block 38/63, block 0.90s, elapsed 0.77 min, ETA 0.51 min)
+Processed rows 608:624/999 ( 62.5%, block 39/63, block 0.89s, elapsed 0.79 min, ETA 0.49 min)
+Processed rows 624:640/999 ( 64.1%, block 40/63, block 0.91s, elapsed 0.80 min, ETA 0.46 min)
+Processed rows 640:656/999 ( 65.7%, block 41/63, block 0.91s, elapsed 0.82 min, ETA 0.44 min)
+Processed rows 656:672/999 ( 67.3%, block 42/63, block 0.90s, elapsed 0.83 min, ETA 0.42 min)
+Processed rows 672:688/999 ( 68.9%, block 43/63, block 0.89s, elapsed 0.85 min, ETA 0.39 min)
+Processed rows 688:704/999 ( 70.5%, block 44/63, block 0.89s, elapsed 0.86 min, ETA 0.37 min)
+Processed rows 704:720/999 ( 72.1%, block 45/63, block 0.91s, elapsed 0.88 min, ETA 0.35 min)
+Processed rows 720:736/999 ( 73.7%, block 46/63, block 0.91s, elapsed 0.89 min, ETA 0.33 min)
+Processed rows 736:752/999 ( 75.3%, block 47/63, block 0.90s, elapsed 0.91 min, ETA 0.31 min)
+Processed rows 752:768/999 ( 76.9%, block 48/63, block 0.89s, elapsed 0.92 min, ETA 0.29 min)
+Processed rows 768:784/999 ( 78.5%, block 49/63, block 0.89s, elapsed 0.94 min, ETA 0.27 min)
+Processed rows 784:800/999 ( 80.1%, block 50/63, block 0.95s, elapsed 0.96 min, ETA 0.25 min)
+Processed rows 800:816/999 ( 81.7%, block 51/63, block 0.89s, elapsed 0.97 min, ETA 0.23 min)
+Processed rows 816:832/999 ( 83.3%, block 52/63, block 0.89s, elapsed 0.99 min, ETA 0.21 min)
+Processed rows 832:848/999 ( 84.9%, block 53/63, block 0.92s, elapsed 1.00 min, ETA 0.19 min)
+Processed rows 848:864/999 ( 86.5%, block 54/63, block 0.89s, elapsed 1.02 min, ETA 0.17 min)
+Processed rows 864:880/999 ( 88.1%, block 55/63, block 0.90s, elapsed 1.03 min, ETA 0.15 min)
+Processed rows 880:896/999 ( 89.7%, block 56/63, block 0.89s, elapsed 1.05 min, ETA 0.13 min)
+Processed rows 896:912/999 ( 91.3%, block 57/63, block 0.89s, elapsed 1.06 min, ETA 0.11 min)
+Processed rows 912:928/999 ( 92.9%, block 58/63, block 0.89s, elapsed 1.08 min, ETA 0.09 min)
+Processed rows 928:944/999 ( 94.5%, block 59/63, block 0.89s, elapsed 1.09 min, ETA 0.07 min)
+Processed rows 944:960/999 ( 96.1%, block 60/63, block 0.89s, elapsed 1.11 min, ETA 0.06 min)
+Processed rows 960:976/999 ( 97.7%, block 61/63, block 0.89s, elapsed 1.12 min, ETA 0.04 min)
+Processed rows 976:992/999 ( 99.3%, block 62/63, block 0.89s, elapsed 1.13 min, ETA 0.02 min)
+Processed rows 992:999/999 (100.0%, block 63/63, block 0.38s, elapsed 1.14 min, ETA 0.00 min)
+AB maggies vectorized pass completed in 1.14 min
+Estimated effective streaming throughput: 383.7 MiB/s over support-slice read volume
+Filter-support fraction [p16, p50, p84] = [0.000000, 0.914165, 0.914239]
+Strict all-finite support pixels vs accepted relaxed-support pixels = 0 vs 973,981 (threshold=0.9000)
+Finite binned flux-error bins: 43768/43768 (STAT=43768, sample=43768)
+Finite binned magnitude-error bins: 43768/43768
+Median binned relative flux error : 5.8279e-04
+Binned magnitude error min/max   : 2.9471e-04 .. 9.2752e-04 mag
+Binned magnitude error [p16, p50, p84] = [5.8601e-04, 6.3275e-04, 6.7593e-04] mag
+Warning: No EBV error extension found; EBV uncertainty term will be omitted.
+R-band magnitude calculation completed!
+Filter used: bessell-R
+Magnitude range: 18.07 to 25.96
+Distance modulus: 31.09 mag
+Total R-band magnitude (uncorrected) : 9.516 mag (AB)
+Total R-band magnitude (corrected)   : 9.156 mag (AB)
+Total R-band luminosity              : 10.617 log10(L☉)
+Total stellar mass (R)               : 10.749 log10(M☉)
+Integrated stellar M/L_R             : 1.3573 M☉/L☉
+Median LOGMSTAR_ERR      : 2.5540e-04 dex
+LOGMSTAR_ERR [p16, p50, p84] = [2.3937e-04, 2.5540e-04, 2.7121e-04] dex
+LOGMSTAR_ERR min/max     : 1.1788e-04 .. 3.7101e-04 dex
+Error budget note (LOGMSTAR): includes photometric+extinction propagation; excludes M/L model, distance, and inclination/area systematic uncertainties.
+Saved further file to /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps_further.fits
+M/L_R layer saved ➜ /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps_further.fits
+Stellar-mass layer saved ➜ /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps_further.fits
+Galaxy NGC4321 inclination: 32.0° (cos θ = 0.848)
+Inclination correction ENABLED: applying b/a = 0.855 (adopting intrinsic thickness q₀ = 0.2 for disc galaxy)
+Median LOGMASS_SURFACE_DENSITY_ERR: 2.5540e-04 dex
+LOGMASS_SURFACE_DENSITY_ERR [p16, p50, p84] = [2.3937e-04, 2.5540e-04, 2.7121e-04] dex
+LOGMASS_SURFACE_DENSITY_ERR min/max: 1.1788e-04 .. 3.7101e-04 dex
+Consistency check |LOGMSTAR_ERR - LOGMASS_SURFACE_DENSITY_ERR| median=0.0000e+00 dex, max=1.6263e-19 dex
+Stellar mass surface density layer saved ➜ /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps_further.fits
+r-band magnitude layer saved ➜ /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps_further.fits
+r-band uncorrected magnitude layer saved ➜ /tmp/qc_SFH16.MkFjfu/NGC4321/NGC4321_SFH16_spatial_binning_maps_further.fits
