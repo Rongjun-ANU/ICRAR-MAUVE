@@ -6,7 +6,7 @@ set -euo pipefail
 # Full 40-galaxy / 39-cube SFH MDEG16 sample with reused 7000 inputs.
 # 2026-10-30: upload only new SFH maps/weights and their CONFIG/LOGFILE.
 # Reuse original 7000 mask, binning, KIN and gas maps without duplicating them.
-# Completed automatic jobs remove their temporary CANFAR checksum files.
+# 2026-11-18: require fresh automatic hashes and clean up temporary checksum requests.
 # Keep this standalone sample aligned with config_setup/27_galaxies.sh.
 # Both the upload selector and embedded CANFAR worker use this one list.
 SFH16_GALIDS=(
@@ -39,7 +39,6 @@ Examples (run on Setonix):
 Options:
   -n, --dry-run      List source products and destination; no CADC contact.
   --auto-checksum    Use fresh CANFAR checksum jobs (default).
-  --manual-checksum Use a manually generated CANFAR manifest.
   --force-overwrite --no-checksum
                     Required together; preserve backups, upload UNVERIFIED.
   -h, --help         Show this help.
@@ -64,21 +63,19 @@ Checksum helper modes (this script is self-contained):
       Run INSIDE CANFAR; --root may override /arc/projects/mauve/products.
   --canfar-request PATH is used internally by automatic checksum jobs.
 The checksum worker accepts all 39 supported <GALID>_SFH16 run IDs.
-Manual mode can limit selection: --canfar-manifest 7000 NGC4189_SFH16
+For a diagnostic snapshot: --canfar-manifest 7000 NGC4189_SFH16
 
 The original uploader's CADC environment, certificate recovery, file retries,
-backup/quarantine and pending-receipt safeguards are retained. Set SOURCE_7000
+backup and quarantine safeguards are retained. Set SOURCE_7000
 only to relocate the SFH16 source parent. Destination is fixed.
 CADC_USER defaults to RongjunHuang; BASE_OVERLAY, OVERLAY_DIR, VCP_CMD,
 VMV_CMD, CADC_PYTHON_CMD, CHECKSUM_PYTHON, TRANSFER_JOBS and FILE_RETRIES
 are supported as in the standard uploader. Keep product writers idle.
-Automatic verification compares actual CANFAR byte counts and SHA-256 hashes;
-no FITS files are downloaded. Manual mode requires a fresh manifest after upload.
-Automatic worker/request/response files are removed after response download and
-job deletion. Failed requests may remain; shared manifests/receipts are preserved.
+Automatic verification compares fresh Setonix and CANFAR byte counts and SHA-256
+hashes before transfer and verifies uploaded files with a second request.
+Temporary checksum files are cleaned up on success, failure and interruption.
 Forced mode skips CANFAR verification and preserves .overwrite_backup_* objects.
-Exit codes: 0=verified (or force-transferred UNVERIFIED), 1=error,
-            2=awaiting fresh manual manifest or invalid options.
+Exit codes: 0=verified (or force-transferred UNVERIFIED), 1=error, 2=invalid options.
 USAGE
 }
 
@@ -160,7 +157,8 @@ def generate(args):
     if getattr(args, "request_id", None):
         manifest["request_id"] = args.request_id
     output = Path(args.output) if args.output else run_dir / ".checksum_manifest.json"
-    temporary = output.with_name(output.name + ".tmp_" + manifest["manifest_id"])
+    temporary = output.with_name(output.name + (".tmp" if getattr(args, "request_id", None)
+                                                else ".tmp_" + manifest["manifest_id"]))
     temporary.write_text(json.dumps(manifest, sort_keys=True, indent=2) + "\n", encoding="utf-8")
     os.replace(str(temporary), str(output))
     print("Saved CANFAR checksum manifest:", output, flush=True)
@@ -333,7 +331,9 @@ finish_reporting() {
         summary=$(printf '\nFINAL ERROR SUMMARY\n  run=%s | galaxy=%s | file=(not identified) | stage=%s\n    Run exited with status %s; see the diagnostic above.\n' \
             "${RUNS[*]:-${REQUESTED_RUNS[*]:-not resolved}}" "${REQUESTED_GALAXIES[*]:-all selected}" "${CURRENT_STAGE:-startup}" "$result")
     fi
-    if [ -n "${worker_dir:-}" ] && declare -F cleanup >/dev/null; then cleanup; fi
+    if [ -n "${worker_dir:-}" ] && declare -F cleanup >/dev/null; then
+        if ! cleanup && [ "$result" -eq 0 ]; then result=1; fi
+    fi
     [ -z "$summary" ] || printf '%s\n' "$summary" >&2
     exit "$result"
 }
@@ -350,9 +350,6 @@ BASE_OVERLAY=${BASE_OVERLAY:-/software/projects/pawsey1308/containers/cadc_overl
 DEFAULT_OVERLAY_DIR="${MYSCRATCH:-/scratch/pawsey1308/$USER}/cadc_upload_overlays"
 OVERLAY_DIR=${OVERLAY_DIR:-$DEFAULT_OVERLAY_DIR}
 CHECKSUM_PYTHON=${CHECKSUM_PYTHON:-python3}
-CHECKSUM_MANIFEST_NAME=${CHECKSUM_MANIFEST_NAME:-.checksum_manifest.json}
-CHECKSUM_RECEIPT_DIR=${CHECKSUM_RECEIPT_DIR:-$OVERLAY_DIR/checksum_receipts}
-AUTO_CHECKSUM=${AUTO_CHECKSUM:-1}
 NO_CHECKSUM=0
 FORCE_OVERWRITE=0
 CHECKSUM_MODE_OPTION=0
@@ -790,12 +787,11 @@ while [ "$#" -gt 0 ]; do
             DRY_RUN=1
             ;;
         --auto-checksum)
-            AUTO_CHECKSUM=1
             CHECKSUM_MODE_OPTION=1
             ;;
         --manual-checksum)
-            AUTO_CHECKSUM=0
-            CHECKSUM_MODE_OPTION=1
+            echo "ERROR: --manual-checksum was retired. Use fresh automatic checksums." >&2
+            exit 2
             ;;
         --force-overwrite)
             FORCE_OVERWRITE=1
@@ -846,18 +842,17 @@ if [ "$FORCE_OVERWRITE" -ne "$NO_CHECKSUM" ]; then
 fi
 if [ "$NO_CHECKSUM" -eq 1 ]; then
     if [ "$CHECKSUM_MODE_OPTION" -eq 1 ]; then
-        echo "ERROR: cannot combine --no-checksum with --auto-checksum or --manual-checksum." >&2
+        echo "ERROR: cannot combine --no-checksum with --auto-checksum." >&2
         exit 2
     fi
-    AUTO_CHECKSUM=0
 fi
 
 if ! is_positive_integer "$CHECKSUM_WAIT_SECONDS" || ! is_positive_integer "$CHECKSUM_POLL_SECONDS"; then
     echo "ERROR: checksum wait/poll intervals must be positive integers." >&2
     exit 2
 fi
-if [[ "$AUTO_CHECKSUM" != 0 && "$AUTO_CHECKSUM" != 1 ]]; then
-    echo "ERROR: AUTO_CHECKSUM must be 0 or 1." >&2
+if [ "$NO_CHECKSUM" -eq 0 ] && [ "$CHECKSUM_MODE_OPTION" -eq 0 ] && [[ "${AUTO_CHECKSUM:-1}" != 1 ]]; then
+    echo "ERROR: use --auto-checksum to override the legacy AUTO_CHECKSUM setting." >&2
     exit 2
 fi
 
@@ -1011,20 +1006,24 @@ ISSUE_DIR="$worker_dir/issues"
 worker_overlays=()
 
 cleanup() {
-    local overlay
-    local job_file job_id
-    for job_file in "$worker_dir"/checksum_job_*.id; do
-        [ -f "$job_file" ] || continue
-        read -r job_id < "$job_file" || continue
-        if [ -n "${CADC_PYTHON_CMD:-}" ] && [ -x "$CADC_PYTHON_CMD" ]; then
-            checksum_job_api "$BASE_OVERLAY" delete "$job_id" || echo "WARNING: could not remove checksum job $job_id." >&2
+    local overlay record stage status=0
+    for record in "$worker_dir"/checksum_request_*.dest; do
+        [ -f "$record" ] || continue
+        # Child processes and their slot locks may have been interrupted.
+        TRANSFER_JOBS= finish_checksum_request "$BASE_OVERLAY" "$record" || status=1
+    done
+    for record in "$worker_dir"/upload_stage.*; do
+        [ -f "$record" ] || continue
+        if IFS= read -r stage < "$record"; then
+            rm -rf -- "$stage" || status=1
         fi
     done
     for overlay in "${worker_overlays[@]:-}"; do
         [[ "$overlay" == *:ro ]] && continue
-        rm -f "$overlay"
+        rm -f "$overlay" || status=1
     done
-    rm -rf "$worker_dir"
+    rm -rf "$worker_dir" || status=1
+    return "$status"
 }
 
 stop_workers() {
@@ -1045,7 +1044,7 @@ stop_process_tree() {
         kill -CONT "$child" 2>/dev/null || true
     done < <(pgrep -P "$parent" 2>/dev/null || true)
 }
-trap stop_workers INT TERM
+trap stop_workers HUP INT TERM
 
 CURRENT_STAGE=authentication
 wait_for_overlay "$BASE_OVERLAY"
@@ -1116,12 +1115,11 @@ backup_forced_destination() {
 }
 
 upload_one_file() {
-    local run=$1 galaxy=$2 path=$3 dest_base=$4 overlay=$5 stage_galaxy_dir=$6
+    local run=$1 galaxy=$2 path=$3 dest_base=$4 overlay=$5 stage_galaxy_dir=$6 manifest_path=$7
     overlay=${CADC_SLOT_OVERLAY:-$overlay}
     local filename staged_path remote_path source_bytes source_hash current_hash entry
-    local remote_bytes remote_hash manifest_id receipt_key receipt pending_manifest pending_hash
+    local remote_bytes remote_hash
     local vmv_cmd quarantine_path attempt delay
-    local manifest_path="${stage_galaxy_dir%/*}/checksum_manifest.json"
     filename=$(destination_filename "$galaxy" "$path")
     staged_path="${stage_galaxy_dir}/${filename}"
     remote_path="${dest_base}/${galaxy}/${filename}"
@@ -1139,27 +1137,12 @@ upload_one_file() {
     if [ "${NO_CHECKSUM:-0}" -eq 1 ]; then
         remote_bytes=MISSING
         remote_hash=UNVERIFIED
-        manifest_id="forced_${RUN_ID}_${RANDOM}_${RANDOM}"
     else
         entry=$(checksum_manifest lookup --manifest "$manifest_path" --run "$run" --galaxy "$galaxy" --filename "$filename") || { record_issue ERROR "$run" "$galaxy" "$filename" initial-manifest-lookup "Manifest entry missing, invalid or unreadable; see lookup diagnostic."; return 1; }
-        read -r remote_bytes remote_hash manifest_id <<<"$entry"
-    fi
-    receipt_key=$(printf '%s' "$remote_path" | sha256sum) || { record_issue ERROR "$run" "$galaxy" "$filename" receipt-key "Could not compute receipt key."; return 1; }
-    receipt="${CHECKSUM_RECEIPT_DIR}/${receipt_key%% *}.receipt"
-    if [ "${NO_CHECKSUM:-0}" -eq 0 ] && [ -f "$receipt" ]; then
-        read -r pending_manifest pending_hash < "$receipt" || { record_issue ERROR "$run" "$galaxy" "$filename" receipt-read "Could not read pending receipt."; return 1; }
-        if [[ "$pending_manifest" == forced_* ]] && [ "${AUTO_CHECKSUM:-0}" -eq 0 ]; then
-            echo "[$run $galaxy] AWAITING VERIFICATION: $filename was force-uploaded without a snapshot; rerun in default automatic checksum mode to obtain a fresh response."
-            return 2
-        fi
-        if [ "$pending_manifest" = "$manifest_id" ]; then
-            echo "[$run $galaxy] AWAITING VERIFICATION: $filename was already attempted against this manifest. Regenerate the CANFAR manifest before proceeding."
-            return 2
-        fi
+        read -r remote_bytes remote_hash _ <<<"$entry"
     fi
     if [ "$remote_bytes" = "$source_bytes" ] && [ "$remote_hash" = "$source_hash" ]; then
         echo "[$run $galaxy] VERIFIED BY CANFAR MANIFEST: $filename ($source_bytes bytes; SHA256 $source_hash)"
-        rm -f "$receipt" || { record_issue ERROR "$run" "$galaxy" "$filename" receipt-cleanup "Could not clear receipt for matching file."; return 1; }
         return 0
     fi
 
@@ -1170,7 +1153,6 @@ upload_one_file() {
         record_issue ERROR "$run" "$galaxy" "$filename" pre-upload-hash "Source changed while checking; remote changes refused."
         return 1
     fi
-    mkdir -p "$CHECKSUM_RECEIPT_DIR" || { record_issue ERROR "$run" "$galaxy" "$filename" receipt-directory "Could not create receipt directory."; return 1; }
     rm -f "$stage_galaxy_dir"/*
     if ! ln "$path" "$staged_path" 2>/dev/null; then
         cp -p "$path" "$staged_path" || { record_issue ERROR "$run" "$galaxy" "$filename" file-staging "Could not link or copy source into staging."; return 1; }
@@ -1192,10 +1174,6 @@ upload_one_file() {
             return 1
         fi
     fi
-    # This snapshot becomes stale as soon as any upload is attempted. Keep a
-    # persistent receipt so rerunning it cannot quarantine our new replacement.
-    printf '%s %s\n' "$manifest_id" "$source_hash" >"${receipt}.tmp_${RUN_ID}" || { record_issue ERROR "$run" "$galaxy" "$filename" receipt-write "Could not write pending receipt."; return 1; }
-    mv "${receipt}.tmp_${RUN_ID}" "$receipt" || { record_issue ERROR "$run" "$galaxy" "$filename" receipt-write "Could not install pending receipt."; return 1; }
     for ((attempt = 1; attempt <= FILE_RETRIES; attempt++)); do
         if [ "${NO_CHECKSUM:-0}" -eq 1 ]; then
             # Recheck before every attempt: a failed transfer may leave a
@@ -1218,11 +1196,8 @@ upload_one_file() {
             if [ "${NO_CHECKSUM:-0}" -eq 1 ]; then
                 echo "[$run $galaxy] UPLOADED; UNVERIFIED: $filename (CANFAR checksum verification skipped)."
                 return 0
-            elif [ "${AUTO_CHECKSUM:-0}" -eq 1 ]; then
-                echo "[$run $galaxy] UPLOADED; queued for automatic CANFAR verification after this galaxy's uploads."
-            else
-                echo "[$run $galaxy] UPLOADED; AWAITING VERIFICATION: regenerate the manifest inside CANFAR, then rerun this command. No FITS read-back was performed."
             fi
+            echo "[$run $galaxy] UPLOADED; queued for fresh CANFAR verification."
             return 2
         fi
         if [ "$attempt" -lt "$FILE_RETRIES" ]; then
@@ -1236,7 +1211,7 @@ upload_one_file() {
         echo "ERROR [$run $galaxy]: forced upload failed; inspect destination and preserved backups before retrying." >&2
         record_issue ERROR "$run" "$galaxy" "$filename" upload "Forced upload failed after $FILE_RETRIES attempt(s); destination unverified; inspect preserved backups."
     else
-        echo "ERROR [$run $galaxy]: upload failed; regenerate the CANFAR manifest before another run." >&2
+        echo "ERROR [$run $galaxy]: upload failed; rerun to obtain fresh CANFAR checksums." >&2
         record_issue ERROR "$run" "$galaxy" "$filename" upload "Upload failed after $FILE_RETRIES attempt(s); obtain fresh checksums before retrying."
     fi
     return 1
@@ -1293,7 +1268,7 @@ if not base.startswith("arc:") or not re.fullmatch(r"[0-9a-f]{32}", request_id):
 client = vos.Client()
 failed = False
 # Exact UUID-owned paths only; never sweep shared manifests or other jobs.
-for kind, suffix in (("worker", ".sh"), ("request", ".json"), ("response", ".json")):
+for kind, suffix in (("worker", ".sh"), ("request", ".json"), ("response", ".json"), ("response", ".json.tmp")):
     path = base.rstrip("/") + "/.checksum_" + kind + "_" + request_id + suffix
     try:
         client.delete(path)
@@ -1307,11 +1282,32 @@ sys.exit(1 if failed else 0)
 CADC_CHECKSUM_CLEANUP
 }
 
+finish_checksum_request() {
+    local overlay=$1 record=$2 dest_base request_id job_id
+    local job_file="${record%.dest}.id"
+    IFS= read -r dest_base < "$record" || return 1
+    request_id=${record##*/checksum_request_}
+    request_id=${request_id%.dest}
+    if [ -s "$job_file" ]; then
+        IFS= read -r job_id < "$job_file" || return 1
+        if ! with_cadc_slot slot_job_api "$overlay" delete "$job_id"; then
+            echo "WARNING: could not stop CANFAR checksum job $job_id (request $request_id)." >&2
+            return 1
+        fi
+        rm -f "$job_file" || return 1
+    fi
+    if ! with_cadc_slot cleanup_checksum_files "$overlay" "$dest_base" "$request_id"; then
+        echo "WARNING: temporary CANFAR files may remain for request $request_id in $dest_base." >&2
+        return 1
+    fi
+    rm -f "$record"
+}
+
 request_fresh_manifest() {
     local run=$1 galaxy=$2 dest_base=$3 overlay=$4 manifest_path=$5
     shift 5
     local request_path="${manifest_path}.request" request_id started=$SECONDS path
-    local remote_worker remote_request job_id job_file job_status=Unknown finished_at=0
+    local remote_worker remote_request job_id record job_status=Unknown finished_at=0
     local previous_status= events last_events=-30
     local arguments=()
     for path in "$@"; do arguments+=(--filename "$(destination_filename "$galaxy" "$path")"); done
@@ -1324,6 +1320,12 @@ request_fresh_manifest() {
         echo "ERROR: automatic checksum jobs currently require arc: destinations." >&2
         return 1
     fi
+    # Register ownership before the first network write so exit cleanup can
+    # remove partial uploads and retry transient cleanup failures.
+    record="$worker_dir/checksum_request_${request_id}.dest"
+    request_error_stage=request-record
+    request_error_detail="Could not save cleanup record for checksum request $request_id."
+    printf '%s\n' "$dest_base" > "$record" || return 1
     remote_worker="$dest_base/.checksum_worker_${request_id}.sh"
     remote_request="$dest_base/.checksum_request_${request_id}.json"
     echo "[$run $galaxy] Requesting fresh checksums INSIDE CANFAR ($request_id)."
@@ -1331,15 +1333,22 @@ request_fresh_manifest() {
     request_error_detail="Could not upload checksum worker or request to CANFAR."
     if ! with_cadc_slot slot_vcp "$overlay" "$UPLOADER_PATH" "$remote_worker" || ! with_cadc_slot slot_vcp "$overlay" "$request_path" "$remote_request"; then
         echo "ERROR [$run $galaxy]: checksum request upload failed." >&2
+        finish_checksum_request "$overlay" "$record" || true
         return 1
     fi
     request_error_stage=job-submission
     request_error_detail="CANFAR checksum job submission failed; see API diagnostic."
-    job_id=$(with_cadc_slot slot_job_api "$overlay" submit "$CANFAR_CHECKSUM_IMAGE" "/arc/${remote_worker#arc:}" "/arc/${remote_request#arc:}" "checksum-${request_id:0:12}") || return 1
-    job_file="$worker_dir/checksum_job_${request_id}.id"
+    if ! job_id=$(with_cadc_slot slot_job_api "$overlay" submit "$CANFAR_CHECKSUM_IMAGE" "/arc/${remote_worker#arc:}" "/arc/${remote_request#arc:}" "checksum-${request_id:0:12}"); then
+        finish_checksum_request "$overlay" "$record" || true
+        return 1
+    fi
     request_error_stage=job-record
     request_error_detail="Could not save cleanup record for checksum job $job_id."
-    printf '%s\n' "$job_id" > "$job_file" || return 1
+    if ! printf '%s\n' "$job_id" > "${record%.dest}.id"; then
+        with_cadc_slot slot_job_api "$overlay" delete "$job_id" || true
+        finish_checksum_request "$overlay" "$record" || true
+        return 1
+    fi
     echo "[$run $galaxy] Started CANFAR checksum job $job_id."
     request_error_stage=response-timeout
     request_error_detail="Checksum job $job_id produced no valid response within the polling timeout."
@@ -1348,16 +1357,7 @@ request_fresh_manifest() {
         if with_cadc_slot slot_vcp "$overlay" "$dest_base/.checksum_response_${request_id}.json" "$manifest_path" >"${manifest_path}.poll_log" 2>&1; then
             if checksum_manifest response-matches --manifest "$manifest_path" --request-id "$request_id"; then
                 echo "[$run $galaxy] Received fresh CANFAR-computed checksum response."
-                if with_cadc_slot slot_job_api "$overlay" delete "$job_id"; then
-                    rm -f "$job_file"
-                    # The response is now local and the remote job is stopped.
-                    # Keep receipts and manual/shared manifests for safe retries.
-                    if ! with_cadc_slot cleanup_checksum_files "$overlay" "$dest_base" "$request_id"; then
-                        echo "WARNING [$run $galaxy]: temporary checksum files may remain for request $request_id." >&2
-                    fi
-                else
-                    echo "WARNING: job $job_id will be cleaned up again at exit." >&2
-                fi
+                finish_checksum_request "$overlay" "$record" || true
                 return 0
             fi
         fi
@@ -1412,19 +1412,19 @@ request_fresh_manifest() {
     with_cadc_slot slot_job_api "$overlay" events "$job_id" >&2 || true
     echo "[$run $galaxy] CANFAR job $job_id logs:" >&2
     with_cadc_slot slot_job_api "$overlay" logs "$job_id" >&2 || true
-    with_cadc_slot slot_job_api "$overlay" delete "$job_id" && rm -f "$job_file"
+    finish_checksum_request "$overlay" "$record" || true
     echo "ERROR [$run $galaxy]: checksum job produced no verified response before timeout/failure. No verification claimed." >&2
     return 1
 }
 
 verify_uploaded_file() {
-    local run=$1 galaxy=$2 path=$3 dest_base=$4 manifest_path=$5
-    local filename entry remote_bytes remote_hash manifest_id source_bytes source_hash receipt_key
+    local run=$1 galaxy=$2 path=$3 manifest_path=$4
+    local filename entry remote_bytes remote_hash source_bytes source_hash
     filename=$(destination_filename "$galaxy" "$path")
     verification_error_stage=manifest-lookup
     verification_error_detail="Fresh verification manifest entry is missing, invalid or unreadable."
     entry=$(checksum_manifest lookup --manifest "$manifest_path" --run "$run" --galaxy "$galaxy" --filename "$filename") || return 1
-    read -r remote_bytes remote_hash manifest_id <<<"$entry"
+    read -r remote_bytes remote_hash _ <<<"$entry"
     verification_error_stage=source-stat
     verification_error_detail="Could not read source byte count during final verification."
     source_bytes=$(stat -c %s "$path") || return 1
@@ -1438,10 +1438,6 @@ verify_uploaded_file() {
         verification_error_detail="Fresh CANFAR byte count or SHA256 still differs from Setonix; no further repair attempted."
         return 1
     fi
-    verification_error_stage=receipt-key
-    verification_error_detail="Could not compute receipt key after verification."
-    receipt_key=$(printf '%s' "$dest_base/$galaxy/$filename" | sha256sum) || return 1
-    rm -f "$CHECKSUM_RECEIPT_DIR/${receipt_key%% *}.receipt" || { verification_error_stage=receipt-cleanup; verification_error_detail="Could not clear verified receipt."; return 1; }
     echo "[$run $galaxy] VERIFIED BY FRESH CANFAR CHECKSUM: $filename ($source_bytes bytes; SHA256 $source_hash)"
     return 0
 }
@@ -1452,7 +1448,7 @@ upload_galaxy() {
     local overlay=$3
     local source_base dest_base
     local suffix path
-    local stage_root stage_galaxy_dir manifest_path file_status
+    local stage_root stage_record manifest_path file_status
     local sources=()
     local pending_paths=()
     local file_pids=() file_stages=()
@@ -1494,38 +1490,31 @@ upload_galaxy() {
         echo "Comparing $run $galaxy (${#sources[@]} files) against CANFAR-computed checksums..."
     fi
 
+    stage_record=$(mktemp "$worker_dir/upload_stage.XXXXXX") || {
+        record_issue ERROR "$run" "$galaxy" '(all selected products)' galaxy-staging "Could not create staging cleanup record."
+        return 1
+    }
     stage_root=$(mktemp -d "${source_base}/.vcp_upload_stage_${RUN_ID}_${run}_${galaxy}.XXXXXX") || { record_issue ERROR "$run" "$galaxy" '(all selected products)' galaxy-staging "Could not create galaxy staging directory."; return 1; }
-    stage_galaxy_dir="${stage_root}/${galaxy}"
-    if ! mkdir -p "$stage_galaxy_dir"; then
-        record_issue ERROR "$run" "$galaxy" '(all selected products)' galaxy-staging "Could not initialize galaxy staging directory."
-        rm -rf "$stage_root"
+    if ! printf '%s\n' "$stage_root" > "$stage_record"; then
+        record_issue ERROR "$run" "$galaxy" '(all selected products)' galaxy-staging "Could not save staging cleanup record."
+        rm -rf -- "$stage_root" && rm -f "$stage_record"
         return 1
     fi
     manifest_path="$stage_root/checksum_manifest.json"
-    if [ "${NO_CHECKSUM:-0}" -eq 1 ]; then
-        : # Explicitly skip both automatic jobs and static manifest downloads.
-    elif [ "$AUTO_CHECKSUM" -eq 1 ]; then
+    if [ "$NO_CHECKSUM" -eq 0 ]; then
         if ! request_fresh_manifest "$run" "$galaxy" "$dest_base" "$overlay" "$manifest_path" "${sources[@]}"; then
             for path in "${sources[@]}"; do
                 record_issue ERROR "$run" "$galaxy" "$(basename "$path")" "initial-checksum/${request_error_stage:-request-job}" "${request_error_detail:-Fresh CANFAR checksum request failed; no upload attempted.}"
             done
-            rm -rf "$stage_root"
+            rm -rf -- "$stage_root" && rm -f "$stage_record"
             return 1
         fi
-    elif ! with_cadc_slot slot_vcp "$overlay" "$dest_base/$CHECKSUM_MANIFEST_NAME" "$manifest_path"; then
-        echo "ERROR [$run $galaxy]: manifest unavailable; generate it inside CANFAR before uploading. No FITS download will be attempted." >&2
-        for path in "${sources[@]}"; do
-            record_issue ERROR "$run" "$galaxy" "$(basename "$path")" initial-checksum/manifest-download "Manual checksum manifest unavailable; no upload attempted."
-        done
-        rm -rf "$stage_root"
-        return 1
     fi
 
-    # Each staging directory contains exactly one product under the original
-    # galaxy name. Its adjacent manifest is an immutable copy of the snapshot.
+    # Each worker stages one product and reads the same pre-upload snapshot.
     for path in "${sources[@]}"; do
         file_stage="$stage_root/file_${file_index}"
-        if ! mkdir -p "$file_stage/$galaxy" || { [ "${NO_CHECKSUM:-0}" -eq 0 ] && ! cp "$manifest_path" "$file_stage/checksum_manifest.json"; }; then
+        if ! mkdir -p "$file_stage/$galaxy"; then
             echo "ERROR [$run $galaxy]: could not prepare isolated staging for $(basename "$path")." >&2
             for ((index = file_index; index < ${#sources[@]}; index++)); do
                 record_issue ERROR "$run" "$galaxy" "$(basename "${sources[$index]}")" file-staging "Staging failed; this file was not launched."
@@ -1535,7 +1524,7 @@ upload_galaxy() {
         fi
         result_file="$file_stage/result"
         (
-            if with_cadc_slot upload_one_file "$run" "$galaxy" "$path" "$dest_base" "$overlay" "$file_stage/$galaxy"; then
+            if with_cadc_slot upload_one_file "$run" "$galaxy" "$path" "$dest_base" "$overlay" "$file_stage/$galaxy" "$manifest_path"; then
                 printf '0\n' > "$result_file"
             else
                 printf '%s\n' "$?" > "$result_file"
@@ -1568,12 +1557,9 @@ upload_galaxy() {
         if [ "$file_status" -eq 0 ]; then
             succeeded=$((succeeded + 1))
         else
-            if [ "$file_status" -eq 2 ] && [ "$AUTO_CHECKSUM" -eq 1 ]; then
-                pending_paths+=("$path")
-            fi
             if [ "$file_status" -eq 2 ]; then
+                pending_paths+=("$path")
                 pending=$((pending + 1))
-                if [ "$galaxy_status" -eq 0 ]; then galaxy_status=2; fi
             else
                 failed=$((failed + 1))
                 galaxy_status=1
@@ -1582,11 +1568,11 @@ upload_galaxy() {
     done
 
     # Verify all newly uploaded products in one job, after uploads finish.
-    if [ "$AUTO_CHECKSUM" -eq 1 ] && [ "${#pending_paths[@]}" -gt 0 ]; then
+    if [ "${#pending_paths[@]}" -gt 0 ]; then
         if request_fresh_manifest "$run" "$galaxy" "$dest_base" "$overlay" "$manifest_path" "${pending_paths[@]}"; then
             for path in "${pending_paths[@]}"; do
                 pending=$((pending - 1))
-                if verify_uploaded_file "$run" "$galaxy" "$path" "$dest_base" "$manifest_path"; then
+                if verify_uploaded_file "$run" "$galaxy" "$path" "$manifest_path"; then
                     succeeded=$((succeeded + 1))
                 else
                     record_issue ERROR "$run" "$galaxy" "$(basename "$path")" "post-upload-verification/${verification_error_stage:-verification}" "${verification_error_detail:-Final checksum verification failed.}"
@@ -1594,7 +1580,6 @@ upload_galaxy() {
                     galaxy_status=1
                 fi
             done
-            if [ "$galaxy_status" -eq 2 ]; then galaxy_status=0; fi
         else
             for path in "${pending_paths[@]}"; do
                 record_issue ERROR "$run" "$galaxy" "$(basename "$path")" "post-upload-checksum/${request_error_stage:-request-job}" "${request_error_detail:-Fresh post-upload checksum request failed; uploaded file remains unverified.}"
@@ -1604,15 +1589,7 @@ upload_galaxy() {
             galaxy_status=1
         fi
     fi
-    if [ "$AUTO_CHECKSUM" -eq 0 ] && [ "$pending" -gt 0 ]; then
-        for ((index = 0; index < ${#file_stages[@]}; index++)); do
-            read -r file_status < "${file_stages[$index]}/result" || continue
-            if [ "$file_status" -eq 2 ]; then
-                record_issue PENDING "$run" "$galaxy" "$(basename "${sources[$index]}")" verification "Obtain fresh checksums and rerun; previously force-uploaded files require default automatic checksum mode."
-            fi
-        done
-    fi
-    rm -rf "$stage_root"
+    rm -rf -- "$stage_root" && rm -f "$stage_record"
 
     if [ "${NO_CHECKSUM:-0}" -eq 1 ]; then
         echo "Finished $run $galaxy: $succeeded uploaded UNVERIFIED, $failed failed; CANFAR checksum verification skipped."
@@ -1663,10 +1640,7 @@ done
 runtime_secs=$((SECONDS - start_secs))
 echo "Total runtime: $(format_runtime "$runtime_secs") (${runtime_secs}s)"
 
-if [ "$status" -eq 2 ]; then
-    echo "Uploads attempted; awaiting a fresh CANFAR-generated manifest. Regenerate it and rerun to verify. No FITS products were downloaded."
-    exit 2
-elif [ "$status" -ne 0 ]; then
+if [ "$status" -ne 0 ]; then
     echo "One or more files/galaxies failed. Check manifest coverage, source files, and transfer errors." >&2
     exit "$status"
 fi

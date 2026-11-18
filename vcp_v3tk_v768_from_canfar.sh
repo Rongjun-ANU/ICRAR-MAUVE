@@ -14,8 +14,9 @@
 # binning map come from <GALAXY>_SFH16. Other products use the original 7000 paths.
 # The SFH16 mass log comes from CANFAR home under QC/logs_SFH16.
 # TRANSFER_JOBS sets the shared file-worker limit (default 40; 0 uses all slots).
-# Files are verified against VOSpace MD5 or a fresh SHA-256 computed on CANFAR.
-# The fallback prefers vcp's Python. CHECKSUM_PYTHON overrides interpreter selection.
+# 2026-11-18: compare fresh SHA-256 hashes of CANFAR and local file bytes.
+# Each request has temporary files on both sides. CHECKSUM_PYTHON overrides
+# the default preference for vcp's Python interpreter.
 
 LOCAL_BASE="/Users/Igniz/Desktop/ICRAR/further"
 REMOTE_PRODUCT_ROOT="arc:projects/mauve/products"
@@ -84,10 +85,22 @@ if [[ "$TRANSFER_JOBS" != <-> ]]; then
     exit 1
 fi
 
+queue_product() {
+    local directory=$1 remote_file=$2 local_file=$3 record
+    record=$(mktemp "$directory/pending.XXXXXXXX") || return 1
+    printf '%s\0' "$remote_file" "$local_file" > "$record"
+}
+
 queue_downloads() {
-    local run galaxy product log_dir run_id mass_log
+    local run galaxy product log_dir run_id mass_log pending_dir
     local -a regular_products
     for run in "${RUNS[@]}"; do
+        if [[ "$run" != [A-Za-z0-9_.-]## || "$run" == . || "$run" == .. ]]; then
+            echo "ERROR: invalid run name: $run" >&2
+            return 1
+        fi
+        pending_dir="$checksum_dir/products/$run"
+        mkdir -p -- "$pending_dir" || return 1
         for galaxy in "${GALAXIES[@]}"; do
             if [[ "$run" == v3tk_v7.6.8_7000 ]]; then
                 galaxy="${galaxy%_SFH16}"
@@ -95,10 +108,11 @@ queue_downloads() {
                 for product in CONFIG LOGFILE \
                     "${run_id}_sfh_maps.fits" "${run_id}_sfh_weights.fits" \
                     "${run_id}_spatial_binning_maps_further.fits"; do
-                    printf '%s\0' "$REMOTE_PRODUCT_ROOT/$run/$run_id/$product" "$LOCAL_BASE/$run/$run_id/$product" "-"
+                    queue_product "$pending_dir" "$REMOTE_PRODUCT_ROOT/$run/$run_id/$product" "$LOCAL_BASE/$run/$run_id/$product" || return 1
                 done
                 mass_log="QC/logs_SFH16/${run_id}_mass.log"
-                printf '%s\0' "$REMOTE_SFH16_ROOT/$mass_log" "$LOCAL_BASE/$mass_log" "-"
+                mkdir -p -- "$checksum_dir/sfh16_logs" || return 1
+                queue_product "$checksum_dir/sfh16_logs" "$REMOTE_SFH16_ROOT/$mass_log" "$LOCAL_BASE/$mass_log" || return 1
             fi
             regular_products=(
                 "${galaxy}_mask.fits" "${galaxy}_kin_maps.fits"
@@ -111,10 +125,10 @@ queue_downloads() {
                 )
             fi
             for product in "${regular_products[@]}"; do
-                printf '%s\0' "$REMOTE_PRODUCT_ROOT/$run/$galaxy/$product" "$LOCAL_BASE/$run/$galaxy/$product" "-"
+                queue_product "$pending_dir" "$REMOTE_PRODUCT_ROOT/$run/$galaxy/$product" "$LOCAL_BASE/$run/$galaxy/$product" || return 1
             done
             for log_dir in mass_logs sfr_logs proxy_ewha_logs; do
-                printf '%s\0' "$REMOTE_PRODUCT_ROOT/$run/$log_dir/$galaxy.log" "$LOCAL_BASE/$run/$log_dir/$galaxy.log" "-"
+                queue_product "$pending_dir" "$REMOTE_PRODUCT_ROOT/$run/$log_dir/$galaxy.log" "$LOCAL_BASE/$run/$log_dir/$galaxy.log" || return 1
             done
         done
     done
@@ -129,54 +143,22 @@ run_queue() {
     remote_file=$1
     local_file=$2
     source_hash=$3
-    algorithm=SHA-256
-
     local_hash() {
         local value
-        if [ "$algorithm" = SHA-256 ]; then
-            if command -v sha256sum >/dev/null 2>&1; then
-                value=$(sha256sum < "$1") || return 1
-            else
-                value=$(shasum -a 256 < "$1") || return 1
-            fi
-            printf "%s\n" "${value%% *}"
-        elif command -v md5 >/dev/null 2>&1; then
-            md5 -q -- "$1"
+        if command -v sha256sum >/dev/null 2>&1; then
+            value=$(sha256sum < "$1") || return 1
         else
-            value=$(md5sum < "$1") || return 1
-            printf "%s\n" "${value%% *}"
+            value=$(shasum -a 256 < "$1") || return 1
         fi
+        printf "%s\n" "${value%% *}"
     }
 
-    if [ "$source_hash" = - ]; then
-        algorithm=MD5
-        source_hash=$(vtag "$remote_file" MD5 2>&1)
-        tag_status=$?
-        if [ "$tag_status" -eq 2 ]; then
-            echo "Skipping $remote_file: source file is missing"
-            exit 0
-        fi
-        if [ "$tag_status" -ne 0 ]; then
-            printf "ERROR: could not read CANFAR MD5 for %s: %s\n" "$remote_file" "$source_hash" >&2
-            exit 1
-        fi
-        source_hash=$(printf "%s" "$source_hash" | tr -d "\047\042[:space:]" | tr "A-F" "a-f")
-        if [[ ! "$source_hash" =~ ^[[:xdigit:]]{32}$ ]]; then
-            pending_dir=$checksum_dir
-            if [[ "$remote_file" == "$REMOTE_SFH16_ROOT/"* ]]; then
-                pending_dir=$checksum_dir/sfh16_logs
-                mkdir -p -- "$pending_dir" || exit 1
-            fi
-            record=$(mktemp "$pending_dir/pending.XXXXXXXX") || exit 1
-            printf "%s\0" "$remote_file" "$local_file" > "$record" || exit 1
-            exit 0
-        fi
-    elif [[ ! "$source_hash" =~ ^[0-9a-f]{64}$ ]]; then
+    if [[ ! "$source_hash" =~ ^[0-9a-f]{64}$ ]]; then
         echo "ERROR: invalid SHA-256 in the download queue for $remote_file" >&2
         exit 1
     fi
     if [ -f "$local_file" ] && target_hash=$(local_hash "$local_file") && [ "$target_hash" = "$source_hash" ]; then
-        echo "Verified existing file, skipping: $local_file ($algorithm)"
+        echo "Verified existing file, skipping: $local_file (SHA-256)"
         exit 0
     fi
 
@@ -195,14 +177,14 @@ run_queue() {
         exit 1
     fi
     if [ "$source_hash" != "$target_hash" ]; then
-        echo "ERROR: $algorithm checksum mismatch for $remote_file (CANFAR $source_hash, download $target_hash)" >&2
+        echo "ERROR: SHA-256 checksum mismatch for $remote_file (CANFAR $source_hash, download $target_hash)" >&2
         exit 1
     fi
     if [ -d "$local_file" ] || ! mv -f -- "$staged_file" "$local_file"; then
         echo "ERROR: could not install verified file at $local_file" >&2
         exit 1
     fi
-    echo "Downloaded and verified: $local_file ($algorithm $target_hash)"
+    echo "Downloaded and verified: $local_file (SHA-256 $target_hash)"
 ' _
 }
 
@@ -231,30 +213,37 @@ resolve_checksum_python() {
 }
 
 set -o pipefail
+setopt extendedglob
 checksum_dir=$(mktemp -d "${TMPDIR:-/tmp}/vcp_canfar_checksums.XXXXXXXX") || exit 1
-export checksum_dir
-trap 'rm -rf -- "$checksum_dir"' EXIT
-trap 'exit 1' HUP INT TERM
+checksum_pid=
+cleanup() {
+    if [[ -n "$checksum_pid" ]]; then
+        kill -TERM "$checksum_pid" 2>/dev/null
+        wait "$checksum_pid" 2>/dev/null
+    fi
+    rm -rf -- "$checksum_dir"
+}
+trap cleanup EXIT
+trap 'exit 130' HUP INT TERM
 echo "Downloading from CANFAR with TRANSFER_JOBS=$TRANSFER_JOBS..."
 download_status=0
-queue_downloads | run_queue || download_status=1
+queue_downloads || exit 1
+checksum_python=$(resolve_checksum_python) || exit 1
 
-# The checksum helper accepts one remote root at a time.
-checksum_python=
-for pending_dir in "$checksum_dir" "$checksum_dir/sfh16_logs"; do
+# Each batch uploads its request to the corresponding CANFAR run or QC tree.
+for pending_dir in "$checksum_dir"/products/*(/N) "$checksum_dir/sfh16_logs"; do
     pending=("$pending_dir"/pending.*(N))
     (( ${#pending[@]} )) || continue
-    if [ -z "$checksum_python" ] && ! checksum_python=$(resolve_checksum_python); then
-        download_status=1
-        break
-    fi
     pending_root=$REMOTE_PRODUCT_ROOT
     if [[ "$pending_dir" == "$checksum_dir/sfh16_logs" ]]; then
         pending_root=$REMOTE_SFH16_ROOT
     fi
-    echo "Requesting CANFAR SHA-256 for ${#pending[@]} files without VOSpace MD5..."
+    echo "Requesting fresh CANFAR SHA-256 for ${#pending[@]} selected files..."
     "$checksum_python" "${0:A:h}/canfar_checksum_manifest.py" download-queue \
-        "$pending_dir" "$pending_root" > "$pending_dir/verified.queue" || download_status=1
+        "$pending_dir" "$pending_root" > "$pending_dir/verified.queue" &
+    checksum_pid=$!
+    wait "$checksum_pid" || download_status=1
+    checksum_pid=
     if [ -s "$pending_dir/verified.queue" ]; then
         run_queue < "$pending_dir/verified.queue" || download_status=1
     fi

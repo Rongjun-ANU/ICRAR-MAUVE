@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import signal
 import sys
 import time
 import uuid
@@ -104,6 +105,8 @@ def lookup(args):
 
 def hash_download_request(args):
     request = Path(args.request)
+    if not re.fullmatch(r"\.download_checksum_[0-9a-f]{32}\.json", request.name):
+        raise ValueError("Invalid download checksum request filename")
     root = request.parent.parent.resolve()
     paths = json.loads(request.read_text(encoding="utf-8"))
 
@@ -119,8 +122,11 @@ def hash_download_request(args):
         entries = dict(zip(paths, pool.map(hash_product, paths)))
     response = request.with_suffix(".response.json")
     temporary = response.with_suffix(".tmp")
-    temporary.write_text(json.dumps(entries), encoding="utf-8")
-    os.replace(temporary, response)
+    try:
+        temporary.write_text(json.dumps({"request": request.name, "entries": entries}), encoding="utf-8")
+        os.replace(temporary, response)
+    finally:
+        temporary.unlink(missing_ok=True)
     return 0
 
 
@@ -146,6 +152,7 @@ def fetch_download_checksums(directory, remote_root, paths):
     worker_node = remote_base + name + ".py"
     request_node = remote_base + request.name
     response_node = remote_base + response.name
+    temporary_node = remote_base + response.with_suffix(".tmp").name
     worker_path = "/arc/" + worker_node.removeprefix("arc:")
     request_path = "/arc/" + request_node.removeprefix("arc:")
 
@@ -176,7 +183,10 @@ def fetch_download_checksums(directory, remote_root, paths):
                 except NotFoundException:
                     pass
                 else:
-                    return json.loads(response.read_text(encoding="utf-8"))
+                    payload = json.loads(response.read_text(encoding="utf-8"))
+                    if payload.get("request") != request.name or not isinstance(payload.get("entries"), dict):
+                        raise ValueError("CANFAR checksum response does not match this request")
+                    return payload["entries"]
                 reply = session.get(job_url, timeout=(10, 30))
                 reply.raise_for_status()
                 state = str(reply.json().get("status", "Unknown")).lower()
@@ -189,21 +199,29 @@ def fetch_download_checksums(directory, remote_root, paths):
                 time.sleep(5)
             raise TimeoutError("CANFAR checksum job timed out after {} seconds".format(timeout))
         finally:
+            failed_cleanup = []
             if job_url:
                 try:
                     deleted = session.delete(job_url, timeout=(10, 30))
                     if deleted.status_code != 404:
                         deleted.raise_for_status()
                 except requests.RequestException as error:
-                    print("WARNING: could not delete CANFAR checksum job " + job_id + ": " + str(error),
-                          file=sys.stderr)
-            for node in (worker_node, request_node, response_node):
+                    failed_cleanup.append("CANFAR checksum job " + job_id)
+                    print("WARNING: could not stop checksum job " + job_id + ": " + str(error), file=sys.stderr)
+            for node in (worker_node, request_node, response_node, temporary_node):
                 try:
                     client.delete(node)
                 except NotFoundException:
                     pass
                 except Exception:
-                    print("WARNING: could not remove " + node, file=sys.stderr)
+                    failed_cleanup.append(node)
+            request.unlink(missing_ok=True)
+            response.unlink(missing_ok=True)
+            if failed_cleanup:
+                message = "Could not clean up " + ", ".join(failed_cleanup)
+                if sys.exc_info()[0] is None:
+                    raise RuntimeError(message)
+                print("WARNING: " + message, file=sys.stderr)
 
 
 def download_queue(args):
@@ -226,13 +244,19 @@ def download_queue(args):
     for relative, (remote, local) in pending.items():
         entry = checksums.get(relative, {})
         digest = entry.get("sha256")
-        if entry.get("status") == "ok" and isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
+        if entry.get("status") == "missing":
+            print("Skipping " + os.fsdecode(remote) + ": source file is missing", file=sys.stderr)
+        elif entry.get("status") == "ok" and isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest):
             sys.stdout.buffer.write(b"\0".join((remote, local, digest.encode("ascii"), b"")))
         else:
             print("ERROR: CANFAR SHA-256 unavailable for " + relative + ": " +
                   entry.get("error", entry.get("status", "missing response entry")), file=sys.stderr)
             failed = True
     return int(failed)
+
+
+def interrupt(_signum, _frame):
+    raise KeyboardInterrupt
 
 
 def main():
@@ -255,6 +279,9 @@ def main():
     downloader.add_argument("directory")
     downloader.add_argument("remote_root")
     args = parser.parse_args()
+    if args.command == "download-queue":
+        signal.signal(signal.SIGTERM, interrupt)
+        signal.signal(signal.SIGHUP, interrupt)
     try:
         actions = {"generate": generate, "lookup": lookup,
                    "hash-download-request": hash_download_request, "download-queue": download_queue}
