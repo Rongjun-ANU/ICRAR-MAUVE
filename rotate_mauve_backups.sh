@@ -5,6 +5,7 @@ readonly root=/scratch/pawsey1308
 readonly source_dir="$root/mauve"
 readonly backup="$root/mauve_backup"
 readonly older_backup="$root/mauve_backupp"
+readonly index_lock='/._dbindex_/.lock'
 
 fail() {
     printf '%s\n' "$*" >&2
@@ -36,8 +37,9 @@ done
 
 if "$dry_run"; then
     printf 'Source: %s\nLatest: %s\nPrevious: %s\n' "$source_dir" "$backup" "$older_backup"
+    printf 'Excluded: %s%s\n' "$source_dir" "$index_lock"
     if [[ -d "$backup" ]]; then
-        printf 'Would remove the previous backup, move latest to previous, and copy the source.\n'
+        printf 'Would stage the source, then replace the previous backup with the latest and publish the new copy.\n'
     else
         printf 'Would preserve any previous backup and copy the source to recreate latest.\n'
     fi
@@ -51,11 +53,13 @@ trap 'exit 129' HUP
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
+# Finish copying before changing either backup generation.
+rsync -rlD --exclude="$index_lock" -- "$source_dir/" "$staging/mauve/"
+
 # If a previous copy was interrupted, keep the last good generation.
 if [[ -d "$backup" ]]; then
     rm -rf --one-file-system -- "$older_backup"
     mv -T -- "$backup" "$older_backup"
 fi
-cp -r -- "$source_dir" "$staging/mauve"
 mv -T -- "$staging/mauve" "$backup"
 printf '%s Finished MAUVE backup rotation\n' "$(date -Is)"
